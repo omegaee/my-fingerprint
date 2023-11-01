@@ -371,18 +371,25 @@ const regAboutUI = function (button, elem) {
     el.querySelector('._version').textContent = ver;
 
     // is update
-    fetch('https://api.github.com/omegaee/my-fingerprint/releases/latest', {
+    let el_update = el.querySelector('._update');
+    fetch('https://api.github.com/repos/omegaee/my-fingerprint/releases/latest', {
       method: 'GET',
     })
     .then(response => response.json())
     .then(data => {
       let latest = data.tag_name;
-      if(ver != latest){
-        let el_update = el.querySelector('._update');
+      if(latest == undefined){
+        el_update.textContent = "检查更新失败"
+      }else if(ver != latest){
         el_update.textContent = `最新版本：${latest}（点击更新）`
+        el_update.href = data.html_url || '#'
+      }else{
+        el_update.textContent = "已是最新版本"
       }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+      el_update.textContent = "检查更新失败"
+    });
   })
 }
 
