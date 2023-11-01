@@ -1,0 +1,37 @@
+{
+  "name": "My Fingerprint",
+  "description": "My Fingerprint",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "32": "src/assets/icon32.png",
+      "64": "src/assets/icon64.png",
+      "128": "src/assets/icon128.png"
+    }
+  },
+  "icons": {
+    "32": "src/assets/icon32.png",
+    "64": "src/assets/icon64.png",
+    "128": "src/assets/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["src/type.js", "src/utils.js", "src/content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/inject.js"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "permissions": ["storage", "webNavigation"]
+}
