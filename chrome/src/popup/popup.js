@@ -360,6 +360,32 @@ const addRecordItem = function (item, conf) {
   item.appendChild(frag);
 }
 
+// 注册 about ui
+const regAboutUI = function (button, elem) {
+  initDropDown(button, elem, (btn, el) => {
+    // get manifest
+    let manifest = chrome.runtime.getManifest();
+
+    // version
+    let ver = manifest.version;
+    el.querySelector('._version').textContent = ver;
+
+    // is update
+    fetch('https://api.github.com/omegaee/my-fingerprint/releases/latest', {
+      method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => {
+      let latest = data.tag_name;
+      if(ver != latest){
+        let el_update = el.querySelector('._update');
+        el_update.textContent = `最新版本：${latest}（点击更新）`
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  })
+}
+
 /**
  * -----------------------------
  * ---------- message ----------
@@ -421,7 +447,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   regSpecialUI('#special ._btn', '#special .drop-down');
   // record
   regRecordUI('#record ._btn', '#record .drop-down');
-
+  // about
+  regAboutUI('#about ._btn', '#about .drop-down') 
 });
 
 /**

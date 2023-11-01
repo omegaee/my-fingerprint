@@ -1,7 +1,7 @@
 {
   "name": "My Fingerprint",
-  "description": "My Fingerprint",
-  "version": "1.0",
+  "description": "Custom your browser fingerprint",
+  "version": "1.0.0",
   "manifest_version": 3,
   "action": {
     "default_popup": "src/popup/popup.html",

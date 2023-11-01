@@ -4,7 +4,7 @@
   ------------------
 */
 html{
-  height: 160px;
+  height: 200px;
 }
 body{
   width: 270px;
@@ -204,7 +204,7 @@ button{
 
 /**
   -----------------
-  ----- record -----
+  ----- record ----
   -----------------
 */
 #record{
@@ -212,3 +212,16 @@ button{
   color: #606266;
 }
 
+/**
+  -----------------
+  ----- other -----
+  -----------------
+*/
+.link{
+  text-align: center;
+}
+
+.link a:hover{
+  color: #409eff;
+  text-decoration-line: underline;
+}
