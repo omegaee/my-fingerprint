@@ -1,4 +1,4 @@
-const init = async function () {
+const init = async function (prevVersion) {
   const dataPromise = chrome.storage.local.get();
   const Mode = {
     enable: '0',
@@ -37,11 +37,16 @@ const init = async function () {
     timezone: 22,
     audio: 23
   }
-  
+
   // get data
   const data = await dataPromise;
-  // 若已经初始化
-  if(data.init) return
+  
+  // get manifest
+  let manifest = chrome.runtime.getManifest()
+  let currVersion = manifest.version  // 扩展当前版本号
+
+  // 若已初始化，跳过
+  if(data[`init-${currVersion}`]) return
 
   // enable
   data[Mode.enable] = data[Mode.enable] ?? true;
@@ -71,24 +76,27 @@ const init = async function () {
     [Item.audio]: Opt.page,
     [Item.timezone]: -1,
   })
+
   // save
   chrome.storage.local.set(data);
-  chrome.storage.local.set({'init': true})  // 初始化成功标志
+  chrome.storage.local.set({[`init-${currVersion}`]: true})  // 初始化成功标志
+  if(prevVersion)chrome.storage.local.remove(`init-${prevVersion}`)
 }
-
 
 /**
  * 初次启动扩展时触发（浏览器更新、扩展更新也触发）
+ * @param {'install' || 'update' || 'chrome_update' } reason 操作
+ * @param {string} previousVersion 上个版本号
  */
-chrome.runtime.onInstalled.addListener(() => {
-  init();
+chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
+  init(previousVersion);
 });
 
 /**
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-  init();
+
 });
 
 /**
@@ -139,8 +147,9 @@ chrome.runtime.onMessage.addListener((msg, sender)=>{
     }
     let showTotal = stotal > 0 ? stotal : total;
     let showColor = stotal > 0 ? 1 : 0;
+    showTotalStr = showTotal > 99 ? '99+' : showTotal.toString()
 
-    chrome.action.setBadgeText({tabId, text: showTotal.toString()});
+    chrome.action.setBadgeText({tabId, text: showTotalStr});
     // chrome.action.setBadgeTextColor({tabId, color: getFontColor(showColor)});
     chrome.action.setBadgeBackgroundColor({tabId, color: getBgColor(showColor)});
   }
