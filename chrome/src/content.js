@@ -63,22 +63,12 @@ const getBasicValue = function (item, randFunc) {
   return null;
 }
 
-const getCanvasValue = function (value) {
+const getSpecialValue = function (value, randFunc) {
   switch (value) {
     case SelectOpt.default.k: return null;
-    case SelectOpt.page.k: return randomNoise(pageSeed);
-    case SelectOpt.browser.k: return randomNoise(sessionSeed);
-    case SelectOpt.domain.k: return randomNoise(urlSeed);
-  }
-  return null;
-}
-
-const getAudioValue = function (value) {
-  switch (value) {
-    case SelectOpt.default.k: return null;
-    case SelectOpt.page.k: return randomAudioNoise(pageSeed);
-    case SelectOpt.browser.k: return randomAudioNoise(sessionSeed);
-    case SelectOpt.domain.k: return randomAudioNoise(urlSeed);
+    case SelectOpt.page.k: return randFunc(pageSeed);
+    case SelectOpt.browser.k: return randFunc(sessionSeed);
+    case SelectOpt.domain.k: return randFunc(urlSeed);
   }
   return null;
 }
@@ -126,8 +116,9 @@ const init = async function () {
   // get special value
   const sData = data[Mode.special]
   let specialValues = {
-    [SpecialConf.canvas]: getCanvasValue(sData[SpecialConf.canvas]),
-    [SpecialConf.audio]: getAudioValue(sData[SpecialConf.audio]),
+    [SpecialConf.canvas]: getSpecialValue(sData[SpecialConf.canvas], randomNoise),
+    [SpecialConf.audio]: getSpecialValue(sData[SpecialConf.audio], randomAudioNoise),
+    [SpecialConf.webgl]: getSpecialValue(sData[SpecialConf.webgl], randomWebGLRandom),
     [SpecialConf.timezone]: getTimeZoneValue(sData[SpecialConf.timezone]),
   }
 

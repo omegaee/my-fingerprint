@@ -35,7 +35,8 @@ const init = async function (prevVersion) {
     languages: 20,
     canvas: 21,
     timezone: 22,
-    audio: 23
+    audio: 23,
+    webgl: 24
   }
 
   // get data
@@ -74,6 +75,7 @@ const init = async function (prevVersion) {
     [Item.languages]: Opt.default,
     [Item.canvas]: Opt.page,
     [Item.audio]: Opt.page,
+    [Item.webgl]: Opt.page,
     [Item.timezone]: -1,
   })
 
@@ -96,7 +98,6 @@ chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-
 });
 
 /**

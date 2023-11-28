@@ -147,3 +147,24 @@ const randomAudioNoise = function (seed) {
   }
   return noise;
 }
+
+const renderer_webgl_arr = [
+  'ANGLE (NVIDIA GeForce GTX 1050 Ti Direct3D11 vs_5_0 ps_5_0)',
+  'ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)',
+  'ANGLE (Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)',
+  'ANGLE (AMD Radeon(TM) R5 Graphics Direct3D11 vs_5_0 ps_5_0)',
+  'ANGLE (NVIDIA GeForce RTX 2070 SUPER Direct3D11 vs_5_0 ps_5_0)',
+  'ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E9B) Direct3D11 vs_5_0 ps_5_0, D3D11)',
+  'Mesa DRI Intel(R) HD Graphics 5500 (Broadwell GT2)',
+  'Mesa DRI Intel(R) UHD Graphics 630 (Coffeelake 3x8 GT2)',
+  'Mesa DRI Intel(R) Iris(R) Plus Graphics 640 (Kaby Lake GT3e)',
+  'AMD Radeon Pro 5300M OpenGL Engine',
+  'Intel(R) Iris(R) Plus Graphics OpenGL Engine',
+]
+
+/**
+ * 获取webgl渲染器随机值
+ */
+const randomWebGLRandom = function (seed) {
+  return renderer_webgl_arr[seed % renderer_webgl_arr.length];
+}

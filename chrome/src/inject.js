@@ -24,6 +24,7 @@
     canvas: 21,
     timezone: 22,
     audio: 23,
+    webgl: 24,
   }
   const Config = {
     proxyNavigator: 0,
@@ -206,16 +207,36 @@
    * @param {number[]} value 
    */
   const hookAudioContext = function (value) {
-    console.log(value);
     if(!value)return
     // hookAudioBuffer(value)
     hookAudioCompressor(value[0])
+  }
+
+  /**
+   * hook WebGL
+   * @param {string} value 
+   */
+  const hookWebGL = function (value) {
+    if(!value)return
+    const wglGetParameter = WebGLRenderingContext.prototype.getParameter
+    const wgl2GetParameter = WebGL2RenderingContext.prototype.getParameter
+    WebGLRenderingContext.prototype.getParameter = function () {
+      const debugEx = this.getExtension('WEBGL_debug_renderer_info')
+      if(arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL)return value
+      return wglGetParameter.apply(this, arguments)
+    }
+    WebGL2RenderingContext.prototype.getParameter = function () {
+      const debugEx = this.getExtension('WEBGL_debug_renderer_info')
+      if(arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL)return value
+      return wgl2GetParameter.apply(this, arguments)
+    }
   }
 
   if(config[Config.proxyNavigator])proxyNavigator(basicValues);
   if(config[Config.proxyScreen])proxyScreen(basicValues);
   hookCanvas(specialValues[Opt.canvas]);
   hookAudioContext(specialValues[Opt.audio])
-  modifyTimeZone(specialValues[Opt.timezone]);
+  hookWebGL(specialValues[Opt.webgl])
+  modifyTimeZone(specialValues[Opt.timezone])
 
 }();

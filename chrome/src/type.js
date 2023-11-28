@@ -86,4 +86,5 @@ const SpecialConf = {
   canvas: 21,
   timezone: 22,
   audio: 23,
+  webgl: 24,
 }
