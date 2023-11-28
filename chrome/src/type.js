@@ -85,4 +85,5 @@ const SpecialConf = {
   languages: 20,
   canvas: 21,
   timezone: 22,
+  audio: 23,
 }

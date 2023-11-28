@@ -1,3 +1,4 @@
+// 线性同余（待修改）
 const seededRandom = function(seed, max, min) {
   max = max || 1;
   min = min || 0;
@@ -120,12 +121,29 @@ const randomHeight = function (seed) {
 }
 
 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+/**
+ * canvas噪音
+ * @param {number} seed 
+ */
 const randomNoise = function (seed) {
   let noise = "";
   for (let i = 0; i < 10; i++) {
     let index = Math.floor(seededRandom(seed, 0, chars.length));
     noise += chars[index];
     ++seed;
+  }
+  return noise;
+}
+
+/**
+ * audio噪音
+ * @param {number} seed 
+ * @returns {number[]}
+ */
+const randomAudioNoise = function (seed) {
+  let noise = [];
+  for (let i = 0; i < 20; i++) {
+    noise.push(seededRandom(seed + i))
   }
   return noise;
 }

@@ -23,6 +23,7 @@
     languages: 20,
     canvas: 21,
     timezone: 22,
+    audio: 23,
   }
   const Config = {
     proxyNavigator: 0,
@@ -35,6 +36,10 @@
     records = {};
   }
 
+  /**
+   * 发送可以动作到background
+   * @param {number} id 
+   */
   const recordAndSend = function (id) {
     let count = records[id];
     if(!count)count = 1;
@@ -50,7 +55,10 @@
     return data[id];
   }
 
-  // proxy navigator
+  /**
+   * proxy navigator
+   * @param {*} data 
+   */
   const proxyNavigator = function (data) {
     if (!data) return;
     let get = function (target, key) {
@@ -75,7 +83,10 @@
     });
   }
 
-  // proxy screen
+  /**
+   * proxy screen
+   * @param {*} data 
+   */
   const proxyScreen = function (data) {
     if (!data) return;
     let get = function (target, key) {
@@ -99,7 +110,10 @@
     });
   }
 
-  // hook canvas
+  /**
+   *  hook canvas
+   * @param {string} noise 
+   */
   const hookCanvas = function (noise) {
     if(!noise)return;
     let oriToDataURL = HTMLCanvasElement.prototype.toDataURL;
@@ -114,7 +128,10 @@
     }
   }
 
-  // modify time zone
+  /**
+   * modify time zone
+   * @param {{text: string, zone: string, locale: string, offset: number}} value 
+   */
   const modifyTimeZone = function (value) {
     if(!value)return;
     const OriDateTimeFormat = Intl.DateTimeFormat;
@@ -131,9 +148,74 @@
     }
   }
 
+  /**
+   * 音频指纹混淆 - 压缩器噪音
+   * 会影响audio质量 - pass
+   * @param {number} noise 随机值
+   */
+  const hookAudioCompressor = function (noise) {
+    let oriCreateDynamicsCompressor = OfflineAudioContext.prototype.createDynamicsCompressor
+    OfflineAudioContext.prototype.createDynamicsCompressor = function () {
+      let compressor = oriCreateDynamicsCompressor.apply(this, arguments)
+      // 创建一个增益节点，用来添加一些噪音
+      let gain = this.createGain();
+      // 这是一个可调的参数，可以根据需要设置噪音的强度
+      gain.gain.value = noise * 0.1;
+      // 将增益节点连接到压缩器的输出
+      compressor.connect(gain);
+      // 将增益节点的输出连接到上下文的目标
+      gain.connect(this.destination);
+  
+      recordAndSend(Opt.audio);  // 统计
+      return compressor
+    }
+  }
+
+  // /**
+  //  * 音频指纹混淆 - AudioBuffer噪音
+  //  * 会影响指纹生成速度
+  //  * getChannelData调用次数多，无法很好的统计
+  //  * @param {number[]} noises 
+  //  */
+  // const hookAudioBuffer = function (noises) {
+  //   let oriGetChannelData = AudioBuffer.prototype.getChannelData
+  //   AudioBuffer.prototype.getChannelData = function () {
+  //     // 获取渲染缓冲区中的数据
+  //     let data = oriGetChannelData.apply(this, arguments)
+  //     // 遍历数据，进行一些随机的修改（步长可调节，减少遍历内容）
+  //     for (let i = 0; i < data.length; i+=9) {
+  //       let noise = noises[i % noises.length]
+  //       if(0.1 < noise || noise < 0.9){
+  //         // 以一定的概率添加或减去一些小数值
+  //         data[i] += (noise * 0.0001 - 0.00005)*2;
+  //       }else{
+  //         // 以一定的概率交换一些数据的位置
+  //         var j = Math.floor(noise * data.length);
+  //         var temp = data[i];
+  //         data[i] = data[j];
+  //         data[j] = temp;
+  //       }
+  //     }
+  //     // recordAndSend(Opt.audio);  // getChannelData调用次数多，无法很好的统计（pass）
+  //     return data
+  //   }
+  // }
+
+  /**
+   * hook AudioContext
+   * @param {number[]} value 
+   */
+  const hookAudioContext = function (value) {
+    console.log(value);
+    if(!value)return
+    // hookAudioBuffer(value)
+    hookAudioCompressor(value[0])
+  }
+
   if(config[Config.proxyNavigator])proxyNavigator(basicValues);
   if(config[Config.proxyScreen])proxyScreen(basicValues);
   hookCanvas(specialValues[Opt.canvas]);
+  hookAudioContext(specialValues[Opt.audio])
   modifyTimeZone(specialValues[Opt.timezone]);
 
 }();

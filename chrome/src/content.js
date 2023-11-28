@@ -73,6 +73,16 @@ const getCanvasValue = function (value) {
   return null;
 }
 
+const getAudioValue = function (value) {
+  switch (value) {
+    case SelectOpt.default.k: return null;
+    case SelectOpt.page.k: return randomAudioNoise(pageSeed);
+    case SelectOpt.browser.k: return randomAudioNoise(sessionSeed);
+    case SelectOpt.domain.k: return randomAudioNoise(urlSeed);
+  }
+  return null;
+}
+
 const getTimeZoneValue = function (value) {
   value = value ?? -1;
   let res = timeOpt[value];
@@ -117,6 +127,7 @@ const init = async function () {
   const sData = data[Mode.special]
   let specialValues = {
     [SpecialConf.canvas]: getCanvasValue(sData[SpecialConf.canvas]),
+    [SpecialConf.audio]: getAudioValue(sData[SpecialConf.audio]),
     [SpecialConf.timezone]: getTimeZoneValue(sData[SpecialConf.timezone]),
   }
 

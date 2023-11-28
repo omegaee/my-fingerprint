@@ -278,6 +278,7 @@ const regStartUI = function (selector) {
 const regSpecialUI = function (button, elem) {
   initDropDown(button, elem, (btn, el) => {
     initSpecialSelect(el.querySelector('._canvas'), SpecialConf.canvas, [SelectOpt.default, SelectOpt.page, SelectOpt.browser, SelectOpt.domain]);
+    initSpecialSelect(el.querySelector('._audio'), SpecialConf.audio, [SelectOpt.default, SelectOpt.page, SelectOpt.browser, SelectOpt.domain]);
     initTimeZoneSelect(el.querySelector('._time'), SpecialConf.timezone);
   })
 }

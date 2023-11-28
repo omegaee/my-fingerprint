@@ -35,55 +35,45 @@ const init = async function () {
     languages: 20,
     canvas: 21,
     timezone: 22,
+    audio: 23
   }
-
-  let isUpdateData = false;
-
+  
   // get data
   const data = await dataPromise;
+  // 若已经初始化
+  if(data.init) return
+
   // enable
-  if(data[Mode.enable] == undefined){
-    data[Mode.enable] = true;
-    isUpdateData = true;
-  }
+  data[Mode.enable] = data[Mode.enable] ?? true;
   // seed
-  if(data[Mode.seed] == undefined){
-    data[Mode.seed] = Math.floor(Math.random() * 100000);
-    isUpdateData = true;
-  }
+  data[Mode.seed] = data[Mode.seed] ?? Math.floor(Math.random() * 100000);
   // config
-  if(!data[Mode.config]){
-    data[Mode.config] = {
-      [Config.proxyNavigator]: true,
-      [Config.proxyScreen]: true,
-    }
-    isUpdateData = true;
-  }
+  data[Mode.config] = Object.assign({}, data[Mode.config], {
+    [Config.proxyNavigator]: true,
+    [Config.proxyScreen]: true,
+  })
   // basic
-  if(!data[Mode.basic]){
-    data[Mode.basic] = {
-      [Item.language]: {select: 0, value: Opt.default},
-      [Item.platform]: {select: 0, value: Opt.default},
-      [Item.hardwareConcurrency]: {select: 0, value: Opt.default},
-      [Item.appVersion]: {select: 0, value: Opt.browser},
-      [Item.userAgent]: {select: 0, value: Opt.browser},
-      [Item.height]: {select: 0, value: Opt.default},
-      [Item.width]: {select: 0, value: Opt.default},
-      [Item.colorDepth]: {select: 0, value: Opt.default},
-      [Item.pixelDepth]: {select: 0, value: Opt.default},
-    }
-    isUpdateData = true;
-  }
+  data[Mode.basic] = Object.assign({}, data[Mode.basic], {
+    [Item.language]: {select: 0, value: Opt.default},
+    [Item.platform]: {select: 0, value: Opt.default},
+    [Item.hardwareConcurrency]: {select: 0, value: Opt.default},
+    [Item.appVersion]: {select: 0, value: Opt.browser},
+    [Item.userAgent]: {select: 0, value: Opt.browser},
+    [Item.height]: {select: 0, value: Opt.default},
+    [Item.width]: {select: 0, value: Opt.default},
+    [Item.colorDepth]: {select: 0, value: Opt.default},
+    [Item.pixelDepth]: {select: 0, value: Opt.default},
+  })
   // spacial
-  if(!data[Mode.special]){
-    data[Mode.special] = {
-      [Item.languages]: Opt.default,
-      [Item.canvas]: Opt.page,
-      [Item.timezone]: -1,
-    }
-    isUpdateData = true;
-  }
-  if(isUpdateData)chrome.storage.local.set(data);
+  data[Mode.special] = Object.assign({}, data[Mode.special], {
+    [Item.languages]: Opt.default,
+    [Item.canvas]: Opt.page,
+    [Item.audio]: Opt.page,
+    [Item.timezone]: -1,
+  })
+  // save
+  chrome.storage.local.set(data);
+  chrome.storage.local.set({'init': true})  // 初始化成功标志
 }
 
 
