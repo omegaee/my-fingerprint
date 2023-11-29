@@ -1,5 +1,4 @@
 const dataPromise = chrome.storage.local.get();
-
 // 种子
 const maxRandom = 0xFFFF;
 const pageSeed = randInt(0, maxRandom);
@@ -29,6 +28,7 @@ const initMessageListener = function (config) {
     }
 
     try{
+      // 发送记录到background
       chrome.runtime.sendMessage({
         type: "notify",
         seed: pageSeed,
@@ -46,6 +46,15 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     sendResponse(allRecords);
   }
 });
+
+// 发送ip给inject
+const sendIPMessage = async function () {
+  const ip = await getProxyIP()
+  postMessage({[pageSeed]: {
+    type: 'ip',
+    value: ip
+  }}, location.origin);
+}
 
 const getBasicValue = function (item, randFunc) {
   if(item){
@@ -77,6 +86,18 @@ const getTimeZoneValue = function (value) {
   value = value ?? -1;
   let res = timeOpt[value];
   return res == undefined ? null : res;
+}
+
+const getWebRTCValue = function (value) {
+  switch (value) {
+    case SelectOpt.default.k: return null;
+    case SelectOpt.localhost.k: return 'localhost';
+    case SelectOpt.proxy.k:{
+      sendIPMessage()
+      return 'proxy'
+    };
+  }
+  return null;
 }
 
 // 运行脚本
@@ -120,6 +141,7 @@ const init = async function () {
     [SpecialConf.audio]: getSpecialValue(sData[SpecialConf.audio], randomAudioNoise),
     [SpecialConf.webgl]: getSpecialValue(sData[SpecialConf.webgl], randomWebGLRandom),
     [SpecialConf.timezone]: getTimeZoneValue(sData[SpecialConf.timezone]),
+    [SpecialConf.webrtc]: getWebRTCValue(sData[SpecialConf.webrtc]),
   }
 
   // init message event
@@ -127,6 +149,7 @@ const init = async function () {
 
   // inject
   runScript('/src/inject.js', (dataset) => {
+    console.log(window.frameElement);
     dataset.seed = pageSeed;
     dataset.config = JSON.stringify(data[Mode.config]);
     dataset.basic = JSON.stringify(basicValues);

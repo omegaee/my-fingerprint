@@ -168,3 +168,10 @@ const renderer_webgl_arr = [
 const randomWebGLRandom = function (seed) {
   return renderer_webgl_arr[seed % renderer_webgl_arr.length];
 }
+
+const getProxyIP = async function () {
+  // 获取代理ip
+  const data = await fetch('https://api.ipify.org?format=json',{method: 'GET',})
+  .then(response => response.json())
+  return data.ip
+}

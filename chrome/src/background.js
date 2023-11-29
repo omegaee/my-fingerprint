@@ -17,8 +17,8 @@ const init = async function (prevVersion) {
     browser: '2',
     domain: '3',
 
-    empty: '10',
-    current: '11',
+    localhost: '10',
+    proxy: '11',
   }
   const Item = {
     language: 0,
@@ -36,7 +36,8 @@ const init = async function (prevVersion) {
     canvas: 21,
     timezone: 22,
     audio: 23,
-    webgl: 24
+    webgl: 24,
+    webrtc: 25,
   }
 
   // get data
@@ -77,6 +78,7 @@ const init = async function (prevVersion) {
     [Item.audio]: Opt.page,
     [Item.webgl]: Opt.page,
     [Item.timezone]: -1,
+    [Item.webrtc]: Opt.default,
   })
 
   // save

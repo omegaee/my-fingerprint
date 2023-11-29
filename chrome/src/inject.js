@@ -1,9 +1,11 @@
+let nihao;
 !function(){
   const script = document.currentScript;
   const seed = script.dataset.seed;
   const config = JSON.parse(script.dataset.config);
   const basicValues = JSON.parse(script.dataset.basic);
   const specialValues = JSON.parse(script.dataset.special);
+  let proxy_ip  // 代理ip（用于WebRTC）
 
   let records = {};
   let timer;
@@ -25,12 +27,30 @@
     timezone: 22,
     audio: 23,
     webgl: 24,
+    webrtc: 25,
   }
   const Config = {
     proxyNavigator: 0,
     proxyScreen: 1,
   }
+
+  /**
+   * 监听content页面信息
+   */
+  window.addEventListener('message', (ev) => {
+    if(ev.origin != location.origin)return;
+    let data = ev.data[seed];
+    if(!data)return
+    switch(data.type){
+      case 'ip':
+        proxy_ip = data.value
+        break
+    }
+  })
   
+  /**
+   * 发送可疑记录到content
+   */
   const sendMessage = function () {
     // let tmp = records;
     postMessage({[seed]: records}, location.origin);
@@ -38,7 +58,7 @@
   }
 
   /**
-   * 发送可以动作到background
+   * 延时发送可疑记录到content
    * @param {number} id 
    */
   const recordAndSend = function (id) {
@@ -232,11 +252,122 @@
     }
   }
 
-  if(config[Config.proxyNavigator])proxyNavigator(basicValues);
-  if(config[Config.proxyScreen])proxyScreen(basicValues);
-  hookCanvas(specialValues[Opt.canvas]);
-  hookAudioContext(specialValues[Opt.audio])
-  hookWebGL(specialValues[Opt.webgl])
-  modifyTimeZone(specialValues[Opt.timezone])
+  const handlerRTCPeerConnectionIceEvent = {
+    get: function (target, key) {
+      let res = target[key]
+      if (!res) return target[key]
+      // 如果属性名是candidate，就返回一个新的对象
+      if (key === "candidate") {
+        // 判断ip是否存在
+        let ipRe = /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/g
+        let pubIP = ipRe.exec(res.candidate)?.[0]  // 原IP
+        if(!pubIP)return res
+
+        // 获取ip字符串
+        let ip;
+        switch(specialValues[Opt.webrtc]){
+          case 'localhost': 
+            ip = '127.0.0.1'
+            break
+          case 'proxy': 
+            ip = proxy_ip || '127.0.0.1'
+            break
+          default: return res
+        }
+        console.log('proxy==>', ip);
+        
+        // 修改candidate中的address
+        let candSplit = res.candidate.split(' ')
+        console.log('ori==>', candSplit[4]);
+        candSplit[4] = ip
+
+        // 统计
+        recordAndSend(Opt.webrtc);
+
+        // 返回修改后的RTCIceCandidate
+        return Object.setPrototypeOf({
+          ...res.toJSON(),
+          candidate: candSplit.join(' '),
+          address: ip,
+          foundation: res.foundation,
+          component: res.component,
+          protocol: res.protocol,
+          priority: res.priority,
+          port: res.port,
+          type: res.type,
+          tcpType: res.tcpType,
+          relatedAddress: res.relatedAddress,
+          relatedPort: res.relatedPort,
+        }, RTCIceCandidate.prototype)
+      }
+      if (typeof res === "function") return res.bind(target)
+      return res
+    },
+  }
+
+  const handlerRTCPeerConnection = {
+    get: (target, key, aaa) => {
+      let res = target[key]
+      if (typeof res === "function") return res.bind(target)
+      return res
+    },
+    set: (target, key, value) => {
+      if (!value) return true
+      if (key === 'onicecandidate') {
+        target[key] = (event) => {
+          value(new Proxy(event, handlerRTCPeerConnectionIceEvent))
+        }
+      } else {
+        target[key] = value
+      }
+      return true
+    }
+  }
+
+  /**
+   * hook WebRTC
+   * @param {string} value 
+   */
+  const hookWebRTC = function (value) {
+    // hook addEventListener
+    const oriRTCAddEvent = window.RTCPeerConnection.prototype.addEventListener
+    window.RTCPeerConnection.prototype.addEventListener = function () {
+      if('icecandidate' == arguments[0]){
+        const call = arguments[1]
+        if(call){
+          arguments[1] = (event) => {
+            call(new Proxy(event, handlerRTCPeerConnectionIceEvent))
+          }
+        }
+        return oriRTCAddEvent.apply(this, arguments)
+      }
+      return oriRTCAddEvent.apply(this, arguments)
+    }
+    // hook onicecandidate
+    const oriRTCPeerConnection = window.RTCPeerConnection
+    window.RTCPeerConnection = function () {
+      let connection
+      if (this instanceof oriRTCPeerConnection) {
+        connection = oriRTCPeerConnection.apply(this, arguments)
+      } else {
+        connection = new oriRTCPeerConnection(...arguments)
+      }
+      return new Proxy(connection, handlerRTCPeerConnection)
+    }
+  }
+
+  /**
+   * run
+   */
+  const mainHook = function () {
+    if(config[Config.proxyNavigator])proxyNavigator(basicValues);
+    if(config[Config.proxyScreen])proxyScreen(basicValues);
+    hookCanvas(specialValues[Opt.canvas]);
+    hookAudioContext(specialValues[Opt.audio])
+    hookWebGL(specialValues[Opt.webgl])
+    modifyTimeZone(specialValues[Opt.timezone])
+    hookWebRTC(specialValues[Opt.webrtc])
+  }
+  mainHook()
 
 }();

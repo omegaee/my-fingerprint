@@ -20,6 +20,8 @@
     {
       "matches": ["http://*/*", "https://*/*"],
       "js": ["src/type.js", "src/utils.js", "src/content.js"],
+      "match_about_blank": true,
+      "match_origin_as_fallback": true,
       "run_at": "document_start",
       "all_frames": true
     }

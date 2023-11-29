@@ -281,6 +281,7 @@ const regSpecialUI = function (button, elem) {
     initSpecialSelect(el.querySelector('._audio'), SpecialConf.audio, [SelectOpt.default, SelectOpt.page, SelectOpt.browser, SelectOpt.domain]);
     initSpecialSelect(el.querySelector('._webgl'), SpecialConf.webgl, [SelectOpt.default, SelectOpt.page, SelectOpt.browser, SelectOpt.domain]);
     initTimeZoneSelect(el.querySelector('._time'), SpecialConf.timezone);
+    initSpecialSelect(el.querySelector('._webrtc'), SpecialConf.webrtc, [SelectOpt.default, SelectOpt.localhost, SelectOpt.proxy]);
   })
 }
 
