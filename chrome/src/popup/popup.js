@@ -175,10 +175,10 @@ const regBasicUI = function (button, elem) {
 
 const regConfigUI = function (button, elem) {
   initDropDown(button, elem, (btn, el) => {
-    // regThreeSwitchBox('#config .basic.item', Config.basicRecord);
-    // regThreeSwitchBox('#config .special.item', Config.specialRecord);
-    regSwitchBox(el.querySelector('._navigator'), Config.proxyNavigator);
-    regSwitchBox(el.querySelector('._screen'), Config.proxyScreen);
+    // regThreeSwitchBox('#config .basic.item', Control.basicRecord);
+    // regThreeSwitchBox('#config .special.item', Control.specialRecord);
+    regSwitchBox(el.querySelector('._navigator'), Control.navigator);
+    regSwitchBox(el.querySelector('._screen'), Control.screen);
   })
 }
 

@@ -7,9 +7,9 @@ const Mode = {
   ip: 'ip',
 }
 
-const Config = {
-  proxyNavigator: 0,
-  proxyScreen: 1,
+const Control = {
+  navigator: 0,
+  screen: 1,
 }
 
 const SelectOpt = {

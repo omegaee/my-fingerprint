@@ -138,14 +138,15 @@ const randomNoise = function (seed) {
 /**
  * audio噪音
  * @param {number} seed 
- * @returns {number[]}
+ * @returns {number}
  */
 const randomAudioNoise = function (seed) {
-  let noise = [];
-  for (let i = 0; i < 20; i++) {
-    noise.push(seededRandom(seed + i))
-  }
-  return noise;
+  // let noise = [];
+  // for (let i = 0; i < 20; i++) {
+  //   noise.push(seededRandom(seed + i))
+  // }
+  // return noise;
+  return seededRandom(seed)
 }
 
 const renderer_webgl_arr = [

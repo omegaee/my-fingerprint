@@ -1,13 +1,20 @@
 !function(){
   const IDENTIFY = 'my-fingerprint'
-  console.log("inject...");
-  RTCPeerConnection = undefined
-  const script = document.currentScript;
-  const seed = script.dataset.seed;
-  const config = JSON.parse(script.dataset.config);
-  const basicValues = JSON.parse(script.dataset.basic);
-  const specialValues = JSON.parse(script.dataset.special);
-  const proxy_ip = script.dataset.ip  // 代理ip（用于WebRTC）
+
+  /**
+   * 代理状态
+   */
+  const pTable = {}
+  /**
+   * undefined: 未设置
+   * null: 空值
+   * other: 代理值
+   */
+  const config = {}
+  /**
+   * 代理方法
+   */
+  const hookMethods = {}
 
   let records = {};
   let timer;
@@ -31,18 +38,18 @@
     webgl: 24,
     webrtc: 25,
   }
-  const Config = {
-    proxyNavigator: 0,
-    proxyScreen: 1,
+  const Control = {
+    navigator: 0,
+    screen: 1,
   }
 
   /**
-   * 发送消息
-   * @param {{type: string, value: string}} value 
+   * 发送消息到content
+ * @param {string} type
+ * @param {any} value
    */
-  const sendMessage = function (value) {
-    if(!value)return
-    postMessage({[IDENTIFY]: value}, location.origin)
+  const sendWinMessage = function (type, value) {
+    postMessage({[IDENTIFY]: {type, value}}, location.origin)
   }
 
   /**
@@ -52,7 +59,7 @@
     if(ev.origin !== location.origin)return;
     const data = ev.data?.[IDENTIFY]
     // 根据type执行不同代码
-    switch(data.type){
+    switch(data?.type){
       case 'config':{
         changeConfig(data.value)
         break
@@ -61,15 +68,24 @@
     }
   });
 
-  // 可加载配置
-  sendMessage({})
+  // 发送配置加载消息
+  sendWinMessage('init')
 
   /**
    * 配置更改
-   * @param {{[key: string]: any}} conf 
+   * @param {{[key: string | number]: any | null | undefined}} conf 
    */
   const changeConfig = function (conf) {
-    
+    Object.assign(config, conf)
+
+    configHook(Control.screen)
+    configHook(Control.navigator)
+
+    configHook(Opt.canvas)
+    configHook(Opt.timezone)
+    configHook(Opt.audio)
+    configHook(Opt.webgl)
+    configHook(Opt.webrtc)
   }
 
   /**
@@ -77,7 +93,8 @@
    */
   const sendRecordsMessage = function () {
     // let tmp = records;
-    postMessage({[seed]: records}, location.origin);
+    sendWinMessage('record', records)
+    // postMessage({[seed]: records}, location.origin);
     records = {};
   }
 
@@ -95,124 +112,176 @@
     timer = setTimeout(sendRecordsMessage, 200);
   }
 
-  const getBasicValue = function (data, id) {
-    recordAndSend(id)
-    return data[id];
-  }
-
   /**
-   * proxy navigator
-   * @param {*} data 
+   * 配置hook内容
+   * @param {string | number} identify 
    */
-  const proxyNavigator = function (data) {
-    if (!data) return;
-    let get = function (target, key) {
-      let id = null;
-      switch (key) {
-        case 'language': id = Opt.language; break;
-        case 'platform': id = Opt.platform; break;
-        case 'hardwareConcurrency': id = Opt.hardwareConcurrency; break;
-        case 'appVersion': id = Opt.appVersion; break;
-        case 'userAgent': id = Opt.userAgent; break;
-      }
-      if(id != null){
-        let res = getBasicValue(data, id);
-        if(res != null)return res;
-      }
-      let res = target[key];
-      if (typeof res === "function") return res.bind(target);
-      else return res;
-    }
-    Object.defineProperty(window, 'navigator', {
-      value: new Proxy(window.navigator, { get })
-    });
-  }
-
-  /**
-   * proxy screen
-   * @param {*} data 
-   */
-  const proxyScreen = function (data) {
-    if (!data) return;
-    let get = function (target, key) {
-      let id = null;
-      switch (key) {
-        case 'height': id = Opt.height; break;
-        case 'width': id = Opt.width; break;
-        case 'colorDepth': id = Opt.colorDepth; break;
-        case 'pixelDepth': id = Opt.pixelDepth; break;
-      }
-      if(id != null){
-        let res = getBasicValue(data, id);
-        if(res != null)return res;
-      }
-      let res = target[key];
-      if (typeof res === "function") return res.bind(target);
-      else return res;
-    }
-    Object.defineProperty(window, 'screen', {
-      value: new Proxy(window.screen, { get })
-    });
-  }
-
-  /**
-   *  hook canvas
-   * @param {string} noise 
-   */
-  const hookCanvas = function (noise) {
-    if(!noise)return;
-    let oriToDataURL = HTMLCanvasElement.prototype.toDataURL;
-    HTMLCanvasElement.prototype.toDataURL = function () {
-      let ctx = this.getContext('2d');
-      let style = ctx.fillStyle;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
-      ctx.fillText(noise, 0, 2)
-      ctx.fillStyle = style;
-      recordAndSend(Opt.canvas);
-      return oriToDataURL.apply(this, arguments);
+  const configHook = function (identify) {
+    value = config[identify]
+    if(value == undefined)return
+    if(pTable[identify]){
+      // 已hook
+      if(value !== null)return
+      hookMethods[identify]?.(true)  // 恢复
+      pTable[identify] = false
+    }else{
+      // 未hook
+      if(value === null)return
+      hookMethods[identify]?.()  // 进行hook
+      pTable[identify] = true
     }
   }
 
   /**
-   * modify time zone
-   * @param {{text: string, zone: string, locale: string, offset: number}} value 
+   * hook navigator
+   * @param {boolean} isRestore 恢复
+   * @param {{[string]: string}} config[Control.navigator] 
    */
-  const modifyTimeZone = function (value) {
-    if(!value)return;
-    const OriDateTimeFormat = Intl.DateTimeFormat;
-    Intl.DateTimeFormat = function (...args) {
-      args[0] = args[0] ?? value.locale;
-      args[1] = Object.assign({ timeZone: value.zone }, args[1]);
-      recordAndSend(Opt.timezone);
-      return OriDateTimeFormat.apply(this, args);
+  let oriNavigatorDescriptor
+  hookMethods[Control.navigator] = function (isRestore) {
+    if(isRestore){
+      if(oriNavigatorDescriptor)Object.defineProperty(window, "navigator", oriNavigatorDescriptor);
+    }else{
+      oriNavigatorDescriptor = Object.getOwnPropertyDescriptor(window, "navigator");
+      let get = function (target, key) {
+        let id = null;
+        switch (key) {
+          case 'language': id = Opt.language; break;
+          case 'platform': id = Opt.platform; break;
+          case 'hardwareConcurrency': id = Opt.hardwareConcurrency; break;
+          case 'appVersion': id = Opt.appVersion; break;
+          case 'userAgent': id = Opt.userAgent; break;
+        }
+        if(id != null){
+          recordAndSend(id)
+          const res = config[Control.navigator]?.[id]
+          if(res)res;
+        }
+        let res = target[key];
+        if (typeof res === "function") return res.bind(target);
+        else return res;
+      }
+      Object.defineProperty(window, 'navigator', {
+        value: new Proxy(window.navigator, { get })
+      });
     }
-    // const oriGetTimezoneOffset = Date.prototype.getTimezoneOffset;
-    Date.prototype.getTimezoneOffset = function () {
-      recordAndSend(Opt.timezone);
-      return value.offset * -60;
+  }
+
+  /**
+   * hook screen
+   * @param {boolean} isRestore 恢复
+   * @param {{[string]: string}} config[Control.screen] 
+   */
+  let oriScreenDescriptor
+  hookMethods[Control.screen] = function (isRestore) {
+    if(isRestore){
+      if(oriScreenDescriptor)Object.defineProperty(window, "screen", oriNavigatorDescriptor);
+    }else{
+      oriScreenDescriptor = Object.getOwnPropertyDescriptor(window, "screen");
+      let get = function (target, key) {
+        let id = null;
+        switch (key) {
+          case 'height': id = Opt.height; break;
+          case 'width': id = Opt.width; break;
+          case 'colorDepth': id = Opt.colorDepth; break;
+          case 'pixelDepth': id = Opt.pixelDepth; break;
+        }
+        if(id != null){
+          recordAndSend(id)
+          const res = config[Control.screen]?.[id]
+          if(res)res;
+        }
+        let res = target[key];
+        if (typeof res === "function") return res.bind(target);
+        else return res;
+      }
+      Object.defineProperty(window, 'screen', {
+        value: new Proxy(window.screen, { get })
+      });
+    }
+  }
+
+  /**
+   * hook canvas
+   * @param {boolean} isRestore 恢复
+   * @param {string} config[Opt.canvas] 
+   */
+  let oriToDataURL;
+  hookMethods[Opt.canvas] = function (isRestore) {
+    if(isRestore){
+      if(oriToDataURL)HTMLCanvasElement.prototype.toDataURL = oriToDataURL
+    }else{
+      // execute hook
+      oriToDataURL = HTMLCanvasElement.prototype.toDataURL
+
+      HTMLCanvasElement.prototype.toDataURL = function () {
+        let ctx = this.getContext('2d');
+        let style = ctx.fillStyle;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
+        ctx.fillText(config[Opt.canvas], 0, 2)
+        ctx.fillStyle = style;
+        recordAndSend(Opt.canvas);
+        return oriToDataURL.apply(this, arguments);
+      }
+    }
+  }
+
+  /**
+   * hook time zone
+   * @param {boolean} isRestore
+   * @param {{text: string, zone: string, locale: string, offset: number}} config[Opt.timezone] 
+   */
+  let oriDateTimeFormat;
+  let oriGetTimezoneOffset;
+  hookMethods[Opt.timezone] = function (isRestore) {
+    if(isRestore){
+      if(oriDateTimeFormat)Intl.DateTimeFormat = oriDateTimeFormat
+      if(oriGetTimezoneOffset)Date.prototype.getTimezoneOffset = oriGetTimezoneOffset
+    }else{
+      // execute hook
+      oriDateTimeFormat = Intl.DateTimeFormat;
+      oriGetTimezoneOffset = Date.prototype.getTimezoneOffset;
+
+      const curZone = config[Opt.timezone]
+      Intl.DateTimeFormat = function (...args) {
+        args[0] = args[0] ?? curZone.locale;
+        args[1] = Object.assign({ timeZone: curZone.zone }, args[1]);
+        recordAndSend(Opt.timezone);
+        return oriDateTimeFormat.apply(this, args);
+      }
+      Date.prototype.getTimezoneOffset = function () {
+        recordAndSend(Opt.timezone);
+        return curZone.offset * -60;
+      }
     }
   }
 
   /**
    * 音频指纹混淆 - 压缩器噪音
    * 会影响audio质量 - pass
-   * @param {number} noise 随机值
+   * @param {number} config[Opt.audio] 随机值
+   * @param {boolean} isRestore
    */
-  const hookAudioCompressor = function (noise) {
-    let oriCreateDynamicsCompressor = OfflineAudioContext.prototype.createDynamicsCompressor
-    OfflineAudioContext.prototype.createDynamicsCompressor = function () {
-      let compressor = oriCreateDynamicsCompressor.apply(this, arguments)
-      // 创建一个增益节点，用来添加一些噪音
-      let gain = this.createGain();
-      // 这是一个可调的参数，可以根据需要设置噪音的强度
-      gain.gain.value = noise * 0.1;
-      // 将增益节点连接到压缩器的输出
-      compressor.connect(gain);
-      // 将增益节点的输出连接到上下文的目标
-      gain.connect(this.destination);
-  
-      recordAndSend(Opt.audio);  // 统计
-      return compressor
+  let oriCreateDynamicsCompressor;
+  hookMethods[Opt.audio] = function (isRestore) {
+    if(isRestore){
+      if(oriCreateDynamicsCompressor)OfflineAudioContext.prototype.createDynamicsCompressor = oriCreateDynamicsCompressor
+    }else{
+      oriCreateDynamicsCompressor = OfflineAudioContext.prototype.createDynamicsCompressor
+
+      OfflineAudioContext.prototype.createDynamicsCompressor = function () {
+        let compressor = oriCreateDynamicsCompressor.apply(this, arguments)
+        // 创建一个增益节点，用来添加一些噪音
+        let gain = this.createGain();
+        // 这是一个可调的参数，可以根据需要设置噪音的强度
+        gain.gain.value = config[Opt.audio] ?? Math.random() * 0.1;
+        // 将增益节点连接到压缩器的输出
+        compressor.connect(gain);
+        // 将增益节点的输出连接到上下文的目标
+        gain.connect(this.destination);
+        recordAndSend(Opt.audio);  // 统计
+        return compressor
+      }
     }
   }
 
@@ -222,7 +291,7 @@
   //  * getChannelData调用次数多，无法很好的统计
   //  * @param {number[]} noises 
   //  */
-  // const hookAudioBuffer = function (noises) {
+  // hookMethods[Opt.audio] = function (noises) {
   //   let oriGetChannelData = AudioBuffer.prototype.getChannelData
   //   AudioBuffer.prototype.getChannelData = function () {
   //     // 获取渲染缓冲区中的数据
@@ -247,32 +316,30 @@
   // }
 
   /**
-   * hook AudioContext
-   * @param {number[]} value 
-   */
-  const hookAudioContext = function (value) {
-    if(!value)return
-    // hookAudioBuffer(value)
-    hookAudioCompressor(value[0])
-  }
-
-  /**
    * hook WebGL
-   * @param {string} value 
+   * @param {string} config[Opt.webgl] 
+   * @param {boolean} isRestore
    */
-  const hookWebGL = function (value) {
-    if(!value)return
-    const wglGetParameter = WebGLRenderingContext.prototype.getParameter
-    const wgl2GetParameter = WebGL2RenderingContext.prototype.getParameter
-    WebGLRenderingContext.prototype.getParameter = function () {
-      const debugEx = this.getExtension('WEBGL_debug_renderer_info')
-      if(arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL)return value
-      return wglGetParameter.apply(this, arguments)
-    }
-    WebGL2RenderingContext.prototype.getParameter = function () {
-      const debugEx = this.getExtension('WEBGL_debug_renderer_info')
-      if(arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL)return value
-      return wgl2GetParameter.apply(this, arguments)
+  let wglGetParameter
+  let wgl2GetParameter
+  hookMethods[Opt.webgl] = function (isRestore) {
+    if(isRestore){
+      if(wglGetParameter)WebGLRenderingContext.prototype.getParameter = wglGetParameter
+      if(wgl2GetParameter)WebGL2RenderingContext.prototype.getParameter = wgl2GetParameter
+    }else{
+      wglGetParameter = WebGLRenderingContext.prototype.getParameter
+      wgl2GetParameter = WebGL2RenderingContext.prototype.getParameter
+
+      WebGLRenderingContext.prototype.getParameter = function () {
+        const debugEx = this.getExtension('WEBGL_debug_renderer_info')
+        if(arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL)return config[Opt.webgl]
+        return wglGetParameter.apply(this, arguments)
+      }
+      WebGL2RenderingContext.prototype.getParameter = function () {
+        const debugEx = this.getExtension('WEBGL_debug_renderer_info')
+        if(arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL)return config[Opt.webgl]
+        return wgl2GetParameter.apply(this, arguments)
+      }
     }
   }
 
@@ -288,21 +355,22 @@
         if(!pubIP)return res
 
         // 获取ip字符串
-        let ip;
-        switch(specialValues[Opt.webrtc]){
-          case 'localhost': 
-            ip = '127.0.0.1'
-            break
-          case 'proxy': 
-            ip = proxy_ip || '127.0.0.1'
-            break
-          default: return res
-        }
+        // let ip;
+        // switch(specialValues[Opt.webrtc]){
+        //   case 'localhost': 
+        //     ip = '127.0.0.1'
+        //     break
+        //   case 'proxy': 
+        //     ip = proxy_ip || '127.0.0.1'
+        //     break
+        //   default: return res
+        // }
+        
         console.log('proxy==>', ip);
         
         // 修改candidate中的address
         let candSplit = res.candidate.split(' ')
-        candSplit[4] = ip
+        candSplit[4] = config[Opt.webrtc]
 
         // 统计
         recordAndSend(Opt.webrtc);
@@ -311,7 +379,7 @@
         return Object.setPrototypeOf({
           ...res.toJSON(),
           candidate: candSplit.join(' '),
-          address: ip,
+          address: config[Opt.webrtc],
           foundation: res.foundation,
           component: res.component,
           protocol: res.protocol,
@@ -349,52 +417,57 @@
 
   /**
    * hook WebRTC
-   * @param {string} value 
+   * @param {string} config[Opt.webrtc] 
+   * @param {boolean} isRestore
    */
-  const hookWebRTC = function (value) {
-    if(!value)return
-    // hook addEventListener
-    const oriRTCAddEvent = RTCPeerConnection.prototype.addEventListener
-    RTCPeerConnection.prototype.addEventListener = function () {
-      if('icecandidate' == arguments[0]){
-        const call = arguments[1]
-        if(call){
-          arguments[1] = (event) => {
-            call(new Proxy(event, handlerRTCPeerConnectionIceEvent))
+  let oriRTCAddEvent
+  let oriRTCPeerConnection
+  hookMethods[Opt.webrtc] = function (isRestore) {
+    if(isRestore){
+      if(oriRTCPeerConnection)RTCPeerConnection = oriRTCPeerConnection
+      if(oriRTCAddEvent)RTCPeerConnection.prototype.addEventListener = oriRTCAddEvent
+    }else{
+      oriRTCPeerConnection = RTCPeerConnection
+      oriRTCAddEvent = RTCPeerConnection.prototype.addEventListener
+      
+      // hook addEventListener
+      RTCPeerConnection.prototype.addEventListener = function () {
+        if('icecandidate' == arguments[0]){
+          const call = arguments[1]
+          if(call){
+            arguments[1] = (event) => {
+              call(new Proxy(event, handlerRTCPeerConnectionIceEvent))
+            }
           }
+          return oriRTCAddEvent.apply(this, arguments)
         }
         return oriRTCAddEvent.apply(this, arguments)
       }
-      return oriRTCAddEvent.apply(this, arguments)
-    }
-    // hook onicecandidate
-    const oriRTCPeerConnection = RTCPeerConnection
-    RTCPeerConnection = function () {
-      let connection
-      if (this instanceof oriRTCPeerConnection) {
-        connection = oriRTCPeerConnection.apply(this, arguments)
-      } else {
-        connection = new oriRTCPeerConnection(...arguments)
+      // hook onicecandidate
+      RTCPeerConnection = function () {
+        let connection
+        if (this instanceof oriRTCPeerConnection) {
+          connection = oriRTCPeerConnection.apply(this, arguments)
+        } else {
+          connection = new oriRTCPeerConnection(...arguments)
+        }
+        return new Proxy(connection, handlerRTCPeerConnection)
       }
-      return new Proxy(connection, handlerRTCPeerConnection)
     }
   }
 
-  let isRun = false
-  /**
-   * run
-   */
-  const mainHook = function () {
-    if(isRun)return
-    if(config[Config.proxyNavigator])proxyNavigator(basicValues);
-    if(config[Config.proxyScreen])proxyScreen(basicValues);
-    hookCanvas(specialValues[Opt.canvas]);
-    hookAudioContext(specialValues[Opt.audio])
-    hookWebGL(specialValues[Opt.webgl])
-    modifyTimeZone(specialValues[Opt.timezone])
-    hookWebRTC(specialValues[Opt.webrtc])
-    isRun = true
-  }
-  mainHook()
+  // /**
+  //  * run
+  //  */
+  // const mainHook = function () {
+  //   if(config[Config.proxyNavigator])proxyNavigator(basicValues);
+  //   if(config[Config.proxyScreen])proxyScreen(basicValues);
+  //   // hookCanvas(specialValues[Opt.canvas]);
+  //   // hookAudioContext(specialValues[Opt.audio])
+  //   // hookWebGL(specialValues[Opt.webgl])
+  //   // hookTimeZone(specialValues[Opt.timezone])
+  //   // hookWebRTC(specialValues[Opt.webrtc])
+  // }
+  // mainHook()
 
 }();
