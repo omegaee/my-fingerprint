@@ -4,6 +4,7 @@ const Mode = {
   config: '2',
   basic: 'a',
   special: 'b',
+  ip: 'ip',
 }
 
 const Config = {

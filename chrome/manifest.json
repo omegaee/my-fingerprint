@@ -18,7 +18,8 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
+      "world": "ISOLATED",
+      "matches": ["*://*/*"],
       "js": ["src/type.js", "src/utils.js", "src/content.js"],
       "match_about_blank": true,
       "match_origin_as_fallback": true,
@@ -28,8 +29,10 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/inject.js"],
-      "matches": ["http://*/*", "https://*/*"]
+      "resources": ["src/inject.js", "src/inject.html"],
+      "matches": ["http://*/*", "https://*/*"],
+      "match_about_blank": true,
+      "match_origin_as_fallback": true
     }
   ],
   "background": {

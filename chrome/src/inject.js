@@ -1,11 +1,13 @@
-let nihao;
 !function(){
+  const IDENTIFY = 'my-fingerprint'
+  console.log("inject...");
+  RTCPeerConnection = undefined
   const script = document.currentScript;
   const seed = script.dataset.seed;
   const config = JSON.parse(script.dataset.config);
   const basicValues = JSON.parse(script.dataset.basic);
   const specialValues = JSON.parse(script.dataset.special);
-  let proxy_ip  // 代理ip（用于WebRTC）
+  const proxy_ip = script.dataset.ip  // 代理ip（用于WebRTC）
 
   let records = {};
   let timer;
@@ -35,23 +37,45 @@ let nihao;
   }
 
   /**
-   * 监听content页面信息
+   * 发送消息
+   * @param {{type: string, value: string}} value 
+   */
+  const sendMessage = function (value) {
+    if(!value)return
+    postMessage({[IDENTIFY]: value}, location.origin)
+  }
+
+  /**
+   * 监听content
    */
   window.addEventListener('message', (ev) => {
-    if(ev.origin != location.origin)return;
-    let data = ev.data[seed];
-    if(!data)return
+    if(ev.origin !== location.origin)return;
+    const data = ev.data?.[IDENTIFY]
+    // 根据type执行不同代码
     switch(data.type){
-      case 'ip':
-        proxy_ip = data.value
+      case 'config':{
+        changeConfig(data.value)
         break
+      }
+      default: return
     }
-  })
-  
+  });
+
+  // 可加载配置
+  sendMessage({})
+
+  /**
+   * 配置更改
+   * @param {{[key: string]: any}} conf 
+   */
+  const changeConfig = function (conf) {
+    
+  }
+
   /**
    * 发送可疑记录到content
    */
-  const sendMessage = function () {
+  const sendRecordsMessage = function () {
     // let tmp = records;
     postMessage({[seed]: records}, location.origin);
     records = {};
@@ -68,7 +92,7 @@ let nihao;
     records[id] = count;
     // send msg to content.js
     if(timer)clearTimeout(timer);
-    timer = setTimeout(sendMessage, 200);
+    timer = setTimeout(sendRecordsMessage, 200);
   }
 
   const getBasicValue = function (data, id) {
@@ -278,7 +302,6 @@ let nihao;
         
         // 修改candidate中的address
         let candSplit = res.candidate.split(' ')
-        console.log('ori==>', candSplit[4]);
         candSplit[4] = ip
 
         // 统计
@@ -329,9 +352,10 @@ let nihao;
    * @param {string} value 
    */
   const hookWebRTC = function (value) {
+    if(!value)return
     // hook addEventListener
-    const oriRTCAddEvent = window.RTCPeerConnection.prototype.addEventListener
-    window.RTCPeerConnection.prototype.addEventListener = function () {
+    const oriRTCAddEvent = RTCPeerConnection.prototype.addEventListener
+    RTCPeerConnection.prototype.addEventListener = function () {
       if('icecandidate' == arguments[0]){
         const call = arguments[1]
         if(call){
@@ -344,8 +368,8 @@ let nihao;
       return oriRTCAddEvent.apply(this, arguments)
     }
     // hook onicecandidate
-    const oriRTCPeerConnection = window.RTCPeerConnection
-    window.RTCPeerConnection = function () {
+    const oriRTCPeerConnection = RTCPeerConnection
+    RTCPeerConnection = function () {
       let connection
       if (this instanceof oriRTCPeerConnection) {
         connection = oriRTCPeerConnection.apply(this, arguments)
@@ -356,10 +380,12 @@ let nihao;
     }
   }
 
+  let isRun = false
   /**
    * run
    */
   const mainHook = function () {
+    if(isRun)return
     if(config[Config.proxyNavigator])proxyNavigator(basicValues);
     if(config[Config.proxyScreen])proxyScreen(basicValues);
     hookCanvas(specialValues[Opt.canvas]);
@@ -367,6 +393,7 @@ let nihao;
     hookWebGL(specialValues[Opt.webgl])
     modifyTimeZone(specialValues[Opt.timezone])
     hookWebRTC(specialValues[Opt.webrtc])
+    isRun = true
   }
   mainHook()
 

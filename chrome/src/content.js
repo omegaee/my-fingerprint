@@ -10,6 +10,10 @@ let allRecords;
 let total = 0;
 let stotal = 0;
 const initMessageListener = function (config) {
+
+  /**
+   * 监听inject
+   */
   window.addEventListener('message', (ev) => {
     if(ev.origin != location.origin)return;
     let records = ev.data[pageSeed];
@@ -47,14 +51,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
   }
 });
 
-// 发送ip给inject
-const sendIPMessage = async function () {
-  const ip = await getProxyIP()
-  postMessage({[pageSeed]: {
-    type: 'ip',
-    value: ip
-  }}, location.origin);
-}
+// // 发送ip给inject
+// const sendIPMessage = async function () {
+//   const ip = await getProxyIP()
+//   postMessage({[pageSeed]: {
+//     type: 'ip',
+//     value: ip
+//   }}, location.origin);
+// }
 
 const getBasicValue = function (item, randFunc) {
   if(item){
@@ -92,23 +96,48 @@ const getWebRTCValue = function (value) {
   switch (value) {
     case SelectOpt.default.k: return null;
     case SelectOpt.localhost.k: return 'localhost';
-    case SelectOpt.proxy.k:{
-      sendIPMessage()
-      return 'proxy'
-    };
+    case SelectOpt.proxy.k: return 'proxy';
   }
   return null;
 }
 
+// // 运行脚本
+// const runScript = function(url, beforeCall) {
+//   let exUrl = chrome.runtime.getURL(url);
+//   let script = document.createElement('script');
+//   script.type = 'text/javascript';
+//   script.src = exUrl;
+//   if(beforeCall)beforeCall(script.dataset);
+//   if(window !== window.top && window.frameElement){
+
+//     frameElement.setAttribute('sandbox', 'allow-scripts allow-same-origin')
+//     frameElement.srcdoc = script.outerHTML
+//   }
+//   document.documentElement.appendChild(script);
+//   // script.remove();
+// }
+
 // 运行脚本
 const runScript = function(url, beforeCall) {
-  let file = chrome.runtime.getURL(url);
+  let exUrl = chrome.runtime.getURL(url);
   let script = document.createElement('script');
   script.type = 'text/javascript';
-  script.src = file;
+  script.src = exUrl;
   if(beforeCall)beforeCall(script.dataset);
+  // iframe
+  if(window !== window.top){
+    frameElement.setAttribute('sandbox', 'allow-same-origin allow-scripts')
+    // src 存在
+    if(window.frameElement?.src){
+      document.documentElement.appendChild(script);
+    }else{
+      console.log('==> this', frameElement);
+      frameElement.src = chrome.runtime.getURL('/src/inject.html')
+      // frameElement.src = 'data:text/html,'+script.outerHTML
+    }
+  }
   document.documentElement.appendChild(script);
-  script.remove();
+  // script.remove();
 }
 
 const init = async function () {
@@ -148,12 +177,13 @@ const init = async function () {
   initMessageListener(data[Mode.config]);
 
   // inject
-  runScript('/src/inject.js', (dataset) => {
-    console.log(window.frameElement);
+  runScript('/src/inject.js', (dataset) => {    
     dataset.seed = pageSeed;
     dataset.config = JSON.stringify(data[Mode.config]);
     dataset.basic = JSON.stringify(basicValues);
     dataset.special = JSON.stringify(specialValues);
+    dataset.ip = data[Mode.ip]
   });
+
 }
 init();

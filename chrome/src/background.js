@@ -6,6 +6,7 @@ const init = async function (prevVersion) {
     config: '2',
     basic: 'a',
     special: 'b',
+    ip: 'ip',
   }
   const Config = {
     proxyNavigator: 0,
@@ -53,7 +54,7 @@ const init = async function (prevVersion) {
   // enable
   data[Mode.enable] = data[Mode.enable] ?? true;
   // seed
-  data[Mode.seed] = data[Mode.seed] ?? Math.floor(Math.random() * 100000);
+  data[Mode.seed] = Math.floor(Math.random() * 100000);
   // config
   data[Mode.config] = Object.assign({}, data[Mode.config], {
     [Config.proxyNavigator]: true,
@@ -80,7 +81,8 @@ const init = async function (prevVersion) {
     [Item.timezone]: -1,
     [Item.webrtc]: Opt.default,
   })
-
+  // 获取ip
+  rePubIP()
   // save
   chrome.storage.local.set(data);
   chrome.storage.local.set({[`init-${currVersion}`]: true})  // 初始化成功标志
@@ -100,7 +102,33 @@ chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
+  // seed
+  chrome.storage.local.set({
+    [Mode.seed]: Math.floor(Math.random() * 100000)
+  });
+  // 获取ip
+  rePubIP()
 });
+
+const isGettingIP = false
+/**
+ * 重新获取公网ip并存储
+ */
+const rePubIP = function () {
+  if(isGettingIP)return
+  isGettingIP = true
+  fetch('https://api.ipify.org?format=json',{method: 'GET',})
+  .then(response => response.json())
+  .then((data) => {
+    if(!data.ip)return
+    chrome.storage.local.set({
+      [Mode.ip]: data.ip
+    });
+  })
+  .finally(() => {
+    isGettingIP = false
+  })
+}
 
 /**
  * tab每次加载触发
