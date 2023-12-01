@@ -18,7 +18,9 @@ let sessionSeed;
  * @param {any} value
  */
 const sendToWin = function (type, value) {
-  postMessage({[IDENTIFY]: {type, value}}, location.origin)
+  try {
+    postMessage({[IDENTIFY]: {type, value}}, location.origin)
+  } catch (error) {}
   // postMessage({[IDENTIFY]: {type, value}}, '*')
 }
 

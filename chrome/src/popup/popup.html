@@ -113,7 +113,7 @@
   <div id="basic" class="card">
     <button class="_btn wide h30 blue">基本指纹</button>
     <div class="drop-down disable" style="height: 300px;">
-      <span class="tip blue">注意</span>
+      <!-- <span class="tip blue">注意</span> -->
       <div style="margin: 5px 0; padding: 2px;">
         <!-- template -->
       </div>
@@ -161,6 +161,11 @@
         </div>
         <div class="item">
           <span class="title">WebRTC伪装</span><br>
+          <span class="tip yellow" 
+            style="font-size: 13px; padding: 3px 8px;">
+            *注意*：开启此功能可能会使"音视频通话"等功能无法正常使用<br>
+            *作用*：WebRTC可绕过代理获取您真实IP
+          </span>
           <div class="flex" style="margin-top: 6px;">
             <span class="subtitle">预设&emsp;</span>
             <select class="blue _webrtc" style="flex-grow: 1;">

@@ -42,8 +42,10 @@
    * @param {any} value
    */
   const sendToWin = function (type, value) {
-    postMessage({ [IDENTIFY]: { type, value } }, location.origin)
-    // postMessage({[IDENTIFY]: {type, value}}, '*')
+    try {
+      postMessage({ [IDENTIFY]: { type, value } }, location.origin)
+    } catch (error) {}
+    // else postMessage({[IDENTIFY]: {type, value}}, '*')
   }
 
   /**
@@ -256,7 +258,7 @@
 
   /**
    * 音频指纹混淆 - 压缩器噪音
-   * 会影响audio质量 - pass
+   * 可能会影响audio质量
    * @param {number} config[Opt.audio] 随机值
    * @param {boolean} isRestore
    */
@@ -272,7 +274,7 @@
         // 创建一个增益节点，用来添加一些噪音
         let gain = this.createGain();
         // 这是一个可调的参数，可以根据需要设置噪音的强度
-        gain.gain.value = config[Opt.audio] ?? Math.random() * 0.1;
+        gain.gain.value = config[Opt.audio] ?? Math.random() * 0.01;
         // 将增益节点连接到压缩器的输出
         compressor.connect(gain);
         // 将增益节点的输出连接到上下文的目标

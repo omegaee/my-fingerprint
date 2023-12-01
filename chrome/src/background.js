@@ -90,7 +90,7 @@ const init = async function (prevVersion) {
     [Item.audio]: Opt.page,
     [Item.webgl]: Opt.page,
     [Item.timezone]: -1,
-    [Item.webrtc]: Opt.proxy,
+    [Item.webrtc]: Opt.default,
   }, data[Mode.special])
   // 获取ip
   rePubIP()
