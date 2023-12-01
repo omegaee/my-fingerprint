@@ -17,8 +17,9 @@ let sessionSeed;
  * @param {string} type
  * @param {any} value
  */
-const sendWinMessage = function (type, value) {
+const sendToWin = function (type, value) {
   postMessage({[IDENTIFY]: {type, value}}, location.origin)
+  // postMessage({[IDENTIFY]: {type, value}}, '*')
 }
 
 /**
@@ -26,12 +27,14 @@ const sendWinMessage = function (type, value) {
  * @param {string} type
  * @param {any} value
  */
-const sendExMessage = function (type, value) {
-  chrome.runtime.sendMessage({type, value})
+const sendToEx = function (type, value) {
+  try {
+    chrome.runtime.sendMessage({type, value})
+  } catch (error) {}
 }
 
 // 监听script
-let allRecords;
+const allRecords = {};
 let total = 0;
 let stotal = 0;
 const initMessageListener = function (config) {
@@ -42,12 +45,13 @@ const initMessageListener = function (config) {
   window.addEventListener('message', (ev) => {
     if(ev.origin != location.origin)return;
     let data = ev.data[IDENTIFY];
-    switch(data?.type){
+    if(!data)return
+    switch(data.type){
       case 'init':
         sendInitConfig()
         break
       case 'record': 
-        handleNotify(data.value)
+        handleRecord(data.value)
         break
       default: return
     }
@@ -55,10 +59,11 @@ const initMessageListener = function (config) {
 }
 
 /**
- * 发送初始配置给inject
+ * 获取Config
+ * @returns {{[string|number]: any}}
  */
-const sendInitConfig = function () {
-  sendWinMessage('config', {
+const getConfig = function () {
+  return {
     [Control.navigator]: navigatorValues,
     [Control.screen]: screenValues,
     [SpecialConf.canvas]: specialValues[SpecialConf.canvas],
@@ -66,20 +71,34 @@ const sendInitConfig = function () {
     [SpecialConf.audio]: specialValues[SpecialConf.audio],
     [SpecialConf.webgl]: specialValues[SpecialConf.webgl],
     [SpecialConf.webrtc]: specialValues[SpecialConf.webrtc],
-  })
+  }
 }
 
 /**
- * 处理notify
+ * 发送初始配置给inject
+ */
+const sendInitConfig = function () {
+  sendToWin('config', getConfig())
+}
+
+/**
+ * 获取json字符串格式的config
+ */
+const getConfigJson = function () {
+  return JSON.stringify(getConfig())
+}
+
+/**
+ * 处理record
  * @param {{[string]: number}} records 
  */
-const handleNotify = function (records) {
-  if(!allRecords)allRecords = {};
+const handleRecord = function (records) {
+  if(!records)return;
 
   for(let key in records){
     let ac = allRecords[key];
     let rc = records[key];
-    if(ac == undefined)ac = rc;
+    if(!ac)ac = rc;
     else ac += rc;
     allRecords[key] = ac;
 
@@ -88,7 +107,7 @@ const handleNotify = function (records) {
   }
 
   // 发送记录到background
-  sendExMessage("notify", {
+  sendToEx("notify", {
     seed: pageSeed,
     total,
     stotal,
@@ -101,16 +120,6 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     sendResponse(allRecords);
   }
 });
-
-// // 发送ip给inject
-// const sendIPMessage = async function () {
-//   const ip = await getProxyIP()
-//   postMessage({[pageSeed]: {
-//     type: 'ip',
-//     value: ip
-//   }}, location.origin);
-// }
-
 
 const getBasicValue = function (item, randFunc) {
   if(item){
@@ -144,30 +153,14 @@ const getTimeZoneValue = function (value) {
   return res == undefined ? null : res;
 }
 
-const getWebRTCValue = function (value) {
+const getWebRTCValue = function (value, ip) {
   switch (value) {
     case SelectOpt.default.k: return null;
     case SelectOpt.localhost.k: return '127.0.0.1';
-    case SelectOpt.proxy.k: return Mode.ip ?? '127.0.0.1';
+    case SelectOpt.proxy.k: return ip ?? '127.0.0.1';
   }
   return null;
 }
-
-// // 运行脚本
-// const runScript = function(url, beforeCall) {
-//   let exUrl = chrome.runtime.getURL(url);
-//   let script = document.createElement('script');
-//   script.type = 'text/javascript';
-//   script.src = exUrl;
-//   if(beforeCall)beforeCall(script.dataset);
-//   if(window !== window.top && window.frameElement){
-
-//     frameElement.setAttribute('sandbox', 'allow-scripts allow-same-origin')
-//     frameElement.srcdoc = script.outerHTML
-//   }
-//   document.documentElement.appendChild(script);
-//   // script.remove();
-// }
 
 /**
  * 注入核心脚本
@@ -176,16 +169,18 @@ const injectScript = function() {
   // is iframe
   if(window !== window.top && window.frameElement){
     // 备份并修改sandbox属性
-    const sandboxBak = frameElement.sandbox.value
+    const sandboxBak = frameElement.getAttribute('sandbox')
     frameElement.setAttribute('sandbox', 'allow-same-origin allow-scripts')
     // src属性是否存在
     if(window.frameElement.src && window.frameElement.src != 'about:blank'){
       loadDocScript('/src/inject.js')
     }else{
+      // 不能解决blank iframe的问题
       frameElement.src = chrome.runtime.getURL('/src/inject.html')
     }
     // 恢复sandbox属性
     if(sandboxBak)frameElement.setAttribute('sandbox', sandboxBak)
+    else frameElement.removeAttribute('sandbox')
   }else{
     loadDocScript('/src/inject.js')
   }
@@ -239,7 +234,7 @@ const init = async function () {
     [SpecialConf.audio]: getSpecialValue(sData[SpecialConf.audio], randomAudioNoise),
     [SpecialConf.webgl]: getSpecialValue(sData[SpecialConf.webgl], randomWebGLRandom),
     [SpecialConf.timezone]: getTimeZoneValue(sData[SpecialConf.timezone]),
-    [SpecialConf.webrtc]: getWebRTCValue(sData[SpecialConf.webrtc]),
+    [SpecialConf.webrtc]: getWebRTCValue(sData[SpecialConf.webrtc], data[Mode.ip]),
   })
 
   // init message event

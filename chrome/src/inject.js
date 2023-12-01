@@ -1,23 +1,16 @@
-!function(){
+!function () {
   const IDENTIFY = 'my-fingerprint'
 
-  /**
-   * 代理状态
-   */
+  // 代理状态
   const pTable = {}
+  // 代理方法
+  const hookMethods = {}
   /**
    * undefined: 未设置
    * null: 空值
    * other: 代理值
    */
   const config = {}
-  /**
-   * 代理方法
-   */
-  const hookMethods = {}
-
-  let records = {};
-  let timer;
 
   const Opt = {
     language: 0,
@@ -45,31 +38,60 @@
 
   /**
    * 发送消息到content
- * @param {string} type
- * @param {any} value
+   * @param {string} type
+   * @param {any} value
    */
-  const sendWinMessage = function (type, value) {
-    postMessage({[IDENTIFY]: {type, value}}, location.origin)
+  const sendToWin = function (type, value) {
+    postMessage({ [IDENTIFY]: { type, value } }, location.origin)
+    // postMessage({[IDENTIFY]: {type, value}}, '*')
   }
 
   /**
    * 监听content
    */
-  window.addEventListener('message', (ev) => {
-    if(ev.origin !== location.origin)return;
-    const data = ev.data?.[IDENTIFY]
-    // 根据type执行不同代码
-    switch(data?.type){
-      case 'config':{
-        changeConfig(data.value)
-        break
+  const listenMessage = function () {
+    window.addEventListener('message', (ev) => {
+      // if(ev.origin !== location.origin)return;
+      const data = ev.data?.[IDENTIFY]
+      if (!data) return
+      // 根据type执行不同代码
+      switch (data.type) {
+        case 'config': {
+          changeConfig(data.value)
+          break
+        }
+        default: return
       }
-      default: return
-    }
-  });
+    });
+  }
 
-  // 发送配置加载消息
-  sendWinMessage('init')
+  // 记录
+  let records = {};
+  // 记录发送定时器
+  let recordTimer;
+
+  /**
+   * 发送可疑记录到content
+   */
+  const sendRecordsMessage = function () {
+    // let tmp = records;
+    sendToWin('record', records)
+    records = {};
+  }
+
+  /**
+   * 延时发送可疑记录到content
+   * @param {number} id 
+   */
+  const recordAndSend = function (id) {
+    let count = records[id];
+    if (!count) count = 1;
+    else count += 1;
+    records[id] = count;
+    // send msg to content.js
+    if (recordTimer) clearTimeout(recordTimer);
+    recordTimer = setTimeout(sendRecordsMessage, 200);
+  }
 
   /**
    * 配置更改
@@ -89,44 +111,20 @@
   }
 
   /**
-   * 发送可疑记录到content
-   */
-  const sendRecordsMessage = function () {
-    // let tmp = records;
-    sendWinMessage('record', records)
-    // postMessage({[seed]: records}, location.origin);
-    records = {};
-  }
-
-  /**
-   * 延时发送可疑记录到content
-   * @param {number} id 
-   */
-  const recordAndSend = function (id) {
-    let count = records[id];
-    if(!count)count = 1;
-    else count += 1;
-    records[id] = count;
-    // send msg to content.js
-    if(timer)clearTimeout(timer);
-    timer = setTimeout(sendRecordsMessage, 200);
-  }
-
-  /**
    * 配置hook内容
    * @param {string | number} identify 
    */
   const configHook = function (identify) {
     value = config[identify]
-    if(value == undefined)return
-    if(pTable[identify]){
+    if (value == undefined) return
+    if (pTable[identify]) {
       // 已hook
-      if(value !== null)return
+      if (value !== null) return
       hookMethods[identify]?.(true)  // 恢复
       pTable[identify] = false
-    }else{
+    } else {
       // 未hook
-      if(value === null)return
+      if (value === null) return
       hookMethods[identify]?.()  // 进行hook
       pTable[identify] = true
     }
@@ -139,9 +137,9 @@
    */
   let oriNavigatorDescriptor
   hookMethods[Control.navigator] = function (isRestore) {
-    if(isRestore){
-      if(oriNavigatorDescriptor)Object.defineProperty(window, "navigator", oriNavigatorDescriptor);
-    }else{
+    if (isRestore) {
+      if (oriNavigatorDescriptor) Object.defineProperty(window, "navigator", oriNavigatorDescriptor);
+    } else {
       oriNavigatorDescriptor = Object.getOwnPropertyDescriptor(window, "navigator");
       let get = function (target, key) {
         let id = null;
@@ -152,10 +150,10 @@
           case 'appVersion': id = Opt.appVersion; break;
           case 'userAgent': id = Opt.userAgent; break;
         }
-        if(id != null){
+        if (id != null) {
           recordAndSend(id)
           const res = config[Control.navigator]?.[id]
-          if(res)res;
+          if (res) res;
         }
         let res = target[key];
         if (typeof res === "function") return res.bind(target);
@@ -174,9 +172,9 @@
    */
   let oriScreenDescriptor
   hookMethods[Control.screen] = function (isRestore) {
-    if(isRestore){
-      if(oriScreenDescriptor)Object.defineProperty(window, "screen", oriNavigatorDescriptor);
-    }else{
+    if (isRestore) {
+      if (oriScreenDescriptor) Object.defineProperty(window, "screen", oriNavigatorDescriptor);
+    } else {
       oriScreenDescriptor = Object.getOwnPropertyDescriptor(window, "screen");
       let get = function (target, key) {
         let id = null;
@@ -186,10 +184,10 @@
           case 'colorDepth': id = Opt.colorDepth; break;
           case 'pixelDepth': id = Opt.pixelDepth; break;
         }
-        if(id != null){
+        if (id != null) {
           recordAndSend(id)
           const res = config[Control.screen]?.[id]
-          if(res)res;
+          if (res) res;
         }
         let res = target[key];
         if (typeof res === "function") return res.bind(target);
@@ -208,9 +206,9 @@
    */
   let oriToDataURL;
   hookMethods[Opt.canvas] = function (isRestore) {
-    if(isRestore){
-      if(oriToDataURL)HTMLCanvasElement.prototype.toDataURL = oriToDataURL
-    }else{
+    if (isRestore) {
+      if (oriToDataURL) HTMLCanvasElement.prototype.toDataURL = oriToDataURL
+    } else {
       // execute hook
       oriToDataURL = HTMLCanvasElement.prototype.toDataURL
 
@@ -234,10 +232,10 @@
   let oriDateTimeFormat;
   let oriGetTimezoneOffset;
   hookMethods[Opt.timezone] = function (isRestore) {
-    if(isRestore){
-      if(oriDateTimeFormat)Intl.DateTimeFormat = oriDateTimeFormat
-      if(oriGetTimezoneOffset)Date.prototype.getTimezoneOffset = oriGetTimezoneOffset
-    }else{
+    if (isRestore) {
+      if (oriDateTimeFormat) Intl.DateTimeFormat = oriDateTimeFormat
+      if (oriGetTimezoneOffset) Date.prototype.getTimezoneOffset = oriGetTimezoneOffset
+    } else {
       // execute hook
       oriDateTimeFormat = Intl.DateTimeFormat;
       oriGetTimezoneOffset = Date.prototype.getTimezoneOffset;
@@ -264,9 +262,9 @@
    */
   let oriCreateDynamicsCompressor;
   hookMethods[Opt.audio] = function (isRestore) {
-    if(isRestore){
-      if(oriCreateDynamicsCompressor)OfflineAudioContext.prototype.createDynamicsCompressor = oriCreateDynamicsCompressor
-    }else{
+    if (isRestore) {
+      if (oriCreateDynamicsCompressor) OfflineAudioContext.prototype.createDynamicsCompressor = oriCreateDynamicsCompressor
+    } else {
       oriCreateDynamicsCompressor = OfflineAudioContext.prototype.createDynamicsCompressor
 
       OfflineAudioContext.prototype.createDynamicsCompressor = function () {
@@ -323,21 +321,21 @@
   let wglGetParameter
   let wgl2GetParameter
   hookMethods[Opt.webgl] = function (isRestore) {
-    if(isRestore){
-      if(wglGetParameter)WebGLRenderingContext.prototype.getParameter = wglGetParameter
-      if(wgl2GetParameter)WebGL2RenderingContext.prototype.getParameter = wgl2GetParameter
-    }else{
+    if (isRestore) {
+      if (wglGetParameter) WebGLRenderingContext.prototype.getParameter = wglGetParameter
+      if (wgl2GetParameter) WebGL2RenderingContext.prototype.getParameter = wgl2GetParameter
+    } else {
       wglGetParameter = WebGLRenderingContext.prototype.getParameter
       wgl2GetParameter = WebGL2RenderingContext.prototype.getParameter
 
       WebGLRenderingContext.prototype.getParameter = function () {
         const debugEx = this.getExtension('WEBGL_debug_renderer_info')
-        if(arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL)return config[Opt.webgl]
+        if (arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL) return config[Opt.webgl]
         return wglGetParameter.apply(this, arguments)
       }
       WebGL2RenderingContext.prototype.getParameter = function () {
         const debugEx = this.getExtension('WEBGL_debug_renderer_info')
-        if(arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL)return config[Opt.webgl]
+        if (arguments[0] === debugEx.UNMASKED_RENDERER_WEBGL) return config[Opt.webgl]
         return wgl2GetParameter.apply(this, arguments)
       }
     }
@@ -352,22 +350,8 @@
         // 判断ip是否存在
         let ipRe = /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/g
         let pubIP = ipRe.exec(res.candidate)?.[0]  // 原IP
-        if(!pubIP)return res
+        if (!pubIP) return res
 
-        // 获取ip字符串
-        // let ip;
-        // switch(specialValues[Opt.webrtc]){
-        //   case 'localhost': 
-        //     ip = '127.0.0.1'
-        //     break
-        //   case 'proxy': 
-        //     ip = proxy_ip || '127.0.0.1'
-        //     break
-        //   default: return res
-        // }
-        
-        console.log('proxy==>', ip);
-        
         // 修改candidate中的address
         let candSplit = res.candidate.split(' ')
         candSplit[4] = config[Opt.webrtc]
@@ -423,18 +407,18 @@
   let oriRTCAddEvent
   let oriRTCPeerConnection
   hookMethods[Opt.webrtc] = function (isRestore) {
-    if(isRestore){
-      if(oriRTCPeerConnection)RTCPeerConnection = oriRTCPeerConnection
-      if(oriRTCAddEvent)RTCPeerConnection.prototype.addEventListener = oriRTCAddEvent
-    }else{
+    if (isRestore) {
+      if (oriRTCPeerConnection) RTCPeerConnection = oriRTCPeerConnection
+      if (oriRTCAddEvent) RTCPeerConnection.prototype.addEventListener = oriRTCAddEvent
+    } else {
       oriRTCPeerConnection = RTCPeerConnection
       oriRTCAddEvent = RTCPeerConnection.prototype.addEventListener
-      
+
       // hook addEventListener
       RTCPeerConnection.prototype.addEventListener = function () {
-        if('icecandidate' == arguments[0]){
+        if ('icecandidate' == arguments[0]) {
           const call = arguments[1]
-          if(call){
+          if (call) {
             arguments[1] = (event) => {
               call(new Proxy(event, handlerRTCPeerConnectionIceEvent))
             }
@@ -456,18 +440,7 @@
     }
   }
 
-  // /**
-  //  * run
-  //  */
-  // const mainHook = function () {
-  //   if(config[Config.proxyNavigator])proxyNavigator(basicValues);
-  //   if(config[Config.proxyScreen])proxyScreen(basicValues);
-  //   // hookCanvas(specialValues[Opt.canvas]);
-  //   // hookAudioContext(specialValues[Opt.audio])
-  //   // hookWebGL(specialValues[Opt.webgl])
-  //   // hookTimeZone(specialValues[Opt.timezone])
-  //   // hookWebRTC(specialValues[Opt.webrtc])
-  // }
-  // mainHook()
+  listenMessage()
+  sendToWin('init')
 
 }();

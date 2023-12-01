@@ -1,48 +1,59 @@
+const Mode = {
+  enable: '0',
+  seed: '1',
+  config: '2',
+  basic: 'a',
+  special: 'b',
+  ip: 'ip',
+}
+
+const Config = {
+  proxyNavigator: 0,
+  proxyScreen: 1,
+}
+
+const Opt = {
+  default: '0',
+  page: '1',
+  browser: '2',
+  domain: '3',
+
+  localhost: '10',
+  proxy: '11',
+}
+
+const Item = {
+  language: 0,
+  platform: 1,
+  hardwareConcurrency: 2,
+  appVersion: 3,
+  userAgent: 4,
+
+  height: 10,
+  width: 11,
+  colorDepth: 12,
+  pixelDepth: 13,
+
+  languages: 20,
+  canvas: 21,
+  timezone: 22,
+  audio: 23,
+  webgl: 24,
+  webrtc: 25,
+}
+
+/**
+ * 各标签页的通知内容
+ */
+const notify = {}
+
+/**
+ * 扩展初始化
+ * @param {string} prevVersion 上个版本号
+ */
 const init = async function (prevVersion) {
-  const dataPromise = chrome.storage.local.get();
-  const Mode = {
-    enable: '0',
-    seed: '1',
-    config: '2',
-    basic: 'a',
-    special: 'b',
-    ip: 'ip',
-  }
-  const Config = {
-    proxyNavigator: 0,
-    proxyScreen: 1,
-  }
-  const Opt = {
-    default: '0',
-    page: '1',
-    browser: '2',
-    domain: '3',
-
-    localhost: '10',
-    proxy: '11',
-  }
-  const Item = {
-    language: 0,
-    platform: 1,
-    hardwareConcurrency: 2,
-    appVersion: 3,
-    userAgent: 4,
-
-    height: 10,
-    width: 11,
-    colorDepth: 12,
-    pixelDepth: 13,
-
-    languages: 20,
-    canvas: 21,
-    timezone: 22,
-    audio: 23,
-    webgl: 24,
-    webrtc: 25,
-  }
-
   // get data
-  const data = await dataPromise;
+  const data = await chrome.storage.local.get();
   
   // get manifest
   let manifest = chrome.runtime.getManifest()
@@ -56,12 +67,12 @@ const init = async function (prevVersion) {
   // seed
   data[Mode.seed] = Math.floor(Math.random() * 100000);
   // config
-  data[Mode.config] = Object.assign({}, data[Mode.config], {
+  data[Mode.config] = Object.assign({
     [Config.proxyNavigator]: true,
     [Config.proxyScreen]: true,
-  })
+  }, data[Mode.config])
   // basic
-  data[Mode.basic] = Object.assign({}, data[Mode.basic], {
+  data[Mode.basic] = Object.assign({
     [Item.language]: {select: 0, value: Opt.default},
     [Item.platform]: {select: 0, value: Opt.default},
     [Item.hardwareConcurrency]: {select: 0, value: Opt.default},
@@ -71,16 +82,16 @@ const init = async function (prevVersion) {
     [Item.width]: {select: 0, value: Opt.default},
     [Item.colorDepth]: {select: 0, value: Opt.default},
     [Item.pixelDepth]: {select: 0, value: Opt.default},
-  })
+  }, data[Mode.basic])
   // spacial
-  data[Mode.special] = Object.assign({}, data[Mode.special], {
+  data[Mode.special] = Object.assign({
     [Item.languages]: Opt.default,
     [Item.canvas]: Opt.page,
     [Item.audio]: Opt.page,
     [Item.webgl]: Opt.page,
     [Item.timezone]: -1,
-    [Item.webrtc]: Opt.default,
-  })
+    [Item.webrtc]: Opt.proxy,
+  }, data[Mode.special])
   // 获取ip
   rePubIP()
   // save
@@ -110,7 +121,7 @@ chrome.runtime.onStartup.addListener(() => {
   rePubIP()
 });
 
-const isGettingIP = false
+let isGettingIP = false
 /**
  * 重新获取公网ip并存储
  */
@@ -135,53 +146,68 @@ const rePubIP = function () {
  */
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab)=> {
   if (changeInfo.status == 'loading') {
-    // record
-    delete data[tabId];
+    // notify
+    delete notify[tabId];
     chrome.action.setBadgeText({tabId, text: ''});
   }
 });
 
-// 监听
-const data = {}
-const getBgColor = function (level) {
-  switch(level){
-    case 0: return '#7FFFD4';
-    case 1: return '#F4A460';
-    default: return '#FFFAFA';
-  }
-}
-const getFontColor = function (level) {
-  switch(level){
-    case 1: return '#FFF';
-    case 0:
-    default: return '#000';
-  }
-}
-chrome.runtime.onMessage.addListener((msg, sender)=>{
-  if(msg.type == 'notify'){
-    let tabId = sender.tab.id;
+/**
+ * 监听tab关闭
+ */
+chrome.tabs.onRemoved.addListener((tabId) => {
+  delete notify[tabId];
+})
 
-    let total = 0;
-    let stotal = 0;
-    let sdata = data[tabId];
-    if(sdata){
-      sdata[msg.seed] = {total: msg.total, stotal: msg.stotal};
-      for(let k in sdata){
-        let d = sdata[k]
-        total += d.total;
-        stotal += d.stotal;
-      }
-    } else {
-      total = msg.total;
-      stotal = msg.stotal;
-      data[tabId] = {[msg.seed]: {total, stotal}}
-    }
-    let showTotal = stotal > 0 ? stotal : total;
-    let showColor = stotal > 0 ? 1 : 0;
-    showTotalStr = showTotal > 99 ? '99+' : showTotal.toString()
-
-    chrome.action.setBadgeText({tabId, text: showTotalStr});
-    // chrome.action.setBadgeTextColor({tabId, color: getFontColor(showColor)});
-    chrome.action.setBadgeBackgroundColor({tabId, color: getBgColor(showColor)});
+/**
+ * 监听扩展消息
+ */
+chrome.runtime.onMessage.addListener((data, sender)=>{
+  switch(data.type){
+    case 'notify':
+      handleNotify(sender.tab.id, data.value)
+      break
+    case 're-ip':
+      rePubIP()
+      break
+    default: return
   }
 })
+
+const bgColorMap = {
+  'low': '#7FFFD4',
+  'high': '#F4A460',
+}
+const fontColorMap = {
+  'record': '#FFF',
+}
+
+/**
+ * 处理可疑记录
+ * @param {number} tabId 
+ * @param {{total: number, stotal: number, seed: number}} data 
+ */
+const handleNotify = function (tabId, data) {
+  let total = 0;
+  let stotal = 0;
+  let tabData = notify[tabId];
+  if(tabData){
+    tabData[data.seed] = {total: data.total, stotal: data.stotal};
+    for(let k in tabData){
+      let d = tabData[k]
+      total += d.total;
+      stotal += d.stotal;
+    }
+  } else {
+    total = data.total
+    stotal = data.stotal
+    notify[tabId] = {[data.seed]: { total, stotal }}
+  }
+  let showTotal = stotal > 0 ? stotal : total
+  let showColor = bgColorMap[stotal > 0 ? 'high' : 'low']
+  showTotalStr = showTotal > 99 ? '99+' : showTotal.toString()
+
+  chrome.action.setBadgeText({tabId, text: showTotalStr});
+  // chrome.action.setBadgeTextColor({tabId, color: getFontColor(showColor)});
+  chrome.action.setBadgeBackgroundColor({tabId, color: showColor});
+}

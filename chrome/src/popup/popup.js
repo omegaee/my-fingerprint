@@ -1,4 +1,42 @@
 /**
+ * 发送消息到扩展
+ * @param {string} type
+ * @param {any} value
+ */
+const sendToEx = function (type, value) {
+  chrome.runtime.sendMessage({type, value})
+}
+
+/**
+ * 发送消息到标签
+ * @param {number} tabId
+ * @param {string} type
+ * @param {any} value
+ */
+const sendToTabs = function (tabId, type, value, option) {
+  return chrome.tabs.sendMessage(tabId, {type, value}, option)
+}
+
+/**
+ * 发送消息到标签的所有frame中
+ * @param {number} tabId
+ * @param {string} type
+ * @param {any?} value
+ * @param {{ok: (record: any)=>void, fail: (err: any)=>void}?} callbacks
+ */
+const sendToTabFrames = function (tabId, type, value, callbacks) {
+  chrome.webNavigation.getAllFrames({tabId}).then((frames) => {
+    for (let frame of frames) {
+      let frameId = frame.frameId;
+      const promise = sendToTabs(tabId, type, value, {frameId})
+      if(callbacks?.ok)promise.then(callbacks.ok)
+      if(callbacks?.fail)promise.catch(callbacks.fail)
+    }
+  })
+}
+
+
+/**
  * -----------------------------
  * ---------- storage ----------
  * -----------------------------
@@ -412,23 +450,34 @@ const allRecords = new Proxy({}, {
 const bgInitActiveTabRecord = function () {
   // sum all record
   chrome.tabs.query({active: true, currentWindow: true}).then((tabs)=>{
-    let tabId = tabs[0].id;
-    // total all frame record
-    chrome.webNavigation.getAllFrames({tabId}).then((frames) => {
-      for (let frame of frames) {
-        let frameId = frame.frameId;
-        chrome.tabs.sendMessage(tabId, {type: 'record'}, {frameId})
-        .then((record) => {
-          if(!record)return;
-          sumRecord(record);
-        })
-        .catch(() => {
-        })
-      }
+    // let tabId = tabs[0].id;
+    // // total all frame record
+    // chrome.webNavigation.getAllFrames({tabId}).then((frames) => {
+    //   for (let frame of frames) {
+    //     let frameId = frame.frameId;
+    //     chrome.tabs.sendMessage(tabId, {type: 'record'}, {frameId})
+    //     .then((record) => {
+    //       if(!record)return;
+    //       sumRecord(record);
+    //     })
+    //     .catch(() => {
+    //     })
+    //   }
+    // })
+    sendToTabFrames(tabs[0].id, 'record', undefined, {
+      ok: (record) => {
+        if(!record)return;
+        sumRecord(record);
+      },
+      fail: () => {}
     })
   })
 }
 
+/**
+ * 累加
+ * @param {*} record 
+ */
 const sumRecord = function (record) {
   for(let key in record){
     let sc = allRecords[key];
@@ -446,6 +495,8 @@ const sumRecord = function (record) {
  */
 
 window.addEventListener('DOMContentLoaded', async () => {
+  sendToEx('re-ip')  // refresh public ip
+
   data = await dataPromise;
   // start
   regStartUI('.start');
@@ -458,7 +509,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // record
   regRecordUI('#record ._btn', '#record .drop-down');
   // about
-  regAboutUI('#about ._btn', '#about .drop-down') 
+  regAboutUI('#about ._btn', '#about .drop-down')
 });
 
 /**
