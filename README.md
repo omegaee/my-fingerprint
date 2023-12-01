@@ -24,8 +24,10 @@
   - [x] screen.colorDepth -- 屏幕颜色深度
   - [x] screen.pixelDepth -- 屏幕的位深度/色彩深度
 - **特殊指纹**
-  - [x] canvas -- canvas硬件指纹
-  - [x] audio -- audio硬件指纹
+  - [x] canvas -- Canvas硬件指纹
+  - [x] audio -- Audio硬件指纹
+  - [x] webgl -- WebGL硬件指纹
   - [x] timezone -- 浏览器时区
+  - [x] webrtc -- WebRTC-真实IP伪装
 - **关于**
 
