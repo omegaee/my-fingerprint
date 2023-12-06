@@ -30,9 +30,7 @@
   "web_accessible_resources": [
     {
       "resources": ["src/inject.js", "src/inject.html"],
-      "matches": ["http://*/*", "https://*/*"],
-      "match_about_blank": true,
-      "match_origin_as_fallback": true
+      "matches": ["http://*/*", "https://*/*"]
     }
   ],
   "background": {

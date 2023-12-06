@@ -178,7 +178,7 @@ const injectScript = function() {
       loadDocScript('/src/inject.js')
     }else{
       // 不能解决blank iframe的问题
-      frameElement.src = chrome.runtime.getURL('/src/inject.html')
+      // frameElement.src = chrome.runtime.getURL('/src/inject.html')
     }
     // 恢复sandbox属性
     if(sandboxBak)frameElement.setAttribute('sandbox', sandboxBak)
