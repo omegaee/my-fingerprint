@@ -155,7 +155,8 @@
         if (id != null) {
           recordAndSend(id)
           const res = config[Control.navigator]?.[id]
-          if (res) res;
+          console.log(res);
+          if (res) return res;
         }
         let res = target[key];
         if (typeof res === "function") return res.bind(target);
@@ -189,7 +190,7 @@
         if (id != null) {
           recordAndSend(id)
           const res = config[Control.screen]?.[id]
-          if (res) res;
+          if (res) return res;
         }
         let res = target[key];
         if (typeof res === "function") return res.bind(target);

@@ -7,9 +7,9 @@ const Mode = {
   ip: 'ip',
 }
 
-const Config = {
-  proxyNavigator: 0,
-  proxyScreen: 1,
+const Control = {
+  navigator: 0,
+  screen: 1,
 }
 
 const Opt = {
@@ -66,10 +66,10 @@ const init = async function (prevVersion) {
   data[Mode.enable] = data[Mode.enable] ?? true;
   // seed
   data[Mode.seed] = Math.floor(Math.random() * 100000);
-  // config
+  // control
   data[Mode.config] = Object.assign({
-    [Config.proxyNavigator]: true,
-    [Config.proxyScreen]: true,
+    [Control.navigator]: true,
+    [Control.screen]: true,
   }, data[Mode.config])
   // basic
   data[Mode.basic] = Object.assign({
