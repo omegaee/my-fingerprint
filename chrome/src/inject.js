@@ -155,7 +155,6 @@
         if (id != null) {
           recordAndSend(id)
           const res = config[Control.navigator]?.[id]
-          console.log(res);
           if (res) return res;
         }
         let res = target[key];
