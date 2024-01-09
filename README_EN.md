@@ -26,6 +26,7 @@
 ***Plugin Usage:***
 
 - Effective upon installation (previously opened tabs need to be refreshed to take effect)
+- The default configuration can obfuscate common browser fingerprints
 - Left-click the plugin icon to enter the configuration page
 - DIY according to the [configuration content](#features)
 
