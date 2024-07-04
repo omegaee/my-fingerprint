@@ -1,0 +1,67 @@
+{
+  "g": {
+    "enable": "开启",
+    "disable": "关闭",
+    "enabled": "已开启",
+    "disabled": "已关闭",
+    "preset": "预设",
+    "custom": "自定义"
+  },
+  "e": {
+    "enabled": "扩展已开启",
+    "disabled": "扩展已关闭",
+    "f-record": "指纹记录",
+    "f-base-config": "基础指纹配置",
+    "f-special-config": "特殊指纹配置",
+    "other-config": "其他配置",
+    "seed": "种子",
+    "language": "语言"
+  },
+  "type": {
+    "default": "系统值",
+    "value": "自定义值",
+    "page": "每个标签页随机值",
+    "browser": "每次启动浏览器随机值",
+    "domain": "根据访问域名随机值",
+    "seed": "根据配置指定的种子随机值"
+  },
+  "item": {
+    "title": {
+      "equipment": "设备信息",
+      "language": "语言",
+      "hardwareConcurrency": "逻辑处理器数量",
+      "size": "屏幕尺寸",
+      "colorDepth": "屏幕颜色深度",
+      "pixelDepth": "屏幕位深度",
+      "timezone": "时区",
+      "canvas": "Canvas画布指纹",
+      "audio": "音频指纹",
+      "webgl": "WebGL指纹",
+      "webrtc": "WebRTC指纹"
+    },
+    "desc": {
+      "equipment": "desc",
+      "language": "desc",
+      "hardwareConcurrency": "desc",
+      "size": "desc",
+      "colorDepth": "desc",
+      "pixelDepth": "desc",
+      "timezone": "desc",
+      "canvas": "desc",
+      "audio": "desc",
+      "webgl": "desc",
+      "webrtc": "desc"
+    }
+  },
+  "city": {
+    "SH": "上海",
+    "NY": "纽约",
+    "LG": "伦敦",
+    "PAR": "巴黎",
+    "TY": "东京",
+    "DXB": "迪拜",
+    "SE": "首尔",
+    "BKK": "曼谷",
+    "JKT": "雅加达"
+  }
+}
