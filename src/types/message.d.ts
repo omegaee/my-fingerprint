@@ -20,14 +20,15 @@ type SetConfigRequest = {
 
 type GetNoticeRequest = {
   type: RuntimeMsg.GetNotice,
+  tabId: number,
 }
 
-type SetHookRecords = {
+type SetHookRecordsRequest = {
   type: RuntimeMsg.SetHookRecords,
   data: Partial<Record<HookFingerprintKey, number>>,
 }
 
-type MsgRequest = SetConfigRequest | GetNoticeRequest
+type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest
 
 type RespFunc<T=any> = (msg: T) => void
 

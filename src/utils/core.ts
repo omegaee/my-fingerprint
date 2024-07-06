@@ -2,7 +2,7 @@ import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
 import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomEquipmentInfo, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander } from "./data";
 import { debounce } from "./timer";
-import { msgSetHookRecords } from "@/message/content";
+import { postSetHookRecords } from "@/message/content";
 
 // hook缓存
 const cache: Partial<Record<HookFingerprintKey, any>> = {}
@@ -13,7 +13,7 @@ const hookRecords: Map<HookFingerprintKey, number> = new Map()
  * 发送record消息
  */
 const sendRecordMessage = debounce(() => {
-  msgSetHookRecords(Object.fromEntries(hookRecords))
+  postSetHookRecords(Object.fromEntries(hookRecords))
 })
 
 /**

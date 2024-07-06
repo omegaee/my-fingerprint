@@ -3,7 +3,10 @@ import { debounce } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { HookType, RuntimeMsg } from '@/types/enum'
 
+const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'webgl', 'webrtc', 'timezone']
+
 let localConfig: LocalStorageConfig | undefined
+const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
 /**
  * 生成默认配置
@@ -82,6 +85,24 @@ const updateLocalConfig = (config: DeepPartial<LocalStorageConfig>) => {
 }
 
 /**
+ * 获取Badge内容
+ * @returns [文本, 颜色]
+ */
+const getBadgeContent = (records: Partial<Record<HookFingerprintKey, number>>): [string, string] => {
+  let baseNum = 0
+  let specialNum = 0
+  for(const [key, num] of Object.entries(records)){
+    if(SPECIAL_KEYS.includes(key as any)){
+      specialNum += num
+    }else{
+      baseNum += num
+    }
+  }
+  return [String(specialNum || baseNum), specialNum ? '#F4A460' : '#7FFFD4']
+}
+
+
+/**
  * 初次启动扩展时触发（浏览器更新、扩展更新触发）
  */
 chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
@@ -119,18 +140,29 @@ chrome.runtime.onStartup.addListener(() => {
  */
 chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: RespFunc) => {
   switch(msg.type){
-    case RuntimeMsg.SetConfig:{
+    case RuntimeMsg.SetConfig: {
       updateLocalConfig(msg.config)
       break
     }
-    case RuntimeMsg.GetNotice:{
+    case RuntimeMsg.GetNotice: {
       (sendResponse as RespFunc<GetNoticeMsg>)({
-        type: 'whitelist',
+        type: 'record',
+        data: hookRecords.get(msg.tabId)
       })
+      break
+    }
+    case RuntimeMsg.SetHookRecords: {
+      const tabId = sender.tab?.id
+      if(tabId === undefined) return
+      hookRecords.set(tabId, msg.data)
+      const [text, color] = getBadgeContent(msg.data)
+      chrome.action.setBadgeText({tabId, text});
+      chrome.action.setBadgeBackgroundColor({tabId, color});
       break
     }
   }
 })
+
 
 // chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 //   if(localConfig && changeInfo.status === 'loading'){

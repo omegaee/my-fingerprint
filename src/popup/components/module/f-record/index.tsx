@@ -10,7 +10,7 @@ export type FHookRecordProps = {
 
 export const FHookRecord = function ({config}: FHookRecordProps) {
   const [t] = useTranslation()
-  const [record, setRecord] = useState<ToolbarNoticeRecord['data']>({})
+  const [record, setRecord] = useState<ToolbarNoticeRecord['data']>()
 
   useEffect(() => {
     msgGetNotice().then((data) => {
@@ -25,7 +25,7 @@ export const FHookRecord = function ({config}: FHookRecordProps) {
       <div key={key}
         className="p-1 rounded-sm flex justify-between items-center hover:bg-[#f4e6d38b]">
           <span>{key}</span>
-          <span>× {record[key] ?? 0}</span>
+          <span>× {record?.[key] ?? 0}</span>
       </div>)}
   </section>
 }

@@ -14,16 +14,24 @@ export const msgSetConfig = (config: DeepPartial<LocalStorageConfig>) => {
  * 获取扩展图标的notice
  */
 export const msgGetNotice = () => {
-  return chrome.runtime.sendMessage<GetNoticeRequest, GetNoticeMsg>({
-    type: RuntimeMsg.GetNotice
+  return chrome.tabs.query({active: true, currentWindow: true}).then(tabs => {
+    const tabId = tabs[0].id
+    if(tabId === undefined) {
+      throw new Error('tabId is undefined')
+    }
+    return chrome.runtime.sendMessage<GetNoticeRequest, GetNoticeMsg>({
+      type: RuntimeMsg.GetNotice,
+      tabId
+    })
   })
+
 }
 
 /**
  * 设置hook记录
  */
 export const msgSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey, number>>) => {
-  return chrome.runtime.sendMessage<SetHookRecords, void>({
+  return chrome.runtime.sendMessage<SetHookRecordsRequest, void>({
     type: RuntimeMsg.SetHookRecords,
     data: hookRecords,
   })

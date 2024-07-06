@@ -18,7 +18,7 @@ const wrapMessage = (msg: any) => {
 /**
  * 设置hook记录
  */
-export const msgSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey, number>>) => {
+export const postSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey, number>>) => {
   postMessage(wrapMessage({
     type: ContentMsg.SetHookRecords,
     data: hookRecords,
