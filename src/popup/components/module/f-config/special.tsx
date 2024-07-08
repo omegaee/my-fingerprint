@@ -52,6 +52,7 @@ const fItems: FItems[] = [
 ]
 
 export type FSpecialConfigProps = {
+  tab?: chrome.tabs.Tab
   config?: Partial<LocalStorageConfig>
 }
 

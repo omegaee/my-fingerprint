@@ -2,6 +2,7 @@ declare enum RuntimeMsg {
   SetConfig = 'set-config',
   GetNotice = 'get-notice',
   SetHookRecords = 'set-hook-records',
+  AddWhitelist = 'add-whitelist',
 }
 
 declare enum ContentMsg {
@@ -28,7 +29,12 @@ type SetHookRecordsRequest = {
   data: Partial<Record<HookFingerprintKey, number>>,
 }
 
-type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest
+type AddWhitelistRequest = {
+  type: RuntimeMsg.AddWhitelist,
+  host: string,
+}
+
+type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | AddWhitelistRequest
 
 type RespFunc<T=any> = (msg: T) => void
 

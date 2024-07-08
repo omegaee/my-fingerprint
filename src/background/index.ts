@@ -8,6 +8,8 @@ const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'we
 let localConfig: LocalStorageConfig | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
+let whitelist: Set<string> | undefined
+
 /**
  * 生成默认配置
  */
@@ -42,6 +44,7 @@ const genDefaultLocalConfig = (): LocalStorageConfig => {
         webrtc: defaultHook,
       },
     },
+    whitelist: []
   }
 }
 
@@ -58,10 +61,15 @@ const initLocalConfig = (previousVersion: string | undefined) => {
     ){
       // 清空存储并使用设置存储为默认值
       chrome.storage.local.clear().then(() => {
-        localConfig = genDefaultLocalConfig()
-        chrome.storage.local.set(localConfig)
+        const temp = genDefaultLocalConfig()
+        chrome.storage.local.set(temp)
+        whitelist = new Set(data.whitelist)
+        delete data.whitelist
+        localConfig = temp
       })
-    }else{      
+    }else{
+      whitelist = new Set(data.whitelist)
+      delete data.whitelist
       localConfig = data as LocalStorageConfig
     }
   })
@@ -158,6 +166,10 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       const [text, color] = getBadgeContent(msg.data)
       chrome.action.setBadgeText({tabId, text});
       chrome.action.setBadgeBackgroundColor({tabId, color});
+      break
+    }
+    case RuntimeMsg.AddWhitelist: {
+      whitelist?.add(msg.host)
       break
     }
   }

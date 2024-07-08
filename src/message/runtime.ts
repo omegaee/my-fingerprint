@@ -37,3 +37,10 @@ export const msgSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey
   })
 }
 
+/**
+ * 添加白名单
+ */
+export const msgAddWhiteList = (domain: string) => {
+  
+}
+

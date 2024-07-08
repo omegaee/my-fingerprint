@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 export type OtherConfigProps = {
+  tab?: chrome.tabs.Tab
   config?: Partial<LocalStorageConfig>
 }
 

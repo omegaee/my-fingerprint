@@ -1,31 +1,22 @@
 import { useTranslation } from "react-i18next"
-import { useEffect, useState } from "react"
-import { msgGetNotice } from "@/message/runtime"
 
 const fKeys: HookFingerprintKey[] = ['appVersion', 'platform', 'userAgent', 'language', 'hardwareConcurrency', 'height', 'width', 'colorDepth', 'pixelDepth', 'canvas', 'audio', 'webgl', 'webrtc', 'timezone']
 
 export type FHookRecordProps = {
+  tab?: chrome.tabs.Tab
   config?: Partial<LocalStorageConfig>
+  records?: ToolbarNoticeRecord['data']
 }
 
-export const FHookRecord = function ({config}: FHookRecordProps) {
+export const FHookRecord = function ({config, records}: FHookRecordProps) {
   const [t] = useTranslation()
-  const [record, setRecord] = useState<ToolbarNoticeRecord['data']>()
-
-  useEffect(() => {
-    msgGetNotice().then((data) => {
-      if(data.type === 'record'){
-        setRecord(data.data)
-      }
-    })
-  }, [])
 
   return <section>
     {fKeys.map((key) =>
       <div key={key}
         className="p-1 rounded-sm flex justify-between items-center hover:bg-[#f4e6d38b]">
           <span>{key}</span>
-          <span>× {record?.[key] ?? 0}</span>
+          <span>× {records?.[key] ?? 0}</span>
       </div>)}
   </section>
 }

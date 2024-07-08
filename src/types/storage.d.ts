@@ -6,6 +6,8 @@ type LocalStorageConfig = {
   browserSeed: number
   // 指纹
   fingerprint: HookFingerprint
+  // 白名单
+  whitelist: string[]
 }
 
 type HookFingerprint = {
