@@ -26,8 +26,8 @@ function App() {
   const [isWhitelist, setIsWhitelist] = useState(false)
 
   useEffect(() => {
-    chrome.storage.local.get().then((data: Partial<LocalStorageConfig>) => {
-      setConfig(data)
+    chrome.storage.local.get(['config']).then(({config}: Partial<LocalStorage>) => {
+      setConfig(config)
     })
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
       const tab = tabs[0]

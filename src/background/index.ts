@@ -5,43 +5,43 @@ import { HookType, RuntimeMsg } from '@/types/enum'
 
 const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'webgl', 'webrtc', 'timezone']
 
-let localConfig: LocalStorageConfig | undefined
+let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
-
-let whitelist: Set<string> | undefined
 
 /**
  * 生成默认配置
  */
-const genDefaultLocalConfig = (): LocalStorageConfig => {
+const genDefaultLocalStorage = (): LocalStorage => {
   const manifest = chrome.runtime.getManifest()
   const defaultHook: BaseHookMode = { type: HookType.default }
   const browserHook: BaseHookMode = { type: HookType.browser }
   return {
     version: manifest.version,
-    enable: true,
-    customSeed: genRandomSeed(),
-    browserSeed: genRandomSeed(),
-    fingerprint: {
-      navigator: {
-        appVersion: browserHook,
-        platform: browserHook,
-        userAgent: browserHook,
-        language: defaultHook,
-        hardwareConcurrency: defaultHook,
-      },
-      screen: {
-        height: defaultHook,
-        width: defaultHook,
-        colorDepth: defaultHook,
-        pixelDepth: defaultHook,
-      },
-      other: {
-        timezone: defaultHook,
-        canvas: browserHook,
-        audio: browserHook,
-        webgl: defaultHook,
-        webrtc: defaultHook,
+    config: {
+      enable: true,
+      customSeed: genRandomSeed(),
+      browserSeed: genRandomSeed(),
+      fingerprint: {
+        navigator: {
+          appVersion: browserHook,
+          platform: browserHook,
+          userAgent: browserHook,
+          language: defaultHook,
+          hardwareConcurrency: defaultHook,
+        },
+        screen: {
+          height: defaultHook,
+          width: defaultHook,
+          colorDepth: defaultHook,
+          pixelDepth: defaultHook,
+        },
+        other: {
+          timezone: defaultHook,
+          canvas: browserHook,
+          audio: browserHook,
+          webgl: defaultHook,
+          webrtc: defaultHook,
+        },
       },
     },
     whitelist: []
@@ -52,25 +52,22 @@ const genDefaultLocalConfig = (): LocalStorageConfig => {
  * 初始化默认配置
  */
 const initLocalConfig = (previousVersion: string | undefined) => {
-  chrome.storage.local.get().then((data: Partial<LocalStorageConfig>) => {
-    if(
+  chrome.storage.local.get().then((data: Partial<LocalStorage>) => {
+    if (
       // 其中一个版本号不存
       (!data.version || !previousVersion) ||
       // 配置版本号小于2.0.0
       (compareVersions(data.version, '2.0') < 0)
-    ){
+    ) {
       // 清空存储并使用设置存储为默认值
       chrome.storage.local.clear().then(() => {
-        const temp = genDefaultLocalConfig()
-        chrome.storage.local.set(temp)
-        whitelist = new Set(data.whitelist)
-        delete data.whitelist
-        localConfig = temp
+        const temp = genDefaultLocalStorage()
+        chrome.storage.local.set(temp).then(() => {
+          localStorage = {...temp, whitelist: new Set(temp.whitelist)}
+        })
       })
-    }else{
-      whitelist = new Set(data.whitelist)
-      delete data.whitelist
-      localConfig = data as LocalStorageConfig
+    } else {
+      localStorage = {...data, whitelist: new Set(data.whitelist)} as LocalStorageObject
     }
   })
 }
@@ -79,17 +76,36 @@ const initLocalConfig = (previousVersion: string | undefined) => {
  * 存储配置
  */
 const saveLocalConfig = debounce(() => {
-  localConfig && chrome.storage.local.set(localConfig)
+  localStorage && chrome.storage.local.set({config: localStorage})
+}, 500)
+
+/**
+ * 存储白名单
+ */
+const saveLocalWhitelist = debounce(() => {
+  localStorage && chrome.storage.local.set({whitelist: [...localStorage.whitelist]})
 }, 500)
 
 /**
  * 修改配置
  */
 const updateLocalConfig = (config: DeepPartial<LocalStorageConfig>) => {
-  if(localConfig){
-    localConfig = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(localConfig, config)
-    saveLocalConfig()
+  if (!localStorage?.config) return
+  localStorage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(localStorage.config, config)
+  saveLocalConfig()
+}
+
+/**
+ * 修改白名单
+ */
+const updateLocalWhitelist = (type: 'add' | 'del', host: string) => {
+  if(!localStorage?.whitelist) return
+  if(type === 'add'){
+    localStorage.whitelist.add(host)
+  }else if(type === 'del'){
+    localStorage.whitelist.delete(host)
   }
+  saveLocalWhitelist()
 }
 
 /**
@@ -99,10 +115,10 @@ const updateLocalConfig = (config: DeepPartial<LocalStorageConfig>) => {
 const getBadgeContent = (records: Partial<Record<HookFingerprintKey, number>>): [string, string] => {
   let baseNum = 0
   let specialNum = 0
-  for(const [key, num] of Object.entries(records)){
-    if(SPECIAL_KEYS.includes(key as any)){
+  for (const [key, num] of Object.entries(records)) {
+    if (SPECIAL_KEYS.includes(key as any)) {
       specialNum += num
-    }else{
+    } else {
       baseNum += num
     }
   }
@@ -113,11 +129,11 @@ const getBadgeContent = (records: Partial<Record<HookFingerprintKey, number>>): 
 /**
  * 初次启动扩展时触发（浏览器更新、扩展更新触发）
  */
-chrome.runtime.onInstalled.addListener(({reason, previousVersion}) => {
-  if(
+chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
+  if (
     reason === chrome.runtime.OnInstalledReason.INSTALL ||
     reason === chrome.runtime.OnInstalledReason.UPDATE
-  ){
+  ) {
     initLocalConfig(previousVersion)
   }
 });
@@ -147,7 +163,7 @@ chrome.runtime.onStartup.addListener(() => {
  * 消息处理
  */
 chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: RespFunc) => {
-  switch(msg.type){
+  switch (msg.type) {
     case RuntimeMsg.SetConfig: {
       updateLocalConfig(msg.config)
       break
@@ -161,15 +177,15 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
     }
     case RuntimeMsg.SetHookRecords: {
       const tabId = sender.tab?.id
-      if(tabId === undefined) return
+      if (tabId === undefined) return
       hookRecords.set(tabId, msg.data)
       const [text, color] = getBadgeContent(msg.data)
-      chrome.action.setBadgeText({tabId, text});
-      chrome.action.setBadgeBackgroundColor({tabId, color});
+      chrome.action.setBadgeText({ tabId, text });
+      chrome.action.setBadgeBackgroundColor({ tabId, color });
       break
     }
     case RuntimeMsg.AddWhitelist: {
-      whitelist?.add(msg.host)
+      updateLocalWhitelist('add', msg.host)
       break
     }
   }

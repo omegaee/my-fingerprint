@@ -1,13 +1,21 @@
-type LocalStorageConfig = {
+type LocalStorage = {
   version: string
+  config: LocalStorageConfig  // 配置
+  whitelist: string[]  // 白名单
+}
+
+type LocalStorageObject = Omit<LocalStorage, 'whitelist'> & {
+  whitelist: Set<string>
+}
+
+type LocalStorageConfig = {
   enable: boolean
   // 种子
   customSeed: number
   browserSeed: number
   // 指纹
   fingerprint: HookFingerprint
-  // 白名单
-  whitelist: string[]
+
 }
 
 type HookFingerprint = {
