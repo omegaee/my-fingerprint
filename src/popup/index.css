@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .no-scrollbar {
+    /* 隐藏 Chrome, Safari 和 Opera 的滚动条 */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    /* 隐藏 IE, Edge 和 Firefox 的滚动条 */
+    -ms-overflow-style: none; /* IE 和 Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 20px;

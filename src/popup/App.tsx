@@ -1,15 +1,18 @@
-import { Button, Collapse, type CollapseProps, Divider, Layout, Switch, Typography, theme } from "antd"
+import { Button, Divider, Layout, Tabs, type TabsProps, Typography, theme } from "antd"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import OtherConfig from "./components/module/other-config"
-import FHookRecord from "./components/module/f-record"
-import { FBaseConfig, FSpecialConfig } from "./components/module/f-config"
-import { urlToHost } from "@/utils/base"
 
 import {
   CheckOutlined,
   CloseOutlined,
+  AlertOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
+
+import FHookRecord from "./components/module/f-record"
+import FConfig from "./components/module/f-config"
+
+import { urlToHost } from "@/utils/base"
 import { msgGetNotice } from "@/message/runtime"
 
 function App() {
@@ -21,8 +24,6 @@ function App() {
 
   const [hookRecords, setHookRecords] = useState<ToolbarNoticeRecord['data']>()
   const [isWhitelist, setIsWhitelist] = useState(false)
-
-  const { token } = theme.useToken();
 
   useEffect(() => {
     chrome.storage.local.get().then((data: Partial<LocalStorageConfig>) => {
@@ -46,40 +47,31 @@ function App() {
     })
   }, [])
 
-  const items = useMemo<CollapseProps['items']>(() => {
-    const style: React.CSSProperties = {
-      marginBottom: 8,
-      // background: token.colorFillContent,
-      borderRadius: token.borderRadiusSM,
-      border: '2px solid',
-      borderColor: token.colorBorder,
-    }
+  useEffect(() => {
+    setEnabled(!!config?.enable)
+  }, [config])
+
+  const tabItems = useMemo<TabsProps['items']>(() => {
     return [
       {
-        label: <Typography.Text className="font-bold">{t('e.f-record')}</Typography.Text>,
+        label: t('e.f-record'),
+        icon: <AlertOutlined />,
         children: <FHookRecord tab={tab} config={config} records={hookRecords} />,
-        style,
       },
       {
-        label: <Typography.Text className="font-bold">{t('e.f-base-config')}</Typography.Text>,
-        children: <FBaseConfig tab={tab} config={config} />,
-        style,
+        label: t('e.f-config'),
+        icon: <SettingOutlined />,
+        children: <FConfig tab={tab} config={config} />,
       },
-      {
-        label: <Typography.Text className="font-bold">{t('e.f-special-config')}</Typography.Text>,
-        children: <FSpecialConfig tab={tab} config={config} />,
-        style,
-      },
-      {
-        label: <Typography.Text className="font-bold">{t('e.other-config')}</Typography.Text>,
-        children: <OtherConfig tab={tab} config={config} />,
-        style,
-      },
-    ].map((item, key) => ({ ...item, key }))
-  }, [i18n.language, config])
+    ].map((item, index) => ({...item, key: String(index)}))
+  }, [i18n.language, config, tab])
 
   return (
-    <Layout className="overflow-auto p-2 w-60">
+    <Layout className="overflow-auto no-scrollbar p-2 w-64 h-[600px]">
+
+      <Typography.Text className="mx-auto text-2xl font-black ">My Fingerprint</Typography.Text>
+
+      <Divider style={{ margin: '8px 0' }} />
 
       <section className="flex items-stretch gap-2">
 
@@ -100,16 +92,9 @@ function App() {
 
       </section>
 
-      <Divider style={{ margin: '4px 0 16px 0' }} />
+      <Divider style={{ margin: '8px 0 0 0' }} />
 
-      <Collapse size='small'
-        style={{
-          background: 'transparent',
-        }}
-        expandIconPosition='end'
-        bordered={false}
-        accordion
-        items={items} />
+      <Tabs type="line" size='small' centered items={tabItems} />
 
     </Layout>
   )
