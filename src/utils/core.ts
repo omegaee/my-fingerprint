@@ -43,16 +43,18 @@ const getValueFromCacheOrFunc = (key: HookFingerprintKey, seedFunc: (seed: numbe
 
 export class FingerprintHandler {
   private conf: DeepPartial<LocalStorageConfig> | undefined
+  private enabled: boolean = true
 
   public constructor(config?: DeepPartial<LocalStorageConfig>) {
-    if (!config) return
-    this.set(config)
+    if (config){
+      this.setConfig(config)
+    }
   }
 
   /**
    * 配置
    */
-  public set(config: DeepPartial<LocalStorageConfig>) {
+  public setConfig(config: DeepPartial<LocalStorageConfig>) {
     if (this.conf) {
       deepmerge(this.conf, config, { clone: false })
     } else {
@@ -85,6 +87,40 @@ export class FingerprintHandler {
 
     if (reExecute) {
       this.proxyGetOwnPropertyDescriptor()
+    }
+  }
+
+  private refresh(){
+    this.proxyNavigator()
+    this.proxyScreen()
+    this.proxyTimeZone()
+    this.proxyCanvas()
+    this.proxyAudio()
+    this.proxyWebGL()
+    this.proxyWebRTC()
+    this.proxyGetOwnPropertyDescriptor()
+  }
+
+  public disable(){
+    if(this.enabled && this.conf?.enable){
+      // 已启动
+      this.enabled = false
+      this.refresh()
+    }else{
+      // 未启动
+      this.enabled = false
+    }
+  }
+
+  public enable(){
+    if(this.enabled && this.conf?.enable){
+      // 已启动
+      this.enabled = true
+      this.refresh()
+    }else{
+      // 未启动
+      this.enabled = true
+      this.refresh()
     }
   }
 
@@ -190,7 +226,7 @@ export class FingerprintHandler {
    * proxy Object.getOwnPropertyDescriptor
    */
   private proxyGetOwnPropertyDescriptor() {
-    if (this.conf?.enable) {
+    if (this.enabled && this.conf?.enable) {
       // proxy
       if (!this.rawGetOwnPropertyDescriptor) {
         this.rawGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor
@@ -220,7 +256,7 @@ export class FingerprintHandler {
    * proxy navigator
    */
   private proxyNavigator() {
-    if (this.conf?.enable && !this.isAllDefault(this.conf?.fingerprint?.navigator)) {
+    if (this.enabled && this.conf?.enable && !this.isAllDefault(this.conf?.fingerprint?.navigator)) {
       // proxy
       if (!this.rawNavigatorDescriptor) {
         this.rawNavigatorDescriptor = Object.getOwnPropertyDescriptor(window, "navigator");
@@ -255,7 +291,7 @@ export class FingerprintHandler {
    * proxy screen
    */
   private proxyScreen() {
-    if (this.conf?.enable && !this.isAllDefault(this.conf?.fingerprint?.screen)) {
+    if (this.enabled && this.conf?.enable && !this.isAllDefault(this.conf?.fingerprint?.screen)) {
       // proxy
       if (!this.rawScreenDescriptor) {
         this.rawScreenDescriptor = Object.getOwnPropertyDescriptor(window, "screen");
@@ -290,7 +326,7 @@ export class FingerprintHandler {
    * proxy canvas
    */
   private proxyCanvas() {
-    if (this.conf?.enable && this.conf.fingerprint?.other?.canvas?.type !== HookType.default) {
+    if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.canvas?.type !== HookType.default) {
       // proxy
       if (!this.rawToDataURL) {
         this.rawToDataURL = HTMLCanvasElement.prototype.toDataURL
@@ -323,7 +359,7 @@ export class FingerprintHandler {
    * 会稍微影响某些audio的质量
    */
   private proxyAudio() {
-    if (this.conf?.enable && this.conf.fingerprint?.other?.audio?.type !== HookType.default) {
+    if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.audio?.type !== HookType.default) {
       // proxy
       if (!this.rawCreateDynamicsCompressor) {
         this.rawCreateDynamicsCompressor = OfflineAudioContext.prototype.createDynamicsCompressor
@@ -355,7 +391,7 @@ export class FingerprintHandler {
    * proxy WebGL
    */
   private proxyWebGL() {
-    if (this.conf?.enable && this.conf.fingerprint?.other?.webgl?.type !== HookType.default) {
+    if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.webgl?.type !== HookType.default) {
       // proxy
       if (!this.rawWglGetParameter) {
         this.rawWglGetParameter = WebGLRenderingContext.prototype.getParameter
@@ -396,7 +432,7 @@ export class FingerprintHandler {
    * proxy time zone
    */
   private proxyTimeZone() {
-    if (this.conf?.enable && this.conf.fingerprint?.other?.timezone?.type !== HookType.default) {
+    if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.timezone?.type !== HookType.default) {
       // proxy
       if(!this.rawDateTimeFormat){
         this.rawDateTimeFormat = Intl.DateTimeFormat
@@ -440,7 +476,7 @@ export class FingerprintHandler {
    * proxy WebRTC
    */
   private proxyWebRTC() {
-    if (this.conf?.enable && this.conf.fingerprint?.other?.webrtc?.type !== HookType.default) {
+    if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.webrtc?.type !== HookType.default) {
       // proxy
 
     } else {

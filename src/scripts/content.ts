@@ -44,7 +44,7 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse) => 
  * 初始化
  */
 const init = function() {
-  chrome.storage.local.get().then((data: Partial<LocalStorageConfig>) => {
+  chrome.storage.local.get(['config', 'whitelist']).then((data: Partial<Omit<LocalStorage, 'version'>>) => {
     injectScript(injectSrc, data)
   })
 }

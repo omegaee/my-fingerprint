@@ -3,6 +3,7 @@ declare enum RuntimeMsg {
   GetNotice = 'get-notice',
   SetHookRecords = 'set-hook-records',
   AddWhitelist = 'add-whitelist',
+  DelWhitelist = 'del-whitelist',
 }
 
 declare enum ContentMsg {
@@ -34,7 +35,12 @@ type AddWhitelistRequest = {
   host: string,
 }
 
-type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | AddWhitelistRequest
+type DelWhitelistRequest = {
+  type: RuntimeMsg.DelWhitelist,
+  host: string,
+}
+
+type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | AddWhitelistRequest | DelWhitelistRequest
 
 type RespFunc<T=any> = (msg: T) => void
 

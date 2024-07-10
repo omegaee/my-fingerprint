@@ -12,8 +12,8 @@ import {
 import FHookRecord from "./components/module/f-record"
 import FConfig from "./components/module/f-config"
 
-import { urlToHost } from "@/utils/base"
-import { msgGetNotice } from "@/message/runtime"
+import { urlToHttpHost } from "@/utils/base"
+import { msgAddWhiteList, msgDelWhiteList, msgGetNotice } from "@/message/runtime"
 
 function App() {
   const [t, i18n] = useTranslation()
@@ -33,7 +33,7 @@ function App() {
       const tab = tabs[0]
       setTab(tab)
       if (!tab?.url) return
-      const host = urlToHost(tab.url)
+      const host = urlToHttpHost(tab.url)
       if (!host) return
       const temp = host.split(':')
       setHostPart([temp[0], temp[1]])
@@ -50,6 +50,18 @@ function App() {
   useEffect(() => {
     setEnabled(!!config?.enable)
   }, [config])
+
+  const addWhitelist = () => {
+    if(!hostPart)return
+    msgAddWhiteList(hostPart.join(':'))
+    setIsWhitelist(true)
+  }
+
+  const delWhitelist = () => {
+    if(!hostPart)return
+    msgDelWhiteList(hostPart.join(':'))
+    setIsWhitelist(false)
+  }
 
   const tabItems = useMemo<TabsProps['items']>(() => {
     return [
@@ -75,13 +87,18 @@ function App() {
 
       <section className="flex items-stretch gap-2">
 
+        {/* 白名单开关 */}
         <section className="grow flex flex-col items-center gap-1">
-          <Button type={isWhitelist ? 'primary' : 'default'} className="font-mono font-bold" style={{width: '100%'}}>
-            {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostPart?.[0]}
+          <Button type={isWhitelist ? 'primary' : 'default'} 
+            className="font-mono font-bold"
+            style={{width: '100%'}}
+            onClick={isWhitelist ? delWhitelist : addWhitelist} >
+            {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostPart?.[0] ?? t('tip.not-support-whitelist')}
           </Button>
           <Typography.Text className="text-[13px]">{isWhitelist ? t('e.whitelist-in') : t('e.whitelist-not')}</Typography.Text>
         </section>
 
+        {/* 插件开关 */}
         <section className="flex flex-col items-center gap-1">
           <Button type={enabled ? 'primary' : 'default'} className="font-bold" onClick={() => { setEnabled(!enabled) }}>
             {enabled ? t('g.enabled') : t('g.disabled')}

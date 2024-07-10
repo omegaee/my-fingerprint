@@ -56,9 +56,12 @@ export const arrayFilter = function<T>(arr: (T | undefined | boolean)[]): T[] {
 /**
  * url转带端口的host
  */
-export const urlToHost = function (url: string) {
+export const urlToHttpHost = function (url: string) {
   try {
     let _url = new URL(url);
+    if(_url.protocol === 'http:' || _url.protocol === 'https:'){
+      return undefined
+    }
     let hostname = _url.hostname
     let port = _url.port
     if (port === "") {

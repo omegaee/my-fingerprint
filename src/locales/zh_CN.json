@@ -56,6 +56,9 @@
       "webrtc": "desc"
     }
   },
+  "tip": {
+    "not-support-whitelist": "当前标签页不支持白名单"
+  },
   "city": {
     "SH": "上海",
     "NY": "纽约",
