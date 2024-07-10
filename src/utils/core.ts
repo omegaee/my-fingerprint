@@ -3,6 +3,7 @@ import { HookType } from '@/types/enum'
 import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomEquipmentInfo, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander } from "./data";
 import { debounce } from "./timer";
 import { postSetHookRecords } from "@/message/content";
+import { genRandomSeed, hashNumberFromString } from "./base";
 
 // hook缓存
 const cache: Partial<Record<HookFingerprintKey, any>> = {}
@@ -25,36 +26,23 @@ const recordAndSend = function (key: HookFingerprintKey) {
   sendRecordMessage()
 }
 
-/**
- * 从hook缓存或指定函数中获取值
- */
-const getValueFromCacheOrFunc = (key: HookFingerprintKey, seedFunc: (seed: number) => any): any | null => {
-  if (!cache[key]) {
-    const res = seedFunc(1000000)
-    if(res === null || res === undefined) return null 
-    if(typeof(res) === 'object'){
-      Object.assign(cache, res)
-    }else{
-      cache[key] = res
-    }
-  }
-  return cache[key] ?? null
-}
-
 export class FingerprintHandler {
-  private conf: DeepPartial<LocalStorageConfig> | undefined
   private enabled: boolean = true
+  private tabId?: number
+  private host?: string
+  private conf?: DeepPartial<LocalStorageConfig>
 
-  public constructor(config?: DeepPartial<LocalStorageConfig>) {
-    if (config){
-      this.setConfig(config)
-    }
+  public constructor(tabId: number, host: string) {
+    this.tabId = tabId
+    this.host = host
   }
 
   /**
    * 配置
    */
-  public setConfig(config: DeepPartial<LocalStorageConfig>) {
+  public setConfig(config?: DeepPartial<LocalStorageConfig>) {
+    if(!config) return
+
     if (this.conf) {
       deepmerge(this.conf, config, { clone: false })
     } else {
@@ -149,72 +137,126 @@ export class FingerprintHandler {
   }
 
   /**
- * 获取并记录值
- */
-  private getValue(key: string): any | null {
-    let res = null
-    switch (key) {
-      case "appVersion": {
-        res = getValueFromCacheOrFunc(key, randomEquipmentInfo)
-        break
+   * 从hook缓存或指定函数中获取值
+   */
+  private getValueFromCacheOrFunc(key: HookFingerprintKey, value: any, seedFunc: (seed: number) => any): any | null {
+    if (value && !cache[key]) {
+      const type = (value as BaseHookMode).type
+      let seed: number
+      switch (type) {
+        case HookType.page: {
+          seed = this.tabId ?? genRandomSeed()
+          break
+        }
+        case HookType.domain: {
+          seed = this.host ? hashNumberFromString(this.host) : genRandomSeed()
+          break
+        }
+        case HookType.browser: {
+          seed = this.conf?.browserSeed ?? genRandomSeed()
+          break
+        }
+        case HookType.seed: {
+          seed = this.conf?.customSeed ?? genRandomSeed()
+          break
+        }
+        case HookType.default: 
+        default: return null
       }
-      case "platform": {
-        res = getValueFromCacheOrFunc(key, randomEquipmentInfo)
-        break
-      }
-      case "userAgent": {
-        res = getValueFromCacheOrFunc(key, randomEquipmentInfo)
-        break
-      }
-      case "language": {
-        res = getValueFromCacheOrFunc(key, randomLanguage)
-        break
-      }
-      case "hardwareConcurrency": {
-        res = getValueFromCacheOrFunc(key, randomHardwareConcurrency)
-        break
-      }
-      case "height": {
-        res = getValueFromCacheOrFunc(key, randomScreenSize)
-        break
-      }
-      case "width": {
-        res = getValueFromCacheOrFunc(key, randomScreenSize)
-        break
-      }
-      case "colorDepth": {
-        res = getValueFromCacheOrFunc(key, randomColorDepth)
-        break
-      }
-      case "pixelDepth": {
-        res = getValueFromCacheOrFunc(key, randomPixelDepth)
-        break
-      }
-      case "canvas": {
-        res = getValueFromCacheOrFunc(key, randomCanvasNoise)
-        break
-      }
-      case "audio": {
-        res = getValueFromCacheOrFunc(key, randomAudioNoise)
-        break
-      }
-      case "webgl": {
-        res = getValueFromCacheOrFunc(key, randomWebglRander)
-        break
-      }
-      case "webrtc": {
-        break
-      }
-      case "timezone": {
-        res = getValueFromCacheOrFunc(key, () => {
-          const timezoneMode = this.conf?.fingerprint?.other?.timezone
-          if(timezoneMode?.type === HookType.value){
-            return timezoneMode.value
-          }
-        })
-        break
+      const res = seedFunc(seed)
+      if(res === null || res === undefined) return null 
+      if(typeof(res) === 'object'){
+        Object.assign(cache, res)
+      }else{
+        cache[key] = res
       }
     }
+    return cache[key] ?? null
+  }
+
+  /**
+   * 获取并记录值
+   */
+  private getValue(prefix: keyof HookFingerprint, key: string): any | null {
+    let res = null
+    switch (prefix){
+      case "navigator":{
+        const value = this.conf?.fingerprint?.navigator?.[key as keyof HookFingerprint['navigator']]
+        switch (key) {
+          case "appVersion": {
+            res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
+            break
+          }
+          case "platform": {
+            res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
+            break
+          }
+          case "userAgent": {
+            res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
+            break
+          }
+          case "language": {
+            res = this.getValueFromCacheOrFunc(key, value, randomLanguage)
+            break
+          }
+          case "hardwareConcurrency": {
+            res = this.getValueFromCacheOrFunc(key, value, randomHardwareConcurrency)
+            break
+          }
+        }
+      }
+      case "screen":{
+        const value = this.conf?.fingerprint?.screen?.[key as keyof HookFingerprint['screen']]
+        switch (key) {
+          case "height": {
+            res = this.getValueFromCacheOrFunc(key, value, randomScreenSize)
+            break
+          }
+          case "width": {
+            res = this.getValueFromCacheOrFunc(key, value, randomScreenSize)
+            break
+          }
+          case "colorDepth": {
+            res = this.getValueFromCacheOrFunc(key, value, randomColorDepth)
+            break
+          }
+          case "pixelDepth": {
+            res = this.getValueFromCacheOrFunc(key, value, randomPixelDepth)
+            break
+          }
+        }
+      }
+      case "other":{
+        const value = this.conf?.fingerprint?.other?.[key as keyof HookFingerprint['other']]
+        switch (key) {
+          case "canvas": {
+            res = this.getValueFromCacheOrFunc(key, value, randomCanvasNoise)
+            break
+          }
+          case "audio": {
+            res = this.getValueFromCacheOrFunc(key, value, randomAudioNoise)
+            break
+          }
+          case "webgl": {
+            res = this.getValueFromCacheOrFunc(key, value, randomWebglRander)
+            break
+          }
+          case "webrtc": {
+            break
+          }
+          case "timezone": {
+            res = this.getValueFromCacheOrFunc(key, value, () => {
+              const timezoneMode = this.conf?.fingerprint?.other?.timezone
+              if(timezoneMode?.type === HookType.value){
+                return timezoneMode.value
+              }
+            })
+            break
+          } 
+        }
+      }
+    }
+
     if (res !== null) {
       // 记录
       recordAndSend(key as HookFingerprintKey)
@@ -265,7 +307,7 @@ export class FingerprintHandler {
         value: new Proxy(window.navigator, {
           get: (target, key: string) => {
             if (key in target) {
-              const value = this.getValue(key)
+              const value = this.getValue('navigator', key)
               if (value !== null) {
                 return value
               }
@@ -300,7 +342,7 @@ export class FingerprintHandler {
         value: new Proxy(window.screen, {
           get: (target, key: string) => {
             if (key in target) {
-              const value = this.getValue(key)
+              const value = this.getValue('screen', key)
               if (value !== null) {
                 return value
               }
@@ -333,7 +375,7 @@ export class FingerprintHandler {
       }
       HTMLCanvasElement.prototype.toDataURL = new Proxy(this.rawToDataURL, {
         apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
-          const value = this.getValue('canvas')
+          const value = this.getValue('other', 'canvas')
           if (value !== null) {
             let ctx = thisArg.getContext('2d');
             if (ctx !== null) {
@@ -366,7 +408,7 @@ export class FingerprintHandler {
       }
       OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(this.rawCreateDynamicsCompressor, {
         apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
-          const value = this.getValue('audio')
+          const value = this.getValue('other', 'audio')
           if (value === null) return target.apply(thisArg, args)
           const compressor = target.apply(thisArg, args)
           // 创建一个增益节点，添加噪音
@@ -405,7 +447,7 @@ export class FingerprintHandler {
         thisArg: WebGLRenderingContext | WebGL2RenderingContext,
         args: Parameters<typeof WebGLRenderingContext.prototype.getParameter> | Parameters<typeof WebGL2RenderingContext.prototype.getParameter>
       ) => {
-        const value = this.getValue('webgl')
+        const value = this.getValue('other', 'webgl')
         if (value !== null) {
           const debugEx = thisArg.getExtension('WEBGL_debug_renderer_info')
           if (debugEx !== null && args[0] === debugEx.UNMASKED_RENDERER_WEBGL) {
@@ -440,7 +482,7 @@ export class FingerprintHandler {
       if(!this.rawGetTimezoneOffset){
         this.rawGetTimezoneOffset = Date.prototype.getTimezoneOffset
       }
-      const currTimeZone = this.getValue('timezone') as TimeZoneInfo
+      const currTimeZone = this.getValue('other', 'timezone') as TimeZoneInfo
 
       Intl.DateTimeFormat = new Proxy(this.rawDateTimeFormat, {
         construct(target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) {

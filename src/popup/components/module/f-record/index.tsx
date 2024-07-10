@@ -1,5 +1,3 @@
-import { useTranslation } from "react-i18next"
-
 const fKeys: HookFingerprintKey[] = ['appVersion', 'platform', 'userAgent', 'language', 'hardwareConcurrency', 'height', 'width', 'colorDepth', 'pixelDepth', 'canvas', 'audio', 'webgl', 'webrtc', 'timezone']
 
 export type FHookRecordProps = {
@@ -8,9 +6,7 @@ export type FHookRecordProps = {
   records?: ToolbarNoticeRecord['data']
 }
 
-export const FHookRecord = function ({config, records}: FHookRecordProps) {
-  const [t] = useTranslation()
-
+export const FHookRecord = function ({records}: FHookRecordProps) {
   return <section>
     {fKeys.map((key) =>
       <div key={key}

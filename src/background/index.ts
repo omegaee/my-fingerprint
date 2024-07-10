@@ -1,4 +1,4 @@
-import { compareVersions, genRandomSeed } from "@/utils/base";
+import { compareVersions, genRandomSeed, urlToHttpHost } from "@/utils/base";
 import { debounce } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { HookType, RuntimeMsg } from '@/types/enum'
@@ -7,6 +7,12 @@ const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'we
 
 let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
+
+const BADGE_COLOR = {
+  whitelist: '#fff',
+  low: '#7FFFD4',
+  high: '#F4A460',
+}
 
 /**
  * 生成默认配置
@@ -63,11 +69,12 @@ const initLocalConfig = (previousVersion: string | undefined) => {
       chrome.storage.local.clear().then(() => {
         const temp = genDefaultLocalStorage()
         chrome.storage.local.set(temp).then(() => {
-          localStorage = {...temp, whitelist: new Set(temp.whitelist)}
+          localStorage = { ...temp, whitelist: new Set(temp.whitelist) }
         })
       })
     } else {
-      localStorage = {...data, whitelist: new Set(data.whitelist)} as LocalStorageObject
+      chrome.storage.local.set({ config: {...data.config, browserSeed: genRandomSeed()} })
+      localStorage = { ...data, whitelist: new Set(data.whitelist) } as LocalStorageObject
     }
   })
 }
@@ -76,14 +83,14 @@ const initLocalConfig = (previousVersion: string | undefined) => {
  * 存储配置
  */
 const saveLocalConfig = debounce(() => {
-  localStorage && chrome.storage.local.set({config: localStorage})
+  localStorage && chrome.storage.local.set({ config: localStorage.config })
 }, 500)
 
 /**
  * 存储白名单
  */
 const saveLocalWhitelist = debounce(() => {
-  localStorage && chrome.storage.local.set({whitelist: [...localStorage.whitelist]})
+  localStorage && chrome.storage.local.set({ whitelist: [...localStorage.whitelist] })
 }, 500)
 
 /**
@@ -99,10 +106,10 @@ const updateLocalConfig = (config: DeepPartial<LocalStorageConfig>) => {
  * 修改白名单
  */
 const updateLocalWhitelist = (type: 'add' | 'del', host: string) => {
-  if(!localStorage?.whitelist) return
-  if(type === 'add'){
+  if (!localStorage?.whitelist) return
+  if (type === 'add') {
     localStorage.whitelist.add(host)
-  }else if(type === 'del'){
+  } else if (type === 'del') {
     localStorage.whitelist.delete(host)
   }
   saveLocalWhitelist()
@@ -122,7 +129,7 @@ const getBadgeContent = (records: Partial<Record<HookFingerprintKey, number>>): 
       baseNum += num
     }
   }
-  return [String(specialNum || baseNum), specialNum ? '#F4A460' : '#7FFFD4']
+  return [String(specialNum || baseNum), specialNum ? BADGE_COLOR.high : BADGE_COLOR.low]
 }
 
 
@@ -145,20 +152,6 @@ chrome.runtime.onStartup.addListener(() => {
   initLocalConfig(chrome.runtime.getManifest().version)
 });
 
-// /**
-//  * 监听tab变化
-//  */
-// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-//   if (changeInfo.status === 'loading') {
-//     if(!tab.url)return
-//     if (themeMap?.get(tab.url)) {
-//       chrome.action.setIcon({path: 'logo.png', tabId: tabId});
-//     } else {
-//       chrome.action.setIcon({path: 'logo-gray.png', tabId: tabId});
-//     }
-//   }
-// });
-
 /**
  * 消息处理
  */
@@ -169,10 +162,14 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       break
     }
     case RuntimeMsg.GetNotice: {
-      (sendResponse as RespFunc<GetNoticeMsg>)({
-        type: 'record',
-        data: hookRecords.get(msg.tabId)
-      })
+      const isWhitelist = localStorage?.whitelist.has(msg.host);
+      (sendResponse as RespFunc<GetNoticeMsg>)(isWhitelist ?
+        {
+          type: 'whitelist',
+        } : {
+          type: 'record',
+          data: hookRecords.get(msg.tabId)
+        })
       break
     }
     case RuntimeMsg.SetHookRecords: {
@@ -188,15 +185,25 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       updateLocalWhitelist('add', msg.host)
       break
     }
+    case RuntimeMsg.DelWhitelist: {
+      updateLocalWhitelist('del', msg.host)
+      break
+    }
   }
 })
 
+/**
+ * 监听tab变化
+ */
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if(!tab.url)return
+  if (changeInfo.status === 'loading') {
+    const host = urlToHttpHost(tab.url)
+    if(!host)return
+    if(localStorage?.whitelist.has(host)){
+      chrome.action.setBadgeText({ tabId, text: ' ' });
+      chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR.whitelist })
+    }
+  }
+});
 
-// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-//   if(localConfig && changeInfo.status === 'loading'){
-//     chrome.scripting.executeScript({
-//       target: {tabId, allFrames: true},
-//       files: ['src/scripts/content.ts.js'],
-//     })
-//   }
-// })

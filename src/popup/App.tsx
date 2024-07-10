@@ -13,7 +13,7 @@ import FHookRecord from "./components/module/f-record"
 import FConfig from "./components/module/f-config"
 
 import { urlToHttpHost } from "@/utils/base"
-import { msgAddWhiteList, msgDelWhiteList, msgGetNotice } from "@/message/runtime"
+import { msgAddWhiteList, msgDelWhiteList, msgGetNotice, msgSetConfig } from "@/message/runtime"
 
 function App() {
   const [t, i18n] = useTranslation()
@@ -37,30 +37,42 @@ function App() {
       if (!host) return
       const temp = host.split(':')
       setHostPart([temp[0], temp[1]])
-    })
-    msgGetNotice().then((data) => {
-      if(data.type === 'record'){
-        setHookRecords(data.data)
-      }else if(data.type === 'whitelist'){
-        setIsWhitelist(true)
-      }
+      if(!tab.id) return
+      msgGetNotice(tab.id, host).then((data) => {
+        if(data.type === 'record'){
+          setHookRecords(data.data)
+        }else if(data.type === 'whitelist'){
+          setIsWhitelist(true)
+        }
+      })
     })
   }, [])
 
   useEffect(() => {
+    if(!config)return
     setEnabled(!!config?.enable)
   }, [config])
 
-  const addWhitelist = () => {
-    if(!hostPart)return
-    msgAddWhiteList(hostPart.join(':'))
-    setIsWhitelist(true)
+  const switchEnable = () => {
+    if(enabled){
+      msgSetConfig({enable: false})
+      setEnabled(false)
+    }else{
+      msgSetConfig({enable: true})
+      setEnabled(true)
+    }
   }
 
-  const delWhitelist = () => {
+  const switchWhitelist = () => {
     if(!hostPart)return
-    msgDelWhiteList(hostPart.join(':'))
-    setIsWhitelist(false)
+    const host = hostPart.join(':')
+    if(isWhitelist){
+      msgDelWhiteList(host)
+      setIsWhitelist(false)
+    }else{
+      msgAddWhiteList(host)
+      setIsWhitelist(true)
+    }
   }
 
   const tabItems = useMemo<TabsProps['items']>(() => {
@@ -76,7 +88,7 @@ function App() {
         children: <FConfig tab={tab} config={config} />,
       },
     ].map((item, index) => ({...item, key: String(index)}))
-  }, [i18n.language, config, tab])
+  }, [i18n.language, config, tab, hookRecords])
 
   return (
     <Layout className="overflow-auto no-scrollbar p-2 w-64 h-[600px]">
@@ -89,10 +101,11 @@ function App() {
 
         {/* 白名单开关 */}
         <section className="grow flex flex-col items-center gap-1">
-          <Button type={isWhitelist ? 'primary' : 'default'} 
+          <Button type={isWhitelist ? 'primary' : 'default'}
+            danger={!hostPart}
             className="font-mono font-bold"
             style={{width: '100%'}}
-            onClick={isWhitelist ? delWhitelist : addWhitelist} >
+            onClick={switchWhitelist} >
             {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostPart?.[0] ?? t('tip.not-support-whitelist')}
           </Button>
           <Typography.Text className="text-[13px]">{isWhitelist ? t('e.whitelist-in') : t('e.whitelist-not')}</Typography.Text>
@@ -100,7 +113,7 @@ function App() {
 
         {/* 插件开关 */}
         <section className="flex flex-col items-center gap-1">
-          <Button type={enabled ? 'primary' : 'default'} className="font-bold" onClick={() => { setEnabled(!enabled) }}>
+          <Button type={enabled ? 'primary' : 'default'} className="font-bold" onClick={switchEnable}>
             {enabled ? t('g.enabled') : t('g.disabled')}
           </Button>
           {/* <Switch value={enabled} onChange={setEnabled} /> */}

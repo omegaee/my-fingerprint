@@ -23,6 +23,7 @@ type SetConfigRequest = {
 type GetNoticeRequest = {
   type: RuntimeMsg.GetNotice,
   tabId: number,
+  host: string,
 }
 
 type SetHookRecordsRequest = {

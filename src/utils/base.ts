@@ -36,7 +36,7 @@ export const genRandomSeed = function () {
 /**
  * 对字符串hash，生成32位种子
  */
-export const hashNumber = (input: string): number => {
+export const hashNumberFromString = (input: string): number => {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
       let char = input.charCodeAt(i);
@@ -59,7 +59,7 @@ export const arrayFilter = function<T>(arr: (T | undefined | boolean)[]): T[] {
 export const urlToHttpHost = function (url: string) {
   try {
     let _url = new URL(url);
-    if(_url.protocol === 'http:' || _url.protocol === 'https:'){
+    if(_url.protocol !== 'http:' && _url.protocol !== 'https:'){
       return undefined
     }
     let hostname = _url.hostname

@@ -1,5 +1,5 @@
 import { msgSetConfig } from "@/message/runtime"
-import { hashNumber } from "@/utils/base"
+import { hashNumberFromString } from "@/utils/base"
 import { useDebounceCallback } from "@/utils/hooks"
 import { Input, Typography } from "antd"
 import { useEffect, useState } from "react"
@@ -21,7 +21,7 @@ export const OtherConfig = ({config}: OtherConfigProps) => {
   const changeSeed = useDebounceCallback((value: string) => {
     let seed = Number(value)
     if(isNaN(seed)){
-      seed = hashNumber(value)
+      seed = hashNumberFromString(value)
       setCustomSeed(String(seed))
     }
     msgSetConfig({
