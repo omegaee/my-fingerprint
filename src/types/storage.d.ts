@@ -15,7 +15,8 @@ type LocalStorageConfig = {
   browserSeed: number
   // 指纹
   fingerprint: HookFingerprint
-
+  // 其他
+  hookNetRequest: boolean
 }
 
 type HookFingerprint = {
