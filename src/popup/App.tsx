@@ -7,10 +7,12 @@ import {
   CloseOutlined,
   AlertOutlined,
   SettingOutlined,
+  SafetyOutlined,
 } from '@ant-design/icons';
 
-import FHookRecord from "./components/module/f-record"
-import FConfig from "./components/module/f-config"
+import FHookRecord from "./f-record"
+import FConfig from "./f-config"
+import WhitelistView from "./whitelist"
 
 import { urlToHttpHost } from "@/utils/base"
 import { msgAddWhiteList, msgDelWhiteList, msgGetNotice, msgSetConfig } from "@/message/runtime"
@@ -86,6 +88,11 @@ function App() {
         label: t('e.f-config'),
         icon: <SettingOutlined />,
         children: <FConfig tab={tab} config={config} />,
+      },
+      {
+        label: t('e.whitelist'),
+        icon: <SafetyOutlined />,
+        children: <WhitelistView tab={tab} config={config} />,
       },
     ].map((item, index) => ({...item, key: String(index)}))
   }, [i18n.language, config, tab, hookRecords])

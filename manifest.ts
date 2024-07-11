@@ -10,7 +10,6 @@ export const manifest: chrome.runtime.ManifestV3 = {
     'webNavigation', 
     'scripting',
     'webRequest',
-    'webRequestBlocking',
   ],
   host_permissions: [
     "<all_urls>"

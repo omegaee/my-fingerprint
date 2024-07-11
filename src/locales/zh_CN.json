@@ -10,6 +10,7 @@
   "e": {
     "enabled": "扩展已开启",
     "disabled": "扩展已关闭",
+    "whitelist": "白名单",
     "whitelist-in": "在白名单中",
     "whitelist-not": "不在白名单",
     "f-record": "记录",
