@@ -9,6 +9,8 @@ export const manifest: chrome.runtime.ManifestV3 = {
     'activeTab', 
     'webNavigation', 
     'scripting',
+    'webRequest',
+    'webRequestBlocking',
   ],
   host_permissions: [
     "<all_urls>"

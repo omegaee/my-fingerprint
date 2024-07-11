@@ -1,17 +1,64 @@
-import { compareVersions, genRandomSeed, urlToHttpHost } from "@/utils/base";
+import { compareVersions, genRandomSeed, hashNumberFromString, urlToHttpHost } from "@/utils/base";
 import { debounce } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { HookType, RuntimeMsg } from '@/types/enum'
+import { randomEquipmentInfo } from "@/utils/data";
 
 const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'webgl', 'webrtc', 'timezone']
 
 let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
+const userAgentCache: Partial<Record<HookType, string>> = {}
+
 const BADGE_COLOR = {
   whitelist: '#fff',
   low: '#7FFFD4',
   high: '#F4A460',
+}
+
+/**
+ * 获取请求头
+ */
+const getUserAgent = (tabId: number, url: string) => {
+  // 扩展未开启
+  if(!localStorage?.config.enable) return undefined
+  // url无效
+  const host = urlToHttpHost(url)
+  if (!host) return undefined
+  // 在白名单
+  if (localStorage.whitelist.has(host)) return undefined
+
+  const mode = localStorage?.config.fingerprint.navigator.userAgent
+  switch (mode?.type) {
+    case HookType.value: {
+      return mode.value
+    }
+    case HookType.page: {
+      return randomEquipmentInfo(tabId).userAgent
+    }
+    case HookType.domain: {
+      return randomEquipmentInfo(hashNumberFromString(host)).userAgent
+    }
+    case HookType.browser: {
+      let ua = userAgentCache[HookType.browser]
+      if(!ua){
+        ua = randomEquipmentInfo(localStorage?.config.browserSeed ?? genRandomSeed()).userAgent
+        userAgentCache[HookType.browser] = ua
+      }
+      return ua
+    }
+    case HookType.seed: {
+      let ua = userAgentCache[HookType.seed]
+      if(!ua){
+        ua = randomEquipmentInfo(localStorage?.config.customSeed ?? genRandomSeed()).userAgent
+        userAgentCache[HookType.browser] = ua
+      }
+      return ua
+    }
+    case HookType.default:
+    default: return undefined
+  }
 }
 
 /**
@@ -73,7 +120,7 @@ const initLocalConfig = (previousVersion: string | undefined) => {
         })
       })
     } else {
-      chrome.storage.local.set({ config: {...data.config, browserSeed: genRandomSeed()} })
+      chrome.storage.local.set({ config: { ...data.config, browserSeed: genRandomSeed() } })
       localStorage = { ...data, whitelist: new Set(data.whitelist) } as LocalStorageObject
     }
   })
@@ -196,14 +243,30 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
  * 监听tab变化
  */
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if(!tab.url)return
+  if (!tab.url) return
   if (changeInfo.status === 'loading') {
     const host = urlToHttpHost(tab.url)
-    if(!host)return
-    if(localStorage?.whitelist.has(host)){
+    if (!host) return
+    if (localStorage?.whitelist.has(host)) {
       chrome.action.setBadgeText({ tabId, text: ' ' });
       chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR.whitelist })
     }
   }
 });
 
+/**
+ * hook网络请求UA
+ */
+chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
+  const ua = getUserAgent(details.tabId, details.url)
+  if(ua === undefined) return
+  if(details.requestHeaders){
+    for (const header of details.requestHeaders) {
+      if (header.name.toLowerCase() === 'user-agent') {
+        header.value = ua
+        break
+      }
+    }
+  }
+  return { requestHeaders: details.requestHeaders }
+}, { urls: ["<all_urls>"] }, ["blocking", "requestHeaders"])

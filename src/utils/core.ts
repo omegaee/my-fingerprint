@@ -1,6 +1,6 @@
 import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
-import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomEquipmentInfo, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander } from "./data";
+import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomEquipmentInfo, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander, seededRandom } from "./data";
 import { debounce } from "./timer";
 import { postSetHookRecords } from "@/message/content";
 import { genRandomSeed, hashNumberFromString } from "./base";
@@ -28,13 +28,18 @@ const recordAndSend = function (key: HookFingerprintKey) {
 
 export class FingerprintHandler {
   private enabled: boolean = true
-  private tabId?: number
-  private host?: string
   private conf?: DeepPartial<LocalStorageConfig>
 
+  private pageSeed: number
+  private domainSeed: number
+  private browserSeed: number
+  private curstomSeed: number
+
   public constructor(tabId: number, host: string) {
-    this.tabId = tabId
-    this.host = host
+    this.pageSeed = seededRandom(tabId)
+    this.domainSeed = hashNumberFromString(host)
+    this.browserSeed = this.conf?.browserSeed ?? genRandomSeed()
+    this.curstomSeed = this.conf?.customSeed ?? genRandomSeed()
   }
 
   /**
@@ -72,9 +77,15 @@ export class FingerprintHandler {
     if (reExecute || config.fingerprint?.other?.webrtc) {
       this.proxyWebRTC()
     }
-
     if (reExecute) {
       this.proxyGetOwnPropertyDescriptor()
+    }
+    
+    if(config.browserSeed !== undefined){
+      this.browserSeed = config.browserSeed
+    }
+    if(config.customSeed !== undefined){
+      this.curstomSeed = config.customSeed
     }
   }
 
@@ -145,19 +156,19 @@ export class FingerprintHandler {
       let seed: number
       switch (type) {
         case HookType.page: {
-          seed = this.tabId ?? genRandomSeed()
+          seed = this.pageSeed
           break
         }
         case HookType.domain: {
-          seed = this.host ? hashNumberFromString(this.host) : genRandomSeed()
+          seed = this.domainSeed
           break
         }
         case HookType.browser: {
-          seed = this.conf?.browserSeed ?? genRandomSeed()
+          seed = this.browserSeed
           break
         }
         case HookType.seed: {
-          seed = this.conf?.customSeed ?? genRandomSeed()
+          seed = this.curstomSeed
           break
         }
         case HookType.default: 
