@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next"
-import FConfigItem, { type FConfigItemProps } from "./item/item"
 import { HookType } from '@/types/enum'
-import { arrayFilter } from "@/utils/base"
-import FConfigSimpleItem, { FConfigSimpleItemProps } from "./item/simple"
+import FWorkSelectItem, { FWorkSelectItemProps } from "./item/work-select"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.seed]
 const valueTypes = [HookType.value]
@@ -10,8 +8,8 @@ const types = [...baseTypes, ...valueTypes]
 
 type FItems = {
   text: string
-  keys: FConfigSimpleItemProps['keys']
-  keyPrefix: FConfigSimpleItemProps['keyPrefix']
+  keys: FWorkSelectItemProps['keys']
+  keyPrefix: FWorkSelectItemProps['keyPrefix']
   types: HookType[]
 }
 
@@ -79,7 +77,7 @@ export const FBaseConfig = function ({config}: FBaseConfigProps) {
 
   return <>
     {fItems.map((item) =>
-      <FConfigSimpleItem
+      <FWorkSelectItem
         key={item.text}
         keys={item.keys}
         keyPrefix={item.keyPrefix}

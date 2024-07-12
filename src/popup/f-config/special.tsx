@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next"
-import FConfigItem, { type FConfigItemProps } from "./item/item"
 import { HookType } from '@/types/enum'
 import FConfigTimezoneItem from "./item/timezone"
-import FConfigSimpleItem, { FConfigSimpleItemProps } from "./item/simple"
+import FWorkSelectItem, { FWorkSelectItemProps } from "./item/work-select"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.seed]
 const valueTypes = [HookType.value]
@@ -11,14 +10,14 @@ const types = [...baseTypes, ...valueTypes]
 type FItems = {
   type: 'simple'
   text: string
-  keys: FConfigSimpleItemProps['keys']
-  keyPrefix: FConfigSimpleItemProps['keyPrefix']
+  keys: FWorkSelectItemProps['keys']
+  keyPrefix: FWorkSelectItemProps['keyPrefix']
   types: HookType[]
 } | {
   type: 'timezone'
   text: string,
-  keys: FConfigSimpleItemProps['keys']
-  keyPrefix: FConfigSimpleItemProps['keyPrefix']
+  keys: FWorkSelectItemProps['keys']
+  keyPrefix: FWorkSelectItemProps['keyPrefix']
 }
 
 const fItems: FItems[] = [
@@ -78,7 +77,7 @@ export const FSpecialConfig = function ({config}: FSpecialConfigProps) {
   return <>
     {fItems.map((item) => {
       switch(item.type){
-        case "simple": return <FConfigSimpleItem
+        case "simple": return <FWorkSelectItem
           key={item.text}
           keys={item.keys}
           keyPrefix={item.keyPrefix}

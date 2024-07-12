@@ -6,11 +6,11 @@ import { useTranslation } from "react-i18next"
 import { HookType } from '@/types/enum'
 import { msgSetConfig } from "@/message/runtime"
 import { useDebounceCallback } from "@/utils/hooks"
-import FConfigBaseItem from "./base"
+import FConfigItem from "./base"
 
 type FItemPrefix = keyof HookFingerprint
 
-export type FConfigSimpleItemProps = {
+export type FWorkSelectItemProps = {
   title: string
   keys: HookFingerprintKey[]
   keyPrefix: FItemPrefix[]
@@ -19,7 +19,7 @@ export type FConfigSimpleItemProps = {
   types?: HookType[]
 }
 
-export const FConfigSimpleItem = function (props: FConfigSimpleItemProps) {
+export const FWorkSelectItem = function (props: FWorkSelectItemProps) {
   const [t] = useTranslation()
   const [showInput, setShowInput] = useState(false)
 
@@ -85,16 +85,16 @@ export const FConfigSimpleItem = function (props: FConfigSimpleItemProps) {
     })
   })
 
-  return <FConfigBaseItem<HookType>
+  return <FConfigItem.Select<HookType>
     title={props.title}
     desc={props.desc}
     options={options}
     defaultValue={props.values?.[0]?.type ?? HookType.default}
     onChangeOption={onChangeSelect}
-    suffixNode={showInput &&
+    node={showInput &&
       props.keys.map((opt, index) => <section key={opt} className="flex items-center gap-2">
         <Typography.Text className="whitespace-nowrap">{opt}</Typography.Text>
         <Input defaultValue={(props.values?.[index] as ValueHookMode)?.value} className="grow" onInput={({ target }: any) => onChangeInput(props.keyPrefix[index], opt, target.value)} />
       </section>)} />
 }
-export default FConfigSimpleItem
+export default FWorkSelectItem

@@ -41,7 +41,10 @@
       "canvas": "Canvas画布指纹",
       "audio": "音频指纹",
       "webgl": "WebGL指纹",
-      "webrtc": "WebRTC指纹"
+      "webrtc": "WebRTC指纹",
+
+      "seed": "自定义种子",
+      "hook-net-request": "网络请求钩子"
     },
     "desc": {
       "equipment": "desc",
@@ -54,7 +57,10 @@
       "canvas": "desc",
       "audio": "desc",
       "webgl": "desc",
-      "webrtc": "desc"
+      "webrtc": "desc",
+
+      "seed": "desc",
+      "hook-net-request": "desc"
     }
   },
   "tip": {

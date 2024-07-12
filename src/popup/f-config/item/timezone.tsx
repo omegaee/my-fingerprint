@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next"
-import FConfigBaseItem from "./base"
 import { useMemo } from "react"
 import { msgSetConfig } from "@/message/runtime"
 import { HookType } from "@/types/enum" 
+import FConfigItem from "./base"
 
 const getTimezones = () => {
   return [
@@ -97,7 +97,7 @@ export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
     })
   }
 
-  return <FConfigBaseItem<string>
+  return <FConfigItem.Select<string>
     title={props.title}
     desc={props.desc}
     options={getOptions()}
