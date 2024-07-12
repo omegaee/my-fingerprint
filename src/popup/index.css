@@ -77,3 +77,8 @@ button:focus-visible {
     background-color: #f9f9f9;
   } */
 }
+
+.ant-tabs .ant-tabs-content, 
+.ant-tabs .ant-tabs-tabpane{
+  height: 100%;
+}

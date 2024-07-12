@@ -33,12 +33,12 @@ type SetHookRecordsRequest = {
 
 type AddWhitelistRequest = {
   type: RuntimeMsg.AddWhitelist,
-  host: string,
+  host: string | string[],
 }
 
 type DelWhitelistRequest = {
   type: RuntimeMsg.DelWhitelist,
-  host: string,
+  host: string | string[],
 }
 
 type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | AddWhitelistRequest | DelWhitelistRequest

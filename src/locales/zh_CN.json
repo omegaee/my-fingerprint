@@ -58,7 +58,13 @@
     }
   },
   "tip": {
-    "not-support-whitelist": "当前标签页不支持"
+    "label": {
+      "not-support-whitelist": "当前标签页不支持"
+    },
+    "err": {
+      "input-hostname": "请输入正确的域名",
+      "input-port": "请输入正确的端口号"
+    }
   },
   "city": {
     "SH": "上海",

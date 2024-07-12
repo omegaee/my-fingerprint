@@ -1,4 +1,4 @@
-import { Button, Divider, Layout, Tabs, type TabsProps, Typography, theme } from "antd"
+import { Button, Divider, Layout, Tabs, type TabsProps, Typography, message, theme } from "antd"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -27,8 +27,10 @@ function App() {
   const [hookRecords, setHookRecords] = useState<ToolbarNoticeRecord['data']>()
   const [isWhitelist, setIsWhitelist] = useState(false)
 
+  const [messageApi, contextHolder] = message.useMessage();
+
   useEffect(() => {
-    chrome.storage.local.get(['config']).then(({config}: Partial<LocalStorage>) => {
+    chrome.storage.local.get(['config']).then(({ config }: Partial<LocalStorage>) => {
       setConfig(config)
     })
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
@@ -39,11 +41,11 @@ function App() {
       if (!host) return
       const temp = host.split(':')
       setHostPart([temp[0], temp[1]])
-      if(!tab.id) return
+      if (!tab.id) return
       msgGetNotice(tab.id, host).then((data) => {
-        if(data.type === 'record'){
+        if (data.type === 'record') {
           setHookRecords(data.data)
-        }else if(data.type === 'whitelist'){
+        } else if (data.type === 'whitelist') {
           setIsWhitelist(true)
         }
       })
@@ -51,27 +53,27 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if(!config)return
+    if (!config) return
     setEnabled(!!config?.enable)
   }, [config])
 
   const switchEnable = () => {
-    if(enabled){
-      msgSetConfig({enable: false})
+    if (enabled) {
+      msgSetConfig({ enable: false })
       setEnabled(false)
-    }else{
-      msgSetConfig({enable: true})
+    } else {
+      msgSetConfig({ enable: true })
       setEnabled(true)
     }
   }
 
   const switchWhitelist = () => {
-    if(!hostPart)return
+    if (!hostPart) return
     const host = hostPart.join(':')
-    if(isWhitelist){
+    if (isWhitelist) {
       msgDelWhiteList(host)
       setIsWhitelist(false)
-    }else{
+    } else {
       msgAddWhiteList(host)
       setIsWhitelist(true)
     }
@@ -92,15 +94,16 @@ function App() {
       {
         label: t('e.whitelist'),
         icon: <SafetyOutlined />,
-        children: <WhitelistView tab={tab} config={config} />,
+        children: <WhitelistView tab={tab} config={config} msgApi={messageApi} />,
       },
-    ].map((item, index) => ({...item, key: String(index)}))
+    ].map((item, index) => ({ ...item, key: String(index) }))
   }, [i18n.language, config, tab, hookRecords])
 
   return (
-    <Layout className="overflow-auto no-scrollbar p-2 w-64 h-[600px]">
+    <Layout className="overflow-y-auto no-scrollbar p-2 w-64 flex flex-col">
+      {contextHolder}
 
-      <Typography.Text className="mx-auto text-2xl font-black ">My Fingerprint</Typography.Text>
+      <Typography.Text className="mx-auto text-xl font-black ">My Fingerprint</Typography.Text>
 
       <Divider style={{ margin: '8px 0' }} />
 
@@ -111,9 +114,9 @@ function App() {
           <Button type={isWhitelist ? 'primary' : 'default'}
             danger={!hostPart}
             className="font-mono font-bold"
-            style={{width: '100%'}}
+            style={{ width: '100%' }}
             onClick={switchWhitelist} >
-            {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostPart?.[0] ?? t('tip.not-support-whitelist')}
+            {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostPart?.[0] ?? t('tip.label.not-support-whitelist')}
           </Button>
           <Typography.Text className="text-[13px]">{isWhitelist ? t('e.whitelist-in') : t('e.whitelist-not')}</Typography.Text>
         </section>
@@ -131,7 +134,9 @@ function App() {
 
       <Divider style={{ margin: '8px 0 0 0' }} />
 
-      <Tabs type="line" size='small' centered items={tabItems} />
+      <Tabs className="h-[450px] grow" type="line" size='small' centered
+        items={tabItems}
+        tabBarStyle={{ marginBottom: '8px' }} />
 
     </Layout>
   )

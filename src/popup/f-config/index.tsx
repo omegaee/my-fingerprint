@@ -42,7 +42,7 @@ export const FConfig = (props: FConfigProps) => {
     ].map((item, key) => ({ ...item, key }))
   }, [i18n.language, props.config])
 
-  return <Collapse size='small'
+  return <Collapse className="h-full" size='small'
     style={{
       background: 'transparent',
     }}

@@ -224,12 +224,24 @@ const updateLocalConfig = (config: DeepPartial<LocalStorageConfig>) => {
 /**
  * 修改白名单
  */
-const updateLocalWhitelist = (type: 'add' | 'del', host: string) => {
+const updateLocalWhitelist = (type: 'add' | 'del', host: string | string[]) => {
   if (!localStorage?.whitelist) return
-  if (type === 'add') {
-    localStorage.whitelist.add(host)
-  } else if (type === 'del') {
-    localStorage.whitelist.delete(host)
+  if(Array.isArray(host)){
+    if (type === 'add') {
+      for(const hh of host){
+        localStorage.whitelist.add(hh)
+      }
+    } else if (type === 'del') {
+      for(const hh of host){
+        localStorage.whitelist.delete(hh)
+      }
+    }
+  }else{
+    if (type === 'add') {
+      localStorage.whitelist.add(host)
+    } else if (type === 'del') {
+      localStorage.whitelist.delete(host)
+    }
   }
   saveLocalWhitelist()
 }

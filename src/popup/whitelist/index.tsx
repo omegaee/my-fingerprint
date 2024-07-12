@@ -1,21 +1,26 @@
 import { useDebounceCallback } from "@/utils/hooks"
-import { Highlight } from '@/components/data/highlight'
-import { Button, Input, Space } from "antd"
+import { Button, Input, Space, theme } from "antd"
 import { useEffect, useState } from "react"
 
 import {
   PlusOutlined,
-  DeleteOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
 import { msgAddWhiteList, msgDelWhiteList } from "@/message/runtime";
+import WhitelistItem from "./item";
+import { type MessageInstance } from "antd/es/message/interface";
+import { useTranslation } from "react-i18next";
+
+// const domainRegex = /^[a-zA-Z0-9\u4e00-\u9fa5][-a-zA-Z0-9\u4e00-\u9fa5]{0,62}(\.[a-zA-Z0-9\u4e00-\u9fa5][-a-zA-Z0-9\u4e00-\u9fa5]{0,62})+$/
 
 export type WhitelistProps = {
   tab?: chrome.tabs.Tab
   config?: Partial<LocalStorageConfig>
+  msgApi?: MessageInstance
 }
 
 export const WhitelistView = (props: WhitelistProps) => {
+  const [t] = useTranslation()
   const [whitelist, setWhitelist] = useState<string[]>([])
   const [filteredWhitelist, setFilteredWhitelist] = useState<string[]>([])
   const [filterValue, setFilterValue] = useState('')
@@ -23,7 +28,8 @@ export const WhitelistView = (props: WhitelistProps) => {
   const debounceSetFilterValue = useDebounceCallback((value: string) => {
     setFilterValue(value.trim())
   })
-
+  const { token } = theme.useToken()
+  
   useEffect(() => {
     chrome.storage.local.get('whitelist').then(({whitelist}: Partial<LocalStorage>) => {
       setWhitelist(whitelist ?? [])
@@ -34,34 +40,52 @@ export const WhitelistView = (props: WhitelistProps) => {
     setFilteredWhitelist(whitelist?.filter((item) => item.includes(filterValue)))
   }, [whitelist, filterValue])
 
-  const addWhitelist = () => {
-    const value = addValue.trim()
-    if(value){
-      msgAddWhiteList(value)
-      setWhitelist([...whitelist, value])
+  const addItem = () => {
+    const part = addValue.split(':')
+    const hostname = part[0]?.trim()
+    const port = part[1]?.trim()
+    if(!hostname || !hostname.includes('.')){
+      props.msgApi?.error(t('tip.err.input-hostname'))
+      return
+    }
+
+    if(port){
+      if(!Number.isInteger(port)){
+        props.msgApi?.error(t('tip.err.input-port'))
+        return
+      }
+      const host = `${hostname}:${port}`
+      msgAddWhiteList(host)
+      setWhitelist([...whitelist, host])
       setAddValue('')
     }else{
+      const host = [hostname + ':80', hostname + ':443']
+      msgAddWhiteList(host)
+      setWhitelist([...whitelist, ...host])
       setAddValue('')
     }
   }
 
-  const deleteWhitelist = (item: string) => {
+  const deleteItem = (item: string) => {
     msgDelWhiteList(item)
-    setWhitelist(whitelist.filter((item) => item !== item))
+    setWhitelist(whitelist.filter((value) => value !== item))
   }
 
-  return <section>
-    <Input suffix={<SearchOutlined />} 
+  return <section className="h-full flex flex-col rounded-sm" style={{
+    backgroundColor: token.colorBgContainer,
+  }}>
+    <Input className="rounded-sm" suffix={<SearchOutlined />} 
+      placeholder="hostname:port"
       onInput={({ target }: any) => debounceSetFilterValue(target.value)} />
-    <section className="flex flex-col">
-      {filteredWhitelist.map((item) => <section>
-        <Highlight key={item} text={item} keyword={filterValue} ignoreCase />
-        <Button type='text' icon={<DeleteOutlined />} onClick={() => deleteWhitelist(item)} />
-      </section>)}
+    <section className="overflow-y-auto no-scrollbar grow flex flex-col">
+      {filteredWhitelist.map((item) => <WhitelistItem key={item} item={item} filterValue={filterValue} onDelete={deleteItem} />)}
     </section>
     <Space.Compact>
-      <Input value={addValue} onChange={({target}) => setAddValue(target.value)} placeholder="hostname:port" />
-      <Button icon={<PlusOutlined />} disabled={!addValue} onClick={addWhitelist} />
+      <Input className="rounded-sm" value={addValue} placeholder="hostname:port" 
+        onChange={({target}) => setAddValue(target.value)}
+        onKeyDown={({key}) => key === 'Enter' && addItem()} />
+      <Button className="rounded-sm" icon={<PlusOutlined />} 
+        disabled={!addValue} onClick={addItem} />
     </Space.Compact>
   </section>
 }

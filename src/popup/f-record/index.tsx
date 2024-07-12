@@ -7,7 +7,7 @@ export type FHookRecordProps = {
 }
 
 export const FHookRecord = function ({records}: FHookRecordProps) {
-  return <section>
+  return <section className="overflow-y-auto no-scrollbar h-full">
     {fKeys.map((key) =>
       <div key={key}
         className="p-1 rounded-sm flex justify-between items-center hover:bg-[#f4e6d38b]">
