@@ -159,6 +159,7 @@ const genDefaultLocalStorage = (): LocalStorage => {
         },
       },
       hookNetRequest: true,
+      language: navigator.language
     },
     whitelist: []
   }

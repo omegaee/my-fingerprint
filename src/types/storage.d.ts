@@ -16,6 +16,7 @@ type LocalStorageConfig = {
   // 指纹
   fingerprint: HookFingerprint
   // 其他
+  language: string
   hookNetRequest: boolean
 }
 

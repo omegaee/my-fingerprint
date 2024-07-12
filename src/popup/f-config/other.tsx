@@ -1,10 +1,19 @@
-import { useDebounceCallback } from "@/utils/hooks"
-import { Input, Typography } from "antd"
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import FWorkInputItem from "./item/work-input"
+import FWorkItem from "./item/work"
 import FConfigItem from "./item/base"
-import FWorkSwitchItem from "./item/work-switch"
+import { msgSetConfig } from "@/message/runtime"
+
+const langOptions = [
+  {
+    label: '中文',
+    value: 'zh-CN'
+  },
+  {
+    label: 'English',
+    value: 'en-US'
+  }
+]
 
 export type OtherConfigProps = {
   tab?: chrome.tabs.Tab
@@ -12,31 +21,35 @@ export type OtherConfigProps = {
 }
 
 export const OtherConfig = ({ config }: OtherConfigProps) => {
-  const [t] = useTranslation()
-  const [customSeed, setCustomSeed] = useState<string>()
+  const [t, i18n] = useTranslation()
 
-  useEffect(() => {
-    config && setCustomSeed(String(config.customSeed ?? ''))
+  const langValue = useMemo(() => {
+    const langValues = langOptions.map((item) => item.value)
+    if(!config?.language) return 'zh-CN'
+    if(langValues.includes(config.language)){
+      return config.language
+    }else{
+      const prefix = config.language.split(':')[0]
+      return langValues.find((item) => item.split(':')[0] === prefix) ?? 'zh-CN'
+    }
   }, [config])
 
-  const onChangeLanguage = useDebounceCallback((value: string) => {
-
-  })
-
   return <section className="flex flex-col gap-2">
-    {/* <FConfigItem.Input /> */}
+    <FConfigItem.Select<string> title={t('item.title.e-language')}
+      desc={t('item.desc.e-language')}
+      options={langOptions}
+      defaultValue={langValue}
+      onChangeOption={(value) => {
+        msgSetConfig({ language: value })
+        i18n.changeLanguage(value)
+      }} />
 
-    <div className="flex items-center gap-2">
-      <Typography.Text className="whitespace-nowrap">{t('e.language')}</Typography.Text>
-      <Input onInput={({ target }: any) => onChangeLanguage(target.value)} />
-    </div>
-
-    <FWorkInputItem keyPrefix='customSeed'
+    <FWorkItem.Input keyPrefix='customSeed'
       title={t('item.title.seed')}
       desc={t('item.desc.seed')}
       value={config?.customSeed} />
 
-    <FWorkSwitchItem keyPrefix='hookNetRequest'
+    <FWorkItem.Switch keyPrefix='hookNetRequest'
       title={t('item.title.hook-net-request')}
       desc={t('item.desc.hook-net-request')}
       value={config?.hookNetRequest} />
