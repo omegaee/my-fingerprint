@@ -8,9 +8,10 @@ import { ConfigProvider, theme } from 'antd'
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ConfigProvider theme={{
-      // token: {
-      //   colorBgBase: "#4a4a4a"
-      // },
+      token: {
+        "borderRadius": 4,
+        // colorBgBase: "#4a4a4a"
+      },
       // algorithm: theme.darkAlgorithm
     }}>
       <App />

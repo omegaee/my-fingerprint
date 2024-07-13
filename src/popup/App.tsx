@@ -54,7 +54,8 @@ function App() {
 
   useEffect(() => {
     if (!config) return
-    setEnabled(!!config?.enable)
+    setEnabled(!!config.enable)
+    i18n.changeLanguage(config.language)
   }, [config])
 
   const switchEnable = () => {

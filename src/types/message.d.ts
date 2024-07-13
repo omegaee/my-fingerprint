@@ -2,14 +2,14 @@ declare enum RuntimeMsg {
   SetConfig = 'set-config',
   GetNotice = 'get-notice',
   SetHookRecords = 'set-hook-records',
-  AddWhitelist = 'add-whitelist',
-  DelWhitelist = 'del-whitelist',
+  UpdateWhitelist = 'update-whitelist',
+  UpdateScriptState = 'update-script-state',
 }
 
 declare enum ContentMsg {
   SetConfig = 'set-config',
-  GetNotice = 'get-notice',
   SetHookRecords = 'set-hook-records',
+  UpdateState = 'update-state',
 }
 
 // **********
@@ -31,17 +31,18 @@ type SetHookRecordsRequest = {
   data: Partial<Record<HookFingerprintKey, number>>,
 }
 
-type AddWhitelistRequest = {
-  type: RuntimeMsg.AddWhitelist,
+type UpdateWhitelistRequest = {
+  type: RuntimeMsg.UpdateWhitelist,
+  mode: 'add' | 'del'
   host: string | string[],
 }
 
-type DelWhitelistRequest = {
-  type: RuntimeMsg.DelWhitelist,
-  host: string | string[],
+type UpdateScriptStateRequest = {
+  type: RuntimeMsg.UpdateScriptState,
+  mode: 'enable' | 'disable'
 }
 
-type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | AddWhitelistRequest | DelWhitelistRequest
+type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | UpdateWhitelistRequest | UpdateScriptStateRequest
 
 type RespFunc<T=any> = (msg: T) => void
 
@@ -55,4 +56,14 @@ type PostSetHookRecords = {
   data: Partial<Record<HookFingerprintKey, number>>,
 }
 
-type ContentRequest = PostSetHookRecords
+type PostSetConfig = {
+  type: ContentMsg.SetConfig,
+  config: DeepPartial<LocalStorageConfig>,
+}
+
+type PostUpdateState = {
+  type: ContentMsg.UpdateState,
+  mode: 'enable' | 'disable'
+}
+
+type ContentRequest = PostSetHookRecords | PostSetConfig | PostUpdateState

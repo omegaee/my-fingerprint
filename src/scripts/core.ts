@@ -1,9 +1,10 @@
 import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
-import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomEquipmentInfo, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander, seededRandom } from "./data";
-import { debounce } from "./timer";
-import { postSetHookRecords } from "@/message/content";
-import { genRandomSeed, hashNumberFromString } from "./base";
+import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomEquipmentInfo, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander, seededRandom } from "../utils/data";
+import { debounce } from "../utils/timer";
+import { postSetHookRecords, unwrapMessage } from "@/message/content";
+import { genRandomSeed, hashNumberFromString } from "../utils/base";
+import { ContentMsg } from '@/types/enum'
 
 // hook缓存
 const cache: Partial<Record<HookFingerprintKey, any>> = {}
@@ -27,6 +28,8 @@ const recordAndSend = function (key: HookFingerprintKey) {
 }
 
 export class FingerprintHandler {
+  private win: Window & typeof globalThis
+
   private enabled: boolean = true
   private conf?: DeepPartial<LocalStorageConfig>
 
@@ -35,11 +38,32 @@ export class FingerprintHandler {
   private browserSeed: number
   private curstomSeed: number
 
-  public constructor(tabId: number, host: string) {
+  public constructor(win: Window & typeof globalThis, tabId: number, host: string) {
+    this.win = win
     this.pageSeed = seededRandom(tabId)
     this.domainSeed = hashNumberFromString(host)
     this.browserSeed = this.conf?.browserSeed ?? genRandomSeed()
     this.curstomSeed = this.conf?.customSeed ?? genRandomSeed()
+
+    // 接收顶级window对象的消息
+    window.addEventListener('message', (ev) => {
+      if(ev.origin != location.origin) return
+      const msg = unwrapMessage(ev.data) as ContentRequest | undefined
+      switch(msg?.type){
+        case ContentMsg.SetConfig: {
+          this.setConfig(msg.config)
+          break
+        }
+        case ContentMsg.UpdateState: {
+          if(msg.mode === 'enable'){
+            this.enable()
+          }else if(msg.mode === 'disable'){
+            this.disable()
+          }
+          break
+        }
+      }
+    })
   }
 
   /**
@@ -49,7 +73,7 @@ export class FingerprintHandler {
     if(!config) return
 
     if (this.conf) {
-      deepmerge(this.conf, config, { clone: false })
+      this.conf = deepmerge(this.conf, config)
     } else {
       this.conf = config
     }
@@ -282,15 +306,15 @@ export class FingerprintHandler {
     if (this.enabled && this.conf?.enable) {
       // proxy
       if (!this.rawGetOwnPropertyDescriptor) {
-        this.rawGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor
+        this.rawGetOwnPropertyDescriptor = this.win.Object.getOwnPropertyDescriptor
       }
-      const navigatorDesc = this.rawNavigatorDescriptor ?? Object.getOwnPropertyDescriptor(window, 'navigator')
-      const screenDesc = this.rawScreenDescriptor ?? Object.getOwnPropertyDescriptor(window, 'screen')
-
-      Object.getOwnPropertyDescriptor = new Proxy(this.rawGetOwnPropertyDescriptor, {
+      const navigatorDesc = this.rawNavigatorDescriptor ?? this.win.Object.getOwnPropertyDescriptor(this.win, 'navigator')
+      const screenDesc = this.rawScreenDescriptor ?? this.win.Object.getOwnPropertyDescriptor(this.win, 'screen')
+      
+      this.win.Object.getOwnPropertyDescriptor = new Proxy(this.rawGetOwnPropertyDescriptor, {
         apply: (target, thisArg: Object, args: Parameters<typeof Object.getOwnPropertyDescriptor>) => {
           const [obj, prop] = args
-          if (obj === window) {
+          if (obj === this.win) {
             if (prop === 'navigator') return navigatorDesc
             if (prop === 'screen') return screenDesc
           }
@@ -300,7 +324,7 @@ export class FingerprintHandler {
     } else {
       // unproxy
       if (this.rawGetOwnPropertyDescriptor) {
-        Object.getOwnPropertyDescriptor = this.rawGetOwnPropertyDescriptor
+        this.win.Object.getOwnPropertyDescriptor = this.rawGetOwnPropertyDescriptor
       }
     }
   }
@@ -312,10 +336,10 @@ export class FingerprintHandler {
     if (this.enabled && this.conf?.enable && !this.isAllDefault(this.conf?.fingerprint?.navigator)) {
       // proxy
       if (!this.rawNavigatorDescriptor) {
-        this.rawNavigatorDescriptor = Object.getOwnPropertyDescriptor(window, "navigator");
+        this.rawNavigatorDescriptor = this.win.Object.getOwnPropertyDescriptor(this.win, "navigator");
       }
-      Object.defineProperty(window, 'navigator', {
-        value: new Proxy(window.navigator, {
+      this.win.Object.defineProperty(this.win, 'navigator', {
+        value: new Proxy(this.win.navigator, {
           get: (target, key: string) => {
             if (key in target) {
               const value = this.getValue('navigator', key)
@@ -334,7 +358,7 @@ export class FingerprintHandler {
     } else {
       // unproxy
       if (this.rawNavigatorDescriptor) {
-        Object.defineProperty(window, "navigator", this.rawNavigatorDescriptor)
+        this.win.Object.defineProperty(this.win, "navigator", this.rawNavigatorDescriptor)
       }
     }
 
@@ -347,10 +371,10 @@ export class FingerprintHandler {
     if (this.enabled && this.conf?.enable && !this.isAllDefault(this.conf?.fingerprint?.screen)) {
       // proxy
       if (!this.rawScreenDescriptor) {
-        this.rawScreenDescriptor = Object.getOwnPropertyDescriptor(window, "screen");
+        this.rawScreenDescriptor = this.win.Object.getOwnPropertyDescriptor(this.win, "screen");
       }
-      Object.defineProperty(window, 'screen', {
-        value: new Proxy(window.screen, {
+      this.win.Object.defineProperty(this.win, 'screen', {
+        value: new Proxy(this.win.screen, {
           get: (target, key: string) => {
             if (key in target) {
               const value = this.getValue('screen', key)
@@ -370,7 +394,7 @@ export class FingerprintHandler {
     } else {
       // unproxy
       if (this.rawScreenDescriptor) {
-        Object.defineProperty(window, "screen", this.rawScreenDescriptor)
+        this.win.Object.defineProperty(this.win, "screen", this.rawScreenDescriptor)
       }
     }
   }
@@ -382,9 +406,9 @@ export class FingerprintHandler {
     if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.canvas?.type !== HookType.default) {
       // proxy
       if (!this.rawToDataURL) {
-        this.rawToDataURL = HTMLCanvasElement.prototype.toDataURL
+        this.rawToDataURL = this.win.HTMLCanvasElement.prototype.toDataURL
       }
-      HTMLCanvasElement.prototype.toDataURL = new Proxy(this.rawToDataURL, {
+      this.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(this.rawToDataURL, {
         apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
           const value = this.getValue('other', 'canvas')
           if (value !== null) {
@@ -402,7 +426,7 @@ export class FingerprintHandler {
     } else {
       // unproxy
       if (this.rawToDataURL) {
-        HTMLCanvasElement.prototype.toDataURL = this.rawToDataURL
+        this.win.HTMLCanvasElement.prototype.toDataURL = this.rawToDataURL
       }
     }
   }
@@ -415,9 +439,9 @@ export class FingerprintHandler {
     if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.audio?.type !== HookType.default) {
       // proxy
       if (!this.rawCreateDynamicsCompressor) {
-        this.rawCreateDynamicsCompressor = OfflineAudioContext.prototype.createDynamicsCompressor
+        this.rawCreateDynamicsCompressor = this.win.OfflineAudioContext.prototype.createDynamicsCompressor
       }
-      OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(this.rawCreateDynamicsCompressor, {
+      this.win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(this.rawCreateDynamicsCompressor, {
         apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
           const value = this.getValue('other', 'audio')
           if (value === null) return target.apply(thisArg, args)
@@ -435,7 +459,7 @@ export class FingerprintHandler {
     } else {
       // unproxy
       if (this.rawCreateDynamicsCompressor) {
-        OfflineAudioContext.prototype.createDynamicsCompressor = this.rawCreateDynamicsCompressor
+        this.win.OfflineAudioContext.prototype.createDynamicsCompressor = this.rawCreateDynamicsCompressor
       }
     }
   }
@@ -447,10 +471,10 @@ export class FingerprintHandler {
     if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.webgl?.type !== HookType.default) {
       // proxy
       if (!this.rawWglGetParameter) {
-        this.rawWglGetParameter = WebGLRenderingContext.prototype.getParameter
+        this.rawWglGetParameter = this.win.WebGLRenderingContext.prototype.getParameter
       }
       if (!this.rawWgl2GetParameter) {
-        this.rawWgl2GetParameter = WebGL2RenderingContext.prototype.getParameter
+        this.rawWgl2GetParameter =this.win.WebGL2RenderingContext.prototype.getParameter
       }
 
       const apply = (
@@ -468,15 +492,15 @@ export class FingerprintHandler {
         return target.apply(thisArg, args)
       }
 
-      WebGLRenderingContext.prototype.getParameter = new Proxy(this.rawWglGetParameter, { apply })
-      WebGL2RenderingContext.prototype.getParameter = new Proxy(this.rawWgl2GetParameter, { apply })
+      this.win.WebGLRenderingContext.prototype.getParameter = new Proxy(this.rawWglGetParameter, { apply })
+      this.win.WebGL2RenderingContext.prototype.getParameter = new Proxy(this.rawWgl2GetParameter, { apply })
     } else {
       // unproxy
       if (this.rawWglGetParameter) {
-        WebGLRenderingContext.prototype.getParameter = this.rawWglGetParameter
+        this.win.WebGLRenderingContext.prototype.getParameter = this.rawWglGetParameter
       }
       if (this.rawWgl2GetParameter) {
-        WebGL2RenderingContext.prototype.getParameter = this.rawWgl2GetParameter
+        this.win.WebGL2RenderingContext.prototype.getParameter = this.rawWgl2GetParameter
       }
     }
   }
@@ -488,14 +512,14 @@ export class FingerprintHandler {
     if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.timezone?.type !== HookType.default) {
       // proxy
       if(!this.rawDateTimeFormat){
-        this.rawDateTimeFormat = Intl.DateTimeFormat
+        this.rawDateTimeFormat = this.win.Intl.DateTimeFormat
       }
       if(!this.rawGetTimezoneOffset){
-        this.rawGetTimezoneOffset = Date.prototype.getTimezoneOffset
+        this.rawGetTimezoneOffset = this.win.Date.prototype.getTimezoneOffset
       }
       const currTimeZone = this.getValue('other', 'timezone') as TimeZoneInfo
 
-      Intl.DateTimeFormat = new Proxy(this.rawDateTimeFormat, {
+      this.win.Intl.DateTimeFormat = new Proxy(this.rawDateTimeFormat, {
         construct(target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) {
           args[0] = args[0] ?? currTimeZone.locale
           args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
@@ -508,7 +532,7 @@ export class FingerprintHandler {
         },
       })
 
-      Date.prototype.getTimezoneOffset = new Proxy(this.rawGetTimezoneOffset, {
+      this.win.Date.prototype.getTimezoneOffset = new Proxy(this.rawGetTimezoneOffset, {
         apply(target, thisArg: Date, args: Parameters<typeof Date.prototype.getTimezoneOffset>) {
           // return target.apply(thisArg, args)
           return currTimeZone.offset * -60
@@ -517,10 +541,10 @@ export class FingerprintHandler {
     } else {
       // unproxy
       if(this.rawDateTimeFormat){
-        Intl.DateTimeFormat = this.rawDateTimeFormat
+        this.win.Intl.DateTimeFormat = this.rawDateTimeFormat
       }
       if(this.rawGetTimezoneOffset){
-        Date.prototype.getTimezoneOffset = this.rawGetTimezoneOffset
+        this.win.Date.prototype.getTimezoneOffset = this.rawGetTimezoneOffset
       }
     }
   }

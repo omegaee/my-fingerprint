@@ -71,20 +71,20 @@ export const WhitelistView = (props: WhitelistProps) => {
     setWhitelist(whitelist.filter((value) => value !== item))
   }
 
-  return <section className="h-full flex flex-col rounded-sm" style={{
+  return <section className="h-full flex flex-col rounded" style={{
     backgroundColor: token.colorBgContainer,
   }}>
-    <Input className="rounded-sm" suffix={<SearchOutlined />} 
+    <Input suffix={<SearchOutlined />} 
       placeholder="hostname:port"
       onInput={({ target }: any) => debounceSetFilterValue(target.value)} />
     <section className="overflow-y-auto no-scrollbar grow flex flex-col">
       {filteredWhitelist.map((item) => <WhitelistItem key={item} item={item} filterValue={filterValue} onDelete={deleteItem} />)}
     </section>
     <Space.Compact>
-      <Input className="rounded-sm" value={addValue} placeholder="hostname:port" 
+      <Input value={addValue} placeholder="hostname:port" 
         onChange={({target}) => setAddValue(target.value)}
         onKeyDown={({key}) => key === 'Enter' && addItem()} />
-      <Button className="rounded-sm" icon={<PlusOutlined />} 
+      <Button icon={<PlusOutlined />} 
         disabled={!addValue} onClick={addItem} />
     </Space.Compact>
   </section>

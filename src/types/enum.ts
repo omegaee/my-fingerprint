@@ -11,12 +11,12 @@ export enum RuntimeMsg {
   SetConfig = 'set-config',
   GetNotice = 'get-notice',
   SetHookRecords = 'set-hook-records',
-  AddWhitelist = 'add-whitelist',
-  DelWhitelist = 'del-whitelist',
+  UpdateWhitelist = 'update-whitelist',
+  UpdateScriptState = 'update-script-state',
 }
 
 export enum ContentMsg {
   SetConfig = 'set-config',
-  GetNotice = 'get-notice',
   SetHookRecords = 'set-hook-records',
+  UpdateState = 'update-state',
 }

@@ -1,6 +1,6 @@
 // @ts-ignore
 import injectSrc from './inject?script&module'
-import { unwrapMessage } from '@/message/content';
+import { postSetConfig, postUpdateState, unwrapMessage } from '@/message/content';
 import { msgSetHookRecords } from '@/message/runtime';
 import { ContentMsg } from '@/types/enum'
 
@@ -18,25 +18,31 @@ const injectScript = function<T> (path: string, dataset: T) {
 }
 
 /**
- * 同页面消息处理
+ * 同页消息处理
  */
 window.addEventListener('message', (ev) => {
   if(ev.origin != location.origin) return
-  const data = unwrapMessage(ev.data) as ContentRequest | undefined
-  switch(data?.type){
+  const msg = unwrapMessage(ev.data) as ContentRequest | undefined
+  switch(msg?.type){
     case ContentMsg.SetHookRecords: {
-      msgSetHookRecords(data.data)
+      msgSetHookRecords(msg.data)
       break
     }
   }
 })
 
 /**
- * 消息处理
+ * runtime消息处理
  */
 chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse) => {
   switch(msg.type){
-
+    case RuntimeMsg.SetConfig: {
+      postSetConfig(msg.config)
+      break
+    }
+    case RuntimeMsg.UpdateScriptState: {
+      postUpdateState(msg.mode)
+    }
   }
 })
 

@@ -1,8 +1,10 @@
-import { compareVersions, genRandomSeed, hashNumberFromString, urlToHttpHost } from "@/utils/base";
+import { compareVersions, genRandomSeed, urlToHttpHost } from "@/utils/base";
 import { debounce } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { HookType, RuntimeMsg } from '@/types/enum'
 import { randomEquipmentInfo } from "@/utils/data";
+import { selectTabByHost, sendMessageToAllTags } from "@/utils/tabs";
+import { tabUpdateScriptState } from "@/message/tabs";
 
 const UA_NET_RULE_ID = 1
 
@@ -85,7 +87,7 @@ const getUserAgent = () => {
       let ua = userAgentCache[HookType.seed]
       if(!ua){
         ua = randomEquipmentInfo(localStorage?.config.customSeed ?? genRandomSeed()).userAgent
-        userAgentCache[HookType.browser] = ua
+        userAgentCache[HookType.seed] = ua
       }
       return ua
     }
@@ -116,9 +118,6 @@ const refreshRequestHeaderUA = () => {
           }]
         },
       }],
-    })
-    chrome.declarativeNetRequest.getDynamicRules().then((aa) => {
-      console.log(aa);
     })
   }
 }
@@ -264,6 +263,20 @@ const getBadgeContent = (records: Partial<Record<HookFingerprintKey, number>>): 
   return [String(specialNum || baseNum), specialNum ? BADGE_COLOR.high : BADGE_COLOR.low]
 }
 
+/**
+ * 设置白名单标识
+ */
+const setBadgeWhitelist = (tabId: number) => {
+  chrome.action.setBadgeText({ tabId, text: ' ' });
+  chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR.whitelist })
+}
+
+/**
+ * 移除标识
+ */
+const remBadge = (tabId: number) => {
+  chrome.action.setBadgeText({ tabId, text: '' })
+}
 
 /**
  * 初次启动扩展时触发（浏览器更新、扩展更新触发）
@@ -291,6 +304,10 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
   switch (msg.type) {
     case RuntimeMsg.SetConfig: {
       updateLocalConfig(msg.config)
+      sendMessageToAllTags<SetConfigRequest>({
+        type: RuntimeMsg.SetConfig,
+        config: msg.config
+      })
       break
     }
     case RuntimeMsg.GetNotice: {
@@ -313,12 +330,24 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       chrome.action.setBadgeBackgroundColor({ tabId, color });
       break
     }
-    case RuntimeMsg.AddWhitelist: {
-      updateLocalWhitelist('add', msg.host)
-      break
-    }
-    case RuntimeMsg.DelWhitelist: {
-      updateLocalWhitelist('del', msg.host)
+    case RuntimeMsg.UpdateWhitelist: {
+      if(msg.mode === 'add'){
+        updateLocalWhitelist('add', msg.host)
+        selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
+          if(tab.id){
+            setBadgeWhitelist(tab.id)
+            tabUpdateScriptState(tab.id, 'disable')
+          }
+        }))
+      }else if (msg.mode === 'del') {
+        updateLocalWhitelist('del', msg.host)
+        selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
+          if(tab.id){
+            remBadge(tab.id)
+            tabUpdateScriptState(tab.id, 'enable')
+          }
+        }))
+      }
       break
     }
   }
@@ -333,26 +362,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     const host = urlToHttpHost(tab.url)
     if (!host) return
     if (localStorage?.whitelist.has(host)) {
-      chrome.action.setBadgeText({ tabId, text: ' ' });
-      chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR.whitelist })
+      setBadgeWhitelist(tabId)
     }
   }
 });
-
-// v3无法使用
-// /**
-//  * hook网络请求UA
-//  */
-// chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
-//   const ua = getUserAgent(details.tabId, details.url)
-//   if(ua === undefined) return
-//   if(details.requestHeaders){
-//     for (const header of details.requestHeaders) {
-//       if (header.name.toLowerCase() === 'user-agent') {
-//         header.value = ua
-//         break
-//       }
-//     }
-//   }
-//   return { requestHeaders: details.requestHeaders }
-// }, { urls: ["<all_urls>"] }, ["blocking", "requestHeaders"])

@@ -1,5 +1,5 @@
 import { genRandomSeed, urlToHttpHost } from "@/utils/base"
-import { FingerprintHandler } from "@/utils/core"
+import { FingerprintHandler } from "./core"
 
 let fh: FingerprintHandler | undefined
 
@@ -12,7 +12,7 @@ const init = () => {
   const host = urlToHttpHost(location.href)
   if(!host)return
 
-  fh = new FingerprintHandler(genRandomSeed(), host)
+  fh = new FingerprintHandler(window, genRandomSeed(), host)
   fh.setConfig(data.config)
   
   const whitelist = data.whitelist ?? []

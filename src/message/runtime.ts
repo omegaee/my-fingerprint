@@ -43,8 +43,9 @@ export const msgSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey
  * 添加白名单
  */
 export const msgAddWhiteList = (host: string | string[]) => {
-  return chrome.runtime.sendMessage<AddWhitelistRequest, void>({
-    type: RuntimeMsg.AddWhitelist,
+  return chrome.runtime.sendMessage<UpdateWhitelistRequest, void>({
+    type: RuntimeMsg.UpdateWhitelist,
+    mode: 'add',
     host,
   })
 }
@@ -53,8 +54,9 @@ export const msgAddWhiteList = (host: string | string[]) => {
  * 删除白名单
  */
 export const msgDelWhiteList = (host: string) => {
-  return chrome.runtime.sendMessage<DelWhitelistRequest, void>({
-    type: RuntimeMsg.DelWhitelist,
+  return chrome.runtime.sendMessage<UpdateWhitelistRequest, void>({
+    type: RuntimeMsg.UpdateWhitelist,
+    mode: 'del',
     host,
   })
 }
