@@ -25,10 +25,10 @@ export const OtherConfig = ({ config }: OtherConfigProps) => {
 
   const langValue = useMemo(() => {
     const langValues = langOptions.map((item) => item.value)
-    if(!config?.language) return 'zh-CN'
-    if(langValues.includes(config.language)){
+    if (!config?.language) return 'zh-CN'
+    if (langValues.includes(config.language)) {
       return config.language
-    }else{
+    } else {
       const prefix = config.language.split(':')[0]
       return langValues.find((item) => item.split(':')[0] === prefix) ?? 'zh-CN'
     }
@@ -53,6 +53,11 @@ export const OtherConfig = ({ config }: OtherConfigProps) => {
       title={t('item.title.hook-net-request')}
       desc={t('item.desc.hook-net-request')}
       value={config?.hookNetRequest} />
+
+    <FWorkItem.Switch keyPrefix='hookBlankIframe'
+      title={t('item.title.hook-blank-iframe')}
+      desc={t('item.desc.hook-blank-iframe')}
+      value={config?.hookBlankIframe} />
   </section>
 }
 

@@ -157,8 +157,9 @@ const genDefaultLocalStorage = (): LocalStorage => {
           webrtc: defaultHook,
         },
       },
+      language: navigator.language,
       hookNetRequest: true,
-      language: navigator.language
+      hookBlankIframe: true,
     },
     whitelist: []
   }

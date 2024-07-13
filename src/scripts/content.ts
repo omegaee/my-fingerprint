@@ -2,7 +2,7 @@
 import injectSrc from './inject?script&module'
 import { postSetConfig, postUpdateState, unwrapMessage } from '@/message/content';
 import { msgSetHookRecords } from '@/message/runtime';
-import { ContentMsg } from '@/types/enum'
+import { RuntimeMsg, ContentMsg } from '@/types/enum'
 
 /**
  * 注入脚本

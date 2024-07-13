@@ -44,7 +44,8 @@
 
       "e-language": "扩展语言",
       "seed": "自定义种子",
-      "hook-net-request": "网络请求钩子"
+      "hook-net-request": "网络请求钩子",
+      "hook-blank-iframe": "空白源Iframe钩子"
     },
     "desc": {
       "equipment": "desc",
@@ -61,7 +62,8 @@
 
       "e-language": "desc",
       "seed": "desc",
-      "hook-net-request": "desc"
+      "hook-net-request": "desc",
+      "hook-blank-iframe": "desc"
     }
   },
   "tip": {

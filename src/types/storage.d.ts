@@ -18,6 +18,7 @@ type LocalStorageConfig = {
   // 其他
   language: string
   hookNetRequest: boolean
+  hookBlankIframe: boolean
 }
 
 type HookFingerprint = {

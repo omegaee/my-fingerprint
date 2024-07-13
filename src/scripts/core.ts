@@ -29,6 +29,8 @@ const recordAndSend = function (key: HookFingerprintKey) {
 
 export class FingerprintHandler {
   private win: Window & typeof globalThis
+  private tabId: number
+  private host: string
 
   private enabled: boolean = true
   private conf?: DeepPartial<LocalStorageConfig>
@@ -40,6 +42,8 @@ export class FingerprintHandler {
 
   public constructor(win: Window & typeof globalThis, tabId: number, host: string) {
     this.win = win
+    this.tabId = tabId
+    this.host = host
     this.pageSeed = seededRandom(tabId)
     this.domainSeed = hashNumberFromString(host)
     this.browserSeed = this.conf?.browserSeed ?? genRandomSeed()
@@ -47,17 +51,17 @@ export class FingerprintHandler {
 
     // 接收顶级window对象的消息
     window.addEventListener('message', (ev) => {
-      if(ev.origin != location.origin) return
+      if (ev.origin != location.origin) return
       const msg = unwrapMessage(ev.data) as ContentRequest | undefined
-      switch(msg?.type){
+      switch (msg?.type) {
         case ContentMsg.SetConfig: {
           this.setConfig(msg.config)
           break
         }
         case ContentMsg.UpdateState: {
-          if(msg.mode === 'enable'){
+          if (msg.mode === 'enable') {
             this.enable()
-          }else if(msg.mode === 'disable'){
+          } else if (msg.mode === 'disable') {
             this.disable()
           }
           break
@@ -70,7 +74,7 @@ export class FingerprintHandler {
    * 配置
    */
   public setConfig(config?: DeepPartial<LocalStorageConfig>) {
-    if(!config) return
+    if (!config) return
 
     if (this.conf) {
       this.conf = deepmerge(this.conf, config)
@@ -80,40 +84,45 @@ export class FingerprintHandler {
 
     const reExecute = config.enable !== undefined
 
-    if (reExecute || config.fingerprint?.navigator) {
-      this.proxyNavigator()
-    }
-    if (reExecute || config.fingerprint?.screen) {
-      this.proxyScreen()
-    }
-    if (reExecute || config.fingerprint?.other?.timezone) {
-      this.proxyTimeZone()
-    }
-    if (reExecute || config.fingerprint?.other?.canvas) {
-      this.proxyCanvas()
-    }
-    if (reExecute || config.fingerprint?.other?.audio) {
-      this.proxyAudio()
-    }
-    if (reExecute || config.fingerprint?.other?.webgl) {
-      this.proxyWebGL()
-    }
-    if (reExecute || config.fingerprint?.other?.webrtc) {
-      this.proxyWebRTC()
-    }
     if (reExecute) {
-      this.proxyGetOwnPropertyDescriptor()
+      this.refresh()
+    } else {
+      if (config.fingerprint?.navigator) {
+        this.proxyNavigator()
+      }
+      if (config.fingerprint?.screen) {
+        this.proxyScreen()
+      }
+      if (config.fingerprint?.other?.timezone) {
+        this.proxyTimeZone()
+      }
+      if (config.fingerprint?.other?.canvas) {
+        this.proxyCanvas()
+      }
+      if (config.fingerprint?.other?.audio) {
+        this.proxyAudio()
+      }
+      if (config.fingerprint?.other?.webgl) {
+        this.proxyWebGL()
+      }
+      if (config.fingerprint?.other?.webrtc) {
+        this.proxyWebRTC()
+      }
+      if (config.hookBlankIframe) {
+        this.injectHtmlBlankIframe()
+        this.proxyBlankIframeInsertDocument()
+      }
     }
-    
-    if(config.browserSeed !== undefined){
+
+    if (config.browserSeed !== undefined) {
       this.browserSeed = config.browserSeed
     }
-    if(config.customSeed !== undefined){
+    if (config.customSeed !== undefined) {
       this.curstomSeed = config.customSeed
     }
   }
 
-  private refresh(){
+  private refresh() {
     this.proxyNavigator()
     this.proxyScreen()
     this.proxyTimeZone()
@@ -122,25 +131,27 @@ export class FingerprintHandler {
     this.proxyWebGL()
     this.proxyWebRTC()
     this.proxyGetOwnPropertyDescriptor()
+    this.injectHtmlBlankIframe()
+    this.proxyBlankIframeInsertDocument()
   }
 
-  public disable(){
-    if(this.enabled && this.conf?.enable){
+  public disable() {
+    if (this.enabled && this.conf?.enable) {
       // 已启动
       this.enabled = false
       this.refresh()
-    }else{
+    } else {
       // 未启动
       this.enabled = false
     }
   }
 
-  public enable(){
-    if(this.enabled && this.conf?.enable){
+  public enable() {
+    if (this.enabled && this.conf?.enable) {
       // 已启动
       this.enabled = true
       this.refresh()
-    }else{
+    } else {
       // 未启动
       this.enabled = true
       this.refresh()
@@ -158,6 +169,39 @@ export class FingerprintHandler {
 
   private rawDateTimeFormat: typeof Intl.DateTimeFormat | undefined
   private rawGetTimezoneOffset: typeof Date.prototype.getTimezoneOffset | undefined
+
+  private rawAppendChild: typeof HTMLElement.prototype.appendChild | undefined
+  private rawInsertBefore: typeof HTMLElement.prototype.insertBefore | undefined
+  private rawReplaceChild: typeof HTMLElement.prototype.replaceChild | undefined
+
+  private isInjectHtmlBlankIframe = false
+
+  /**
+   * hook iframe
+   */
+  private hookIframe(iframe: HTMLIFrameElement) {
+    const fh = new FingerprintHandler(iframe.contentWindow as any, this.tabId, this.host)
+    fh.setConfig(this.conf)
+    if (this.enabled === false) {
+      fh.disable()
+    }
+  }
+
+  /**
+   * 将代理注入到<iframe>中
+   */
+  private injectHtmlBlankIframe() {
+    if (this.isInjectHtmlBlankIframe) return
+    if (this.enabled && this.conf?.enable && this.conf.hookBlankIframe) {
+      this.isInjectHtmlBlankIframe = true
+      const iframes = this.win.document.querySelectorAll('iframe')
+      for (const iframe of iframes) {
+        if (!iframe.src || iframe.src === 'about:blank') {
+          this.hookIframe(iframe)
+        }
+      }
+    }
+  }
 
   /**
    * 是否所有字段的type都是default
@@ -195,14 +239,14 @@ export class FingerprintHandler {
           seed = this.curstomSeed
           break
         }
-        case HookType.default: 
+        case HookType.default:
         default: return null
       }
       const res = seedFunc(seed)
-      if(res === null || res === undefined) return null 
-      if(typeof(res) === 'object'){
+      if (res === null || res === undefined) return null
+      if (typeof (res) === 'object') {
         Object.assign(cache, res)
-      }else{
+      } else {
         cache[key] = res
       }
     }
@@ -214,8 +258,8 @@ export class FingerprintHandler {
    */
   private getValue(prefix: keyof HookFingerprint, key: string): any | null {
     let res = null
-    switch (prefix){
-      case "navigator":{
+    switch (prefix) {
+      case "navigator": {
         const value = this.conf?.fingerprint?.navigator?.[key as keyof HookFingerprint['navigator']]
         switch (key) {
           case "appVersion": {
@@ -240,7 +284,7 @@ export class FingerprintHandler {
           }
         }
       }
-      case "screen":{
+      case "screen": {
         const value = this.conf?.fingerprint?.screen?.[key as keyof HookFingerprint['screen']]
         switch (key) {
           case "height": {
@@ -261,7 +305,7 @@ export class FingerprintHandler {
           }
         }
       }
-      case "other":{
+      case "other": {
         const value = this.conf?.fingerprint?.other?.[key as keyof HookFingerprint['other']]
         switch (key) {
           case "canvas": {
@@ -282,12 +326,12 @@ export class FingerprintHandler {
           case "timezone": {
             res = this.getValueFromCacheOrFunc(key, value, () => {
               const timezoneMode = this.conf?.fingerprint?.other?.timezone
-              if(timezoneMode?.type === HookType.value){
+              if (timezoneMode?.type === HookType.value) {
                 return timezoneMode.value
               }
             })
             break
-          } 
+          }
         }
       }
     }
@@ -297,6 +341,49 @@ export class FingerprintHandler {
       recordAndSend(key as HookFingerprintKey)
     }
     return res
+  }
+
+  /**
+   * hook iframe插入文档的行为
+   */
+  private proxyBlankIframeInsertDocument() {
+    if (this.enabled && this.conf?.enable && this.conf.hookBlankIframe) {
+      // proxy
+      if (!this.rawAppendChild) {
+        this.rawAppendChild = this.win.HTMLElement.prototype.appendChild
+      }
+      if (!this.rawInsertBefore) {
+        this.rawInsertBefore = this.win.HTMLElement.prototype.insertBefore
+      }
+      if (!this.rawReplaceChild) {
+        this.rawReplaceChild = this.win.HTMLElement.prototype.replaceChild
+      }
+
+      const apply = (target: any, thisArg: Object, args: any) => {
+        const res = target.apply(thisArg, args)
+        const node = args[0]
+        if (node?.tagName === 'IFRAME') {
+          this.hookIframe(node as HTMLIFrameElement)
+        }
+        return res
+      }
+
+      this.win.HTMLElement.prototype.appendChild = new Proxy(this.rawAppendChild, { apply })
+      this.win.HTMLElement.prototype.insertBefore = new Proxy(this.rawInsertBefore, { apply })
+      this.win.HTMLElement.prototype.replaceChild = new Proxy(this.rawReplaceChild, { apply })
+    } else {
+      // unproxy
+      if (this.rawAppendChild) {
+        this.win.HTMLElement.prototype.appendChild = this.rawAppendChild
+      }
+      if (this.rawInsertBefore) {
+        this.win.HTMLElement.prototype.insertBefore = this.rawInsertBefore
+      }
+      if (this.rawReplaceChild) {
+        this.win.HTMLElement.prototype.replaceChild = this.rawReplaceChild
+      }
+    }
+
   }
 
   /**
@@ -310,7 +397,7 @@ export class FingerprintHandler {
       }
       const navigatorDesc = this.rawNavigatorDescriptor ?? this.win.Object.getOwnPropertyDescriptor(this.win, 'navigator')
       const screenDesc = this.rawScreenDescriptor ?? this.win.Object.getOwnPropertyDescriptor(this.win, 'screen')
-      
+
       this.win.Object.getOwnPropertyDescriptor = new Proxy(this.rawGetOwnPropertyDescriptor, {
         apply: (target, thisArg: Object, args: Parameters<typeof Object.getOwnPropertyDescriptor>) => {
           const [obj, prop] = args
@@ -474,7 +561,7 @@ export class FingerprintHandler {
         this.rawWglGetParameter = this.win.WebGLRenderingContext.prototype.getParameter
       }
       if (!this.rawWgl2GetParameter) {
-        this.rawWgl2GetParameter =this.win.WebGL2RenderingContext.prototype.getParameter
+        this.rawWgl2GetParameter = this.win.WebGL2RenderingContext.prototype.getParameter
       }
 
       const apply = (
@@ -511,10 +598,10 @@ export class FingerprintHandler {
   private proxyTimeZone() {
     if (this.enabled && this.conf?.enable && this.conf.fingerprint?.other?.timezone?.type !== HookType.default) {
       // proxy
-      if(!this.rawDateTimeFormat){
+      if (!this.rawDateTimeFormat) {
         this.rawDateTimeFormat = this.win.Intl.DateTimeFormat
       }
-      if(!this.rawGetTimezoneOffset){
+      if (!this.rawGetTimezoneOffset) {
         this.rawGetTimezoneOffset = this.win.Date.prototype.getTimezoneOffset
       }
       const currTimeZone = this.getValue('other', 'timezone') as TimeZoneInfo
@@ -540,10 +627,10 @@ export class FingerprintHandler {
       })
     } else {
       // unproxy
-      if(this.rawDateTimeFormat){
+      if (this.rawDateTimeFormat) {
         this.win.Intl.DateTimeFormat = this.rawDateTimeFormat
       }
-      if(this.rawGetTimezoneOffset){
+      if (this.rawGetTimezoneOffset) {
         this.win.Date.prototype.getTimezoneOffset = this.rawGetTimezoneOffset
       }
     }

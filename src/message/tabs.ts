@@ -1,3 +1,5 @@
+import { RuntimeMsg } from "@/types/enum"
+
 /**
  * 更新脚本状态
  */
