@@ -178,7 +178,7 @@ const initLocalConfig = (previousVersion: string | undefined) => {
       // 其中一个版本号不存
       (!data.version || !previousVersion) ||
       // 配置版本号小于2.0.0
-      (compareVersions(data.version, '2.0') < 0)
+      (compareVersions(data.version, '2.0.0') < 0)
     ) {
       // 清空存储并使用设置存储为默认值
       await chrome.storage.local.clear()

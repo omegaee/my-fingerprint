@@ -1,8 +1,9 @@
-import { Input, Select, type SelectProps, Switch, Tooltip, Typography } from "antd"
+import { Input, Popover, Select, type SelectProps, Switch, Tooltip, Typography } from "antd"
 import {
   AlertOutlined,
 } from '@ant-design/icons';
 import { useEffect, useState } from "react";
+import Markdown from 'react-markdown'
 
 export type FConfigItemProps = {
   title: string
@@ -14,25 +15,31 @@ export type FConfigItemProps = {
 export const FConfigItem = function (props: FConfigItemProps) {
   switch (props.lineType) {
     case 'single': {
-      return <section className="p-1 flex gap-2 justify-between hover:bg-[#cffafe77]">
+      return <section className="p-1 flex gap-2 justify-between rounded hover:bg-[#cffafe77]">
         <Typography.Text>{props.title}</Typography.Text>
         <section className="flex items-center gap-3">
-          <Tooltip arrow placement='left' title={props.desc}>
+          {/* <Tooltip arrow placement='left' title={<ReactMarkdown>{props.desc}</ReactMarkdown>}>
             <AlertOutlined className="hover:text-red-500" />
-          </Tooltip>
+          </Tooltip> */}
+          <Popover content={<Markdown>{props.desc}</Markdown>}>
+            <AlertOutlined className="hover:text-red-500" />
+          </Popover>
           {props.node}
         </section>
       </section>
     }
     case 'multiple':
     default: {
-      return <section className="flex flex-col gap-2 p-1 hover:bg-[#cffafe77]">
-        <Typography.Text className="flex items-center justify-between">
-          <span>{props.title}</span>
-          <Tooltip arrow placement='left' title={props.desc}>
+      return <section className="flex flex-col gap-2 p-1 rounded hover:bg-[#cffafe77]">
+        <section className="flex items-center justify-between">
+          <Typography.Text>{props.title}</Typography.Text>
+          {/* <Tooltip arrow placement='left' title={<ReactMarkdown>{props.desc}</ReactMarkdown>}>
             <AlertOutlined className="hover:text-red-500" />
-          </Tooltip>
-        </Typography.Text>
+          </Tooltip> */}
+          <Popover content={<Markdown>{props.desc}</Markdown>}>
+            <AlertOutlined className="hover:text-red-500" />
+          </Popover>
+        </section>
         {props.node}
       </section>
     }

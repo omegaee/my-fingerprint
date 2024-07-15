@@ -26,7 +26,7 @@
     "page": "每个标签页随机值",
     "browser": "每次启动浏览器随机值",
     "domain": "根据访问域名随机值",
-    "seed": "根据配置指定的种子随机值"
+    "seed": "根据全局种子随机值"
   },
   "item": {
     "title": {
@@ -42,28 +42,28 @@
       "webgl": "WebGL指纹",
       "webrtc": "WebRTC指纹",
 
-      "e-language": "扩展语言",
-      "seed": "自定义种子",
+      "e-language": "语言",
+      "seed": "全局种子",
       "hook-net-request": "网络请求钩子",
       "hook-blank-iframe": "空白源Iframe钩子"
     },
     "desc": {
-      "equipment": "desc",
-      "language": "desc",
-      "hardwareConcurrency": "desc",
-      "size": "desc",
-      "colorDepth": "desc",
-      "pixelDepth": "desc",
-      "timezone": "desc",
-      "canvas": "desc",
-      "audio": "desc",
-      "webgl": "desc",
-      "webrtc": "desc",
+      "equipment": "设备信息\n\n**navigator.appVersion**\n\n**navigator.platform**\n\n**navigator.userAgent**",
+      "language": "浏览器语言\n\n**navigator.language**",
+      "hardwareConcurrency": "逻辑处理器数量\n\n**navigator.hardwareConcurrency**",
+      "size": "屏幕尺寸\n\n**screen.width**\n\n**screen.height**",
+      "colorDepth": "屏幕颜色深度\n\n**screen.colorDepth**",
+      "pixelDepth": "屏幕位深度\n\n**screen.pixelDepth**",
+      "timezone": "浏览器时区",
+      "canvas": "Canvas画布指纹",
+      "audio": "音频指纹",
+      "webgl": "WebGL指纹",
+      "webrtc": "WebRTC指纹",
 
-      "e-language": "desc",
-      "seed": "desc",
-      "hook-net-request": "desc",
-      "hook-blank-iframe": "desc"
+      "e-language": "语言",
+      "seed": "全局种子，作用于 **根据全局种子随机值** 选项",
+      "hook-net-request": "开启后，会影响所有网络请求\n\n支持配置：**设备信息(navigator.userAgent)**\n\n支持选项：**每次启动浏览器随机值**、**根据全局种子随机值**、**自定义值**",
+      "hook-blank-iframe": "开启后，能代理**空白源Iframe**的内容"
     }
   },
   "tip": {

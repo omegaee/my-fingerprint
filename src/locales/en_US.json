@@ -1,3 +1,89 @@
 {
+  "g": {
+    "enable": "Enable",
+    "disable": "Disable",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "preset": "Preset",
+    "custom": "Custom"
+  },
+  "e": {
+    "enabled": "Extension Enabled",
+    "disabled": "Extension Disabled",
+    "whitelist": "Whitelist",
+    "whitelist-in": "In Whitelist",
+    "whitelist-not": "Not In Whitelist",
+    "f-record": "Record",
+    "f-config": "Config",
+    "f-base-config": "Base Config",
+    "f-special-config": "Special Config",
+    "other-config": "Other Config",
+    "seed": "Seed"
+  },
+  "type": {
+    "default": "Default",
+    "value": "Custom value",
+    "page": "Randomized values per tab",
+    "browser": "Every time the browser starts a random",
+    "domain": "Randomized based on domain name",
+    "seed": "Randomization based on global seed"
+  },
+  "item": {
+    "title": {
+      "equipment": "Equipment Info",
+      "language": "Browser Language",
+      "hardwareConcurrency": "Number of logical processors",
+      "size": "Screen Size",
+      "colorDepth": "Screen Color Depth",
+      "pixelDepth": "Screen Pixel Depth",
+      "timezone": "Timezone",
+      "canvas": "Canvas Fingerprint",
+      "audio": "Audio Fingerprint",
+      "webgl": "WebGL Fingerprint",
+      "webrtc": "WebRTC Fingerprint",
 
+      "e-language": "Language",
+      "seed": "Global Seed",
+      "hook-net-request": "Web Request Hooks",
+      "hook-blank-iframe": "Blank Iframe Hooks"
+    },
+    "desc": {
+      "equipment": "Equipment Info\n\n**navigator.appVersion**\n\n**navigator.platform**\n\n**navigator.userAgent**",
+      "language": "Browser Language\n\n**navigator.language**",
+      "hardwareConcurrency": "Number of logical processors\n\n**navigator.hardwareConcurrency**",
+      "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
+      "colorDepth": "Screen Color Depth\n\n**screen.colorDepth**",
+      "pixelDepth": "Screen Pixel Depth\n\n**screen.pixelDepth**",
+      "timezone": "Browser Timezone",
+      "canvas": "Canvas Fingerprint",
+      "audio": "Audio Fingerprint",
+      "webgl": "WebGL Fingerprint",
+      "webrtc": "WebRTC Fingerprint",
+
+      "e-language": "Language",
+      "seed": "Global Seed, Acts on **Randomization based on global seed** Options",
+      "hook-net-request": "When turned on, it affects all network requests\n\nSupported configs: **Equipment Info (navigator.userAgent)**\n\nSupported options: **Every time the browser starts a random** & **Randomization based on global seed** & **Custom value**",
+      "hook-blank-iframe": "When turned on, Can proxy **Blank Source Iframe** content"
+    }
+  },
+  "tip": {
+    "label": {
+      "not-support-whitelist": "Not Supported"
+    },
+    "err": {
+      "input-hostname": "Please enter the correct domain name",
+      "input-port": "Please enter the correct port number"
+    }
+  },
+  "city": {
+    "SH": "Shanghai",
+    "NY": "New York",
+    "LG": "London",
+    "PAR": "Paris",
+    "TY": "Tokyo",
+    "DXB": "Dubai",
+    "SE": "Seoul",
+    "BKK": "Bangkok",
+    "JKT": "Jakarta"
+  }
 }

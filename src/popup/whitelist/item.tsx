@@ -23,7 +23,7 @@ export const WhitelistItem = ({ item, filterValue, onDelete }: WhitelistItemProp
     onMouseEnter={() => setActive(true)}
     onMouseLeave={() => setActive(false)}>
     <Highlight className='font-mono' text={item} keyword={filterValue} ignoreCase />
-    {active && <Button className=' float-end' type='text' size='small' danger icon={<DeleteOutlined />} onClick={() => onDelete?.(item)} />}
+    {active && <Button className='float-end' type='text' size='small' danger icon={<DeleteOutlined />} onClick={() => onDelete?.(item)} />}
   </section>
 }
 

@@ -12,7 +12,7 @@ export const FHookRecord = function ({records}: FHookRecordProps) {
       <div key={key}
         className="p-1 rounded-sm flex justify-between items-center hover:bg-[#f4e6d38b]">
           <span>{key}</span>
-          <span>× {records?.[key] ?? 0}</span>
+          <span className="font-bold">× {records?.[key] ?? 0}</span>
       </div>)}
   </section>
 }

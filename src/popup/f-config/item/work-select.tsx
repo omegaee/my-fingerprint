@@ -20,7 +20,7 @@ export type FWorkSelectItemProps = {
 }
 
 export const FWorkSelectItem = function (props: FWorkSelectItemProps) {
-  const [t] = useTranslation()
+  const [t, i18n] = useTranslation()
   const [showInput, setShowInput] = useState(false)
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export const FWorkSelectItem = function (props: FWorkSelectItemProps) {
         options: customArr,
       },
     ])
-  }, [props.types])
+  }, [i18n.language, props.types])
 
   const onChangeSelect = (opt: HookType) => {
     if(props.keys.length !== props.keyPrefix.length) return

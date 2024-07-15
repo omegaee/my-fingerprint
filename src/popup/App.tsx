@@ -101,7 +101,7 @@ function App() {
   }, [i18n.language, config, tab, hookRecords])
 
   return (
-    <Layout className="overflow-y-auto no-scrollbar p-2 w-64 flex flex-col">
+    <Layout className="overflow-y-auto no-scrollbar p-2 w-72 flex flex-col">
       {contextHolder}
 
       <Typography.Text className="mx-auto text-xl font-black ">My Fingerprint</Typography.Text>

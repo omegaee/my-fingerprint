@@ -2,7 +2,8 @@ export const manifest: chrome.runtime.ManifestV3 = {
   manifest_version: 3,
   name: 'My Fingerprint',
   description: 'Custom your browser fingerprint',
-  version: '2.0',
+  // description: '__MSG_extension_description__',
+  version: '2.0.0',
   permissions: [
     'storage', 
     'tabs', 
@@ -35,12 +36,6 @@ export const manifest: chrome.runtime.ManifestV3 = {
       all_frames: true,
     },
   ],
-  // web_accessible_resources:[
-  //   {
-  //     resources: ["src/scripts/inject.html"],
-  //     matches: ["<all_urls>"],
-  //     // use_dynamic_url: true,
-  //   }
-  // ]
+  web_accessible_resources:[]
 }
 export default manifest
