@@ -21,49 +21,20 @@ const BADGE_COLOR = {
   high: '#F4A460',
 }
 
-// /**
-//  * 获取请求头
-//  */
-// const getUserAgent = (tabId: number, url: string) => {
-//   // 扩展未开启
-//   if(!localStorage?.config.enable) return undefined
-//   // url无效
-//   const host = urlToHttpHost(url)
-//   if (!host) return undefined
-//   // 在白名单
-//   if (localStorage.whitelist.has(host)) return undefined
+let newVersion: string | undefined
 
-//   const mode = localStorage?.config.fingerprint.navigator.userAgent
-//   switch (mode?.type) {
-//     case HookType.value: {
-//       return mode.value
-//     }
-//     case HookType.page: {
-//       return randomEquipmentInfo(tabId).userAgent
-//     }
-//     case HookType.domain: {
-//       return randomEquipmentInfo(hashNumberFromString(host)).userAgent
-//     }
-//     case HookType.browser: {
-//       let ua = userAgentCache[HookType.browser]
-//       if(!ua){
-//         ua = randomEquipmentInfo(localStorage?.config.browserSeed ?? genRandomSeed()).userAgent
-//         userAgentCache[HookType.browser] = ua
-//       }
-//       return ua
-//     }
-//     case HookType.seed: {
-//       let ua = userAgentCache[HookType.seed]
-//       if(!ua){
-//         ua = randomEquipmentInfo(localStorage?.config.customSeed ?? genRandomSeed()).userAgent
-//         userAgentCache[HookType.browser] = ua
-//       }
-//       return ua
-//     }
-//     case HookType.default:
-//     default: return undefined
-//   }
-// }
+/**
+ * 获取最新版本号
+ */
+const getNewVersion = async () => {
+  if(newVersion){
+    return newVersion
+  }else{
+    const data = await fetch('https://api.github.com/repos/omegaee/my-fingerprint/releases/latest').then(data => data.json())
+    newVersion = data.tag_name
+    return newVersion
+  }
+}
 
 /**
  * 获取请求头
@@ -349,6 +320,16 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
           }
         }))
       }
+      break
+    }
+    case RuntimeMsg.GetNewVersion: {
+      getNewVersion().then((version) => {
+        let isNew = false
+        if(localStorage?.version && version){
+          isNew = compareVersions(localStorage.version, version) < 0
+        }
+        (sendResponse as RespFunc<GetNewVersionMsg>)(isNew)
+      })
       break
     }
   }

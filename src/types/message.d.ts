@@ -4,6 +4,7 @@ declare enum RuntimeMsg {
   SetHookRecords = 'set-hook-records',
   UpdateWhitelist = 'update-whitelist',
   UpdateScriptState = 'update-script-state',
+  GetNewVersion = 'get-new-version',
 }
 
 declare enum ContentMsg {
@@ -42,11 +43,17 @@ type UpdateScriptStateRequest = {
   mode: 'enable' | 'disable'
 }
 
-type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | UpdateWhitelistRequest | UpdateScriptStateRequest
+type GetNewVersionRequest = {
+  type: RuntimeMsg.GetNewVersion,
+}
+
+type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | UpdateWhitelistRequest | UpdateScriptStateRequest | GetNewVersionRequest
 
 type RespFunc<T=any> = (msg: T) => void
 
 type GetNoticeMsg = ToolbarNotice
+
+type GetNewVersionMsg = boolean
 
 // **********
 // ContentMsg

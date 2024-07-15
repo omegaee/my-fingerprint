@@ -1,8 +1,9 @@
-import { Button, Divider, Layout, Tabs, type TabsProps, Typography, message, theme } from "antd"
+import { Badge, Button, Divider, Layout, Tabs, type TabsProps, Typography, message, theme } from "antd"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
+  GithubOutlined,
   CheckOutlined,
   CloseOutlined,
   AlertOutlined,
@@ -14,8 +15,8 @@ import FHookRecord from "./f-record"
 import FConfig from "./f-config"
 import WhitelistView from "./whitelist"
 
-import { urlToHttpHost } from "@/utils/base"
-import { msgAddWhiteList, msgDelWhiteList, msgGetNotice, msgSetConfig } from "@/message/runtime"
+import { compareVersions, urlToHttpHost } from "@/utils/base"
+import { msgAddWhiteList, msgDelWhiteList, msgGetNewVersion, msgGetNotice, msgSetConfig } from "@/message/runtime"
 
 function App() {
   const [t, i18n] = useTranslation()
@@ -26,6 +27,8 @@ function App() {
 
   const [hookRecords, setHookRecords] = useState<ToolbarNoticeRecord['data']>()
   const [isWhitelist, setIsWhitelist] = useState(false)
+
+  const [isNewVersion, setIsNewVersion] = useState(false)
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -49,6 +52,9 @@ function App() {
           setIsWhitelist(true)
         }
       })
+    })
+    msgGetNewVersion().then((isNew) => {
+      setIsNewVersion(isNew)
     })
   }, [])
 
@@ -104,7 +110,12 @@ function App() {
     <Layout className="overflow-y-auto no-scrollbar p-2 w-72 flex flex-col">
       {contextHolder}
 
-      <Typography.Text className="mx-auto text-xl font-black ">My Fingerprint</Typography.Text>
+      <section className='relative'>
+        <Typography.Text className="flex justify-center text-xl font-black">My Fingerprint</Typography.Text>
+        <Badge dot={isNewVersion} offset={[-2, 2]} style={{ width: '8px', height: '8px' }} className="absolute left-0 top-0 cursor-pointer">
+          <GithubOutlined className="text-lg" onClick={() => window.open(isNewVersion ? 'https://github.com/omegaee/my-fingerprint/releases' : 'https://github.com/omegaee/my-fingerprint')} />
+        </Badge>
+      </section>
 
       <Divider style={{ margin: '8px 0' }} />
 

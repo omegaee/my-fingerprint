@@ -13,6 +13,7 @@ export enum RuntimeMsg {
   SetHookRecords = 'set-hook-records',
   UpdateWhitelist = 'update-whitelist',
   UpdateScriptState = 'update-script-state',
+  GetNewVersion = 'get-new-version',
 }
 
 export enum ContentMsg {

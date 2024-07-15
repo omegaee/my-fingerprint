@@ -60,3 +60,9 @@ export const msgDelWhiteList = (host: string) => {
     host,
   })
 }
+
+export const msgGetNewVersion = () => {
+  return chrome.runtime.sendMessage<GetNewVersionRequest, GetNewVersionMsg>({
+    type: RuntimeMsg.GetNewVersion,
+  })
+}
