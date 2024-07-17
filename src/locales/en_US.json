@@ -62,7 +62,7 @@
 
       "e-language": "Language",
       "seed": "Global Seed, Acts on **Randomization based on global seed** Options",
-      "hook-net-request": "When turned on, it affects all network requests\n\nSupported configs: **Equipment Info (navigator.userAgent)**\n\nSupported options: **Every time the browser starts a random** & **Randomization based on global seed** & **Custom value**",
+      "hook-net-request": "When turned on, it affects all network requests\n\n**Note that turning it on affects the styling of some web pages**\n\nSupported configs: **Equipment Info (navigator.userAgent)**\n\nSupported options: **Every time the browser starts a random** & **Randomization based on global seed** & **Custom value**",
       "hook-blank-iframe": "When turned on, Can proxy **Blank Source Iframe** content"
     }
   },

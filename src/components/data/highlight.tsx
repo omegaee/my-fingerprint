@@ -9,7 +9,7 @@ export type HighlightProps = {
  * 文本高亮
  */
 export const Highlight = function ({ className, text, keyword, ignoreCase }: HighlightProps) {
-  if(keyword === undefined || keyword === null) return text
+  if(keyword === undefined || keyword === null) return <span>{text}</span>
   if(Array.isArray(keyword)){
     if(keyword.length === 0) return <span className={className}>{text}</span>
     return <span className={className}>{text.split(new RegExp(keyword.map((item) => `${item}`).join('|'), ignoreCase ? "gi" : "g"))

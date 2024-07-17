@@ -133,7 +133,7 @@ const genDefaultLocalStorage = (): LocalStorage => {
         },
       },
       language: navigator.language,
-      hookNetRequest: true,
+      hookNetRequest: false,
       hookBlankIframe: true,
     },
     whitelist: []

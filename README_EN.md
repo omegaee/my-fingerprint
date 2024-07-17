@@ -68,5 +68,7 @@
 
 # Known Issues
 > If there is a solution, you are welcome to propose it!
-- Since the configuration needs to be read asynchronously, the core script injection will have a delay and may miss some extreme cases.
-
+- **Since the configuration needs to be read asynchronously, the core script injection will have a delay and may miss some extreme cases.**
+- Web request hooks, which are implemented through `declarativeNetRequest`
+  - **Unable to support whitelisting**
+  - The Sec-CH-UA series request header is not currently supported.
