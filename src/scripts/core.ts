@@ -220,33 +220,43 @@ export class FingerprintHandler {
    */
   private getValueFromCacheOrFunc(key: HookFingerprintKey, value: any, seedFunc: (seed: number) => any): any | null {
     if (value && !cache[key]) {
-      const type = (value as BaseHookMode).type
-      let seed: number
-      switch (type) {
-        case HookType.page: {
-          seed = this.pageSeed
-          break
+      const type = (value as HookMode).type
+      let res
+      if(type === HookType.value){
+        res = seedFunc(1)
+      }else{
+        let seed: number
+        switch (type) {
+          case HookType.page: {
+            seed = this.pageSeed
+            break
+          }
+          case HookType.domain: {
+            seed = this.domainSeed
+            break
+          }
+          case HookType.browser: {
+            seed = this.browserSeed
+            break
+          }
+          case HookType.seed: {
+            seed = this.curstomSeed
+            break
+          }
+          case HookType.default:
+          default: return null
         }
-        case HookType.domain: {
-          seed = this.domainSeed
-          break
-        }
-        case HookType.browser: {
-          seed = this.browserSeed
-          break
-        }
-        case HookType.seed: {
-          seed = this.curstomSeed
-          break
-        }
-        case HookType.default:
-        default: return null
+        res = seedFunc(seed)
       }
-      const res = seedFunc(seed)
+
       if (res === null || res === undefined) return null
-      if (typeof (res) === 'object') {
+      if(key === 'timezone'){
+        cache[key] = res
+      } 
+      else if (typeof (res) === 'object') {
         Object.assign(cache, res)
-      } else {
+      }
+      else {
         cache[key] = res
       }
     }
@@ -335,7 +345,6 @@ export class FingerprintHandler {
         }
       }
     }
-
     if (res !== null) {
       // 记录
       recordAndSend(key as HookFingerprintKey)

@@ -72,14 +72,18 @@ const getUserAgent = () => {
 const refreshRequestHeaderUA = () => {
   const ua = getUserAgent()
   if(ua === undefined){
-    chrome.declarativeNetRequest.updateDynamicRules({removeRuleIds: [UA_NET_RULE_ID]})
+    chrome.declarativeNetRequest.updateSessionRules({removeRuleIds: [UA_NET_RULE_ID]})
   }else{
-    chrome.declarativeNetRequest.updateDynamicRules({
+    const RT = chrome.declarativeNetRequest.ResourceType
+    chrome.declarativeNetRequest.updateSessionRules({
       removeRuleIds: [UA_NET_RULE_ID],
       addRules: [{
         id: UA_NET_RULE_ID,
         // priority: 1,
-        condition: {},
+        condition: {
+          // resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+          resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
+        },
         action: {
           type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
           requestHeaders: [{
