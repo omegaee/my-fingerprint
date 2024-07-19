@@ -10,7 +10,7 @@ const init = () => {
   script?.remove()
 
   const host = urlToHttpHost(location.href)
-  if(!host)return
+  if(!host){return}
 
   fh = new FingerprintHandler(window, genRandomSeed(), host)
   fh.setConfig(data.config)

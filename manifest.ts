@@ -24,17 +24,17 @@ export const manifest: chrome.runtime.ManifestV3 = {
   background: {
     service_worker: "src/background/index.ts",
   },
-  content_scripts:[
-    {
-      world: "ISOLATED",
-      // world: "MAIN",
-      matches: ["<all_urls>"],
-      js: ["src/scripts/content.ts"],
-      match_about_blank: true,
-      run_at: "document_start",
-      all_frames: true,
-    },
-  ],
+  // content_scripts:[
+  //   {
+  //     world: "ISOLATED",
+  //     // world: "MAIN",
+  //     matches: ["<all_urls>"],
+  //     js: ["src/scripts/content.ts"],
+  //     match_about_blank: true,
+  //     run_at: "document_start",
+  //     all_frames: true,
+  //   },
+  // ],
   web_accessible_resources:[]
 }
 export default manifest

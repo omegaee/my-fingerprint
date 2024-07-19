@@ -196,9 +196,10 @@ export class FingerprintHandler {
       this.isInjectHtmlBlankIframe = true
       const iframes = this.win.document.querySelectorAll('iframe')
       for (const iframe of iframes) {
-        if (!iframe.src || iframe.src === 'about:blank') {
-          this.hookIframe(iframe)
-        }
+        this.hookIframe(iframe)
+        // if (!iframe.src || iframe.src === 'about:blank') {
+        //   this.hookIframe(iframe)
+        // }
       }
     }
   }

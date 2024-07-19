@@ -1,10 +1,14 @@
 import { compareVersions, genRandomSeed, urlToHttpHost } from "@/utils/base";
 import { debounce } from "@/utils/timer";
 import deepmerge from "deepmerge";
-import { HookType, RuntimeMsg } from '@/types/enum'
+import { HookType, ContentMsg, RuntimeMsg } from '@/types/enum'
 import { randomEquipmentInfo } from "@/utils/data";
 import { selectTabByHost, sendMessageToAllTags } from "@/utils/tabs";
 import { tabUpdateScriptState } from "@/message/tabs";
+import { isolatedScript } from "@/scripts/func";
+
+// @ts-ignore
+import injectSrc from '@/scripts/inject?script&module'
 
 const UA_NET_RULE_ID = 1
 
@@ -345,10 +349,28 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (!tab.url) return
   if (changeInfo.status === 'loading') {
+    if(localStorage){
+      chrome.scripting.executeScript({ 
+        target: {
+          tabId,
+          allFrames: true,
+        },
+        world: 'ISOLATED',
+        injectImmediately: true,
+        args: [
+          chrome.runtime.getURL(injectSrc), 
+          {...localStorage, whitelist: [...localStorage.whitelist]}, 
+          { ContentMsg, RuntimeMsg, }
+        ],
+        func: isolatedScript,
+      })
+    }
+
     const host = urlToHttpHost(tab.url)
-    if (!host) return
-    if (localStorage?.whitelist.has(host)) {
-      setBadgeWhitelist(tabId)
+    if(host){
+      if (localStorage?.whitelist.has(host)) {
+        setBadgeWhitelist(tabId)
+      }
     }
   }
 });

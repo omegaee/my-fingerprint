@@ -1,5 +1,6 @@
-const IDENTIFY = '__MyFingerprint__'
 import { ContentMsg } from '@/types/enum'
+
+export const IDENTIFY = '__MyFingerprint__'
 
 /**
  * 解包postMessage请求体
@@ -11,7 +12,7 @@ export const unwrapMessage = (msg: any): any => {
 /**
  * 包装Message
  */
-const wrapMessage = <T=any>(msg: T) => {
+export const wrapMessage = <T=any>(msg: T) => {
   return {[IDENTIFY]: msg}
 }
 
