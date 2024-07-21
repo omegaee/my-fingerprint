@@ -5,6 +5,7 @@ import { debounce } from "../utils/timer";
 import { postSetHookRecords, unwrapMessage } from "@/message/content";
 import { genRandomSeed, hashNumberFromString } from "../utils/base";
 import { ContentMsg } from '@/types/enum'
+import { EquipmentInfoHandler } from "@/utils/equipment";
 
 // hook缓存
 const cache: Partial<Record<HookFingerprintKey, any>> = {}
@@ -39,6 +40,8 @@ export class FingerprintHandler {
   private domainSeed: number
   private browserSeed: number
   private curstomSeed: number
+
+  private equipmentHandler?: EquipmentInfoHandler
 
   public constructor(win: Window & typeof globalThis, tabId: number, host: string) {
     this.win = win
@@ -217,6 +220,28 @@ export class FingerprintHandler {
   }
 
   /**
+   * 获取value对应的的seed
+   */
+  private getSeedByHookValue = (value?: any) => {
+    switch (value?.type) {
+      case HookType.page: {
+        return this.pageSeed
+      }
+      case HookType.domain: {
+        return this.domainSeed
+      }
+      case HookType.browser: {
+        return this.browserSeed
+      }
+      case HookType.seed: {
+        return this.curstomSeed
+      }
+      case HookType.default:
+      default: return null
+    }
+  }
+
+  /**
    * 从hook缓存或指定函数中获取值
    */
   private getValueFromCacheOrFunc(key: HookFingerprintKey, value: any, seedFunc: (seed: number) => any): any | null {
@@ -226,27 +251,8 @@ export class FingerprintHandler {
       if(type === HookType.value){
         res = seedFunc(1)
       }else{
-        let seed: number
-        switch (type) {
-          case HookType.page: {
-            seed = this.pageSeed
-            break
-          }
-          case HookType.domain: {
-            seed = this.domainSeed
-            break
-          }
-          case HookType.browser: {
-            seed = this.browserSeed
-            break
-          }
-          case HookType.seed: {
-            seed = this.curstomSeed
-            break
-          }
-          case HookType.default:
-          default: return null
-        }
+        let seed = this.getSeedByHookValue(value)
+        if (seed === null) return null
         res = seedFunc(seed)
       }
 
@@ -267,24 +273,24 @@ export class FingerprintHandler {
   /**
    * 获取并记录值
    */
-  private getValue(prefix: keyof HookFingerprint, key: string): any | null {
+  private getValue(prefix: string, key: string): any | null {
     let res = null
     switch (prefix) {
       case "navigator": {
         const value = this.conf?.fingerprint?.navigator?.[key as keyof HookFingerprint['navigator']]
         switch (key) {
-          case "appVersion": {
-            res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
-            break
-          }
-          case "platform": {
-            res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
-            break
-          }
-          case "userAgent": {
-            res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
-            break
-          }
+          // case "appVersion": {
+          //   res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
+          //   break
+          // }
+          // case "platform": {
+          //   res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
+          //   break
+          // }
+          // case "userAgent": {
+          //   res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
+          //   break
+          // }
           case "language": {
             res = this.getValueFromCacheOrFunc(key, value, randomLanguage)
             break
@@ -439,13 +445,35 @@ export class FingerprintHandler {
         value: new Proxy(this.win.navigator, {
           get: (target, key: string) => {
             if (key in target) {
-              const value = this.getValue('navigator', key)
+              let value: any | null
+              if(key === 'userAgent' || key === 'appVersion' || key === 'userAgentData'){
+                /// Equipment
+                const seed = this.getSeedByHookValue(this.conf?.fingerprint?.navigator?.equipment)
+                if(seed !== null){
+                  if(!this.equipmentHandler){
+                    this.equipmentHandler = new EquipmentInfoHandler(target, seed)
+                  }
+                  value = this.equipmentHandler.getValue(key)
+                  if (value !== null) {
+                    // 记录
+                    recordAndSend(key as HookFingerprintKey)
+                  }
+                }else{
+                  value = null
+                }
+              }else{
+                /// Other
+                value = this.getValue('navigator', key)
+              }
               if (value !== null) {
                 return value
               }
               const res = target[key as keyof Navigator]
-              if (typeof res === "function") return res.bind(target)
-              else return res
+              if (typeof res === "function") {
+                return res.bind(target)
+              } else {
+                return res
+              }
             } else {
               return undefined
             }

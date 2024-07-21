@@ -15,7 +15,7 @@ import FHookRecord from "./f-record"
 import FConfig from "./f-config"
 import WhitelistView from "./whitelist"
 
-import { compareVersions, urlToHttpHost } from "@/utils/base"
+import { urlToHttpHost } from "@/utils/base"
 import { msgAddWhiteList, msgDelWhiteList, msgGetNewVersion, msgGetNotice, msgSetConfig } from "@/message/runtime"
 
 function App() {

@@ -16,9 +16,9 @@ type FItems = {
 const fItems: FItems[] = [
   {
     text: 'equipment',
-    keys: ['appVersion', 'platform', 'userAgent'],
-    keyPrefix: ['navigator', 'navigator', 'navigator'],
-    types,
+    keys: ['equipment'],
+    keyPrefix: ['navigator'],
+    types: baseTypes,
   },
   {
     text: 'language',

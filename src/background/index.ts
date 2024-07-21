@@ -45,11 +45,11 @@ const getNewVersion = async () => {
  */
 const getUserAgent = () => {
   if(!localStorage?.config.enable || !localStorage?.config.hookNetRequest) return undefined
-  const mode = localStorage?.config.fingerprint.navigator.userAgent
+  const mode = localStorage?.config.fingerprint.navigator.equipment
   switch (mode?.type) {
-    case HookType.value: {
-      return mode.value
-    }
+    // case HookType.value: {
+    //   return mode.value
+    // }
     case HookType.browser: {
       let ua = userAgentCache[HookType.browser]
       if(!ua){
@@ -116,9 +116,10 @@ const genDefaultLocalStorage = (): LocalStorage => {
       browserSeed: genRandomSeed(),
       fingerprint: {
         navigator: {
-          appVersion: browserHook,
-          platform: browserHook,
-          userAgent: browserHook,
+          equipment: browserHook, 
+          // appVersion: browserHook,
+          // platform: browserHook,
+          // userAgent: browserHook,
           language: defaultHook,
           hardwareConcurrency: defaultHook,
         },
@@ -196,7 +197,7 @@ const updateLocalConfig = (config: DeepPartial<LocalStorageConfig>) => {
   if (!localStorage?.config) return
   localStorage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(localStorage.config, config)
   saveLocalConfig()
-  if(config.enable !== undefined || config.hookNetRequest !== undefined || config.fingerprint?.navigator?.userAgent){
+  if(config.enable !== undefined || config.hookNetRequest !== undefined || config.fingerprint?.navigator?.equipment){
     refreshRequestHeaderUA()
   }
 }
@@ -349,6 +350,9 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (!tab.url) return
   if (changeInfo.status === 'loading') {
+    const host = urlToHttpHost(tab.url)
+    if(!host)return
+
     if(localStorage){
       chrome.scripting.executeScript({ 
         target: {
@@ -366,11 +370,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       })
     }
 
-    const host = urlToHttpHost(tab.url)
-    if(host){
-      if (localStorage?.whitelist.has(host)) {
-        setBadgeWhitelist(tabId)
-      }
+    if (localStorage?.whitelist.has(host)) {
+      setBadgeWhitelist(tabId)
     }
   }
 });

@@ -1,3 +1,5 @@
+import { seededRandom } from "./data";
+
 /**
  * 版本号比较
  * @returns v1大于v2，返回1；v1小于v2，返回-1；v1等于v2，返回0
@@ -75,4 +77,50 @@ export const urlToHttpHost = function (url: string) {
   } catch (err) {
     return undefined
   }
+}
+
+/**
+ * 版本号随机偏移
+ * @param sourceVersion 源版本号
+ * @param seed 种子
+ * @param maxSubVersionNumber 最大子版本数量 
+ * @param mainVersionOffset 最大主版本号偏移
+ * @param subVersionOffset 最大子版本号偏移
+ * @returns 
+ */
+export const versionRandomOffset = (sourceVersion: string, seed: number, maxSubVersionNumber?: number, maxMainVersionOffset?: number, maxSubVersionOffset?: number): string => {
+  // 将源版本号分解为主版本号和子版本号
+  const [mainVersion, ...subversions] = sourceVersion.split('.')
+  if(mainVersion === undefined) return sourceVersion
+  let nMainVersion = Number(mainVersion)
+  if(Number.isNaN(nMainVersion)) return sourceVersion
+
+  maxMainVersionOffset = maxMainVersionOffset ?? 2
+  maxSubVersionOffset = maxSubVersionOffset ?? 50
+  maxSubVersionNumber = maxSubVersionNumber ?? subversions.length
+
+  nMainVersion += (seed % ((maxMainVersionOffset * 2) + 1)) - maxMainVersionOffset;
+
+  const nSubversions: string[] = []
+  for (let i = 0; i < maxSubVersionNumber; i++) {
+    const subversion = subversions[i]
+    let nSubversion = Number(subversion)
+    if(Number.isNaN(nSubversion)) {
+      nSubversions.push(subversion)
+      continue
+    }
+    const ss = Math.floor(seededRandom(seed+i, -maxSubVersionOffset, maxSubVersionOffset))
+    nSubversion = Math.abs((nSubversion ?? 0) + ss)
+    nSubversions.push(nSubversion.toString())
+  }
+
+  // 将主版本号和子版本号重新组合成完整的版本号
+  return [nMainVersion, ...nSubversions].join('.');
+}
+
+/**
+ * 获取主要版本号
+ */
+export const getMainVersion = (sourceVersion: string) => {
+  return sourceVersion.split('.')[0]
 }

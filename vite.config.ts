@@ -13,5 +13,5 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
-  // server: { port: 3000, hmr: { port: 3000 } },
+  server: { port: 3000, hmr: { port: 3000 } },
 })

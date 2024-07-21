@@ -23,9 +23,10 @@ type LocalStorageConfig = {
 
 type HookFingerprint = {
   navigator: {
-    appVersion: HookMode<string>
-    platform: HookMode<string>
-    userAgent: HookMode<string>
+    equipment: BaseHookMode
+    // appVersion: HookMode<string>
+    // platform: HookMode<string>
+    // userAgent: HookMode<string>
     language: HookMode<string>
     hardwareConcurrency: HookMode<number>
   }
