@@ -2,13 +2,13 @@ import { compareVersions, genRandomSeed, urlToHttpHost } from "@/utils/base";
 import { debounce } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { HookType, ContentMsg, RuntimeMsg } from '@/types/enum'
-import { randomEquipmentInfo } from "@/utils/data";
 import { selectTabByHost, sendMessageToAllTags } from "@/utils/tabs";
 import { tabUpdateScriptState } from "@/message/tabs";
 import { isolatedScript } from "@/scripts/func";
 
 // @ts-ignore
 import injectSrc from '@/scripts/inject?script&module'
+import { EquipmentInfoHandler } from "@/utils/equipment";
 
 const UA_NET_RULE_ID = 1
 
@@ -17,7 +17,7 @@ const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'we
 let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
-const userAgentCache: Partial<Record<HookType, string>> = {}
+// const userAgentCache: Partial<Record<HookType, string>> = {}
 
 const BADGE_COLOR = {
   whitelist: '#fff',
@@ -40,65 +40,133 @@ const getNewVersion = async () => {
   }
 }
 
-/**
- * 获取请求头
- */
-const getUserAgent = () => {
-  if(!localStorage?.config.enable || !localStorage?.config.hookNetRequest) return undefined
-  const mode = localStorage?.config.fingerprint.navigator.equipment
-  switch (mode?.type) {
-    // case HookType.value: {
-    //   return mode.value
-    // }
-    case HookType.browser: {
-      let ua = userAgentCache[HookType.browser]
-      if(!ua){
-        ua = randomEquipmentInfo(localStorage?.config.browserSeed ?? genRandomSeed()).userAgent
-        userAgentCache[HookType.browser] = ua
-      }
-      return ua
-    }
-    case HookType.seed: {
-      let ua = userAgentCache[HookType.seed]
-      if(!ua){
-        ua = randomEquipmentInfo(localStorage?.config.customSeed ?? genRandomSeed()).userAgent
-        userAgentCache[HookType.seed] = ua
-      }
-      return ua
-    }
-    default: return undefined
-  }
-}
+// /**
+//  * 获取请求头
+//  */
+// const getUserAgent = () => {
+//   if(!localStorage?.config.enable || !localStorage?.config.hookNetRequest) return undefined
+//   const mode = localStorage?.config.fingerprint.navigator.equipment
+//   switch (mode?.type) {
+//     // case HookType.value: {
+//     //   return mode.value
+//     // }
+//     case HookType.browser: {
+//       let ua = userAgentCache[HookType.browser]
+//       if(!ua){
+//         ua = randomEquipmentInfo(localStorage?.config.browserSeed ?? genRandomSeed()).userAgent
+//         userAgentCache[HookType.browser] = ua
+//       }
+//       return ua
+//     }
+//     case HookType.seed: {
+//       let ua = userAgentCache[HookType.seed]
+//       if(!ua){
+//         ua = randomEquipmentInfo(localStorage?.config.customSeed ?? genRandomSeed()).userAgent
+//         userAgentCache[HookType.seed] = ua
+//       }
+//       return ua
+//     }
+//     default: return undefined
+//   }
+// }
+
+// /**
+//  * 刷新请求头UA
+//  */
+// const refreshRequestHeaderUA = () => {
+//   const ua = getUserAgent()
+//   if(ua === undefined){
+//     chrome.declarativeNetRequest.updateSessionRules({removeRuleIds: [UA_NET_RULE_ID]})
+//   }else{
+//     const RT = chrome.declarativeNetRequest.ResourceType
+//     chrome.declarativeNetRequest.updateSessionRules({
+//       removeRuleIds: [UA_NET_RULE_ID],
+//       addRules: [{
+//         id: UA_NET_RULE_ID,
+//         // priority: 1,
+//         condition: {
+//           // resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+//           resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
+//         },
+//         action: {
+//           type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+//           requestHeaders: [{
+//             header: "User-Agent",
+//             operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+//             value: getUserAgent(),
+//           }]
+//         },
+//       }],
+//     })
+//   }
+// }
+
+
 
 /**
  * 刷新请求头UA
  */
 const refreshRequestHeaderUA = () => {
-  const ua = getUserAgent()
-  if(ua === undefined){
-    chrome.declarativeNetRequest.updateSessionRules({removeRuleIds: [UA_NET_RULE_ID]})
-  }else{
-    const RT = chrome.declarativeNetRequest.ResourceType
-    chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: [UA_NET_RULE_ID],
-      addRules: [{
-        id: UA_NET_RULE_ID,
-        // priority: 1,
-        condition: {
-          // resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-          resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
-        },
-        action: {
-          type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-          requestHeaders: [{
-            header: "User-Agent",
-            operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-            value: getUserAgent(),
-          }]
-        },
-      }],
-    })
+  if(!localStorage?.config.enable || !localStorage?.config.hookNetRequest) return undefined
+  const mode = localStorage?.config.fingerprint.navigator.equipment
+  
+  /// Get Seed
+  let seed: number | undefined;
+  switch (mode.type) {
+    case HookType.browser:{
+      seed = localStorage?.config.browserSeed
+      break;
+    }
+    case HookType.seed:{
+      seed = localStorage?.config.customSeed
+      break;
+    }
+    default:{
+      seed = undefined
+    }
   }
+
+  if(seed){
+    try{
+      const eh = new EquipmentInfoHandler(navigator, seed)
+      const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = []
+      if(eh.userAgent){
+        requestHeaders.push({
+          header: "User-Agent",
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          value: eh.userAgent,
+        })
+      }
+      if(eh.brands){
+        requestHeaders.push({
+          header: "Sec-Ch-Ua",
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          value: eh.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
+        })
+      }
+      if(requestHeaders.length){
+        chrome.declarativeNetRequest.updateSessionRules({
+          removeRuleIds: [UA_NET_RULE_ID],
+          addRules: [{
+            id: UA_NET_RULE_ID,
+            // priority: 1,
+            condition: {
+              resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+              // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
+            },
+            action: {
+              type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+              requestHeaders,
+            },
+          }],
+        })
+        return
+      }
+
+    }catch(err){}
+  }
+
+  chrome.declarativeNetRequest.updateSessionRules({removeRuleIds: [UA_NET_RULE_ID]})
 }
 
 /**

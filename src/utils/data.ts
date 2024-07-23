@@ -17,58 +17,6 @@ const seededEl = <T>(arr: Readonly<T[]>, seed: number): T => {
 }
 
 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-const equipmentInfos: EquipmentInfo[] = [
-  {
-    platform: 'MacIntel',
-    appVersion: '5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15',
-  },
-  {
-    platform: 'Win32',
-    appVersion: '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-  },
-  {
-    platform: 'MacIntel',
-    appVersion: '5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
-  },
-  {
-    platform: 'Win32',
-    appVersion: '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 Edge/16.16299',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 Edge/16.16299',
-  },
-  {
-    platform: 'MacIntel',
-    appVersion: '5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 OPR/70.0.3728.71',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 OPR/70.0.3728.71',
-  },
-  {
-    platform: 'Win32',
-    appVersion: '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 OPR/44.0.2510.1449',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 OPR/44.0.2510.1449',
-  },
-  {
-    platform: 'MacIntel',
-    appVersion: '5.0 (Macintosh; Intel Mac OS X 10_15_6) Gecko/20100101 Firefox/80.0',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) Gecko/20100101 Firefox/80.0',
-  },
-  {
-    platform: 'Linux x86_64',
-    appVersion: '5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 Edge/16.16299',
-    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 Edge/16.16299',
-  },
-  {
-    platform: 'Win32',
-    appVersion: '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 OPR/44.0.2510.1449',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 OPR/44.0.2510.1449',
-  },
-  {
-    platform: 'MacIntel',
-    appVersion: '5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.51',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.51',
-  },
-]
 const hardwareConcurrencys = [8, 12, 16]
 const colorDepths = [16, 24, 32]
 const pixelDepths = [16, 24, 32]
@@ -86,13 +34,6 @@ const webglRendererList = [
   'AMD Radeon Pro 5300M OpenGL Engine',
   'Intel(R) Iris(R) Plus Graphics OpenGL Engine',
 ]
-
-/**
- * 随机设备信息
- */
-export const randomEquipmentInfo = (seed: number): EquipmentInfo => {
-  return seededEl(equipmentInfos, seed)
-}
 
 /**
  * 随机屏幕宽高信息

@@ -1,6 +1,6 @@
 import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
-import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomEquipmentInfo, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander, seededRandom } from "../utils/data";
+import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander, seededRandom } from "../utils/data";
 import { debounce } from "../utils/timer";
 import { postSetHookRecords, unwrapMessage } from "@/message/content";
 import { genRandomSeed, hashNumberFromString } from "../utils/base";
