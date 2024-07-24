@@ -106,7 +106,7 @@ const getNewVersion = async () => {
 /**
  * 刷新请求头UA
  */
-const refreshRequestHeaderUA = () => {
+const refreshRequestHeaderUA = async () => {
   if(!localStorage?.config.enable || !localStorage?.config.hookNetRequest) return undefined
   const mode = localStorage?.config.fingerprint.navigator.equipment
   
@@ -144,6 +144,23 @@ const refreshRequestHeaderUA = () => {
           value: eh.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
         })
       }
+
+      const heValues = await eh.getHighEntropyValues()
+      if(heValues.fullVersionList){
+        requestHeaders.push({
+          header: "Sec-Ch-Ua-Full-Version-List",
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          value: heValues.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
+        })
+      }
+      if(heValues.uaFullVersion){
+        requestHeaders.push({
+          header: "Sec-Ch-Ua-Full-Version",
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          value: heValues.uaFullVersion,
+        })
+      }
+
       if(requestHeaders.length){
         chrome.declarativeNetRequest.updateSessionRules({
           removeRuleIds: [UA_NET_RULE_ID],

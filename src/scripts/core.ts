@@ -451,7 +451,7 @@ export class FingerprintHandler {
                 const seed = this.getSeedByHookValue(this.conf?.fingerprint?.navigator?.equipment)
                 if(seed !== null){
                   if(!this.equipmentHandler){
-                    this.equipmentHandler = new EquipmentInfoHandler(target, seed)
+                    this.equipmentHandler = new EquipmentInfoHandler(target, seed, true)
                   }
                   value = this.equipmentHandler.getValue(key)
                   if (value !== null) {
