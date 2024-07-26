@@ -106,7 +106,7 @@ export class EquipmentInfoHandler {
   public constructor(nav: Navigator, seed?: number, isHook?: boolean) {
     this.nav = nav
     if (seed !== undefined) {
-      this.setSeed(seed)
+      this.setSeed(seed, isHook)
     }
   }
 
@@ -145,35 +145,10 @@ export class EquipmentInfoHandler {
       // @ts-ignore
       this.rawUserAgentData = this.nav.userAgentData
       const brands: MyNavigatorUAData['brands'] = this.rawUserAgentData.brands
-      // Chrome / Edg
-      // const extensionMap = new Map<string, string>(uaParser.extensions.map((item) => [item.name, item.version]))
-      // for (const brand of brands) {
-      //   switch (brand.brand) {
-      //     case 'Chromium': {
-      //       const version = extensionMap.get('Chrome')
-      //       if (version) {
-      //         this.brands?.push({ ...brand, version: getMainVersion(version) })
-      //       } else {
-      //         this.brands?.push(brand)
-      //       }
-      //       break
-      //     }
-      //     case 'Microsoft Edge': {
-      //       const version = extensionMap.get('Edg')
-      //       if (version) {
-      //         this.brands?.push({ ...brand, version: getMainVersion(version) })
-      //       } else {
-      //         this.brands?.push(brand)
-      //       }
-      //       break
-      //     }
-      //     default: {
-      //       this.brands?.push(brand)
-      //       break
-      //     }
-      //   }
-      // }
       this.brands = brands.map((brand) => ({ ...brand, version: getMainVersion(versionRandomOffset(brand.version, seed)) }))
+
+      // @ts-ignore
+      this.rawGetHighEntropyValues = NavigatorUAData.prototype.getHighEntropyValues
 
       /// 若无需hook，则结束
       if (!isHook) return
@@ -211,12 +186,15 @@ export class EquipmentInfoHandler {
       // @ts-ignore
       if (NavigatorUAData?.prototype?.getHighEntropyValues) {
         // @ts-ignore
-        this.rawGetHighEntropyValues = NavigatorUAData.prototype.getHighEntropyValues
-        // @ts-ignore
         NavigatorUAData.prototype.getHighEntropyValues = new Proxy(NavigatorUAData.prototype.getHighEntropyValues, {
           apply: (target: (opt?: string[]) => Promise<any>, thisArg, args: Parameters<(opt?: string[]) => Promise<any>>) => {
             const res = target.apply(thisArg, args)
             return res.then((data) => {
+              if (data.brands?.length) {
+                for (const brand of data.brands as MyNavigatorUAData['brands']) {
+                  brand.version = versionRandomOffset(brand.version, seed)
+                }
+              }
               if (data.fullVersionList?.length) {
                 for (const brand of data.fullVersionList as MyNavigatorUAData['brands']) {
                   brand.version = versionRandomOffset(brand.version, seed)
@@ -248,7 +226,7 @@ export class EquipmentInfoHandler {
   }
 
   public async getHighEntropyValues() {
-    // @ts-ignore
+    // @ts-ignore    
     if (this.seed !== undefined && this.rawGetHighEntropyValues && this.nav.userAgentData) {
       // @ts-ignore
       const data = await this.rawGetHighEntropyValues.apply(this.nav.userAgentData, [['fullVersionList', 'uaFullVersion']])
@@ -261,7 +239,7 @@ export class EquipmentInfoHandler {
         this.fullVersionList = fullVersionList
       }
 
-      if (this.uaFullVersion) {
+      if (data.uaFullVersion) {
         this.uaFullVersion = versionRandomOffset(data.uaFullVersion, this.seed)
       }
     }

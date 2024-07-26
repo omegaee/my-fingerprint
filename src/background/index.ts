@@ -40,69 +40,6 @@ const getNewVersion = async () => {
   }
 }
 
-// /**
-//  * 获取请求头
-//  */
-// const getUserAgent = () => {
-//   if(!localStorage?.config.enable || !localStorage?.config.hookNetRequest) return undefined
-//   const mode = localStorage?.config.fingerprint.navigator.equipment
-//   switch (mode?.type) {
-//     // case HookType.value: {
-//     //   return mode.value
-//     // }
-//     case HookType.browser: {
-//       let ua = userAgentCache[HookType.browser]
-//       if(!ua){
-//         ua = randomEquipmentInfo(localStorage?.config.browserSeed ?? genRandomSeed()).userAgent
-//         userAgentCache[HookType.browser] = ua
-//       }
-//       return ua
-//     }
-//     case HookType.seed: {
-//       let ua = userAgentCache[HookType.seed]
-//       if(!ua){
-//         ua = randomEquipmentInfo(localStorage?.config.customSeed ?? genRandomSeed()).userAgent
-//         userAgentCache[HookType.seed] = ua
-//       }
-//       return ua
-//     }
-//     default: return undefined
-//   }
-// }
-
-// /**
-//  * 刷新请求头UA
-//  */
-// const refreshRequestHeaderUA = () => {
-//   const ua = getUserAgent()
-//   if(ua === undefined){
-//     chrome.declarativeNetRequest.updateSessionRules({removeRuleIds: [UA_NET_RULE_ID]})
-//   }else{
-//     const RT = chrome.declarativeNetRequest.ResourceType
-//     chrome.declarativeNetRequest.updateSessionRules({
-//       removeRuleIds: [UA_NET_RULE_ID],
-//       addRules: [{
-//         id: UA_NET_RULE_ID,
-//         // priority: 1,
-//         condition: {
-//           // resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-//           resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
-//         },
-//         action: {
-//           type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-//           requestHeaders: [{
-//             header: "User-Agent",
-//             operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-//             value: getUserAgent(),
-//           }]
-//         },
-//       }],
-//     })
-//   }
-// }
-
-
-
 /**
  * 刷新请求头UA
  */
@@ -434,7 +371,8 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
  */
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (!tab.url) return
-  if (changeInfo.status === 'loading') {
+
+  if (changeInfo.status === 'loading') {    
     const host = urlToHttpHost(tab.url)
     if(!host)return
 

@@ -279,18 +279,6 @@ export class FingerprintHandler {
       case "navigator": {
         const value = this.conf?.fingerprint?.navigator?.[key as keyof HookFingerprint['navigator']]
         switch (key) {
-          // case "appVersion": {
-          //   res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
-          //   break
-          // }
-          // case "platform": {
-          //   res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
-          //   break
-          // }
-          // case "userAgent": {
-          //   res = this.getValueFromCacheOrFunc(key, value, randomEquipmentInfo)
-          //   break
-          // }
           case "language": {
             res = this.getValueFromCacheOrFunc(key, value, randomLanguage)
             break
