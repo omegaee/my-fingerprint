@@ -14,16 +14,6 @@ export const msgSetConfig = (config: DeepPartial<LocalStorageConfig>) => {
  * 获取扩展图标的notice
  */
 export const msgGetNotice = (tabId: number, host: string) => {
-  // return chrome.tabs.query({active: true, currentWindow: true}).then(tabs => {
-  //   const tabId = tabs[0].id
-  //   if(tabId === undefined) {
-  //     throw new Error('tabId is undefined')
-  //   }
-  //   return chrome.runtime.sendMessage<GetNoticeRequest, GetNoticeMsg>({
-  //     type: RuntimeMsg.GetNotice,
-  //     tabId
-  //   })
-  // })
   return chrome.runtime.sendMessage<GetNoticeRequest, GetNoticeMsg>({
     type: RuntimeMsg.GetNotice, tabId, host,
   })

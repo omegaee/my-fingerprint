@@ -29,7 +29,7 @@ type GetNoticeRequest = {
 
 type SetHookRecordsRequest = {
   type: RuntimeMsg.SetHookRecords,
-  data: Partial<Record<HookFingerprintKey, number>>,
+  data: Partial<Record<string, number>>,
 }
 
 type UpdateWhitelistRequest = {
@@ -60,7 +60,7 @@ type GetNewVersionMsg = boolean
 // **********
 type PostSetHookRecords = {
   type: ContentMsg.SetHookRecords,
-  data: Partial<Record<HookFingerprintKey, number>>,
+  data: Partial<Record<string, number>>,
 }
 
 type PostSetConfig = {

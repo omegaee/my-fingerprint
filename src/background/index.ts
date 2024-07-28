@@ -17,6 +17,8 @@ const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'we
 let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
+let loadingConfig = false
+
 // const userAgentCache: Partial<Record<HookType, string>> = {}
 
 const BADGE_COLOR = {
@@ -139,9 +141,6 @@ const genDefaultLocalStorage = (): LocalStorage => {
       fingerprint: {
         navigator: {
           equipment: browserHook, 
-          // appVersion: browserHook,
-          // platform: browserHook,
-          // userAgent: browserHook,
           language: defaultHook,
           hardwareConcurrency: defaultHook,
         },
@@ -160,7 +159,7 @@ const genDefaultLocalStorage = (): LocalStorage => {
         },
       },
       language: navigator.language,
-      hookNetRequest: false,
+      hookNetRequest: true,
       hookBlankIframe: true,
     },
     whitelist: []
@@ -171,11 +170,12 @@ const genDefaultLocalStorage = (): LocalStorage => {
  * 初始化默认配置
  */
 const initLocalConfig = (previousVersion: string | undefined) => {
+  if(loadingConfig)return
   if(localStorage)return
+  loadingConfig = true
 
-  chrome.storage.local.get()
+  return chrome.storage.local.get()
   .then(async (data: Partial<LocalStorage>) => {
-    if(localStorage)return
     if (
       // 其中一个版本号不存
       (!data.version || !previousVersion) ||
@@ -186,16 +186,16 @@ const initLocalConfig = (previousVersion: string | undefined) => {
       await chrome.storage.local.clear()
       const temp = genDefaultLocalStorage()
       localStorage = { ...temp, whitelist: new Set(temp.whitelist) }
-      return await chrome.storage.local.set(temp)
+      chrome.storage.local.set(temp).then(() => refreshRequestHeaderUA())
+      return localStorage
     } else {
       localStorage = { ...data, whitelist: new Set(data.whitelist) } as LocalStorageObject
       localStorage.config.browserSeed = genRandomSeed()
-      return await chrome.storage.local.set({ config: localStorage.config })
+      chrome.storage.local.set({ config: localStorage.config }).then(() => refreshRequestHeaderUA())
+      return localStorage
     }
   })
-  .then(() => {
-    refreshRequestHeaderUA()
-  })
+  .finally(() => loadingConfig = false)
 }
 
 /**
@@ -367,6 +367,26 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
 })
 
 /**
+ * 注入脚本
+ */
+const injectScript = (tabId: number, localStorage: LocalStorageObject) => {
+  chrome.scripting.executeScript({ 
+    target: {
+      tabId,
+      allFrames: true,
+    },
+    world: 'ISOLATED',
+    injectImmediately: true,
+    args: [
+      chrome.runtime.getURL(injectSrc), 
+      {...localStorage, whitelist: [...localStorage.whitelist]}, 
+      { ContentMsg, RuntimeMsg, }
+    ],
+    func: isolatedScript,
+  })
+}
+
+/**
  * 监听tab变化
  */
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -377,19 +397,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if(!host)return
 
     if(localStorage){
-      chrome.scripting.executeScript({ 
-        target: {
-          tabId,
-          allFrames: true,
-        },
-        world: 'ISOLATED',
-        injectImmediately: true,
-        args: [
-          chrome.runtime.getURL(injectSrc), 
-          {...localStorage, whitelist: [...localStorage.whitelist]}, 
-          { ContentMsg, RuntimeMsg, }
-        ],
-        func: isolatedScript,
+      // 缓存存在
+      injectScript(tabId, localStorage)
+    }else{
+      // 缓存被清理
+      initLocalConfig(chrome.runtime.getManifest().version)?.then((data) => {
+        injectScript(tabId, data)
       })
     }
 

@@ -48,7 +48,7 @@
       "hook-blank-iframe": "Blank Iframe Hooks"
     },
     "desc": {
-      "equipment": "Equipment Info\n\n**navigator.appVersion**\n\n**navigator.platform**\n\n**navigator.userAgent**",
+      "equipment": "Equipment Info\n\n**navigator.appVersion**\n\n**navigator.userAgent**\n\n**navigator.userAgentData**",
       "language": "Browser Language\n\n**navigator.language**",
       "hardwareConcurrency": "Number of logical processors\n\n**navigator.hardwareConcurrency**",
       "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
@@ -62,7 +62,7 @@
 
       "e-language": "Language",
       "seed": "Global Seed, Acts on **Randomization based on global seed** Options",
-      "hook-net-request": "When turned on, it affects all network requests\n\n**Note that turning it on affects the styling of some web pages**\n\nSupported configs: **Equipment Info (navigator.userAgent)**\n\nSupported options: **Every time the browser starts a random** & **Randomization based on global seed** & **Custom value**",
+      "hook-net-request": "When turned on, it affects all network requests\n\n**Note that turning it on may affect the styling of some pages**\n\nSupported configs: **Equipment Info**\n\nSupported options: **Every time the browser starts a random** & **Randomization based on global seed** & **Custom value**",
       "hook-blank-iframe": "When turned on, Can proxy **Blank Source Iframe** content"
     }
   },

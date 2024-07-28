@@ -4,7 +4,7 @@ type ToolbarNoticeWhitelist = {
 
 type ToolbarNoticeRecord = {
   type: 'record'
-  data?: Partial<Record<HookFingerprintKey, number>>
+  data?: Partial<Record<string, number>>
 }
 
 type ToolbarNotice = ToolbarNoticeWhitelist | ToolbarNoticeRecord
