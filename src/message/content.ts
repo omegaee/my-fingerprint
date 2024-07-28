@@ -33,7 +33,7 @@ export const postSetConfig = (config: DeepPartial<LocalStorageConfig>) => {
   postMessage(wrapMessage<PostSetConfig>({
     type: ContentMsg.SetConfig,
     config,
-  }))
+  }), location.origin)
 }
 
 /**
@@ -43,5 +43,5 @@ export const postUpdateState = (mode: PostUpdateState['mode']) => {
   postMessage(wrapMessage<PostUpdateState>({
     type: ContentMsg.UpdateState,
     mode,
-  }))
+  }), location.origin)
 }

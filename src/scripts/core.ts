@@ -53,8 +53,8 @@ export class FingerprintHandler {
     this.curstomSeed = this.conf?.customSeed ?? genRandomSeed()
 
     // 接收顶级window对象的消息
-    window.addEventListener('message', (ev) => {
-      if (ev.origin != location.origin) return
+    win.addEventListener('message', (ev) => {
+      // if (ev.origin != location.origin) return
       const msg = unwrapMessage(ev.data) as ContentRequest | undefined
       switch (msg?.type) {
         case ContentMsg.SetConfig: {

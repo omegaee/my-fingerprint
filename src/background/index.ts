@@ -399,15 +399,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if(localStorage){
       // 缓存存在
       injectScript(tabId, localStorage)
+      if (localStorage.whitelist.has(host)) {
+        setBadgeWhitelist(tabId)
+      }
     }else{
       // 缓存被清理
       initLocalConfig(chrome.runtime.getManifest().version)?.then((data) => {
         injectScript(tabId, data)
+        if (data.whitelist.has(host)) {
+          setBadgeWhitelist(tabId)
+        }
       })
     }
 
-    if (localStorage?.whitelist.has(host)) {
-      setBadgeWhitelist(tabId)
-    }
+
   }
 });

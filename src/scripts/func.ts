@@ -34,13 +34,13 @@ export const isolatedScript = (injectSrc: string, storage: LocalStorage, data: {
       postMessage(this.wrapMessage<PostSetConfig>({
         type: ContentMsg.SetConfig,
         config,
-      }))
+      }), location.origin)
     },
     postUpdateState(mode: PostUpdateState['mode']) {
       postMessage(this.wrapMessage<PostUpdateState>({
         type: ContentMsg.UpdateState,
         mode,
-      }))
+      }), location.origin)
     }
   }
 
