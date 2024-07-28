@@ -56,7 +56,7 @@
 - **Other Config**
   - [x] Language - Languages used by browser extensions
   - [x] Global Seed - Global Seed, Acts on `Randomization based on global seed` Options
-  - [x] Web Request Hooks - Making changes to web requests（`User-Agent`）
+  - [x] Web Request Hooks - Making changes to web requests（`Equipment Info`）
   - [x] Blank Iframe Hooks - Injection into a blank source Iframe
 
 ## Record Module
@@ -68,7 +68,6 @@
 
 # Known Issues
 > If there is a solution, you are welcome to propose it!
-- **Since the configuration needs to be read asynchronously, the core script injection will have a delay and may miss some extreme cases.**
+- **The core script injection will have a delay and may miss some extreme cases.**
 - Web request hooks, which are implemented through `declarativeNetRequest`
   - **Unable to support whitelisting**
-  - The Sec-CH-UA series request header is not currently supported.
