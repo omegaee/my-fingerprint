@@ -76,10 +76,13 @@ export const isolatedScript = (injectSrc: string, storage: LocalStorage, data: {
   script.type = 'text/javascript';
   // script.src = chrome.runtime.getURL(injectSrc)
   script.src = injectSrc
-  // script.async = false
-  // script.defer = true
+  script.async = false
+  script.defer = false
   script.dataset.data = JSON.stringify(storage)
   script.type = 'module'
-  document.documentElement.appendChild(script)
+
+  // document.documentElement.appendChild(script)
+  const node = document.documentElement ?? document.head ?? document.body
+  node.insertBefore(script, node.firstChild)
 }
 

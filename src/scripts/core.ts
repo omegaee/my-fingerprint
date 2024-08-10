@@ -1,6 +1,6 @@
 import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
-import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglRander, seededRandom } from "../utils/data";
+import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglColor, randomWebglRander, seededRandom } from "../utils/data";
 import { debounce } from "../utils/timer";
 import { postSetHookRecords, unwrapMessage } from "@/message/content";
 import { genRandomSeed, hashNumberFromString } from "../utils/base";
@@ -169,6 +169,8 @@ export class FingerprintHandler {
   private rawCreateDynamicsCompressor: typeof OfflineAudioContext.prototype.createDynamicsCompressor | undefined
   private rawWglGetParameter: typeof WebGLRenderingContext.prototype.getParameter | undefined
   private rawWgl2GetParameter: typeof WebGL2RenderingContext.prototype.getParameter | undefined
+  private rawWglShaderSource: typeof WebGLRenderingContext.prototype.shaderSource | undefined
+  private rawWgl2ShaderSource: typeof WebGL2RenderingContext.prototype.shaderSource | undefined
 
   private rawDateTimeFormat: typeof Intl.DateTimeFormat | undefined
   private rawGetTimezoneOffset: typeof Date.prototype.getTimezoneOffset | undefined
@@ -273,7 +275,7 @@ export class FingerprintHandler {
   /**
    * 获取并记录值
    */
-  private getValue(prefix: string, key: string): any | null {
+  private getValue(prefix: string, key: string, opt?: string): any | null {
     let res = null
     switch (prefix) {
       case "navigator": {
@@ -322,7 +324,11 @@ export class FingerprintHandler {
             break
           }
           case "webgl": {
-            res = this.getValueFromCacheOrFunc(key, value, randomWebglRander)
+            if(opt === 'info'){
+              res = this.getValueFromCacheOrFunc(key, value, randomWebglRander)
+            }else if(opt === 'color'){
+              res = this.getValueFromCacheOrFunc(key, value, randomWebglColor)
+            }
             break
           }
           case "webrtc": {
@@ -589,24 +595,69 @@ export class FingerprintHandler {
       if (!this.rawWgl2GetParameter) {
         this.rawWgl2GetParameter = this.win.WebGL2RenderingContext.prototype.getParameter
       }
+      if (!this.rawWglShaderSource){
+        this.rawWglShaderSource = this.win.WebGLRenderingContext.prototype.shaderSource
+      }
+      if (!this.rawWgl2ShaderSource){
+        this.rawWgl2ShaderSource = this.win.WebGL2RenderingContext.prototype.shaderSource
+      }
 
-      const apply = (
+      //
+      // getParameter
+      //
+      const UNMASKED_VENDOR_WEBGL = 0x9245;
+      const UNMASKED_RENDERER_WEBGL = 0x9246;
+      const getParameterApply = (
         target: typeof WebGLRenderingContext.prototype.getParameter | typeof WebGL2RenderingContext.prototype.getParameter,
         thisArg: WebGLRenderingContext | WebGL2RenderingContext,
         args: Parameters<typeof WebGLRenderingContext.prototype.getParameter> | Parameters<typeof WebGL2RenderingContext.prototype.getParameter>
       ) => {
-        const value = this.getValue('other', 'webgl')
-        if (value !== null) {
-          const debugEx = thisArg.getExtension('WEBGL_debug_renderer_info')
-          if (debugEx !== null && args[0] === debugEx.UNMASKED_RENDERER_WEBGL) {
+        switch(args[0]){
+          case UNMASKED_RENDERER_WEBGL: {
+            const value = this.getValue('other', 'webgl', 'info')
+            if(value === null) break; 
             return value
+          }
+          case UNMASKED_VENDOR_WEBGL: {
+            return 'Google Inc.'
           }
         }
         return target.apply(thisArg, args)
       }
 
-      this.win.WebGLRenderingContext.prototype.getParameter = new Proxy(this.rawWglGetParameter, { apply })
-      this.win.WebGL2RenderingContext.prototype.getParameter = new Proxy(this.rawWgl2GetParameter, { apply })
+      this.win.WebGLRenderingContext.prototype.getParameter = new Proxy(this.rawWglGetParameter, { apply: getParameterApply })
+      this.win.WebGL2RenderingContext.prototype.getParameter = new Proxy(this.rawWgl2GetParameter, { apply: getParameterApply })
+
+      //
+      // shaderSource
+      //
+      const mainFuncRegx = /void\s+main\s*\(\s*(void)?\s*\)\s*\{[^}]*\}/
+      const shaderSourceApply = (
+        target: typeof WebGLRenderingContext.prototype.shaderSource | typeof WebGL2RenderingContext.prototype.shaderSource,
+        thisArg: WebGLRenderingContext | WebGL2RenderingContext,
+        args: Parameters<typeof WebGLRenderingContext.prototype.shaderSource> | Parameters<typeof WebGL2RenderingContext.prototype.shaderSource>
+      ) => {
+        if(args[1]){
+          if(args[1].includes('gl_FragColor')){
+            const color = this.getValue('other', 'webgl', 'color')
+            if(color){
+              args[1] = args[1].replace(mainFuncRegx, `void main(){gl_FragColor=${color};}`)
+              console.log(args[1]);
+            }
+          }else if(args[1].includes('gl_Position')){
+            const color = this.getValue('other', 'webgl', 'color')
+            if(color){
+              args[1] = args[1].replace(mainFuncRegx, `void main(){gl_Position=${color};}`)
+              console.log(args[1]);
+            }
+          }
+        }
+        return target.apply(thisArg, args)
+      }
+
+      this.win.WebGLRenderingContext.prototype.shaderSource = new Proxy(this.rawWglShaderSource, { apply: shaderSourceApply })
+      this.win.WebGL2RenderingContext.prototype.shaderSource = new Proxy(this.rawWgl2ShaderSource, { apply: shaderSourceApply })
+
     } else {
       // unproxy
       if (this.rawWglGetParameter) {
@@ -614,6 +665,12 @@ export class FingerprintHandler {
       }
       if (this.rawWgl2GetParameter) {
         this.win.WebGL2RenderingContext.prototype.getParameter = this.rawWgl2GetParameter
+      }
+      if (this.rawWglShaderSource){
+        this.win.WebGLRenderingContext.prototype.shaderSource = this.rawWglShaderSource
+      }
+      if (this.rawWgl2ShaderSource){
+        this.win.WebGL2RenderingContext.prototype.shaderSource = this.rawWgl2ShaderSource
       }
     }
   }
