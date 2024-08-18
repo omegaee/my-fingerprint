@@ -41,7 +41,7 @@ export const FWorkSelectItem = function (props: FWorkSelectItemProps) {
       getOption(HookType.page),
       getOption(HookType.browser),
       getOption(HookType.domain),
-      getOption(HookType.seed),
+      getOption(HookType.global),
     ])
     const customArr = arrayFilter([
       getOption(HookType.value),

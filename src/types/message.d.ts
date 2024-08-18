@@ -3,14 +3,14 @@ declare enum RuntimeMsg {
   GetNotice = 'get-notice',
   SetHookRecords = 'set-hook-records',
   UpdateWhitelist = 'update-whitelist',
-  UpdateScriptState = 'update-script-state',
+  ChangeScriptWhitelist = 'change-script-whitelist',
   GetNewVersion = 'get-new-version',
 }
 
 declare enum ContentMsg {
   SetConfig = 'set-config',
   SetHookRecords = 'set-hook-records',
-  UpdateState = 'update-state',
+  ChangeWhitelist = 'change-whitelist',
 }
 
 // **********
@@ -38,16 +38,16 @@ type UpdateWhitelistRequest = {
   host: string | string[],
 }
 
-type UpdateScriptStateRequest = {
-  type: RuntimeMsg.UpdateScriptState,
-  mode: 'enable' | 'disable'
+type ChangeScriptWhitelistRequest = {
+  type: RuntimeMsg.ChangeScriptWhitelist,
+  mode: 'into' | 'leave'
 }
 
 type GetNewVersionRequest = {
   type: RuntimeMsg.GetNewVersion,
 }
 
-type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | UpdateWhitelistRequest | UpdateScriptStateRequest | GetNewVersionRequest
+type MsgRequest = SetConfigRequest | GetNoticeRequest | SetHookRecordsRequest | UpdateWhitelistRequest | ChangeScriptWhitelistRequest | GetNewVersionRequest
 
 type RespFunc<T=any> = (msg: T) => void
 
@@ -68,9 +68,9 @@ type PostSetConfig = {
   config: DeepPartial<LocalStorageConfig>,
 }
 
-type PostUpdateState = {
-  type: ContentMsg.UpdateState,
-  mode: 'enable' | 'disable'
+type PostChangeWhitelist = {
+  type: ContentMsg.ChangeWhitelist,
+  mode: 'into' | 'leave'
 }
 
-type ContentRequest = PostSetHookRecords | PostSetConfig | PostUpdateState
+type ContentRequest = PostSetHookRecords | PostSetConfig | PostChangeWhitelist

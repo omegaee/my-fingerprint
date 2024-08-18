@@ -3,12 +3,18 @@ import { debounce } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { HookType, ContentMsg, RuntimeMsg } from '@/types/enum'
 import { selectTabByHost, sendMessageToAllTags } from "@/utils/tabs";
-import { tabUpdateScriptState } from "@/message/tabs";
-import { isolatedScript } from "@/scripts/func";
+import { tabChangeWhitelist } from "@/message/tabs";
+
+// import { isolatedScript } from "@/scripts/func";
+// // @ts-ignore
+// import injectSrc from '@/scripts/inject?script&module'
 
 // @ts-ignore
-import injectSrc from '@/scripts/inject?script&module'
+import contentSrc from '@/scripts/content?script&module'
+
 import { EquipmentInfoHandler } from "@/utils/equipment";
+
+import { coreInject } from "@/core/output";
 
 const UA_NET_RULE_ID = 1
 
@@ -56,7 +62,7 @@ const refreshRequestHeaderUA = async () => {
       seed = localStorage?.config.browserSeed
       break;
     }
-    case HookType.seed:{
+    case HookType.global:{
       seed = localStorage?.config.customSeed
       break;
     }
@@ -130,7 +136,7 @@ const refreshRequestHeaderUA = async () => {
  */
 const genDefaultLocalStorage = (): LocalStorage => {
   const manifest = chrome.runtime.getManifest()
-  const defaultHook: BaseHookMode = { type: HookType.default }
+  const defaultHook: DefaultHookMode = { type: HookType.default }
   const browserHook: BaseHookMode = { type: HookType.browser }
   return {
     version: manifest.version,
@@ -339,7 +345,7 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
         selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
           if(tab.id){
             setBadgeWhitelist(tab.id)
-            tabUpdateScriptState(tab.id, 'disable')
+            tabChangeWhitelist(tab.id, 'into')
           }
         }))
       }else if (msg.mode === 'del') {
@@ -347,7 +353,7 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
         selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
           if(tab.id){
             remBadge(tab.id)
-            tabUpdateScriptState(tab.id, 'enable')
+            tabChangeWhitelist(tab.id, 'leave')
           }
         }))
       }
@@ -370,48 +376,90 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
  * 注入脚本
  */
 const injectScript = (tabId: number, localStorage: LocalStorageObject) => {
+  // chrome.scripting.executeScript({ 
+  //   target: {
+  //     tabId,
+  //     allFrames: true,
+  //   },
+  //   world: 'ISOLATED',
+  //   injectImmediately: true,
+  //   args: [
+  //     chrome.runtime.getURL(injectSrc), 
+  //     {...localStorage, whitelist: [...localStorage.whitelist]}, 
+  //     { ContentMsg, RuntimeMsg, }
+  //   ],
+  //   func: isolatedScript,
+  // })
+
+  // chrome.scripting.executeScript({ 
+  //   target: {
+  //     tabId,
+  //     allFrames: true,
+  //   },
+  //   world: 'MAIN',
+  //   injectImmediately: true,
+  //   files: [testSrc],
+  // })
+
   chrome.scripting.executeScript({ 
     target: {
       tabId,
       allFrames: true,
     },
-    world: 'ISOLATED',
+    world: 'MAIN',
     injectImmediately: true,
-    args: [
-      chrome.runtime.getURL(injectSrc), 
-      {...localStorage, whitelist: [...localStorage.whitelist]}, 
-      { ContentMsg, RuntimeMsg, }
-    ],
-    func: isolatedScript,
+    args: [tabId, {...localStorage, whitelist: [...localStorage.whitelist]}],
+    func: coreInject,
   })
 }
 
-/**
- * 监听tab变化
- */
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (!tab.url) return
+// /**
+//  * 监听tab变化
+//  */
+// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+//   if (!tab.url) return
 
-  if (changeInfo.status === 'loading') {    
-    const host = urlToHttpHost(tab.url)
-    if(!host)return
+//   if (changeInfo.status === 'loading') {    
+//     const host = urlToHttpHost(tab.url)
+//     if(!host)return
 
-    if(localStorage){
-      // 缓存存在
-      injectScript(tabId, localStorage)
-      if (localStorage.whitelist.has(host)) {
+//     if(localStorage){
+//       // 缓存存在
+//       injectScript(tabId, localStorage)
+//       if (localStorage.whitelist.has(host)) {
+//         setBadgeWhitelist(tabId)
+//       }
+//     }else{
+//       // 缓存被清理
+//       initLocalConfig(chrome.runtime.getManifest().version)?.then((data) => {
+//         injectScript(tabId, data)
+//         if (data.whitelist.has(host)) {
+//           setBadgeWhitelist(tabId)
+//         }
+//       })
+//     }
+
+//   }
+// });
+
+chrome.webNavigation.onCommitted.addListener((details) => {
+  const host = urlToHttpHost(details.url)
+  if(!host)return
+  
+  const tabId = details.tabId
+  if(localStorage){
+    // 缓存存在
+    injectScript(tabId, localStorage)
+    if (localStorage.whitelist.has(host)) {
+      setBadgeWhitelist(tabId)
+    }
+  }else{
+    // 缓存被清理
+    initLocalConfig(chrome.runtime.getManifest().version)?.then((data) => {
+      injectScript(tabId, data)
+      if (data.whitelist.has(host)) {
         setBadgeWhitelist(tabId)
       }
-    }else{
-      // 缓存被清理
-      initLocalConfig(chrome.runtime.getManifest().version)?.then((data) => {
-        injectScript(tabId, data)
-        if (data.whitelist.has(host)) {
-          setBadgeWhitelist(tabId)
-        }
-      })
-    }
-
-
+    })
   }
-});
+})

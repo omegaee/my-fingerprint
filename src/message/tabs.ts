@@ -3,9 +3,9 @@ import { RuntimeMsg } from "@/types/enum"
 /**
  * 更新脚本状态
  */
-export const tabUpdateScriptState = (tabId: number, mode: UpdateScriptStateRequest['mode']) => {
-  return chrome.tabs.sendMessage<UpdateScriptStateRequest, void>(tabId, {
-    type: RuntimeMsg.UpdateScriptState,
+export const tabChangeWhitelist = (tabId: number, mode: ChangeScriptWhitelistRequest['mode']) => {
+  return chrome.tabs.sendMessage<ChangeScriptWhitelistRequest, void>(tabId, {
+    type: RuntimeMsg.ChangeScriptWhitelist,
     mode,
   })
 }

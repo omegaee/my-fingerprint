@@ -5,5 +5,5 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["vite.config.ts", "manifest.ts"]
+  "include": ["vite.config.ts", "manifest.ts", "plugins/*.ts"]
 }

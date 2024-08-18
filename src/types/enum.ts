@@ -4,7 +4,7 @@ export enum HookType {
   page = 2,  // 每个标签页随机
   browser = 3,  // 每次启动浏览器随机
   domain = 4,  // 根据域名随机
-  seed = 5,  // 根据指定种子随机
+  global = 5,  // 根据全局种子随机
 }
 
 export enum RuntimeMsg {
@@ -12,12 +12,13 @@ export enum RuntimeMsg {
   GetNotice = 'get-notice',
   SetHookRecords = 'set-hook-records',
   UpdateWhitelist = 'update-whitelist',
-  UpdateScriptState = 'update-script-state',
+  ChangeScriptWhitelist = 'change-script-whitelist',
   GetNewVersion = 'get-new-version',
 }
 
 export enum ContentMsg {
   SetConfig = 'set-config',
   SetHookRecords = 'set-hook-records',
-  UpdateState = 'update-state',
+  // UpdateState = 'update-state',
+  ChangeWhitelist = 'change-whitelist',
 }

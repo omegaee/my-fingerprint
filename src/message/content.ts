@@ -39,9 +39,9 @@ export const postSetConfig = (config: DeepPartial<LocalStorageConfig>) => {
 /**
  * 更新白名单
  */
-export const postUpdateState = (mode: PostUpdateState['mode']) => {
-  postMessage(wrapMessage<PostUpdateState>({
-    type: ContentMsg.UpdateState,
+export const postChangeWhitelist = (mode: PostChangeWhitelist['mode']) => {
+  postMessage(wrapMessage<PostChangeWhitelist>({
+    type: ContentMsg.ChangeWhitelist,
     mode,
   }), location.origin)
 }

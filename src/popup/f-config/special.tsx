@@ -3,7 +3,7 @@ import { HookType } from '@/types/enum'
 import FConfigTimezoneItem from "./item/timezone"
 import FWorkSelectItem, { FWorkSelectItemProps } from "./item/work-select"
 
-const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.seed]
+const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const valueTypes = [HookType.value]
 const types = [...baseTypes, ...valueTypes]
 

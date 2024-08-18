@@ -12,7 +12,7 @@ declare enum HookType {
   page = 2,  // 每个标签页随机
   browser = 3,  // 每次启动浏览器随机
   domain = 4,  // 根据域名随机
-  seed = 5,  // 根据指定种子随机
+  global = 5,  // 根据全局种子随机
 }
 
 type DefaultHookMode = {
@@ -20,7 +20,7 @@ type DefaultHookMode = {
 }
 
 type BaseHookMode = DefaultHookMode | {
-  type: HookType.page | HookType.browser | HookType.domain | HookType.seed
+  type: HookType.page | HookType.browser | HookType.domain | HookType.global
 }
 
 type ValueHookMode<T=any> = {
