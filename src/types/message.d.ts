@@ -53,7 +53,7 @@ type RespFunc<T=any> = (msg: T) => void
 
 type GetNoticeMsg = ToolbarNotice
 
-type GetNewVersionMsg = boolean
+type GetNewVersionMsg = string | undefined
 
 // **********
 // ContentMsg

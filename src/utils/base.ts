@@ -4,7 +4,7 @@ import { seededRandom } from "./data";
  * 版本号比较
  * @returns v1大于v2，返回1；v1小于v2，返回-1；v1等于v2，返回0
  */
-export const compareVersions = function(v1: string, v2: string): number {
+export const compareVersions = function(v1: string, v2: string): -1 | 0 | 1 {
   const v1parts = v1.split('.').map(Number);
   const v2parts = v2.split('.').map(Number);
 

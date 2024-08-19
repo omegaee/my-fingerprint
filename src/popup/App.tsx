@@ -15,7 +15,7 @@ import FHookRecord from "./f-record"
 import FConfig from "./f-config"
 import WhitelistView from "./whitelist"
 
-import { urlToHttpHost } from "@/utils/base"
+import { compareVersions, urlToHttpHost } from "@/utils/base"
 import { msgAddWhiteList, msgDelWhiteList, msgGetNewVersion, msgGetNotice, msgSetConfig } from "@/message/runtime"
 
 function App() {
@@ -28,9 +28,11 @@ function App() {
   const [hookRecords, setHookRecords] = useState<ToolbarNoticeRecord['data']>()
   const [isWhitelist, setIsWhitelist] = useState(false)
 
-  const [isNewVersion, setIsNewVersion] = useState(false)
+  const [hasNewVersion, setHasNewVersion] = useState(false)
 
   const [messageApi, contextHolder] = message.useMessage();
+
+  const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
   useEffect(() => {
     chrome.storage.local.get(['config']).then(({ config }: Partial<LocalStorage>) => {
@@ -53,8 +55,9 @@ function App() {
         }
       })
     })
-    msgGetNewVersion().then((isNew) => {
-      setIsNewVersion(isNew)
+    msgGetNewVersion().then((version) => {
+      if(!version)return
+      setHasNewVersion(compareVersions(manifest.version, version) === -1)
     })
   }, [])
 
@@ -111,10 +114,13 @@ function App() {
       {contextHolder}
 
       <section className='relative'>
-        <Typography.Text className="flex justify-center text-xl font-black">My Fingerprint</Typography.Text>
-        <Badge dot={isNewVersion} offset={[-2, 2]} style={{ width: '8px', height: '8px' }} className="absolute left-0 top-0 cursor-pointer">
-          <GithubOutlined className="text-lg" onClick={() => window.open(isNewVersion ? 'https://github.com/omegaee/my-fingerprint/releases' : 'https://github.com/omegaee/my-fingerprint')} />
+        <Typography.Text className="relative flex justify-center text-xl font-black">
+          My Fingerprint
+        </Typography.Text>
+        <Badge dot={hasNewVersion} offset={[-2, 2]} style={{ width: '8px', height: '8px' }} className="absolute left-0 top-0 cursor-pointer">
+          <GithubOutlined className="text-lg" onClick={() => window.open(hasNewVersion ? 'https://github.com/omegaee/my-fingerprint/releases' : 'https://github.com/omegaee/my-fingerprint')} />
         </Badge>
+        <Typography.Text className="absolute right-0 bottom-0 text-xs font-mono font-bold">v{manifest.version}</Typography.Text>
       </section>
 
       <Divider style={{ margin: '8px 0' }} />

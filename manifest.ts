@@ -3,7 +3,7 @@ export const manifest: chrome.runtime.ManifestV3 = {
   name: 'My Fingerprint',
   description: 'Custom your browser fingerprint',
   // description: '__MSG_extension_description__',
-  version: '2.1.1',
+  version: '2.2.0',
   permissions: [
     'storage', 
     'tabs', 
@@ -13,7 +13,7 @@ export const manifest: chrome.runtime.ManifestV3 = {
     'declarativeNetRequest',
   ],
   host_permissions: [
-    "<all_urls>"
+    '<all_urls>',
   ],
   icons: {
     128: 'logo.png',

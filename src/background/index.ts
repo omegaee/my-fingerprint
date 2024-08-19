@@ -1,18 +1,13 @@
 import { compareVersions, genRandomSeed, urlToHttpHost } from "@/utils/base";
 import { debounce } from "@/utils/timer";
 import deepmerge from "deepmerge";
-import { HookType, ContentMsg, RuntimeMsg } from '@/types/enum'
+import { HookType, RuntimeMsg } from '@/types/enum'
 import { selectTabByHost, sendMessageToAllTags } from "@/utils/tabs";
 import { tabChangeWhitelist } from "@/message/tabs";
-
-// import { isolatedScript } from "@/scripts/func";
-// // @ts-ignore
-// import injectSrc from '@/scripts/inject?script&module'
-
-// @ts-ignore
-import contentSrc from '@/scripts/content?script&module'
-
 import { EquipmentInfoHandler } from "@/utils/equipment";
+
+// // @ts-ignore
+// import contentSrc from '@/scripts/content?script&module'
 
 import { coreInject } from "@/core/output";
 
@@ -361,13 +356,9 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
     }
     case RuntimeMsg.GetNewVersion: {
       getNewVersion().then((version) => {
-        let isNew = false
-        if(localStorage?.version && version){
-          isNew = compareVersions(localStorage.version, version) < 0
-        }
-        (sendResponse as RespFunc<GetNewVersionMsg>)(isNew)
+        (sendResponse as RespFunc<GetNewVersionMsg>)(version)
       })
-      break
+      return true
     }
   }
 })

@@ -21,26 +21,28 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   'script iframe': {
     condition: (fh) => fh.conf?.hookBlankIframe,
     onEnable: (fh) => {
-      const apply = (target: any, thisArg: Object, args: any) => {
-        const res = target.apply(thisArg, args)
-        const node = args[0]
-        if (node?.tagName === 'IFRAME') {
-          fh.hookIframe(node as HTMLIFrameElement)
+      if(!fh.rawObjects.appendChild || !fh.rawObjects.insertBefore || !fh.rawObjects.replaceChild){
+        const apply = (target: any, thisArg: Object, args: any) => {
+          const res = target.apply(thisArg, args)
+          const node = args[0]
+          if (node?.tagName === 'IFRAME') {
+            fh.hookIframe(node as HTMLIFrameElement)
+          }
+          return res
         }
-        return res
-      }
-
-      if (!fh.rawObjects.appendChild) {
-        fh.rawObjects.appendChild = fh.win.HTMLElement.prototype.appendChild
-        fh.win.HTMLElement.prototype.appendChild = new Proxy(fh.rawObjects.appendChild, { apply })
-      }
-      if (!fh.rawObjects.insertBefore) {
-        fh.rawObjects.insertBefore = fh.win.HTMLElement.prototype.insertBefore
-        fh.win.HTMLElement.prototype.insertBefore = new Proxy(fh.rawObjects.insertBefore, { apply })
-      }
-      if (!fh.rawObjects.replaceChild) {
-        fh.rawObjects.replaceChild = fh.win.HTMLElement.prototype.replaceChild
-        fh.win.HTMLElement.prototype.replaceChild = new Proxy(fh.rawObjects.replaceChild, { apply })
+  
+        if (!fh.rawObjects.appendChild) {
+          fh.rawObjects.appendChild = fh.win.HTMLElement.prototype.appendChild
+          fh.win.HTMLElement.prototype.appendChild = new Proxy(fh.rawObjects.appendChild, { apply })
+        }
+        if (!fh.rawObjects.insertBefore) {
+          fh.rawObjects.insertBefore = fh.win.HTMLElement.prototype.insertBefore
+          fh.win.HTMLElement.prototype.insertBefore = new Proxy(fh.rawObjects.insertBefore, { apply })
+        }
+        if (!fh.rawObjects.replaceChild) {
+          fh.rawObjects.replaceChild = fh.win.HTMLElement.prototype.replaceChild
+          fh.win.HTMLElement.prototype.replaceChild = new Proxy(fh.rawObjects.replaceChild, { apply })
+        }
       }
     },
     onDisable: (fh) => {
