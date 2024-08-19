@@ -25,7 +25,6 @@ export const coreBundle = (options: CoreBundleOptions): Plugin => ({
   configureServer(server) {
     const watcher = watch([options.inputFilePath], { persistent: true });
     watcher.on('change', async () => {
-      console.log(`File ${options.inputFilePath} changed, rebundling...`);
       await bundle(options);
       server.ws.send({ type: 'full-reload' });
     });
