@@ -12,11 +12,9 @@ const localStorage: LocalStorage = _local;
 (() => {
   const host = urlToHttpHost(location.href)
   if(!host){return}
-
-  const fh: FingerprintHandler = new FingerprintHandler(window, {
+  new FingerprintHandler(window, {
     tabId,
     host,
     inWhitelist: localStorage.whitelist.includes(host)
-  })
-  fh.setConfig(localStorage.config)
+  }, localStorage.config)
 })()

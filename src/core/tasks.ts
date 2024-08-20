@@ -8,13 +8,18 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onlyOnceEnable: true,
     condition: (fh) => fh.conf?.hookBlankIframe,
     onEnable: (fh) => {
-      const iframes = fh.win.document.querySelectorAll('iframe')
-      for (const iframe of iframes) {
-        fh.hookIframe(iframe)
-        // if (!iframe.src || iframe.src === 'about:blank') {
-        //   this.hookIframe(iframe)
-        // }
+      const hook = () => {
+        const iframes = fh.win.document.querySelectorAll('iframe')
+        for (const iframe of iframes) {
+          fh.hookIframe(iframe)
+          // if (!iframe.src || iframe.src === 'about:blank') { fh.hookIframe(iframe) }
+        }
       }
+      fh.win.addEventListener('DOMContentLoaded', () => {
+        hook()
+        fh.win.removeEventListener('DOMContentLoaded', hook)
+      })
+      hook()
     },
   },
 

@@ -1,5 +1,8 @@
 import { getMainVersion, versionRandomOffset } from "./base"
 
+const uaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( \((?<engineDetails>.+?)\))?( (?<extensions>.+?))?$/
+const firefoxUaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( (?<extensions>.+?))?/
+
 export class UAItem {
   public name: string
   public version: string
@@ -28,8 +31,6 @@ export class UAItem {
 }
 
 export class UAParser {
-  private static uaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( \((?<engineDetails>.+?)\))?( (?<extensions>.+?))?$/
-  private static firefoxUaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( (?<extensions>.+?))?/
   private type: 'base' | 'firefox'
 
   public product: UAItem
@@ -42,10 +43,10 @@ export class UAParser {
     let groups
     if (ua.includes('Firefox')) {
       this.type = 'firefox'
-      groups = ua.match(UAParser.firefoxUaRule)?.groups
+      groups = ua.match(firefoxUaRule)?.groups
     } else {
       this.type = 'base'
-      groups = ua.match(UAParser.uaRule)?.groups
+      groups = ua.match(uaRule)?.groups
     }
 
     if (!groups) {

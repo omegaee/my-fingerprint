@@ -9,13 +9,13 @@ import { coreBundle } from "./plugins/core-bundle";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
     coreBundle({
       inputFilePath: 'src/core/index.ts',
       outputFilePath: 'src/core/output.js',
       functionName: 'coreInject',
       params: '_tid,_local',
     }),
+    react(),
     crx({manifest} as any),
   ],
   resolve: {
@@ -23,5 +23,12 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  // build: {
+  //   minify: false,
+  //   terserOptions: {
+  //     compress: false,
+  //     mangle: false,
+  //   },
+  // },
   server: { port: 3000, hmr: { port: 3000 } },
 })

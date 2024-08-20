@@ -99,23 +99,25 @@ export class FingerprintHandler {
   public info: WindowInfo
   public seed: SeedInfo
 
-  public conf?: DeepPartial<LocalStorageConfig>
+  public conf: DeepPartial<LocalStorageConfig>
 
   public equipmentHandler?: EquipmentInfoHandler
 
   public rawObjects: Partial<RawHookObject> = {}
   private onlyRecord: Record<string, boolean> = {}
 
-  public constructor(win: Window & typeof globalThis, info: WindowInfo) {
+  public constructor(win: Window & typeof globalThis, info: WindowInfo, config: DeepPartial<LocalStorageConfig>) {
     this.win = win
     this.info = info
+    this.conf = config
     this.seed = {
       page: seededRandom(info.tabId),
       domain: hashNumberFromString(info.host),
-      browser: this.conf?.browserSeed ?? genRandomSeed(),
-      global: this.conf?.customSeed ?? genRandomSeed(),
+      browser: config.browserSeed ?? genRandomSeed(),
+      global: config.customSeed ?? genRandomSeed(),
     }
     this.listenMessage()
+    this.refresh()
   }
 
   /**
@@ -148,7 +150,7 @@ export class FingerprintHandler {
    * 脚本是否启动
    */
   public isEnable() {
-    return !!this.conf?.enable && !this.info.inWhitelist
+    return !!this.conf.enable && !this.info.inWhitelist
   }
 
   /**
@@ -156,13 +158,11 @@ export class FingerprintHandler {
    */
   public setConfig(config?: DeepPartial<LocalStorageConfig>) {
     if (!config) return
-
     if (this.conf) {
       this.conf = deepmerge(this.conf, config)
     } else {
       this.conf = config
     }
-
     this.refresh()
   }
 
@@ -192,7 +192,7 @@ export class FingerprintHandler {
    * hook iframe
    */
   public hookIframe(iframe: HTMLIFrameElement) {
-    const fh = new FingerprintHandler(iframe.contentWindow as any, this.info)
+    const fh = new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
     fh.setConfig(this.conf)
   }
 
@@ -230,119 +230,9 @@ export class FingerprintHandler {
     }
   }
 
-  // /**
-  //  * 从hook缓存或指定函数中获取值
-  //  */
-  // private getValueFromCacheOrFunc(key: HookFingerprintKey, value: any, seedFunc: (seed: number) => any): any | null {
-  //   if (value && !cache[key]) {
-  //     const type = (value as HookMode).type
-  //     let res
-  //     if (type === HookType.value) {
-  //       res = seedFunc(1)
-  //     } else {
-  //       let seed = this.getSeedByHookValue(value)
-  //       if (seed === null) return null
-  //       res = seedFunc(seed)
-  //     }
-
-  //     if (res === null || res === undefined) return null
-  //     if (key === 'timezone') {
-  //       cache[key] = res
-  //     }
-  //     else if (typeof (res) === 'object') {
-  //       Object.assign(cache, res)
-  //     }
-  //     else {
-  //       cache[key] = res
-  //     }
-  //   }
-  //   return cache[key] ?? null
-  // }
-
-  // /**
-  //  * 获取并记录值
-  //  */
-  // public getValue(prefix: string, key: string, opt?: string): any | null {
-  //   let res = null
-  //   switch (prefix) {
-  //     case "navigator": {
-  //       const value = this.conf?.fingerprint?.navigator?.[key as keyof HookFingerprint['navigator']]
-  //       switch (key) {
-  //         case "language": {
-  //           res = this.getValueFromCacheOrFunc(key, value, randomLanguage)
-  //           break
-  //         }
-  //         case "hardwareConcurrency": {
-  //           res = this.getValueFromCacheOrFunc(key, value, randomHardwareConcurrency)
-  //           break
-  //         }
-  //       }
-  //     }
-  //     case "screen": {
-  //       const value = this.conf?.fingerprint?.screen?.[key as keyof HookFingerprint['screen']]
-  //       switch (key) {
-  //         case "height": {
-  //           res = this.getValueFromCacheOrFunc(key, value, randomScreenSize)
-  //           break
-  //         }
-  //         case "width": {
-  //           res = this.getValueFromCacheOrFunc(key, value, randomScreenSize)
-  //           break
-  //         }
-  //         case "colorDepth": {
-  //           res = this.getValueFromCacheOrFunc(key, value, randomColorDepth)
-  //           break
-  //         }
-  //         case "pixelDepth": {
-  //           res = this.getValueFromCacheOrFunc(key, value, randomPixelDepth)
-  //           break
-  //         }
-  //       }
-  //     }
-  //     case "other": {
-  //       const value = this.conf?.fingerprint?.other?.[key as keyof HookFingerprint['other']]
-  //       switch (key) {
-  //         case "canvas": {
-  //           res = this.getValueFromCacheOrFunc(key, value, randomCanvasNoise)
-  //           break
-  //         }
-  //         case "audio": {
-  //           res = this.getValueFromCacheOrFunc(key, value, randomAudioNoise)
-  //           break
-  //         }
-  //         case "webgl": {
-  //           if (opt === 'info') {
-  //             res = this.getValueFromCacheOrFunc(key, value, randomWebglRander)
-  //           } else if (opt === 'color') {
-  //             res = this.getValueFromCacheOrFunc(key, value, randomWebglColor)
-  //           }
-  //           break
-  //         }
-  //         case "webrtc": {
-  //           break
-  //         }
-  //         case "timezone": {
-  //           res = this.getValueFromCacheOrFunc(key, value, () => {
-  //             const timezoneMode = this.conf?.fingerprint?.other?.timezone
-  //             if (timezoneMode?.type === HookType.value) {
-  //               return timezoneMode.value
-  //             }
-  //           })
-  //           break
-  //         }
-  //       }
-  //     }
-  //   }
-  //   if (res !== null) {
-  //     // 记录
-  //     recordAndSend(key as HookFingerprintKey)
-  //   }
-  //   return res
-  // }
-
   public getValue(prefix: string, key: string, opt?: string): any | null{
     // @ts-ignore
-    const mode: HookMode = this.conf?.fingerprint?.[prefix]?.[key]
+    const mode: HookMode = this.conf.fingerprint?.[prefix]?.[key]
     if(!mode) return null;
 
     recordAndSend(key)  // 记录

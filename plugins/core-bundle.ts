@@ -4,11 +4,12 @@ import { watch } from 'chokidar';
 import { writeFileSync } from 'fs';
 
 import typescript from '@rollup/plugin-typescript';
-import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import babel from '@rollup/plugin-babel';
+// import terser from '@rollup/plugin-terser';
 
-const isProduction = process.env.NODE_ENV === 'production';
+// const isProduction = process.env.NODE_ENV === 'production';
 
 type CoreBundleOptions = {
   inputFilePath: string
@@ -38,7 +39,11 @@ async function bundle({ inputFilePath, outputFilePath, functionName, params }: C
       typescript(),
       resolve(),
       commonjs(),
-      isProduction && terser(),
+      babel({
+        babelHelpers: 'bundled',
+        presets: ['@babel/preset-env'],
+        plugins: ['@babel/plugin-proposal-class-properties']
+      }),
     ],
   });
   const { output } = await bundle.generate({
@@ -46,10 +51,7 @@ async function bundle({ inputFilePath, outputFilePath, functionName, params }: C
     inlineDynamicImports: true,
   });
   const bundledCode = output[0].code;
-
-  const wrappedCode = isProduction ?
-    `export function ${functionName}(${params}){${bundledCode}}` :
-    `export function ${functionName}(${params}) {\n${bundledCode}\n}`
+  const wrappedCode = `export function ${functionName}(${params}) {\n${bundledCode}\n}`
 
   writeFileSync(outputFilePath, wrappedCode);
 }

@@ -367,77 +367,24 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
  * 注入脚本
  */
 const injectScript = (tabId: number, localStorage: LocalStorageObject) => {
-  // chrome.scripting.executeScript({ 
-  //   target: {
-  //     tabId,
-  //     allFrames: true,
-  //   },
-  //   world: 'ISOLATED',
-  //   injectImmediately: true,
-  //   args: [
-  //     chrome.runtime.getURL(injectSrc), 
-  //     {...localStorage, whitelist: [...localStorage.whitelist]}, 
-  //     { ContentMsg, RuntimeMsg, }
-  //   ],
-  //   func: isolatedScript,
-  // })
-
-  // chrome.scripting.executeScript({ 
-  //   target: {
-  //     tabId,
-  //     allFrames: true,
-  //   },
-  //   world: 'MAIN',
-  //   injectImmediately: true,
-  //   files: [testSrc],
-  // })
-
-  chrome.scripting.executeScript({ 
-    target: {
-      tabId,
-      allFrames: true,
-    },
-    world: 'MAIN',
-    injectImmediately: true,
-    args: [tabId, {...localStorage, whitelist: [...localStorage.whitelist]}],
-    func: coreInject,
-  })
+  try{
+    chrome.scripting.executeScript({ 
+      target: {
+        tabId,
+        allFrames: true,
+      },
+      world: 'MAIN',
+      injectImmediately: true,
+      args: [tabId, {...localStorage, whitelist: [...localStorage.whitelist]}],
+      func: coreInject,
+    })
+  }catch(_){}
 }
 
-// /**
-//  * 监听tab变化
-//  */
-// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-//   if (!tab.url) return
-
-//   if (changeInfo.status === 'loading') {    
-//     const host = urlToHttpHost(tab.url)
-//     if(!host)return
-
-//     if(localStorage){
-//       // 缓存存在
-//       injectScript(tabId, localStorage)
-//       if (localStorage.whitelist.has(host)) {
-//         setBadgeWhitelist(tabId)
-//       }
-//     }else{
-//       // 缓存被清理
-//       initLocalConfig(chrome.runtime.getManifest().version)?.then((data) => {
-//         injectScript(tabId, data)
-//         if (data.whitelist.has(host)) {
-//           setBadgeWhitelist(tabId)
-//         }
-//       })
-//     }
-
-//   }
-// });
-
-chrome.webNavigation.onCommitted.addListener((details) => {
-  const host = urlToHttpHost(details.url)
+const injectScriptSolution = (tabId: number, url: string) => {
+  const host = urlToHttpHost(url)
   if(!host)return
-  
-  const tabId = details.tabId
+
   if(localStorage){
     // 缓存存在
     injectScript(tabId, localStorage)
@@ -453,4 +400,22 @@ chrome.webNavigation.onCommitted.addListener((details) => {
       }
     })
   }
+}
+
+// /**
+//  * 监听tab变化
+//  */
+// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+//   if (!tab.url) return  
+//   if (changeInfo.status === 'loading') {
+//   console.log(tab.url);
+//     injectScriptSolution(tabId, tab.url)
+//   }
+// });
+
+/**
+ * 监听导航
+ */
+chrome.webNavigation.onCommitted.addListener((details) => {
+  injectScriptSolution(details.tabId, details.url)
 })
