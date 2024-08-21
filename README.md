@@ -3,7 +3,7 @@
 
 ---
 
-> v2 版本大更新
+> v2.2 版本更新
 
 # My Fingerprint
 
@@ -66,8 +66,13 @@
 > 可对以白名单列表进行编辑
 
 
+# 测试目标
+- [x] https://www.yalala.com/
+- [x] https://uutool.cn/browser/
+- [x] https://www.ip77.net/
+
+
 # 已知问题
 > 若有解决方案，欢迎指正
-- ***核心脚本注入会有延时，可能会错过某些情况**
 - 网络请求钩子，是通过`declarativeNetRequest`实现的
   - **无法支持白名单**

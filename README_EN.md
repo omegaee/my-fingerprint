@@ -3,7 +3,7 @@
 
 ---
 
-> v2 update
+> v2.2 update
 
 # My Fingerprint
 
@@ -66,8 +66,13 @@
 > The whitelist list can be edited
 
 
+# Test Target
+- [x] https://www.yalala.com/
+- [x] https://uutool.cn/browser/
+- [x] https://www.ip77.net/
+
+
 # Known Issues
 > If there is a solution, you are welcome to propose it!
-- **The core script injection will have a delay and may miss some extreme cases.**
 - Web request hooks, which are implemented through `declarativeNetRequest`
   - **Unable to support whitelisting**
