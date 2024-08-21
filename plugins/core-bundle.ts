@@ -6,10 +6,7 @@ import { writeFileSync } from 'fs';
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import babel from '@rollup/plugin-babel';
 // import terser from '@rollup/plugin-terser';
-
-// const isProduction = process.env.NODE_ENV === 'production';
 
 type CoreBundleOptions = {
   inputFilePath: string
@@ -39,11 +36,6 @@ async function bundle({ inputFilePath, outputFilePath, functionName, params }: C
       typescript(),
       resolve(),
       commonjs(),
-      babel({
-        babelHelpers: 'bundled',
-        presets: ['@babel/preset-env'],
-        plugins: ['@babel/plugin-proposal-class-properties']
-      }),
     ],
   });
   const { output } = await bundle.generate({

@@ -116,8 +116,14 @@ export class FingerprintHandler {
       browser: config.browserSeed ?? genRandomSeed(),
       global: config.customSeed ?? genRandomSeed(),
     }
-    this.listenMessage()
-    this.refresh()
+
+    const key = '__MyFingerprint__' + info.tabId
+    if(!win[key as any]){  
+      // @ts-ignore
+      win[key] = true
+      this.listenMessage()
+      this.refresh()
+    }
   }
 
   /**
@@ -192,8 +198,7 @@ export class FingerprintHandler {
    * hook iframe
    */
   public hookIframe(iframe: HTMLIFrameElement) {
-    const fh = new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
-    fh.setConfig(this.conf)
+    new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
   }
 
   /**

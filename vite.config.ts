@@ -23,12 +23,8 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
-  // build: {
-  //   minify: false,
-  //   terserOptions: {
-  //     compress: false,
-  //     mangle: false,
-  //   },
-  // },
+  build: {
+    target: 'es2022'
+  },
   server: { port: 3000, hmr: { port: 3000 } },
 })

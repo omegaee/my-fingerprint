@@ -29,9 +29,9 @@ export const manifest: chrome.runtime.ManifestV3 = {
       world: "ISOLATED",
       matches: ["<all_urls>"],
       js: ["src/scripts/content.ts"],
-      match_about_blank: true,
       run_at: "document_start",
-      all_frames: true,
+      match_about_blank: true,
+      // all_frames: true,
     },
   ],
   web_accessible_resources:[]

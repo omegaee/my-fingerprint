@@ -367,18 +367,16 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
  * 注入脚本
  */
 const injectScript = (tabId: number, localStorage: LocalStorageObject) => {
-  try{
-    chrome.scripting.executeScript({ 
-      target: {
-        tabId,
-        allFrames: true,
-      },
-      world: 'MAIN',
-      injectImmediately: true,
-      args: [tabId, {...localStorage, whitelist: [...localStorage.whitelist]}],
-      func: coreInject,
-    })
-  }catch(_){}
+  chrome.scripting.executeScript({ 
+    target: {
+      tabId,
+      allFrames: true,
+    },
+    world: 'MAIN',
+    injectImmediately: true,
+    args: [tabId, {...localStorage, whitelist: [...localStorage.whitelist]}],
+    func: coreInject,
+  })
 }
 
 const injectScriptSolution = (tabId: number, url: string) => {
