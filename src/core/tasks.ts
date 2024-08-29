@@ -293,13 +293,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
               const color = fh.getValue('other', 'webgl', 'color')
               if (color) {
                 args[1] = args[1].replace(mainFuncRegx, `void main(){gl_FragColor=${color};}`)
-                console.log(args[1]);
               }
             } else if (args[1].includes('gl_Position')) {
               const color = fh.getValue('other', 'webgl', 'color')
               if (color) {
                 args[1] = args[1].replace(mainFuncRegx, `void main(){gl_Position=${color};}`)
-                console.log(args[1]);
               }
             }
           }

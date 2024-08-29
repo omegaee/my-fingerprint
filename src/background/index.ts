@@ -1,5 +1,5 @@
 import { compareVersions, genRandomSeed, urlToHttpHost } from "@/utils/base";
-import { debounce } from "@/utils/timer";
+import { debounce, debouncedAsync } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { HookType, RuntimeMsg } from '@/types/enum'
 import { selectTabByHost, sendMessageToAllTags } from "@/utils/tabs";
@@ -18,7 +18,7 @@ const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'we
 let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
-let loadingConfig = false
+// let loadingConfig = false
 
 // const userAgentCache: Partial<Record<HookType, string>> = {}
 
@@ -30,101 +30,6 @@ const BADGE_COLOR = {
 
 let newVersion: string | undefined
 
-/**
- * 获取最新版本号
- */
-const getNewVersion = async () => {
-  if(newVersion){
-    return newVersion
-  }else{
-    const data = await fetch('https://api.github.com/repos/omegaee/my-fingerprint/releases/latest').then(data => data.json())
-    newVersion = data.tag_name
-    return newVersion
-  }
-}
-
-/**
- * 刷新请求头UA
- */
-const refreshRequestHeaderUA = async () => {
-  if(!localStorage?.config.enable || !localStorage?.config.hookNetRequest) return undefined
-  const mode = localStorage?.config.fingerprint.navigator.equipment
-  
-  /// Get Seed
-  let seed: number | undefined;
-  switch (mode.type) {
-    case HookType.browser:{
-      seed = localStorage?.config.browserSeed
-      break;
-    }
-    case HookType.global:{
-      seed = localStorage?.config.customSeed
-      break;
-    }
-    default:{
-      seed = undefined
-    }
-  }
-
-  if(seed){
-    try{
-      const eh = new EquipmentInfoHandler(navigator, seed)
-      const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = []
-      if(eh.userAgent){
-        requestHeaders.push({
-          header: "User-Agent",
-          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-          value: eh.userAgent,
-        })
-      }
-      if(eh.brands){
-        requestHeaders.push({
-          header: "Sec-Ch-Ua",
-          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-          value: eh.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
-        })
-      }
-
-      const heValues = await eh.getHighEntropyValues()
-      if(heValues.fullVersionList){
-        requestHeaders.push({
-          header: "Sec-Ch-Ua-Full-Version-List",
-          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-          value: heValues.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
-        })
-      }
-      if(heValues.uaFullVersion){
-        requestHeaders.push({
-          header: "Sec-Ch-Ua-Full-Version",
-          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-          value: heValues.uaFullVersion,
-        })
-      }
-
-      if(requestHeaders.length){
-        chrome.declarativeNetRequest.updateSessionRules({
-          removeRuleIds: [UA_NET_RULE_ID],
-          addRules: [{
-            id: UA_NET_RULE_ID,
-            // priority: 1,
-            condition: {
-              resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-              // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
-            },
-            action: {
-              type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-              requestHeaders,
-            },
-          }],
-        })
-        return
-      }
-
-    }catch(err){}
-  }
-
-  chrome.declarativeNetRequest.updateSessionRules({removeRuleIds: [UA_NET_RULE_ID]})
-}
 
 /**
  * 生成默认配置
@@ -141,7 +46,7 @@ const genDefaultLocalStorage = (): LocalStorage => {
       browserSeed: genRandomSeed(),
       fingerprint: {
         navigator: {
-          equipment: browserHook, 
+          equipment: browserHook,
           language: defaultHook,
           hardwareConcurrency: defaultHook,
         },
@@ -170,57 +75,154 @@ const genDefaultLocalStorage = (): LocalStorage => {
 /**
  * 初始化默认配置
  */
-const initLocalConfig = (previousVersion: string | undefined) => {
-  if(loadingConfig)return
-  if(localStorage)return
-  loadingConfig = true
+const initLocalConfig = debouncedAsync(async (previousVersion?: string) => {
+  previousVersion = previousVersion ?? chrome.runtime.getManifest().version
 
-  return chrome.storage.local.get()
-  .then(async (data: Partial<LocalStorage>) => {
-    if (
-      // 其中一个版本号不存
-      (!data.version || !previousVersion) ||
-      // 配置版本号小于2.0.0
-      (compareVersions(data.version, '2.0.0') < 0)
-    ) {
-      // 清空存储并使用设置存储为默认值
-      await chrome.storage.local.clear()
-      const temp = genDefaultLocalStorage()
-      localStorage = { ...temp, whitelist: new Set(temp.whitelist) }
-      chrome.storage.local.set(temp).then(() => refreshRequestHeaderUA())
-      return localStorage
-    } else {
-      localStorage = { ...data, whitelist: new Set(data.whitelist) } as LocalStorageObject
-      localStorage.config.browserSeed = genRandomSeed()
-      chrome.storage.local.set({ config: localStorage.config }).then(() => refreshRequestHeaderUA())
-      return localStorage
+  const data = await chrome.storage.local.get() as LocalStorage
+
+  let storage: LocalStorage
+  if (!data.version || compareVersions(previousVersion, '2.0.0') < 0) {
+    await chrome.storage.local.clear()
+    storage = genDefaultLocalStorage()
+  } else {
+    storage = deepmerge(genDefaultLocalStorage(), data)
+    storage.config.browserSeed = genRandomSeed()
+  }
+  localStorage = { ...storage, whitelist: new Set(storage.whitelist) }
+  chrome.storage.local.set(storage).then(() => refreshRequestHeaderUA())
+  return localStorage
+})
+
+/**
+ * 获取配置
+ */
+const getLocalStorage = async (): Promise<LocalStorageObject> => {
+  if (localStorage) {
+    return localStorage
+  } else {
+    return await initLocalConfig()
+  }
+}
+
+/**
+ * 获取最新版本号
+ */
+const getNewVersion = async () => {
+  if (newVersion) {
+    return newVersion
+  } else {
+    const data = await fetch('https://api.github.com/repos/omegaee/my-fingerprint/releases/latest').then(data => data.json())
+    newVersion = data.tag_name
+    return newVersion
+  }
+}
+
+/**
+ * 刷新请求头UA
+ */
+const refreshRequestHeaderUA = async () => {
+  const storage = await getLocalStorage()
+  if (!storage.config.enable || !storage.config.hookNetRequest) return undefined
+  const mode = storage.config.fingerprint.navigator.equipment
+
+  /// Get Seed
+  let seed: number | undefined;
+  switch (mode.type) {
+    case HookType.browser: {
+      seed = storage.config.browserSeed
+      break;
     }
-  })
-  .finally(() => loadingConfig = false)
+    case HookType.global: {
+      seed = storage.config.customSeed
+      break;
+    }
+    default: {
+      seed = undefined
+    }
+  }
+
+  if (seed) {
+    try {
+      const eh = new EquipmentInfoHandler(navigator, seed)
+      const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = []
+      if (eh.userAgent) {
+        requestHeaders.push({
+          header: "User-Agent",
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          value: eh.userAgent,
+        })
+      }
+      if (eh.brands) {
+        requestHeaders.push({
+          header: "Sec-Ch-Ua",
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          value: eh.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
+        })
+      }
+
+      const heValues = await eh.getHighEntropyValues()
+      if (heValues.fullVersionList) {
+        requestHeaders.push({
+          header: "Sec-Ch-Ua-Full-Version-List",
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          value: heValues.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
+        })
+      }
+      if (heValues.uaFullVersion) {
+        requestHeaders.push({
+          header: "Sec-Ch-Ua-Full-Version",
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          value: heValues.uaFullVersion,
+        })
+      }
+
+      if (requestHeaders.length) {
+        chrome.declarativeNetRequest.updateSessionRules({
+          removeRuleIds: [UA_NET_RULE_ID],
+          addRules: [{
+            id: UA_NET_RULE_ID,
+            // priority: 1,
+            condition: {
+              resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+              // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
+            },
+            action: {
+              type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+              requestHeaders,
+            },
+          }],
+        })
+        return
+      }
+
+    } catch (err) { }
+  }
+
+  chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [UA_NET_RULE_ID] })
 }
 
 /**
  * 存储配置
  */
-const saveLocalConfig = debounce(() => {
-  localStorage && chrome.storage.local.set({ config: localStorage.config })
+const saveLocalConfig = debounce((storage: LocalStorageObject) => {
+  chrome.storage.local.set({ config: storage.config })
 }, 500)
 
 /**
  * 存储白名单
  */
-const saveLocalWhitelist = debounce(() => {
-  localStorage && chrome.storage.local.set({ whitelist: [...localStorage.whitelist] })
+const saveLocalWhitelist = debounce((storage: LocalStorageObject) => {
+  chrome.storage.local.set({ whitelist: [...storage.whitelist] })
 }, 500)
 
 /**
  * 修改配置
  */
-const updateLocalConfig = (config: DeepPartial<LocalStorageConfig>) => {
-  if (!localStorage?.config) return
-  localStorage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(localStorage.config, config)
-  saveLocalConfig()
-  if(config.enable !== undefined || config.hookNetRequest !== undefined || config.fingerprint?.navigator?.equipment){
+const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>) => {
+  const storage = await getLocalStorage()
+  storage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(storage.config, config)
+  saveLocalConfig(storage)
+  if (config.enable !== undefined || config.hookNetRequest !== undefined || config.fingerprint?.navigator?.equipment) {
     refreshRequestHeaderUA()
   }
 }
@@ -228,26 +230,26 @@ const updateLocalConfig = (config: DeepPartial<LocalStorageConfig>) => {
 /**
  * 修改白名单
  */
-const updateLocalWhitelist = (type: 'add' | 'del', host: string | string[]) => {
-  if (!localStorage?.whitelist) return
-  if(Array.isArray(host)){
+const updateLocalWhitelist = async (type: 'add' | 'del', host: string | string[]) => {
+  const storage = await getLocalStorage()
+  if (Array.isArray(host)) {
     if (type === 'add') {
-      for(const hh of host){
-        localStorage.whitelist.add(hh)
+      for (const hh of host) {
+        storage.whitelist.add(hh)
       }
     } else if (type === 'del') {
-      for(const hh of host){
-        localStorage.whitelist.delete(hh)
+      for (const hh of host) {
+        storage.whitelist.delete(hh)
       }
     }
-  }else{
+  } else {
     if (type === 'add') {
-      localStorage.whitelist.add(host)
+      storage.whitelist.add(host)
     } else if (type === 'del') {
-      localStorage.whitelist.delete(host)
+      storage.whitelist.delete(host)
     }
   }
-  saveLocalWhitelist()
+  saveLocalWhitelist(storage)
 }
 
 /**
@@ -315,15 +317,17 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       break
     }
     case RuntimeMsg.GetNotice: {
-      const isWhitelist = localStorage?.whitelist.has(msg.host);
-      (sendResponse as RespFunc<GetNoticeMsg>)(isWhitelist ?
-        {
-          type: 'whitelist',
-        } : {
-          type: 'record',
-          data: hookRecords.get(msg.tabId)
-        })
-      break
+      getLocalStorage().then((storage) => {
+        const isWhitelist = storage.whitelist.has(msg.host);
+        (sendResponse as RespFunc<GetNoticeMsg>)(isWhitelist ?
+          {
+            type: 'whitelist',
+          } : {
+            type: 'record',
+            data: hookRecords.get(msg.tabId)
+          })
+      })
+      return true
     }
     case RuntimeMsg.SetHookRecords: {
       const tabId = sender.tab?.id
@@ -335,18 +339,18 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       break
     }
     case RuntimeMsg.UpdateWhitelist: {
-      if(msg.mode === 'add'){
+      if (msg.mode === 'add') {
         updateLocalWhitelist('add', msg.host)
         selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
-          if(tab.id){
+          if (tab.id) {
             setBadgeWhitelist(tab.id)
             tabChangeWhitelist(tab.id, 'into')
           }
         }))
-      }else if (msg.mode === 'del') {
+      } else if (msg.mode === 'del') {
         updateLocalWhitelist('del', msg.host)
         selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
-          if(tab.id){
+          if (tab.id) {
             remBadge(tab.id)
             tabChangeWhitelist(tab.id, 'leave')
           }
@@ -366,54 +370,44 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
 /**
  * 注入脚本
  */
-const injectScript = (tabId: number, localStorage: LocalStorageObject) => {
-  chrome.scripting.executeScript({ 
+const injectScript = (tabId: number, storage: LocalStorageObject) => {
+  chrome.scripting.executeScript({
     target: {
       tabId,
       allFrames: true,
     },
     world: 'MAIN',
     injectImmediately: true,
-    args: [tabId, {...localStorage, whitelist: [...localStorage.whitelist]}],
+    args: [tabId, { ...storage, whitelist: [...storage.whitelist] }],
     func: coreInject,
   })
 }
 
 const injectScriptSolution = (tabId: number, url: string) => {
   const host = urlToHttpHost(url)
-  if(!host)return
+  if (!host) return
 
-  if(localStorage){
-    // 缓存存在
-    injectScript(tabId, localStorage)
-    if (localStorage.whitelist.has(host)) {
+  getLocalStorage().then((storage) => {
+    injectScript(tabId, storage)
+    if (storage.whitelist.has(host)) {
       setBadgeWhitelist(tabId)
     }
-  }else{
-    // 缓存被清理
-    initLocalConfig(chrome.runtime.getManifest().version)?.then((data) => {
-      injectScript(tabId, data)
-      if (data.whitelist.has(host)) {
-        setBadgeWhitelist(tabId)
-      }
-    })
-  }
+  })
 }
 
-// /**
-//  * 监听tab变化
-//  */
-// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-//   if (!tab.url) return  
-//   if (changeInfo.status === 'loading') {
-//   console.log(tab.url);
-//     injectScriptSolution(tabId, tab.url)
-//   }
-// });
-
 /**
- * 监听导航
+ * 监听tab变化
  */
-chrome.webNavigation.onCommitted.addListener((details) => {
-  injectScriptSolution(details.tabId, details.url)
-})
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (!tab.url) return
+  if (changeInfo.status === 'loading') {
+    injectScriptSolution(tabId, tab.url)
+  }
+});
+
+// /**
+//  * 监听导航
+//  */
+// chrome.webNavigation.onCommitted.addListener((details) => {
+//   injectScriptSolution(details.tabId, details.url)
+// })
