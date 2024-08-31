@@ -117,6 +117,7 @@ export class FingerprintHandler {
       global: config.customSeed ?? genRandomSeed(),
     }
 
+    if(!win)return
     const key = '__MyFingerprint__' + info.tabId
     if(!win[key as any]){  
       // @ts-ignore

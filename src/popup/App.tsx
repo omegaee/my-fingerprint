@@ -136,7 +136,7 @@ function App() {
             onClick={switchWhitelist} >
             {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostPart?.[0] ?? t('tip.label.not-support-whitelist')}
           </Button>
-          <Typography.Text className="text-[13px]">{isWhitelist ? t('e.whitelist-in') : t('e.whitelist-not')}</Typography.Text>
+          <Typography.Text className="text-[13px]">{isWhitelist ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
         </section>
 
         {/* 插件开关 */}

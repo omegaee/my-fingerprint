@@ -50,7 +50,8 @@ export const WhitelistView = (props: WhitelistProps) => {
     }
 
     if(port){
-      if(!Number.isInteger(Number(port)) || port <= 0 || port > 65535){
+      const nPort = Number(port)
+      if(!Number.isInteger(nPort) || nPort <= 0 || nPort > 65535){
         props.msgApi?.error(t('tip.err.input-port'))
         return
       }
