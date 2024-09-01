@@ -8,18 +8,26 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onlyOnceEnable: true,
     condition: (fh) => fh.conf?.hookBlankIframe,
     onEnable: (fh) => {
-      const hook = () => {
-        const iframes = fh.win.document.querySelectorAll('iframe')
-        for (const iframe of iframes) {
-          fh.hookIframe(iframe)
-          // if (!iframe.src || iframe.src === 'about:blank') { fh.hookIframe(iframe) }
+      // 监听DOM初始化
+      const observer = new MutationObserver((mutations) => {
+        if(mutations.length == 1) return;
+        for(const mutation of mutations){
+          for(const node of mutation.addedNodes){
+            if(node.nodeName === 'IFRAME'){
+              fh.hookIframe(node as HTMLIFrameElement)
+            }
+          }
         }
+      });
+      observer.observe(fh.win.document.documentElement, { childList: true, subtree: true });
+
+      const closeObserver = () => {
+        observer.disconnect()
+        fh.win.removeEventListener('DOMContentLoaded', closeObserver, { capture: true })
+        fh.win.removeEventListener('load', closeObserver, { capture: true })
       }
-      fh.win.addEventListener('DOMContentLoaded', () => {
-        hook()
-        fh.win.removeEventListener('DOMContentLoaded', hook)
-      })
-      hook()
+      fh.win.addEventListener('DOMContentLoaded', closeObserver, { capture: true })
+      fh.win.addEventListener('load', closeObserver, { capture: true })
     },
   },
 
