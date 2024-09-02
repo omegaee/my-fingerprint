@@ -55,8 +55,8 @@ export const OtherConfig = ({ config }: OtherConfigProps) => {
       value={config?.hookNetRequest} />
 
     <FWorkItem.Switch keyPrefix='hookBlankIframe'
-      title={t('item.title.hook-blank-iframe')}
-      desc={t('item.desc.hook-blank-iframe')}
+      title={t('item.title.hook-iframe')}
+      desc={t('item.desc.hook-iframe')}
       value={config?.hookBlankIframe} />
   </section>
 }

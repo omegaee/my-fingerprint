@@ -4,7 +4,7 @@ import { HookTask, recordAndSend } from "./core";
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
-  'static iframe': {
+  'iframe html hook': {
     onlyOnceEnable: true,
     condition: (fh) => fh.conf?.hookBlankIframe,
     onEnable: (fh) => {
@@ -31,7 +31,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'script iframe': {
+  'iframe script hook': {
     condition: (fh) => fh.conf?.hookBlankIframe,
     onEnable: (fh) => {
       if(!fh.rawObjects.appendChild || !fh.rawObjects.insertBefore || !fh.rawObjects.replaceChild){
