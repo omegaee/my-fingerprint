@@ -195,7 +195,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (!fh.rawObjects.toDataURL) {
         fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
         fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
-          apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
+          apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
             const value = fh.getValue('other', 'canvas')
             if (value !== null) {
               let ctx = thisArg.getContext('2d');

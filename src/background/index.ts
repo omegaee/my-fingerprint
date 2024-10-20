@@ -122,7 +122,7 @@ const getNewVersion = async () => {
  */
 const refreshRequestHeaderUA = async () => {
   const storage = await getLocalStorage()
-  if (!storage.config.enable || !storage.config.hookNetRequest) return undefined
+  if (!storage.config.enable || !storage.config.hookNetRequest) return undefined;
   const mode = storage.config.fingerprint.navigator.equipment
 
   /// Get Seed
@@ -139,6 +139,10 @@ const refreshRequestHeaderUA = async () => {
     default: {
       seed = undefined
     }
+  }
+
+  const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
+    removeRuleIds: [UA_NET_RULE_ID],
   }
 
   if (seed) {
@@ -177,28 +181,24 @@ const refreshRequestHeaderUA = async () => {
       }
 
       if (requestHeaders.length) {
-        chrome.declarativeNetRequest.updateSessionRules({
-          removeRuleIds: [UA_NET_RULE_ID],
-          addRules: [{
-            id: UA_NET_RULE_ID,
-            // priority: 1,
-            condition: {
-              resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-              // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
-            },
-            action: {
-              type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-              requestHeaders,
-            },
-          }],
-        })
-        return
+        options.addRules = [{
+          id: UA_NET_RULE_ID,
+          // priority: 1,
+          condition: {
+            excludedInitiatorDomains: [...storage.whitelist.values().map((host) => host.split(':')[0])],
+            resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+            // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
+          },
+          action: {
+            type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+            requestHeaders,
+          },
+        }]
       }
-
     } catch (err) { }
   }
 
-  chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [UA_NET_RULE_ID] })
+  chrome.declarativeNetRequest.updateSessionRules(options)
 }
 
 /**
@@ -222,7 +222,7 @@ const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>) => {
   const storage = await getLocalStorage()
   storage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(storage.config, config)
   saveLocalConfig(storage)
-  if (config.enable !== undefined || config.hookNetRequest !== undefined || config.fingerprint?.navigator?.equipment) {
+  if (storage.config.enable && storage.config.hookNetRequest && storage.config.fingerprint.navigator.equipment) {
     refreshRequestHeaderUA()
   }
 }
@@ -250,6 +250,9 @@ const updateLocalWhitelist = async (type: 'add' | 'del', host: string | string[]
     }
   }
   saveLocalWhitelist(storage)
+  if (storage.config.enable && storage.config.hookNetRequest && storage.config.fingerprint.navigator.equipment) {
+    refreshRequestHeaderUA()
+  }
 }
 
 /**
