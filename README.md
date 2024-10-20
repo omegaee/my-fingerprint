@@ -70,9 +70,3 @@
 - [x] https://www.yalala.com/
 - [x] https://uutool.cn/browser/
 - [x] https://www.ip77.net/
-
-
-# 已知问题
-> 若有解决方案，欢迎指正
-- 网络请求钩子，是通过`declarativeNetRequest`实现的
-  - **无法支持白名单**

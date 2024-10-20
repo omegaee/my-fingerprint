@@ -70,9 +70,3 @@
 - [x] https://www.yalala.com/
 - [x] https://uutool.cn/browser/
 - [x] https://www.ip77.net/
-
-
-# Known Issues
-> If there is a solution, you are welcome to propose it!
-- Web request hooks, which are implemented through `declarativeNetRequest`
-  - **Unable to support whitelisting**
