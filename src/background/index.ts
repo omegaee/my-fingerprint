@@ -185,7 +185,7 @@ const refreshRequestHeaderUA = async () => {
           id: UA_NET_RULE_ID,
           // priority: 1,
           condition: {
-            excludedInitiatorDomains: [...storage.whitelist.values().map((host) => host.split(':')[0])],
+            excludedInitiatorDomains: [...new Set([...storage.whitelist].map((host) => host.split(':')[0]))],
             resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
             // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
           },
