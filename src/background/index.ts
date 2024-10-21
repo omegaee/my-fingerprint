@@ -122,7 +122,16 @@ const getNewVersion = async () => {
  */
 const refreshRequestHeaderUA = async () => {
   const storage = await getLocalStorage()
-  if (!storage.config.enable || !storage.config.hookNetRequest) return undefined;
+
+  const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
+    removeRuleIds: [UA_NET_RULE_ID],
+  }
+
+  if (!storage.config.enable || !storage.config.hookNetRequest) {
+    chrome.declarativeNetRequest.updateSessionRules(options)
+    return
+  }
+
   const mode = storage.config.fingerprint.navigator.equipment
 
   /// Get Seed
@@ -139,10 +148,6 @@ const refreshRequestHeaderUA = async () => {
     default: {
       seed = undefined
     }
-  }
-
-  const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
-    removeRuleIds: [UA_NET_RULE_ID],
   }
 
   if (seed) {
@@ -222,7 +227,11 @@ const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>) => {
   const storage = await getLocalStorage()
   storage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(storage.config, config)
   saveLocalConfig(storage)
-  if (storage.config.enable && storage.config.hookNetRequest && storage.config.fingerprint.navigator.equipment) {
+  if (
+    config.enable !== undefined ||
+    config.hookNetRequest !== undefined ||
+    config.fingerprint?.navigator?.equipment !== undefined
+  ) {
     refreshRequestHeaderUA()
   }
 }
