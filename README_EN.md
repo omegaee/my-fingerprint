@@ -82,5 +82,5 @@
 
 
 # Support
-- [:star:] This project is free and open source, if you think it is helpful to you, please give me a Star.
-- [:sparkles:] If you have any good suggestions or comments, please feel free to submit an Issue or Pull Request.
+- This project is free and open source, if you think it is helpful to you, please give me a Star.
+- If you have any good suggestions or comments, please feel free to submit an Issue or Pull Request.
