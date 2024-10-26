@@ -24,6 +24,8 @@ export interface RawHookObject {
 
   getOwnPropertyDescriptor: typeof Object.getOwnPropertyDescriptor
   toDataURL: typeof HTMLCanvasElement.prototype.toDataURL
+  getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
+  getContext: typeof HTMLCanvasElement.prototype.getContext
   createDynamicsCompressor: typeof OfflineAudioContext.prototype.createDynamicsCompressor
   wglGetParameter: typeof WebGLRenderingContext.prototype.getParameter
   wgl2GetParameter: typeof WebGL2RenderingContext.prototype.getParameter
@@ -50,7 +52,7 @@ const seedFuncMap = {
   'other.audio': randomAudioNoise,
   'other.webgl#info': randomWebglRander,
   'other.webgl#color': randomWebglColor,
-  'other.webrtc': (seed: number) => {},
+  'other.webrtc': (seed: number) => 'hello',
 }
 
 /**

@@ -1,6 +1,7 @@
 import { HookType } from '@/types/enum'
 import { EquipmentInfoHandler } from "@/utils/equipment";
 import { HookTask, recordAndSend } from "./core";
+import { drawNoise } from './utils';
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
@@ -10,10 +11,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onEnable: (fh) => {
       // 监听DOM初始化
       const observer = new MutationObserver((mutations) => {
-        if(mutations.length == 1) return;
-        for(const mutation of mutations){
-          for(const node of mutation.addedNodes){
-            if(node.nodeName === 'IFRAME'){
+        if (mutations.length == 1) return;
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeName === 'IFRAME') {
               fh.hookIframe(node as HTMLIFrameElement)
             }
           }
@@ -34,7 +35,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   'iframe script hook': {
     condition: (fh) => fh.conf?.hookBlankIframe,
     onEnable: (fh) => {
-      if(!fh.rawObjects.appendChild || !fh.rawObjects.insertBefore || !fh.rawObjects.replaceChild){
+      if (!fh.rawObjects.appendChild || !fh.rawObjects.insertBefore || !fh.rawObjects.replaceChild) {
         const apply = (target: any, thisArg: Object, args: any) => {
           const res = target.apply(thisArg, args)
           const node = args[0]
@@ -43,7 +44,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return res
         }
-  
+
         if (!fh.rawObjects.appendChild) {
           fh.rawObjects.appendChild = fh.win.HTMLElement.prototype.appendChild
           fh.win.HTMLElement.prototype.appendChild = new Proxy(fh.rawObjects.appendChild, { apply })
@@ -189,21 +190,77 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
+  // 'hook canvas': {
+  //   condition: (fh) => fh.conf?.fingerprint?.other?.canvas?.type !== HookType.default,
+  //   onEnable: (fh) => {
+  //     if (!fh.rawObjects.toDataURL) {
+  //       fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
+  //       fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
+  //         apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
+  //           const value = fh.getValue('other', 'canvas')
+  //           if (value !== null) {
+  //             let ctx = thisArg.getContext('2d');
+  //             if (ctx !== null) {
+  //               let style = ctx.fillStyle;
+  //               ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
+  //               ctx.fillText(value, 0, 2)
+  //               ctx.fillStyle = style;
+  //             }
+  //           }
+  //           return target.apply(thisArg, args);
+  //         }
+  //       })
+  //     }
+  //   },
+  //   onDisable: (fh) => {
+  //     if (fh.rawObjects.toDataURL) {
+  //       fh.win.HTMLCanvasElement.prototype.toDataURL = fh.rawObjects.toDataURL
+  //       fh.rawObjects.toDataURL = undefined
+  //     }
+  //   }
+  // },
+
   'hook canvas': {
     condition: (fh) => fh.conf?.fingerprint?.other?.canvas?.type !== HookType.default,
     onEnable: (fh) => {
       if (!fh.rawObjects.toDataURL) {
         fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
+        fh.rawObjects.getImageData = fh.win.CanvasRenderingContext2D.prototype.getImageData
+        fh.rawObjects.getContext = fh.win.HTMLCanvasElement.prototype.getContext
+        
+        fh.win.HTMLCanvasElement.prototype.getContext = new Proxy(fh.rawObjects.getContext, {
+          apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
+            if (args[0] === '2d') {
+              const option = args[1] ?? {};
+              option.willReadFrequently = true;
+              args[1] = option
+            }
+            return target.apply(thisArg, args);
+          }
+        });
+
+        fh.win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(fh.rawObjects.getImageData, {
+          apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
+            fh.getValue('other', 'webrtc')
+            const value = fh.getValue('other', 'canvas')
+            if (value !== null) {
+              return drawNoise(
+                fh.rawObjects.getImageData!, value,
+                thisArg, ...args)
+            }
+            return target.apply(thisArg, args);
+          }
+        })
+
         fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
           apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
             const value = fh.getValue('other', 'canvas')
             if (value !== null) {
-              let ctx = thisArg.getContext('2d');
-              if (ctx !== null) {
-                let style = ctx.fillStyle;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
-                ctx.fillText(value, 0, 2)
-                ctx.fillStyle = style;
+              const ctx = thisArg.getContext('2d');
+              if (ctx) {
+                drawNoise(
+                  fh.rawObjects.getImageData!, value,
+                  ctx, 0, 0, thisArg.width, thisArg.height)
               }
             }
             return target.apply(thisArg, args);
@@ -215,6 +272,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (fh.rawObjects.toDataURL) {
         fh.win.HTMLCanvasElement.prototype.toDataURL = fh.rawObjects.toDataURL
         fh.rawObjects.toDataURL = undefined
+      }
+      if (fh.rawObjects.getImageData) {
+        fh.win.CanvasRenderingContext2D.prototype.getImageData = fh.rawObjects.getImageData
+        fh.rawObjects.getImageData = undefined
+      }
+      if (fh.rawObjects.getContext) {
+        fh.win.HTMLCanvasElement.prototype.getContext = fh.rawObjects.getContext
+        fh.rawObjects.getContext = undefined
       }
     }
   },
@@ -391,5 +456,5 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
 }
 
-export const hookTasks = Object.entries(hookTaskMap).map(([name, task]): HookTask => ({...task, name}))
+export const hookTasks = Object.entries(hookTaskMap).map(([name, task]): HookTask => ({ ...task, name }))
 export default hookTasks
