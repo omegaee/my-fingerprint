@@ -13,6 +13,15 @@
 - Monitor page access to fingerprints
 - Whitelisting module
 
+# Table of Contents
+- [Usage](#usage)
+- [Popup Module](#popup-module)
+  - [Configuration Module](#configuration-module)
+  - [Record Module](#record-module)
+  - [Whitelist Module](#whitelist-module)
+- [Test Target](#test-target)
+- [Support](#support)
+
 # Usage
 
 ***Plugin Installation:***
@@ -70,3 +79,8 @@
 - [x] https://www.yalala.com/
 - [x] https://uutool.cn/browser/
 - [x] https://www.ip77.net/
+
+
+# Support
+- [:star:] This project is free and open source, if you think it is helpful to you, please give me a Star.
+- [:sparkles:] If you have any good suggestions or comments, please feel free to submit an Issue or Pull Request.

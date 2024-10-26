@@ -13,6 +13,15 @@
 - 可监控页面对指纹的访问情况
 - 白名单模块
 
+# 目录
+- [使用](#使用)
+- [功能模块](#功能模块)
+  - [配置模块](#配置模块)
+  - [记录模块](#记录模块)
+  - [白名单模块](#白名单模块)
+- [测试目标](#测试目标)
+- [支持一下](#支持一下)
+
 # 使用
 
 ***插件安装：***
@@ -70,3 +79,13 @@
 - [x] https://www.yalala.com/
 - [x] https://uutool.cn/browser/
 - [x] https://www.ip77.net/
+
+
+# 支持一下
+- [:star:] 本项目免费开源，如果你觉得对你有帮助，请给我一颗Star
+- [:sparkles:] 如果有好的建议或意见，欢迎提交Issue或Pull Request
+- [:gift:] 欢迎赞赏支持 :smile:
+
+| 微信 |
+| :---: |
+| <img src='./images/wechat-code.png' title='微信' width='210px' height='210px'  /> |
