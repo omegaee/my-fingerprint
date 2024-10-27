@@ -4,7 +4,7 @@ import deepmerge from "deepmerge";
 import { HookType, RuntimeMsg } from '@/types/enum'
 import { selectTabByHost, sendMessageToAllTags } from "@/utils/tabs";
 import { tabChangeWhitelist } from "@/message/tabs";
-import { EquipmentInfoHandler } from "@/utils/equipment";
+import { genRandomVersionUserAgent, genRandomVersionUserAgentData } from "@/utils/equipment";
 
 // // @ts-ignore
 // import contentSrc from '@/scripts/content?script&module'
@@ -17,10 +17,6 @@ const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'we
 
 let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
-
-// let loadingConfig = false
-
-// const userAgentCache: Partial<Record<HookType, string>> = {}
 
 const BADGE_COLOR = {
   whitelist: '#fff',
@@ -151,56 +147,45 @@ const refreshRequestHeaderUA = async () => {
   }
 
   if (seed) {
-    try {
-      const eh = new EquipmentInfoHandler(navigator, seed)
-      const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = []
-      if (eh.userAgent) {
-        requestHeaders.push({
-          header: "User-Agent",
-          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-          value: eh.userAgent,
-        })
-      }
-      if (eh.brands) {
-        requestHeaders.push({
-          header: "Sec-Ch-Ua",
-          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-          value: eh.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
-        })
-      }
+    const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = []
+    requestHeaders.push({
+      header: "User-Agent",
+      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      value: genRandomVersionUserAgent(seed, navigator),
+    })
 
-      const heValues = await eh.getHighEntropyValues()
-      if (heValues.fullVersionList) {
-        requestHeaders.push({
-          header: "Sec-Ch-Ua-Full-Version-List",
-          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-          value: heValues.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
-        })
-      }
-      if (heValues.uaFullVersion) {
-        requestHeaders.push({
-          header: "Sec-Ch-Ua-Full-Version",
-          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-          value: heValues.uaFullVersion,
-        })
-      }
+    const uaData = await genRandomVersionUserAgentData(seed, navigator)
+    uaData.brands && requestHeaders.push({
+      header: "Sec-Ch-Ua",
+      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      value: uaData.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
+    })
+    uaData.fullVersionList && requestHeaders.push({
+      header: "Sec-Ch-Ua-Full-Version-List",
+      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      value: uaData.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
+    })
+    uaData.uaFullVersion && requestHeaders.push({
+      header: "Sec-Ch-Ua-Full-Version",
+      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      value: uaData.uaFullVersion,
+    })
 
-      if (requestHeaders.length) {
-        options.addRules = [{
-          id: UA_NET_RULE_ID,
-          // priority: 1,
-          condition: {
-            excludedInitiatorDomains: [...new Set([...storage.whitelist].map((host) => host.split(':')[0]))],
-            resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-            // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
-          },
-          action: {
-            type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-            requestHeaders,
-          },
-        }]
-      }
-    } catch (err) { }
+    if (requestHeaders.length) {
+      options.addRules = [{
+        id: UA_NET_RULE_ID,
+        // priority: 1,
+        condition: {
+          excludedInitiatorDomains: [...new Set([...storage.whitelist].map((host) => host.split(':')[0]))],
+          resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+          // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
+        },
+        action: {
+          type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+          requestHeaders,
+        },
+      }]
+    }
   }
 
   chrome.declarativeNetRequest.updateSessionRules(options)

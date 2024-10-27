@@ -1,3 +1,5 @@
+import { subversionRandom } from "@/utils/base";
+import { brandRandom } from "@/utils/equipment";
 
 type U8Array = Uint8ClampedArray | Uint8Array;
 
@@ -61,4 +63,50 @@ export const drawNoise = (
   }
 
   return imageData
+}
+
+
+export const proxyUserAgentData = (seed: number, userAgentData?: any) => {
+  if (!userAgentData) return;
+
+  return new Proxy(userAgentData, {
+    get: (target, key) => {
+      switch (key) {
+        case 'brands': {
+          const raw: Brand[] = target[key]
+          const brands: Brand[] = raw?.map?.((brand: Brand) => brandRandom(seed, brand))
+          return brands ?? raw
+        }
+        case 'toJSON': {
+          const raw: () => NavigatorUADataAttr = target[key]
+          return !raw ? raw : new Proxy(raw.bind(target), {
+            apply: (target, thisArg, args: Parameters<typeof raw>) => {
+              const rawRes = target.apply(thisArg, args)
+              const brands = rawRes?.brands?.map?.((brand: Brand) => brandRandom(seed, brand))
+              return brands ?? rawRes
+            }
+          })
+        }
+        case 'getHighEntropyValues': {
+          const raw: (opt?: string[]) => Promise<HighEntropyValuesAttr> = target[key]
+          return !raw ? raw : new Proxy(raw.bind(target), {
+            apply: (target, thisArg, args: Parameters<typeof raw>) => {
+              return target.apply(thisArg, args)?.then((data) => {
+                if (!data) return data;
+                return {
+                  ...data,
+                  brands: data.brands?.map?.((brand) => brandRandom(seed, brand)),
+                  fullVersionList: data.fullVersionList?.map?.((brand) => brandRandom(seed, brand)),
+                  uaFullVersion: data.uaFullVersion && subversionRandom(seed, data.uaFullVersion).full,
+                }
+              })
+            }
+          })
+        }
+      }
+
+      const value = target[key]
+      return typeof value === 'function' ? value.bind(target) : value
+    }
+  })
 }

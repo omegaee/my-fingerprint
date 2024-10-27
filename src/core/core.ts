@@ -5,7 +5,6 @@ import { debounce } from "../utils/timer";
 import { postSetHookRecords, unwrapMessage } from "@/message/content";
 import { genRandomSeed, hashNumberFromString } from "../utils/base";
 import { ContentMsg } from '@/types/enum'
-import { EquipmentInfoHandler } from "@/utils/equipment";
 import hookTasks from "./tasks";
 
 export type HookTask = {
@@ -102,8 +101,6 @@ export class FingerprintHandler {
   public seed: SeedInfo
 
   public conf: DeepPartial<LocalStorageConfig>
-
-  public equipmentHandler?: EquipmentInfoHandler
 
   public rawObjects: Partial<RawHookObject> = {}
   private onlyRecord: Record<string, boolean> = {}

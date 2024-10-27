@@ -1,7 +1,7 @@
 import { HookType } from '@/types/enum'
-import { EquipmentInfoHandler } from "@/utils/equipment";
+import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { HookTask, recordAndSend } from "./core";
-import { drawNoise } from './utils';
+import { drawNoise, proxyUserAgentData } from './utils';
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
@@ -110,40 +110,30 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         fh.rawObjects.navigatorDescriptor = fh.win.Object.getOwnPropertyDescriptor(fh.win, "navigator");
         fh.win.Object.defineProperty(fh.win, 'navigator', {
           value: new Proxy(fh.win.navigator, {
-            get: (target, key: string) => {
-              if (key in target) {
-                let value: any | null
-                if (key === 'userAgent' || key === 'appVersion' || key === 'userAgentData') {
-                  /// Equipment
+            get: (target, key: keyof Navigator) => {
+              switch (key) {
+                case 'userAgent': {
                   const seed = fh.getSeedByHookValue(fh.conf?.fingerprint?.navigator?.equipment)
-                  if (seed !== null) {
-                    if (!fh.equipmentHandler) {
-                      fh.equipmentHandler = new EquipmentInfoHandler(target, seed, true)
-                    }
-                    value = fh.equipmentHandler.getValue(key)
-                    if (value !== null) {
-                      // 记录
-                      recordAndSend(key as HookFingerprintKey)
-                    }
-                  } else {
-                    value = null
-                  }
-                } else {
-                  /// Other
-                  value = fh.getValue('navigator', key)
+                  recordAndSend(key)
+                  return seed === null ? target[key] : genRandomVersionUserAgent(seed, target)
                 }
-                if (value !== null) {
-                  return value
+                case 'appVersion': {
+                  const seed = fh.getSeedByHookValue(fh.conf?.fingerprint?.navigator?.equipment)
+                  recordAndSend(key)
+                  return seed === null ? target[key] : genRandomVersionUserAgent(seed, target, true)
                 }
-                const res = target[key as keyof Navigator]
-                if (typeof res === "function") {
-                  return res.bind(target)
-                } else {
-                  return res
+                case 'userAgentData' as any: {
+                  const seed = fh.getSeedByHookValue(fh.conf?.fingerprint?.navigator?.equipment)
+                  recordAndSend(key)
+                  return seed === null ? target[key]: proxyUserAgentData(seed, target[key])
                 }
-              } else {
-                return undefined
               }
+
+              const hValue = fh.getValue('navigator', key)
+              if (hValue !== null) return hValue
+
+              const value = target[key]
+              return typeof value === 'function' ? value.bind(target) : value
             }
           })
         });

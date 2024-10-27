@@ -1,4 +1,4 @@
-import { getMainVersion, versionRandomOffset } from "./base"
+import { subversionRandom } from "./base"
 
 const uaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( \((?<engineDetails>.+?)\))?( (?<extensions>.+?))?$/
 const firefoxUaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( (?<extensions>.+?))?/
@@ -81,173 +81,55 @@ export class UAParser {
 
 }
 
-type MyNavigatorUAData = {
-  brands: { brand: string, version: string }[]
-  platform: string
-  mobile: boolean
+export const brandRandom = (seed: number, brand: Brand): Brand => ({
+  ...brand,
+  version: subversionRandom(seed, brand.version).full,
+})
+
+type NavigatorPlus = Navigator & {
+  userAgentData?: NavigatorUAData
 }
 
-export class EquipmentInfoHandler {
-  public nav: Navigator
-  public seed?: number
+type UserAgentDataVersion = {
+  brands?: Brand[]
+  fullVersionList?: Brand[]
+  uaFullVersion?: string
+}
 
-  public userAgent?: string
-  public appVersion?: string
+/**
+ * 生成 UserAgentData 的随机版本内容
+ */
+export const genRandomVersionUserAgentData = async (seed: number, nav: NavigatorPlus): Promise<UserAgentDataVersion> => {
+  if (!nav.userAgentData || !nav.userAgentData.brands) return {};
 
-  public userAgentData?: any
-  public brands?: MyNavigatorUAData['brands']
-
-  public fullVersionList?: MyNavigatorUAData['brands']
-  public uaFullVersion?: string
-
-  private rawUserAgentData?: any
-  private rawToJSON?: any
-  private rawGetHighEntropyValues?: any
-
-  public constructor(nav: Navigator, seed?: number, isHook?: boolean) {
-    this.nav = nav
-    if (seed !== undefined) {
-      this.setSeed(seed, isHook)
-    }
+  const option: UserAgentDataVersion = {
+    brands: nav.userAgentData.brands.map((brand) => brandRandom(seed, brand))
   }
 
-  public setSeed(seed: number, isHook?: boolean) {
-    if (this.seed === seed) return
-    this.seed = seed
-
-    let uaParser: UAParser
-    try {
-      uaParser = new UAParser(this.nav.userAgent)
-    } catch (err) {
-      return
-    }
-
-    if (uaParser.engine) {
-      uaParser.engine.forEach((item) => {
-        item.setVersion(versionRandomOffset(item.version, seed))
-      })
-      uaParser.extensions?.forEach((item) => {
-        item.version && item.setVersion(versionRandomOffset(item.version, seed))
-      })
-    }
-
-    /// userAgent
-    this.userAgent = uaParser.toString()
-
-    /// appVersion
-    if (this.nav.appVersion) {
-      this.appVersion = uaParser.toString(true)
-    }
-
-    /// userAgentData
-    // @ts-ignore
-    if (this.nav.userAgentData) {
-      if (!uaParser.extensions) return
-      // @ts-ignore
-      this.rawUserAgentData = this.nav.userAgentData
-      const brands: MyNavigatorUAData['brands'] = this.rawUserAgentData.brands
-      this.brands = brands.map((brand) => ({ ...brand, version: getMainVersion(versionRandomOffset(brand.version, seed)) }))
-
-      // @ts-ignore
-      this.rawGetHighEntropyValues = NavigatorUAData.prototype.getHighEntropyValues
-
-      /// 若无需hook，则结束
-      if (!isHook) return
-
-      this.userAgentData = new Proxy(this.rawUserAgentData, {
-        get: (target, key: string) => {
-          let res = null
-          switch (key) {
-            case 'brands': {
-              res = this.brands
-              break
-            }
-          }
-          if (res === null) {
-            res = target[key]
-            if (typeof res === "function") return res.bind(target)
-          }
-          return res
-        }
-      })
-
-      // @ts-ignore
-      if (NavigatorUAData?.prototype?.toJSON) {
-        // @ts-ignore
-        this.rawToJSON = NavigatorUAData.prototype.toJSON
-        // @ts-ignore
-        NavigatorUAData.prototype.toJSON = new Proxy(NavigatorUAData.prototype.toJSON, {
-          apply: (target, thisArg, args) => {
-            const res = target.apply(thisArg, args)
-            return { ...res, brands: this.brands }
-          }
-        })
-      }
-
-      // @ts-ignore
-      if (NavigatorUAData?.prototype?.getHighEntropyValues) {
-        // @ts-ignore
-        NavigatorUAData.prototype.getHighEntropyValues = new Proxy(NavigatorUAData.prototype.getHighEntropyValues, {
-          apply: (target: (opt?: string[]) => Promise<any>, thisArg, args: Parameters<(opt?: string[]) => Promise<any>>) => {
-            const res = target.apply(thisArg, args)
-            return res.then((data) => {
-              if (data.brands?.length) {
-                for (const brand of data.brands as MyNavigatorUAData['brands']) {
-                  brand.version = versionRandomOffset(brand.version, seed)
-                }
-              }
-              if (data.fullVersionList?.length) {
-                for (const brand of data.fullVersionList as MyNavigatorUAData['brands']) {
-                  brand.version = versionRandomOffset(brand.version, seed)
-                }
-              }
-              if (data.uaFullVersion !== undefined) {
-                data.uaFullVersion = versionRandomOffset(data.uaFullVersion, seed)
-              }
-              return data
-            })
-          }
-        })
-      }
-    }
-
+  if (nav.userAgentData.getHighEntropyValues) {
+    const { fullVersionList, uaFullVersion }: HighEntropyValuesAttr = await nav.userAgentData.getHighEntropyValues(['fullVersionList', 'uaFullVersion'])
+    option.fullVersionList = fullVersionList?.map((brand) => brandRandom(seed, brand))
+    option.uaFullVersion = uaFullVersion && subversionRandom(seed, uaFullVersion).full
   }
 
-  public getValue(key: string) {
-    switch (key) {
-      case 'userAgent':
-        return this.userAgent ?? null
-      case 'appVersion':
-        return this.appVersion ?? null
-      case 'userAgentData':
-        return this.userAgentData ?? null
-      default:
-        return null
-    }
+  return option
+}
+
+/**
+ * 生成随机版本的 UserAgent
+ */
+export const genRandomVersionUserAgent = (seed: number, nav: Navigator, ignoreProductName?: boolean) => {
+  const uaParser = new UAParser(nav.userAgent)
+
+  // AppleWebKit ...
+  if (uaParser.engine?.length) {
+    uaParser.engine.forEach((item) => item.setVersion(subversionRandom(seed, item.version).full))
   }
 
-  public async getHighEntropyValues() {
-    // @ts-ignore    
-    if (this.seed !== undefined && this.rawGetHighEntropyValues && this.nav.userAgentData) {
-      // @ts-ignore
-      const data = await this.rawGetHighEntropyValues.apply(this.nav.userAgentData, [['fullVersionList', 'uaFullVersion']])
-
-      if (data.fullVersionList) {
-        const fullVersionList: MyNavigatorUAData['brands'] = data.fullVersionList
-        for (const brand of fullVersionList) {
-          brand.version = versionRandomOffset(brand.version, this.seed)
-        }
-        this.fullVersionList = fullVersionList
-      }
-
-      if (data.uaFullVersion) {
-        this.uaFullVersion = versionRandomOffset(data.uaFullVersion, this.seed)
-      }
-    }
-
-    return {
-      fullVersionList: this.fullVersionList,
-      uaFullVersion: this.uaFullVersion
-    }
+  // Chrome Edg ...
+  if (uaParser.extensions?.length) {
+    uaParser.extensions.forEach((item) => item.setVersion(subversionRandom(seed, item.version).full))
   }
+
+  return uaParser.toString(ignoreProductName)
 }

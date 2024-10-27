@@ -4,7 +4,7 @@ import { seededRandom } from "./data";
  * 版本号比较
  * @returns v1大于v2，返回1；v1小于v2，返回-1；v1等于v2，返回0
  */
-export const compareVersions = function(v1: string, v2: string): -1 | 0 | 1 {
+export const compareVersions = function (v1: string, v2: string): -1 | 0 | 1 {
   const v1parts = v1.split('.').map(Number);
   const v2parts = v2.split('.').map(Number);
 
@@ -41,9 +41,9 @@ export const genRandomSeed = function () {
 export const hashNumberFromString = (input: string): number => {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
-      let char = input.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+    let char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
   }
   return hash % 2147483647;
 }
@@ -51,7 +51,7 @@ export const hashNumberFromString = (input: string): number => {
 /**
  * 过滤arr中的undefined和false值
  */
-export const arrayFilter = function<T>(arr: (T | undefined | boolean)[]): T[] {
+export const arrayFilter = function <T>(arr: (T | undefined | boolean)[]): T[] {
   return arr.filter(item => item !== undefined && item !== false) as T[]
 }
 
@@ -61,7 +61,7 @@ export const arrayFilter = function<T>(arr: (T | undefined | boolean)[]): T[] {
 export const urlToHttpHost = function (url: string) {
   try {
     let _url = new URL(url);
-    if(_url.protocol !== 'http:' && _url.protocol !== 'https:'){
+    if (_url.protocol !== 'http:' && _url.protocol !== 'https:') {
       return undefined
     }
     let hostname = _url.hostname
@@ -91,9 +91,9 @@ export const urlToHttpHost = function (url: string) {
 export const versionRandomOffset = (sourceVersion: string, seed: number, maxSubVersionNumber?: number, maxMainVersionOffset?: number, maxSubVersionOffset?: number): string => {
   // 将源版本号分解为主版本号和子版本号
   const [mainVersion, ...subversions] = sourceVersion.split('.')
-  if(mainVersion === undefined) return sourceVersion
+  if (mainVersion === undefined) return sourceVersion
   let nMainVersion = Number(mainVersion)
-  if(Number.isNaN(nMainVersion)) return sourceVersion
+  if (Number.isNaN(nMainVersion)) return sourceVersion
 
   maxMainVersionOffset = maxMainVersionOffset ?? 2
   maxSubVersionOffset = maxSubVersionOffset ?? 50
@@ -105,11 +105,11 @@ export const versionRandomOffset = (sourceVersion: string, seed: number, maxSubV
   for (let i = 0; i < maxSubVersionNumber; i++) {
     const subversion = subversions[i]
     let nSubversion = Number(subversion)
-    if(Number.isNaN(nSubversion)) {
+    if (Number.isNaN(nSubversion)) {
       nSubversions.push(subversion)
       continue
     }
-    const ss = Math.floor(seededRandom(seed+i, -maxSubVersionOffset, maxSubVersionOffset))
+    const ss = Math.floor(seededRandom(seed + i, -maxSubVersionOffset, maxSubVersionOffset))
     nSubversion = Math.abs((nSubversion ?? 0) + ss)
     nSubversions.push(nSubversion.toString())
   }
@@ -123,4 +123,35 @@ export const versionRandomOffset = (sourceVersion: string, seed: number, maxSubV
  */
 export const getMainVersion = (sourceVersion: string) => {
   return sourceVersion.split('.')[0]
+}
+
+/**
+ * 随机子版本号（同一sourceVersion多次调用结果一致）
+ */
+export const subversionRandom = (
+  seed: number,
+  sourceVersion: string,
+  maxValue: number = 100,
+  maxSegments?: number,
+): FullVersion => {
+  const [major, ...sublist] = sourceVersion.split('.')
+  if (sublist.length === 0) return { major, full: major };
+
+  maxSegments = maxSegments ?? sublist.length
+  const nSublist: string[] = []
+
+  for (let i = 0; i < maxSegments; i++) {
+    const sub = Number(sublist[i])
+    if (isNaN(sub)) {
+      nSublist.push(sublist[i])
+      continue
+    }
+    const ss = Math.floor(seededRandom(seed + i, maxValue, 0))
+    nSublist.push(ss.toString())
+  }
+
+  return {
+    major,
+    full: [major, ...nSublist].join('.')
+  };
 }
