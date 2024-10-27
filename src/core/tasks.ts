@@ -190,44 +190,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
-  // 'hook canvas': {
-  //   condition: (fh) => fh.conf?.fingerprint?.other?.canvas?.type !== HookType.default,
-  //   onEnable: (fh) => {
-  //     if (!fh.rawObjects.toDataURL) {
-  //       fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
-  //       fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
-  //         apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
-  //           const value = fh.getValue('other', 'canvas')
-  //           if (value !== null) {
-  //             let ctx = thisArg.getContext('2d');
-  //             if (ctx !== null) {
-  //               let style = ctx.fillStyle;
-  //               ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
-  //               ctx.fillText(value, 0, 2)
-  //               ctx.fillStyle = style;
-  //             }
-  //           }
-  //           return target.apply(thisArg, args);
-  //         }
-  //       })
-  //     }
-  //   },
-  //   onDisable: (fh) => {
-  //     if (fh.rawObjects.toDataURL) {
-  //       fh.win.HTMLCanvasElement.prototype.toDataURL = fh.rawObjects.toDataURL
-  //       fh.rawObjects.toDataURL = undefined
-  //     }
-  //   }
-  // },
-
   'hook canvas': {
     condition: (fh) => fh.conf?.fingerprint?.other?.canvas?.type !== HookType.default,
     onEnable: (fh) => {
-      if (!fh.rawObjects.toDataURL) {
-        fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
-        fh.rawObjects.getImageData = fh.win.CanvasRenderingContext2D.prototype.getImageData
+      if (!fh.rawObjects.getContext) {
         fh.rawObjects.getContext = fh.win.HTMLCanvasElement.prototype.getContext
-        
         fh.win.HTMLCanvasElement.prototype.getContext = new Proxy(fh.rawObjects.getContext, {
           apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
             if (args[0] === '2d') {
@@ -238,7 +205,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return target.apply(thisArg, args);
           }
         });
-
+      }
+      if (!fh.rawObjects.getImageData) {
+        fh.rawObjects.getImageData = fh.win.CanvasRenderingContext2D.prototype.getImageData
         fh.win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(fh.rawObjects.getImageData, {
           apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
             fh.getValue('other', 'webrtc')
@@ -251,7 +220,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return target.apply(thisArg, args);
           }
         })
-
+      }
+      if (!fh.rawObjects.toDataURL) {
+        fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
         fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
           apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
             const value = fh.getValue('other', 'canvas')
