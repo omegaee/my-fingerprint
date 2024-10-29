@@ -5,7 +5,7 @@ const firefoxUaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?
 
 export class UAItem {
   public name: string
-  public version: string
+  public version?: string
 
   public constructor(name: string, version: string) {
     this.name = name
@@ -61,7 +61,7 @@ export class UAParser {
   }
 
   public toString(ignoreProductName?: boolean): string {
-    let product: string
+    let product: string | undefined
     if (ignoreProductName) {
       product = this.product.version
     } else {
@@ -83,7 +83,7 @@ export class UAParser {
 
 export const brandRandom = (seed: number, brand: Brand): Brand => ({
   ...brand,
-  version: subversionRandom(seed, brand.version).full,
+  version: brand.version && subversionRandom(seed, brand.version).full,
 })
 
 type NavigatorPlus = Navigator & {
@@ -123,12 +123,13 @@ export const genRandomVersionUserAgent = (seed: number, nav: Navigator, ignorePr
 
   // AppleWebKit ...
   if (uaParser.engine?.length) {
-    uaParser.engine.forEach((item) => item.setVersion(subversionRandom(seed, item.version).full))
+    uaParser.engine
+      .forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
   }
 
   // Chrome Edg ...
   if (uaParser.extensions?.length) {
-    uaParser.extensions.forEach((item) => item.setVersion(subversionRandom(seed, item.version).full))
+    uaParser.extensions.forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
   }
 
   return uaParser.toString(ignoreProductName)

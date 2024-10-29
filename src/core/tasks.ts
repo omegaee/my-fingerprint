@@ -1,7 +1,7 @@
 import { HookType } from '@/types/enum'
 import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { HookTask, recordAndSend } from "./core";
-import { drawNoise, proxyUserAgentData } from './utils';
+import { drawNoise, drawNoiseToWebgl, proxyUserAgentData } from './utils';
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
@@ -125,7 +125,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                 case 'userAgentData' as any: {
                   const seed = fh.getSeedByHookValue(fh.conf?.fingerprint?.navigator?.equipment)
                   recordAndSend(key)
-                  return seed === null ? target[key]: proxyUserAgentData(seed, target[key])
+                  return seed === null ? target[key] : proxyUserAgentData(seed, target[key])
                 }
               }
 
@@ -154,19 +154,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         fh.rawObjects.screenDescriptor = fh.win.Object.getOwnPropertyDescriptor(fh.win, "screen");
         fh.win.Object.defineProperty(fh.win, 'screen', {
           value: new Proxy(fh.win.screen, {
-            get: (target, key: string) => {
-              if (key in target) {
-                const value = fh.getValue('screen', key)
-                if (value !== null) {
-                  return value
-                }
-                const res = target[key as keyof Screen]
-                // @ts-ignore
-                if (typeof res === "function") return res.bind(target)
-                else return res
-              } else {
-                return undefined
-              }
+            get: (target, key: keyof Screen) => {
+              const hValue = fh.getValue('screen', key)
+              if (hValue !== null) return hValue;
+
+              const value = target[key]
+              // @ts-ignore
+              return typeof value === 'function' ? value.bind(target) : value
             }
           })
         })
@@ -211,29 +205,29 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
         })
       }
-      if (!fh.rawObjects.toDataURL) {
-        fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
-        fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
-          apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
-            const value = fh.getValue('other', 'canvas')
-            if (value !== null) {
-              const ctx = thisArg.getContext('2d');
-              if (ctx) {
-                drawNoise(
-                  fh.rawObjects.getImageData!, value,
-                  ctx, 0, 0, thisArg.width, thisArg.height)
-              }
-            }
-            return target.apply(thisArg, args);
-          }
-        })
-      }
+      // if (!fh.rawObjects.toDataURL) {
+      //   fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
+      //   fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
+      //     apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
+      //       const value = fh.getValue('other', 'canvas')
+      //       if (value !== null) {
+      //         const ctx = thisArg.getContext('2d');
+      //         if (ctx) {
+      //           drawNoise(
+      //             fh.rawObjects.getImageData!, value,
+      //             ctx, 0, 0, thisArg.width, thisArg.height)
+      //         }
+      //       }
+      //       return target.apply(thisArg, args);
+      //     }
+      //   })
+      // }
     },
     onDisable: (fh) => {
-      if (fh.rawObjects.toDataURL) {
-        fh.win.HTMLCanvasElement.prototype.toDataURL = fh.rawObjects.toDataURL
-        fh.rawObjects.toDataURL = undefined
-      }
+      // if (fh.rawObjects.toDataURL) {
+      //   fh.win.HTMLCanvasElement.prototype.toDataURL = fh.rawObjects.toDataURL
+      //   fh.rawObjects.toDataURL = undefined
+      // }
       if (fh.rawObjects.getImageData) {
         fh.win.CanvasRenderingContext2D.prototype.getImageData = fh.rawObjects.getImageData
         fh.rawObjects.getImageData = undefined
@@ -245,6 +239,71 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
+  'hook webgl': {
+    condition: (fh) => fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default,
+    onEnable: (fh) => {
+      if (!fh.rawObjects.readPixels) {
+        WebGLRenderingContext.prototype.readPixels = new Proxy(WebGLRenderingContext.prototype.readPixels, {
+          apply: (target, thisArg: WebGLRenderingContext, args: Parameters<typeof WebGLRenderingContext.prototype.readPixels>) => {
+            const value: [number, number] = fh.getValue('other', 'webgl')
+            value && drawNoiseToWebgl(thisArg, value)
+            return target.apply(thisArg, args);
+          }
+        })
+      }
+    },
+    onDisable: (fh) => {
+      if (fh.rawObjects.readPixels) {
+        WebGLRenderingContext.prototype.readPixels = fh.rawObjects.readPixels
+        fh.rawObjects.readPixels = undefined
+      }
+    }
+  },
+
+  'hook toDataURL': {
+    condition: (fh) =>
+      fh.conf?.fingerprint?.other?.canvas?.type !== HookType.default ||
+      fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default,
+    onEnable: (fh) => {
+      if (!fh.rawObjects.toDataURL) {
+        fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
+        fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
+          apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
+            /* 2d */
+            if (fh.conf?.fingerprint?.other?.canvas?.type !== HookType.default) {
+              const ctx = thisArg.getContext('2d');
+              if (ctx) {
+                const value = fh.getValue('other', 'canvas')
+                value && drawNoise(
+                  fh.rawObjects.getImageData!, value,
+                  ctx, 0, 0, thisArg.width, thisArg.height)
+                return target.apply(thisArg, args);
+              }
+            }
+
+            /* webgl */
+            if (fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default) {
+              const gl = thisArg.getContext('webgl')
+              if (gl) {
+                const value: [number, number] = fh.getValue('other', 'webgl')
+                value && drawNoiseToWebgl(gl as any, value)
+                return target.apply(thisArg, args);
+              }
+            }
+
+            return target.apply(thisArg, args);
+          }
+        })
+      }
+    },
+    onDisable: (fh) => {
+      if (fh.rawObjects.toDataURL) {
+        fh.win.HTMLCanvasElement.prototype.toDataURL = fh.rawObjects.toDataURL
+        fh.rawObjects.toDataURL = undefined
+      }
+    }
+  },
+
   'hook audio': {
     condition: (fh) => fh.conf?.fingerprint?.other?.audio?.type !== HookType.default,
     onEnable: (fh) => {
@@ -252,13 +311,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         fh.rawObjects.createDynamicsCompressor = fh.win.OfflineAudioContext.prototype.createDynamicsCompressor
         fh.win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(fh.rawObjects.createDynamicsCompressor, {
           apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
-            const value = fh.getValue('other', 'audio')
+            const value: number | null = fh.getValue('other', 'audio')
             if (value === null) return target.apply(thisArg, args)
             const compressor = target.apply(thisArg, args)
             // 创建一个增益节点，添加噪音
             const gain = thisArg.createGain()
             // 根据需要设置噪音的强度
-            gain.gain.value = (value as number) ?? Math.random() * 0.01
+            gain.gain.value = value * 0.01
             compressor.connect(gain)
             // 将增益节点的输出连接到上下文的目标
             gain.connect(thisArg.destination)
@@ -275,98 +334,99 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
-  'hook webgl': {
-    condition: (fh) => fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default,
-    onEnable: (fh) => {
-      // ------------
-      // getParameter
-      // ------------
-      if (!fh.rawObjects.wglGetParameter || !fh.rawObjects.wgl2GetParameter) {
-        const UNMASKED_VENDOR_WEBGL = 0x9245;
-        const UNMASKED_RENDERER_WEBGL = 0x9246;
-        const getParameterApply = (
-          target: typeof WebGLRenderingContext.prototype.getParameter | typeof WebGL2RenderingContext.prototype.getParameter,
-          thisArg: WebGLRenderingContext | WebGL2RenderingContext,
-          args: Parameters<typeof WebGLRenderingContext.prototype.getParameter> | Parameters<typeof WebGL2RenderingContext.prototype.getParameter>
-        ) => {
-          switch (args[0]) {
-            case UNMASKED_RENDERER_WEBGL: {
-              const value = fh.getValue('other', 'webgl', 'info')
-              if (value === null) break;
-              return value
-            }
-            case UNMASKED_VENDOR_WEBGL: {
-              return 'Google Inc.'
-            }
-          }
-          return target.apply(thisArg, args)
-        }
+  /* webgl */
+  // 'hook webgl': {
+  //   condition: (fh) => fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default,
+  //   onEnable: (fh) => {
+  //     // ------------
+  //     // getParameter
+  //     // ------------
+  //     if (!fh.rawObjects.wglGetParameter || !fh.rawObjects.wgl2GetParameter) {
+  //       const UNMASKED_VENDOR_WEBGL = 0x9245;
+  //       const UNMASKED_RENDERER_WEBGL = 0x9246;
+  //       const getParameterApply = (
+  //         target: typeof WebGLRenderingContext.prototype.getParameter | typeof WebGL2RenderingContext.prototype.getParameter,
+  //         thisArg: WebGLRenderingContext | WebGL2RenderingContext,
+  //         args: Parameters<typeof WebGLRenderingContext.prototype.getParameter> | Parameters<typeof WebGL2RenderingContext.prototype.getParameter>
+  //       ) => {
+  //         switch (args[0]) {
+  //           case UNMASKED_RENDERER_WEBGL: {
+  //             const value = fh.getValue('other', 'webgl', 'info')
+  //             if (value === null) break;
+  //             return value
+  //           }
+  //           case UNMASKED_VENDOR_WEBGL: {
+  //             return 'Google Inc.'
+  //           }
+  //         }
+  //         return target.apply(thisArg, args)
+  //       }
 
-        if (!fh.rawObjects.wglGetParameter) {
-          fh.rawObjects.wglGetParameter = fh.win.WebGLRenderingContext.prototype.getParameter
-          fh.win.WebGLRenderingContext.prototype.getParameter = new Proxy(fh.rawObjects.wglGetParameter, { apply: getParameterApply })
-        }
-        if (!fh.rawObjects.wgl2GetParameter) {
-          fh.rawObjects.wgl2GetParameter = fh.win.WebGL2RenderingContext.prototype.getParameter
-          fh.win.WebGL2RenderingContext.prototype.getParameter = new Proxy(fh.rawObjects.wgl2GetParameter, { apply: getParameterApply })
-        }
-      }
+  //       if (!fh.rawObjects.wglGetParameter) {
+  //         fh.rawObjects.wglGetParameter = fh.win.WebGLRenderingContext.prototype.getParameter
+  //         fh.win.WebGLRenderingContext.prototype.getParameter = new Proxy(fh.rawObjects.wglGetParameter, { apply: getParameterApply })
+  //       }
+  //       if (!fh.rawObjects.wgl2GetParameter) {
+  //         fh.rawObjects.wgl2GetParameter = fh.win.WebGL2RenderingContext.prototype.getParameter
+  //         fh.win.WebGL2RenderingContext.prototype.getParameter = new Proxy(fh.rawObjects.wgl2GetParameter, { apply: getParameterApply })
+  //       }
+  //     }
 
-      // ------------
-      // shaderSource
-      // ------------
-      if (!fh.rawObjects.wglShaderSource || !fh.rawObjects.wgl2ShaderSource) {
-        const mainFuncRegx = /void\s+main\s*\(\s*(void)?\s*\)\s*\{[^}]*\}/
-        const shaderSourceApply = (
-          target: typeof WebGLRenderingContext.prototype.shaderSource | typeof WebGL2RenderingContext.prototype.shaderSource,
-          thisArg: WebGLRenderingContext | WebGL2RenderingContext,
-          args: Parameters<typeof WebGLRenderingContext.prototype.shaderSource> | Parameters<typeof WebGL2RenderingContext.prototype.shaderSource>
-        ) => {
-          if (args[1]) {
-            if (args[1].includes('gl_FragColor')) {
-              const color = fh.getValue('other', 'webgl', 'color')
-              if (color) {
-                args[1] = args[1].replace(mainFuncRegx, `void main(){gl_FragColor=${color};}`)
-              }
-            } else if (args[1].includes('gl_Position')) {
-              const color = fh.getValue('other', 'webgl', 'color')
-              if (color) {
-                args[1] = args[1].replace(mainFuncRegx, `void main(){gl_Position=${color};}`)
-              }
-            }
-          }
-          return target.apply(thisArg, args)
-        }
+  //     // ------------
+  //     // shaderSource
+  //     // ------------
+  //     if (!fh.rawObjects.wglShaderSource || !fh.rawObjects.wgl2ShaderSource) {
+  //       const mainFuncRegx = /void\s+main\s*\(\s*(void)?\s*\)\s*\{[^}]*\}/
+  //       const shaderSourceApply = (
+  //         target: typeof WebGLRenderingContext.prototype.shaderSource | typeof WebGL2RenderingContext.prototype.shaderSource,
+  //         thisArg: WebGLRenderingContext | WebGL2RenderingContext,
+  //         args: Parameters<typeof WebGLRenderingContext.prototype.shaderSource> | Parameters<typeof WebGL2RenderingContext.prototype.shaderSource>
+  //       ) => {
+  //         if (args[1]) {
+  //           if (args[1].includes('gl_FragColor')) {
+  //             const color = fh.getValue('other', 'webgl', 'color')
+  //             if (color) {
+  //               args[1] = args[1].replace(mainFuncRegx, `void main(){gl_FragColor=${color};}`)
+  //             }
+  //           } else if (args[1].includes('gl_Position')) {
+  //             const color = fh.getValue('other', 'webgl', 'color')
+  //             if (color) {
+  //               args[1] = args[1].replace(mainFuncRegx, `void main(){gl_Position=${color};}`)
+  //             }
+  //           }
+  //         }
+  //         return target.apply(thisArg, args)
+  //       }
 
-        if (!fh.rawObjects.wglShaderSource) {
-          fh.rawObjects.wglShaderSource = fh.win.WebGLRenderingContext.prototype.shaderSource
-          fh.win.WebGLRenderingContext.prototype.shaderSource = new Proxy(fh.rawObjects.wglShaderSource, { apply: shaderSourceApply })
-        }
-        if (!fh.rawObjects.wgl2ShaderSource) {
-          fh.rawObjects.wgl2ShaderSource = fh.win.WebGL2RenderingContext.prototype.shaderSource
-          fh.win.WebGL2RenderingContext.prototype.shaderSource = new Proxy(fh.rawObjects.wgl2ShaderSource, { apply: shaderSourceApply })
-        }
-      }
-    },
-    onDisable: (fh) => {
-      if (fh.rawObjects.wglGetParameter) {
-        fh.win.WebGLRenderingContext.prototype.getParameter = fh.rawObjects.wglGetParameter
-        fh.rawObjects.wglGetParameter = undefined
-      }
-      if (fh.rawObjects.wgl2GetParameter) {
-        fh.win.WebGL2RenderingContext.prototype.getParameter = fh.rawObjects.wgl2GetParameter
-        fh.rawObjects.wgl2GetParameter = undefined
-      }
-      if (fh.rawObjects.wglShaderSource) {
-        fh.win.WebGLRenderingContext.prototype.shaderSource = fh.rawObjects.wglShaderSource
-        fh.rawObjects.wglShaderSource = undefined
-      }
-      if (fh.rawObjects.wgl2ShaderSource) {
-        fh.win.WebGL2RenderingContext.prototype.shaderSource = fh.rawObjects.wgl2ShaderSource
-        fh.rawObjects.wgl2ShaderSource = undefined
-      }
-    }
-  },
+  //       if (!fh.rawObjects.wglShaderSource) {
+  //         fh.rawObjects.wglShaderSource = fh.win.WebGLRenderingContext.prototype.shaderSource
+  //         fh.win.WebGLRenderingContext.prototype.shaderSource = new Proxy(fh.rawObjects.wglShaderSource, { apply: shaderSourceApply })
+  //       }
+  //       if (!fh.rawObjects.wgl2ShaderSource) {
+  //         fh.rawObjects.wgl2ShaderSource = fh.win.WebGL2RenderingContext.prototype.shaderSource
+  //         fh.win.WebGL2RenderingContext.prototype.shaderSource = new Proxy(fh.rawObjects.wgl2ShaderSource, { apply: shaderSourceApply })
+  //       }
+  //     }
+  //   },
+  //   onDisable: (fh) => {
+  //     if (fh.rawObjects.wglGetParameter) {
+  //       fh.win.WebGLRenderingContext.prototype.getParameter = fh.rawObjects.wglGetParameter
+  //       fh.rawObjects.wglGetParameter = undefined
+  //     }
+  //     if (fh.rawObjects.wgl2GetParameter) {
+  //       fh.win.WebGL2RenderingContext.prototype.getParameter = fh.rawObjects.wgl2GetParameter
+  //       fh.rawObjects.wgl2GetParameter = undefined
+  //     }
+  //     if (fh.rawObjects.wglShaderSource) {
+  //       fh.win.WebGLRenderingContext.prototype.shaderSource = fh.rawObjects.wglShaderSource
+  //       fh.rawObjects.wglShaderSource = undefined
+  //     }
+  //     if (fh.rawObjects.wgl2ShaderSource) {
+  //       fh.win.WebGL2RenderingContext.prototype.shaderSource = fh.rawObjects.wgl2ShaderSource
+  //       fh.rawObjects.wgl2ShaderSource = undefined
+  //     }
+  //   }
+  // },
 
   'hook timezone': {
     condition: (fh) => fh.conf?.fingerprint?.other?.timezone?.type !== HookType.default,

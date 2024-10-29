@@ -14,6 +14,9 @@ const pixelCopy = (src: U8Array, dst: U8Array, index: number) => {
   dst[3] = src[index + 3]
 }
 
+/**
+ * 在2d画布绘制噪音
+ */
 export const drawNoise = (
   rawFunc: typeof CanvasRenderingContext2D.prototype.getImageData,
   noise_str: string,
@@ -65,7 +68,9 @@ export const drawNoise = (
   return imageData
 }
 
-
+/**
+ * 代理UserAgentData
+ */
 export const proxyUserAgentData = (seed: number, userAgentData?: any) => {
   if (!userAgentData) return;
 
@@ -109,4 +114,42 @@ export const proxyUserAgentData = (seed: number, userAgentData?: any) => {
       return typeof value === 'function' ? value.bind(target) : value
     }
   })
+}
+
+/**
+ * 在webgl上下文绘制噪音点
+ * @param noisePosition 区间[-1, 1]
+ */
+export const drawNoiseToWebgl = (gl: WebGLRenderingContext , noisePosition: [number, number]) => {
+  const vertexShaderSource = `attribute vec4 noise;void main() {gl_Position = noise;gl_PointSize = 0.001;}`;
+  const fragmentShaderSource = `void main() {gl_FragColor = vec4(0.0, 0.0, 0.0, 0.01);}`;
+
+  const createShader = (gl: WebGLRenderingContext, type: GLenum, source: string) => {
+    const shader = gl.createShader(type);
+    if (!shader) return;
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    return shader;
+  }
+
+  const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+  const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+  if (!vertexShader || !fragmentShader) return;
+
+  const program = gl.createProgram();
+  if (!program) return;
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  gl.useProgram(program);
+
+  const positions = new Float32Array(noisePosition);
+  const positionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+  const noise = gl.getAttribLocation(program, 'noise');
+  gl.enableVertexAttribArray(noise);
+  gl.vertexAttribPointer(noise, 2, gl.FLOAT, false, 0, 0);
+  gl.drawArrays(gl.POINTS, 0, 1);
 }

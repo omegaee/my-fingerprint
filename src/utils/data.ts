@@ -66,21 +66,21 @@ export const randomLanguage = (seed: number) => {
 /**
  * 随机逻辑处理器数量
  */
-export const randomHardwareConcurrency =  (seed: number) => {
+export const randomHardwareConcurrency = (seed: number) => {
   return seededEl(hardwareConcurrencys, seed)
 }
 
 /**
  * 随机颜色深度
  */
-export const randomColorDepth =  (seed: number) => {
+export const randomColorDepth = (seed: number) => {
   return seededEl(colorDepths, seed)
 }
 
 /**
  * 随机位深度
  */
-export const randomPixelDepth =  (seed: number) => {
+export const randomPixelDepth = (seed: number) => {
   return seededEl(pixelDepths, seed)
 }
 
@@ -108,6 +108,10 @@ export const randomWebglRander = (seed: number) => {
 }
 
 export const randomWebglColor = (seed: number) => {
-  const str = Array.from({length: 4}, (_, i) => seededRandom(seed+i, 0, 1).toFixed(2)).join(',')
+  const str = Array.from({ length: 4 }, (_, i) => seededRandom(seed + i, 0, 1).toFixed(2)).join(',')
   return `vec4(${str})`
+}
+
+export const randomWebgNoise = (seed: number): [number, number] => {
+  return [seededRandom(seed, 1, -1), seededRandom(seed + 1, 1, -1)]
 }

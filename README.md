@@ -79,6 +79,7 @@
 - [x] https://www.yalala.com/
 - [x] https://uutool.cn/browser/
 - [x] https://www.ip77.net/
+- [x] https://www.browserscan.net/
 
 
 # 支持一下
