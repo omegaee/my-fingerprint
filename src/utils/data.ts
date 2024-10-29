@@ -21,27 +21,6 @@ const hardwareConcurrencys = [8, 12, 16]
 const colorDepths = [16, 24, 32]
 const pixelDepths = [16, 24, 32]
 
-const webglRendererList = [
-  'ANGLE (NVIDIA GeForce GTX 1050 Ti Direct3D11 vs_5_0 ps_5_0)',
-  'ANGLE (NVIDIA GeForce GTX 1650 Direct3D9Ex vs_3_0 ps_3_0)',
-  'ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E9B) Direct3D11 vs_5_0 ps_5_0, D3D11)',
-  'ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)',
-  'ANGLE (Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)',
-  "ANGLE (Intel(R) HD Graphics 4400 Direct3D11 vs_5_0 ps_5_0)",
-  "ANGLE (Intel(R) HD Graphics 3000 Direct3D11 vs_4_1 ps_4_1)",
-  "ANGLE (Intel(R) HD Graphics 4000 Direct3D11 vs_5_0 ps_5_0)",
-  "ANGLE (NVIDIA GeForce GTX 560 Ti Direct3D11 vs_5_0 ps_5_0)",
-  "ANGLE (NVIDIA GeForce GTS 450 Direct3D11 vs_5_0 ps_5_0)",
-  "ANGLE (NVIDIA GeForce GTX 570 Direct3D11 vs_5_0 ps_5_0)",
-  "ANGLE (NVIDIA GeForce 210 Direct3D11 vs_4_1 ps_4_1)",
-  "ANGLE (NVIDIA GeForce GTX 1060 Direct3D11 vs_5_0 ps_5_0)",
-  "ANGLE (NVIDIA GeForce GTX 750 Ti Direct3D11 vs_5_0 ps_5_0)",
-  "ANGLE (NVIDIA GeForce GTX 960 Direct3D11 vs_5_0 ps_5_0)",
-  'ANGLE (NVIDIA GeForce RTX 2070 SUPER Direct3D11 vs_5_0 ps_5_0)',
-  "ANGLE (AMD Mobility Radeon HD 5000 Series Direct3D11 vs_5_0 ps_5_0)",
-  'ANGLE (AMD Radeon(TM) R5 Graphics Direct3D11 vs_5_0 ps_5_0)',
-]
-
 /**
  * 随机屏幕宽高信息
  */
@@ -103,15 +82,9 @@ export const randomAudioNoise = (seed: number) => {
   return seededRandom(seed)
 }
 
-export const randomWebglRander = (seed: number) => {
-  return seededEl(webglRendererList, seed)
-}
-
-export const randomWebglColor = (seed: number) => {
-  const str = Array.from({ length: 4 }, (_, i) => seededRandom(seed + i, 0, 1).toFixed(2)).join(',')
-  return `vec4(${str})`
-}
-
+/**
+ * 获取[x, y]，区间[-1, 1]
+ */
 export const randomWebgNoise = (seed: number): [number, number] => {
   return [seededRandom(seed, 1, -1), seededRandom(seed + 1, 1, -1)]
 }

@@ -242,8 +242,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   'hook webgl': {
     condition: (fh) => fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default,
     onEnable: (fh) => {
+      /* Image */
       if (!fh.rawObjects.readPixels) {
-        WebGLRenderingContext.prototype.readPixels = new Proxy(WebGLRenderingContext.prototype.readPixels, {
+        fh.rawObjects.readPixels = fh.win.WebGLRenderingContext.prototype.readPixels
+        fh.win.WebGLRenderingContext.prototype.readPixels = new Proxy(fh.rawObjects.readPixels, {
           apply: (target, thisArg: WebGLRenderingContext, args: Parameters<typeof WebGLRenderingContext.prototype.readPixels>) => {
             const value: [number, number] = fh.getValue('other', 'webgl')
             value && drawNoiseToWebgl(thisArg, value)
@@ -251,11 +253,29 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
         })
       }
+      /* Report */
+      if (!fh.rawObjects.getSupportedExtensions) {
+        fh.rawObjects.getSupportedExtensions = fh.win.WebGLRenderingContext.prototype.getSupportedExtensions
+        fh.win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(fh.rawObjects.getSupportedExtensions, {
+          apply: (target, thisArg: WebGLRenderingContext, args: Parameters<typeof WebGLRenderingContext.prototype.getSupportedExtensions>) => {
+            const res = target.apply(thisArg, args)
+            if (res) {
+              const value: [number, number] = fh.getValue('other', 'webgl')
+              res.push?.('EXT_' + value[0] + value[1])
+            }
+            return res;
+          }
+        })
+      }
     },
     onDisable: (fh) => {
       if (fh.rawObjects.readPixels) {
-        WebGLRenderingContext.prototype.readPixels = fh.rawObjects.readPixels
+        fh.win.WebGLRenderingContext.prototype.readPixels = fh.rawObjects.readPixels
         fh.rawObjects.readPixels = undefined
+      }
+      if (fh.rawObjects.getSupportedExtensions) {
+        fh.win.WebGLRenderingContext.prototype.getSupportedExtensions = fh.rawObjects.getSupportedExtensions
+        fh.rawObjects.getSupportedExtensions = undefined
       }
     }
   },
@@ -280,7 +300,6 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                 return target.apply(thisArg, args);
               }
             }
-
             /* webgl */
             if (fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default) {
               const gl = thisArg.getContext('webgl')
@@ -290,7 +309,6 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                 return target.apply(thisArg, args);
               }
             }
-
             return target.apply(thisArg, args);
           }
         })
@@ -333,100 +351,6 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       }
     }
   },
-
-  /* webgl */
-  // 'hook webgl': {
-  //   condition: (fh) => fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default,
-  //   onEnable: (fh) => {
-  //     // ------------
-  //     // getParameter
-  //     // ------------
-  //     if (!fh.rawObjects.wglGetParameter || !fh.rawObjects.wgl2GetParameter) {
-  //       const UNMASKED_VENDOR_WEBGL = 0x9245;
-  //       const UNMASKED_RENDERER_WEBGL = 0x9246;
-  //       const getParameterApply = (
-  //         target: typeof WebGLRenderingContext.prototype.getParameter | typeof WebGL2RenderingContext.prototype.getParameter,
-  //         thisArg: WebGLRenderingContext | WebGL2RenderingContext,
-  //         args: Parameters<typeof WebGLRenderingContext.prototype.getParameter> | Parameters<typeof WebGL2RenderingContext.prototype.getParameter>
-  //       ) => {
-  //         switch (args[0]) {
-  //           case UNMASKED_RENDERER_WEBGL: {
-  //             const value = fh.getValue('other', 'webgl', 'info')
-  //             if (value === null) break;
-  //             return value
-  //           }
-  //           case UNMASKED_VENDOR_WEBGL: {
-  //             return 'Google Inc.'
-  //           }
-  //         }
-  //         return target.apply(thisArg, args)
-  //       }
-
-  //       if (!fh.rawObjects.wglGetParameter) {
-  //         fh.rawObjects.wglGetParameter = fh.win.WebGLRenderingContext.prototype.getParameter
-  //         fh.win.WebGLRenderingContext.prototype.getParameter = new Proxy(fh.rawObjects.wglGetParameter, { apply: getParameterApply })
-  //       }
-  //       if (!fh.rawObjects.wgl2GetParameter) {
-  //         fh.rawObjects.wgl2GetParameter = fh.win.WebGL2RenderingContext.prototype.getParameter
-  //         fh.win.WebGL2RenderingContext.prototype.getParameter = new Proxy(fh.rawObjects.wgl2GetParameter, { apply: getParameterApply })
-  //       }
-  //     }
-
-  //     // ------------
-  //     // shaderSource
-  //     // ------------
-  //     if (!fh.rawObjects.wglShaderSource || !fh.rawObjects.wgl2ShaderSource) {
-  //       const mainFuncRegx = /void\s+main\s*\(\s*(void)?\s*\)\s*\{[^}]*\}/
-  //       const shaderSourceApply = (
-  //         target: typeof WebGLRenderingContext.prototype.shaderSource | typeof WebGL2RenderingContext.prototype.shaderSource,
-  //         thisArg: WebGLRenderingContext | WebGL2RenderingContext,
-  //         args: Parameters<typeof WebGLRenderingContext.prototype.shaderSource> | Parameters<typeof WebGL2RenderingContext.prototype.shaderSource>
-  //       ) => {
-  //         if (args[1]) {
-  //           if (args[1].includes('gl_FragColor')) {
-  //             const color = fh.getValue('other', 'webgl', 'color')
-  //             if (color) {
-  //               args[1] = args[1].replace(mainFuncRegx, `void main(){gl_FragColor=${color};}`)
-  //             }
-  //           } else if (args[1].includes('gl_Position')) {
-  //             const color = fh.getValue('other', 'webgl', 'color')
-  //             if (color) {
-  //               args[1] = args[1].replace(mainFuncRegx, `void main(){gl_Position=${color};}`)
-  //             }
-  //           }
-  //         }
-  //         return target.apply(thisArg, args)
-  //       }
-
-  //       if (!fh.rawObjects.wglShaderSource) {
-  //         fh.rawObjects.wglShaderSource = fh.win.WebGLRenderingContext.prototype.shaderSource
-  //         fh.win.WebGLRenderingContext.prototype.shaderSource = new Proxy(fh.rawObjects.wglShaderSource, { apply: shaderSourceApply })
-  //       }
-  //       if (!fh.rawObjects.wgl2ShaderSource) {
-  //         fh.rawObjects.wgl2ShaderSource = fh.win.WebGL2RenderingContext.prototype.shaderSource
-  //         fh.win.WebGL2RenderingContext.prototype.shaderSource = new Proxy(fh.rawObjects.wgl2ShaderSource, { apply: shaderSourceApply })
-  //       }
-  //     }
-  //   },
-  //   onDisable: (fh) => {
-  //     if (fh.rawObjects.wglGetParameter) {
-  //       fh.win.WebGLRenderingContext.prototype.getParameter = fh.rawObjects.wglGetParameter
-  //       fh.rawObjects.wglGetParameter = undefined
-  //     }
-  //     if (fh.rawObjects.wgl2GetParameter) {
-  //       fh.win.WebGL2RenderingContext.prototype.getParameter = fh.rawObjects.wgl2GetParameter
-  //       fh.rawObjects.wgl2GetParameter = undefined
-  //     }
-  //     if (fh.rawObjects.wglShaderSource) {
-  //       fh.win.WebGLRenderingContext.prototype.shaderSource = fh.rawObjects.wglShaderSource
-  //       fh.rawObjects.wglShaderSource = undefined
-  //     }
-  //     if (fh.rawObjects.wgl2ShaderSource) {
-  //       fh.win.WebGL2RenderingContext.prototype.shaderSource = fh.rawObjects.wgl2ShaderSource
-  //       fh.rawObjects.wgl2ShaderSource = undefined
-  //     }
-  //   }
-  // },
 
   'hook timezone': {
     condition: (fh) => fh.conf?.fingerprint?.other?.timezone?.type !== HookType.default,

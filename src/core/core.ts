@@ -1,6 +1,16 @@
 import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
-import { randomAudioNoise, randomCanvasNoise, randomColorDepth, randomHardwareConcurrency, randomLanguage, randomPixelDepth, randomScreenSize, randomWebglColor, randomWebglRander, randomWebgNoise, seededRandom } from "../utils/data";
+import {
+  randomAudioNoise,
+  randomCanvasNoise,
+  randomColorDepth,
+  randomHardwareConcurrency,
+  randomLanguage,
+  randomPixelDepth,
+  randomScreenSize,
+  randomWebgNoise,
+  seededRandom
+} from "../utils/data";
 import { debounce } from "../utils/timer";
 import { postSetHookRecords, unwrapMessage } from "@/message/content";
 import { genRandomSeed, hashNumberFromString } from "../utils/base";
@@ -28,10 +38,7 @@ export interface RawHookObject {
   getContext: typeof HTMLCanvasElement.prototype.getContext
 
   readPixels: typeof WebGLRenderingContext.prototype.readPixels
-  wglGetParameter: typeof WebGLRenderingContext.prototype.getParameter
-  wgl2GetParameter: typeof WebGL2RenderingContext.prototype.getParameter
-  wglShaderSource: typeof WebGLRenderingContext.prototype.shaderSource
-  wgl2ShaderSource: typeof WebGL2RenderingContext.prototype.shaderSource
+  getSupportedExtensions: typeof WebGLRenderingContext.prototype.getSupportedExtensions
 
   createDynamicsCompressor: typeof OfflineAudioContext.prototype.createDynamicsCompressor
 
@@ -56,9 +63,6 @@ const seedFuncMap = {
   'other.canvas': randomCanvasNoise,
   'other.audio': randomAudioNoise,
   'other.webgl': randomWebgNoise,
-  // 'other.webgl#info': randomWebglRander,
-  // 'other.webgl#color': randomWebglColor,
-  // 'other.webgl#uniform2f': randomWebgNoise,
   'other.webrtc': (seed: number) => 'hello',
 }
 
@@ -124,9 +128,9 @@ export class FingerprintHandler {
       global: config.customSeed ?? genRandomSeed(),
     }
 
-    if(!win)return
+    if (!win) return
     const key = '__MyFingerprint__' + info.tabId
-    if(!win[key as any]){  
+    if (!win[key as any]) {
       // @ts-ignore
       win[key] = true
       this.listenMessage()
@@ -187,13 +191,13 @@ export class FingerprintHandler {
     const enable = this.isEnable()
     for (const task of hookTasks) {
       if (enable && (!task.condition || task.condition(this) === true)) {
-        if (task.onlyOnceEnable === true){
+        if (task.onlyOnceEnable === true) {
           // 仅执行一次onEnable
-          if (!this.onlyRecord[task.name]){
+          if (!this.onlyRecord[task.name]) {
             task.onEnable?.(this)
             this.onlyRecord[task.name] = true
           }
-        }else{
+        } else {
           task.onEnable?.(this)
         }
       } else {
@@ -243,26 +247,26 @@ export class FingerprintHandler {
     }
   }
 
-  public getValue(prefix: string, key: string, opt?: string): any | null{
+  public getValue(prefix: string, key: string, opt?: string): any | null {
     // @ts-ignore
     const mode: HookMode = this.conf.fingerprint?.[prefix]?.[key]
-    if(!mode) return null;
+    if (!mode) return null;
 
     recordAndSend(key)  // 记录
-    const target = `${prefix}.${key}${opt ? '#'+opt : ''}`
+    const target = `${prefix}.${key}${opt ? '#' + opt : ''}`
 
     // @ts-ignore
     const seedFunc = seedFuncMap[target]
-    if(seedFunc){
-      if(mode.type === HookType.value) return null;
+    if (seedFunc) {
+      if (mode.type === HookType.value) return null;
       const seed = this.getSeedByHookValue(mode)
       return seedFunc(seed)
     }
 
     // @ts-ignore
     const valueFunc = valueFuncMap[target]
-    if(valueFunc){
-      if(mode.type !== HookType.value || mode.value === undefined) return null;
+    if (valueFunc) {
+      if (mode.type !== HookType.value || mode.value === undefined) return null;
       return valueFunc(mode.value)
     }
 
