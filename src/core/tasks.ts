@@ -194,8 +194,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         fh.rawObjects.getImageData = fh.win.CanvasRenderingContext2D.prototype.getImageData
         fh.win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(fh.rawObjects.getImageData, {
           apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
-            fh.getValue('other', 'webrtc')
-            const value = fh.getValue('other', 'canvas')
+            const value: number[] = fh.getValue('other', 'canvas')
             if (value !== null) {
               return drawNoise(
                 fh.rawObjects.getImageData!, value,
@@ -205,29 +204,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
         })
       }
-      // if (!fh.rawObjects.toDataURL) {
-      //   fh.rawObjects.toDataURL = fh.win.HTMLCanvasElement.prototype.toDataURL
-      //   fh.win.HTMLCanvasElement.prototype.toDataURL = new Proxy(fh.rawObjects.toDataURL, {
-      //     apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
-      //       const value = fh.getValue('other', 'canvas')
-      //       if (value !== null) {
-      //         const ctx = thisArg.getContext('2d');
-      //         if (ctx) {
-      //           drawNoise(
-      //             fh.rawObjects.getImageData!, value,
-      //             ctx, 0, 0, thisArg.width, thisArg.height)
-      //         }
-      //       }
-      //       return target.apply(thisArg, args);
-      //     }
-      //   })
-      // }
     },
     onDisable: (fh) => {
-      // if (fh.rawObjects.toDataURL) {
-      //   fh.win.HTMLCanvasElement.prototype.toDataURL = fh.rawObjects.toDataURL
-      //   fh.rawObjects.toDataURL = undefined
-      // }
       if (fh.rawObjects.getImageData) {
         fh.win.CanvasRenderingContext2D.prototype.getImageData = fh.rawObjects.getImageData
         fh.rawObjects.getImageData = undefined
@@ -293,7 +271,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             if (fh.conf?.fingerprint?.other?.canvas?.type !== HookType.default) {
               const ctx = thisArg.getContext('2d');
               if (ctx) {
-                const value = fh.getValue('other', 'canvas')
+                const value: number[] = fh.getValue('other', 'canvas')
                 value && drawNoise(
                   fh.rawObjects.getImageData!, value,
                   ctx, 0, 0, thisArg.width, thisArg.height)

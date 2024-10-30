@@ -115,22 +115,35 @@ export const genRandomVersionUserAgentData = async (seed: number, nav: Navigator
   return option
 }
 
+const uaCache = new Map<string, Record<'ua' | 'app', string>>()
+
 /**
  * 生成随机版本的 UserAgent
  */
 export const genRandomVersionUserAgent = (seed: number, nav: Navigator, ignoreProductName?: boolean) => {
-  const uaParser = new UAParser(nav.userAgent)
+  const uaIden = ignoreProductName ? 'app' : 'ua'
 
-  // AppleWebKit ...
-  if (uaParser.engine?.length) {
-    uaParser.engine
-      .forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
+  let item = uaCache.get(nav.userAgent)
+  if (item) return item[uaIden];
+
+  try {
+    const uaParser = new UAParser(nav.userAgent)
+    // AppleWebKit ...
+    if (uaParser.engine?.length) {
+      uaParser.engine.forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
+    }
+    // Chrome Edg ...
+    if (uaParser.extensions?.length) {
+      uaParser.extensions.forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
+    }
+    item = {
+      ua: uaParser.toString(),
+      app: uaParser.toString(ignoreProductName),
+    }
+    uaCache.set(nav.userAgent, item)
+  } catch (_) {
+    return ignoreProductName ? nav.appVersion : nav.userAgent
   }
 
-  // Chrome Edg ...
-  if (uaParser.extensions?.length) {
-    uaParser.extensions.forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
-  }
-
-  return uaParser.toString(ignoreProductName)
+  return item[uaIden]
 }

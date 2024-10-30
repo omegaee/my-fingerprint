@@ -1,4 +1,4 @@
-const fKeys: string[] = ['appVersion', 'platform', 'userAgent', 'language', 'hardwareConcurrency', 'height', 'width', 'colorDepth', 'pixelDepth', 'canvas', 'audio', 'webgl', 'webrtc', 'timezone']
+const fKeys: string[] = ['appVersion', 'platform', 'userAgent', 'language', 'hardwareConcurrency', 'height', 'width', 'colorDepth', 'pixelDepth', 'canvas', 'audio', 'webgl', 'timezone']
 
 export type FHookRecordProps = {
   tab?: chrome.tabs.Tab

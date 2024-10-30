@@ -56,7 +56,7 @@ const genDefaultLocalStorage = (): LocalStorage => {
           timezone: defaultHook,
           canvas: browserHook,
           audio: browserHook,
-          webgl: defaultHook,
+          webgl: browserHook,
           webrtc: defaultHook,
         },
       },

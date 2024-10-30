@@ -67,12 +67,11 @@ export const randomPixelDepth = (seed: number) => {
  * 随机canvas噪音
  */
 export const randomCanvasNoise = (seed: number) => {
-  let noise = "";
+  const noise: number[] = []
   for (let i = 0; i < 10; i++) {
-    let index = Math.floor(seededRandom(seed++, 0, chars.length));
-    noise += chars[index];
+    noise.push(Math.floor(seededRandom(seed++, 255, 0)))
   }
-  return noise;
+  return noise
 }
 
 /**

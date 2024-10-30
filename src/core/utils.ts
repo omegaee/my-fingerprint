@@ -19,12 +19,11 @@ const pixelCopy = (src: U8Array, dst: U8Array, index: number) => {
  */
 export const drawNoise = (
   rawFunc: typeof CanvasRenderingContext2D.prototype.getImageData,
-  noise_str: string,
+  noise: number[],
   ctx: CanvasRenderingContext2D,
   sx: number, sy: number, sw: number, sh: number, settings?: ImageDataSettings
 ) => {
   const imageData = rawFunc.call(ctx, sx, sy, sw, sh, settings)
-  const noise = noise_str.split('').map(v => v.charCodeAt(0));
 
   let noiseIndex = 0;
   let isChanged = false
