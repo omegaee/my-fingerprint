@@ -3,12 +3,12 @@
 
 ---
 
-> v2.2 版本更新
+> [v2.2 版本更新](https://github.com/omegaee/my-fingerprint/releases/latest)
 
 # My Fingerprint
 
 - 可混淆各浏览器指纹标识
-- 实用的`Chrome / Edge`插件
+- 实用的`Chrome / Edge`扩展
 - 安装即生效
 - 可监控页面对指纹的访问情况
 - 白名单模块
@@ -33,15 +33,17 @@
 # 使用
 
 ***插件安装：***
-1. 下载插件最新版本的zip -- [插件下载](https://github.com/omegaee/my-fingerprint/releases)
+1. 下载扩展最新版本的`zip` -- [扩展下载](https://github.com/omegaee/my-fingerprint/releases/latest)
 2. 打开浏览器扩展管理，开启开发者模式
-3. 把下载好的zip拖拽进浏览器扩展管理页面
-4. 启用插件（若有需要，可在`详细信息`里勾选`InPrivate中允许`）
+3. 把下载好的`zip`拖拽进浏览器扩展管理页面
+4. 启用扩展（若有需要，可在`详细信息`里勾选`InPrivate中允许`）
 
 ***插件使用：***
 - 安装即生效（之前打开的标签页要刷新才生效）
 - （可选）左键插件图标进入配置页面进行自定义配置
 
+***前置：***
+- 支持`Manifest V3`扩展的浏览器（大多数浏览器都支持）
 
 # 功能模块
 
