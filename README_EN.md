@@ -7,11 +7,19 @@
 
 # My Fingerprint
 
+- Obfuscates Various Fingerprints of Browsers
 - Useful `Chrome / Edge` Plugin
 - Installation takes effect immediately
-- Customizable for various fingerprints
 - Monitor page access to fingerprints
 - Whitelisting module
+
+**Supports fingerprints**
+- [x] UserAgent Series
+- [x] Screen Series
+- [x] Canvas Fingerprints
+- [x] WebGL Fingerprints
+- [x] Audio Fingerprints
+- [x] Time Zone
 
 # Table of Contents
 - [Usage](#usage)
@@ -44,14 +52,14 @@
 
 > Options are currently supported:
 > - Default
-> - Custom value
+> - Custom value (some)
 > - Randomized values per tab
 > - Every time the browser starts a random
 > - Randomized based on domain name
 > - Randomization based on global seed
 
 - **Base Fingerprint Config**
-  - [x] Equipment Info
+  - [x] Equipment Info (UserAgent Series)
   - [x] Browser Language
   - [x] Number of logical processors
   - [x] Screen Size
