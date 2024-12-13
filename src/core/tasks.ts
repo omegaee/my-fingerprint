@@ -221,21 +221,27 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: (fh) => fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default,
     onEnable: (fh) => {
       /* Image */
-      if (!fh.rawObjects.readPixels) {
+      if (!fh.rawObjects.readPixels || !fh.rawObjects.readPixels2) {
         fh.rawObjects.readPixels = fh.win.WebGLRenderingContext.prototype.readPixels
-        fh.win.WebGLRenderingContext.prototype.readPixels = new Proxy(fh.rawObjects.readPixels, {
-          apply: (target, thisArg: WebGLRenderingContext, args: Parameters<typeof WebGLRenderingContext.prototype.readPixels>) => {
+        fh.rawObjects.readPixels2 = fh.win.WebGL2RenderingContext.prototype.readPixels
+
+        const hook = {
+          apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
             const value: [number, number] = fh.getValue('other', 'webgl')
             value && drawNoiseToWebgl(thisArg, value)
-            return target.apply(thisArg, args);
+            return target.apply(thisArg, args as any);
           }
-        })
+        }
+        fh.win.WebGLRenderingContext.prototype.readPixels = new Proxy(fh.rawObjects.readPixels, hook)
+        fh.win.WebGL2RenderingContext.prototype.readPixels = new Proxy(fh.rawObjects.readPixels2, hook)
       }
       /* Report */
-      if (!fh.rawObjects.getSupportedExtensions) {
+      if (!fh.rawObjects.getSupportedExtensions || !fh.rawObjects.getSupportedExtensions2) {
         fh.rawObjects.getSupportedExtensions = fh.win.WebGLRenderingContext.prototype.getSupportedExtensions
-        fh.win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(fh.rawObjects.getSupportedExtensions, {
-          apply: (target, thisArg: WebGLRenderingContext, args: Parameters<typeof WebGLRenderingContext.prototype.getSupportedExtensions>) => {
+        fh.rawObjects.getSupportedExtensions2 = fh.win.WebGL2RenderingContext.prototype.getSupportedExtensions
+
+        const hook = {
+          apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const res = target.apply(thisArg, args)
             if (res) {
               const value: [number, number] = fh.getValue('other', 'webgl')
@@ -243,7 +249,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
             return res;
           }
-        })
+        }
+        fh.win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(fh.rawObjects.getSupportedExtensions, hook)
+        fh.win.WebGL2RenderingContext.prototype.getSupportedExtensions = new Proxy(fh.rawObjects.getSupportedExtensions2, hook)
       }
     },
     onDisable: (fh) => {
@@ -251,9 +259,17 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         fh.win.WebGLRenderingContext.prototype.readPixels = fh.rawObjects.readPixels
         fh.rawObjects.readPixels = undefined
       }
+      if (fh.rawObjects.readPixels2) {
+        fh.win.WebGL2RenderingContext.prototype.readPixels = fh.rawObjects.readPixels2
+        fh.rawObjects.readPixels2 = undefined
+      }
       if (fh.rawObjects.getSupportedExtensions) {
         fh.win.WebGLRenderingContext.prototype.getSupportedExtensions = fh.rawObjects.getSupportedExtensions
         fh.rawObjects.getSupportedExtensions = undefined
+      }
+      if (fh.rawObjects.getSupportedExtensions2) {
+        fh.win.WebGL2RenderingContext.prototype.getSupportedExtensions = fh.rawObjects.getSupportedExtensions2
+        fh.rawObjects.getSupportedExtensions2 = undefined
       }
     }
   },
@@ -280,7 +296,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
             /* webgl */
             if (fh.conf?.fingerprint?.other?.webgl?.type !== HookType.default) {
-              const gl = thisArg.getContext('webgl')
+              const gl = thisArg.getContext('webgl') ?? thisArg.getContext('webgl2')
               if (gl) {
                 const value: [number, number] = fh.getValue('other', 'webgl')
                 value && drawNoiseToWebgl(gl as any, value)

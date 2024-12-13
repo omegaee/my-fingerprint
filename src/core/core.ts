@@ -39,6 +39,8 @@ export interface RawHookObject {
 
   readPixels: typeof WebGLRenderingContext.prototype.readPixels
   getSupportedExtensions: typeof WebGLRenderingContext.prototype.getSupportedExtensions
+  readPixels2: typeof WebGL2RenderingContext.prototype.readPixels
+  getSupportedExtensions2: typeof WebGL2RenderingContext.prototype.getSupportedExtensions
 
   createDynamicsCompressor: typeof OfflineAudioContext.prototype.createDynamicsCompressor
 
