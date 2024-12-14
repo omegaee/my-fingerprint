@@ -10,6 +10,7 @@ import { genRandomVersionUserAgent, genRandomVersionUserAgentData } from "@/util
 // import contentSrc from '@/scripts/content?script&module'
 
 import { coreInject } from "@/core/output";
+import { randomLanguage } from "@/utils/data";
 
 const UA_NET_RULE_ID = 1
 
@@ -85,7 +86,7 @@ const initLocalConfig = debouncedAsync(async (previousVersion?: string) => {
     storage.config.browserSeed = genRandomSeed()
   }
   localStorage = { ...storage, whitelist: new Set(storage.whitelist) }
-  chrome.storage.local.set(storage).then(() => refreshRequestHeaderUA())
+  chrome.storage.local.set(storage).then(() => refreshRequestHeader())
   return localStorage
 })
 
@@ -114,9 +115,23 @@ const getNewVersion = async () => {
 }
 
 /**
+ * 获取seed
+ */
+const getSeedByMode = (storage: LocalStorageObject, mode: BaseHookMode) => {
+  switch (mode?.type) {
+    case HookType.browser:
+      return storage.config.browserSeed
+    case HookType.global:
+      return storage.config.customSeed
+    default:
+      return undefined
+  }
+}
+
+/**
  * 刷新请求头UA
  */
-const refreshRequestHeaderUA = async () => {
+const refreshRequestHeader = async () => {
   const storage = await getLocalStorage()
 
   const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
@@ -128,33 +143,17 @@ const refreshRequestHeaderUA = async () => {
     return
   }
 
-  const mode = storage.config.fingerprint.navigator.equipment
+  const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = []
 
-  /// Get Seed
-  let seed: number | undefined;
-  switch (mode.type) {
-    case HookType.browser: {
-      seed = storage.config.browserSeed
-      break;
-    }
-    case HookType.global: {
-      seed = storage.config.customSeed
-      break;
-    }
-    default: {
-      seed = undefined
-    }
-  }
-
-  if (seed) {
-    const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = []
+  const equipmentSeed = getSeedByMode(storage, storage.config.fingerprint.navigator.equipment);
+  if (equipmentSeed) {
     requestHeaders.push({
       header: "User-Agent",
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-      value: genRandomVersionUserAgent(seed, navigator),
+      value: genRandomVersionUserAgent(equipmentSeed, navigator),
     })
 
-    const uaData = await genRandomVersionUserAgentData(seed, navigator)
+    const uaData = await genRandomVersionUserAgentData(equipmentSeed, navigator)
     uaData.brands && requestHeaders.push({
       header: "Sec-Ch-Ua",
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
@@ -170,22 +169,49 @@ const refreshRequestHeaderUA = async () => {
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
       value: uaData.uaFullVersion,
     })
+  }
 
-    if (requestHeaders.length) {
-      options.addRules = [{
-        id: UA_NET_RULE_ID,
-        // priority: 1,
-        condition: {
-          excludedInitiatorDomains: [...new Set([...storage.whitelist].map((host) => host.split(':')[0]))],
-          resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-          // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
-        },
-        action: {
-          type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-          requestHeaders,
-        },
-      }]
+  const langMode = storage.config.fingerprint.navigator.language
+  if (langMode && langMode.type !== HookType.default) {
+    let lang: string | undefined
+    if (langMode.type === HookType.value) {
+      lang = langMode.value
+    } else {
+      const langSeed = getSeedByMode(storage, langMode)
+      if (langSeed) {
+        lang = randomLanguage(langSeed)
+      }
     }
+
+    if (lang) {
+      const langs = navigator.languages.filter((v) => v !== lang)
+      let qFactor = 1
+      for (let i = 0; i < langs.length && qFactor > 0.1; i++) {
+        qFactor -= 0.1
+        langs[i] = `${langs[i]};q=${qFactor.toFixed(1)}`
+      }
+      requestHeaders.push({
+        header: "Accept-Language",
+        operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+        value: [lang, ...langs].join(","),
+      })
+    }
+  }
+
+  if (requestHeaders.length) {
+    options.addRules = [{
+      id: UA_NET_RULE_ID,
+      // priority: 1,
+      condition: {
+        excludedInitiatorDomains: [...new Set([...storage.whitelist].map((host) => host.split(':')[0]))],
+        resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+        // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
+      },
+      action: {
+        type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+        requestHeaders,
+      },
+    }]
   }
 
   chrome.declarativeNetRequest.updateSessionRules(options)
@@ -215,9 +241,10 @@ const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>) => {
   if (
     config.enable !== undefined ||
     config.hookNetRequest !== undefined ||
-    config.fingerprint?.navigator?.equipment !== undefined
+    config.fingerprint?.navigator?.equipment !== undefined ||
+    config.fingerprint?.navigator?.language !== undefined
   ) {
-    refreshRequestHeaderUA()
+    refreshRequestHeader()
   }
 }
 
@@ -245,7 +272,7 @@ const updateLocalWhitelist = async (type: 'add' | 'del', host: string | string[]
   }
   saveLocalWhitelist(storage)
   if (storage.config.enable && storage.config.hookNetRequest && storage.config.fingerprint.navigator.equipment) {
-    refreshRequestHeaderUA()
+    refreshRequestHeader()
   }
 }
 

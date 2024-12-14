@@ -131,9 +131,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                 case 'languages': {
                   if (fh.conf?.fingerprint?.navigator?.language?.type !== HookType.default) {
                     const language: string = fh.getValue('navigator', 'language')
-                    const res = Array.from(target[key])
-                    res.unshift(language)
-                    return [...new Set(res)]
+                    return [...new Set([language, ...Array.from(target[key])])]
                   }
                 }
               }
