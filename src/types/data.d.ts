@@ -15,7 +15,7 @@ type SizeInfo = {
 }
 
 type TimeZoneInfo = {
-  text: string
+  text?: string
   offset: number
   zone: string
   locale: string

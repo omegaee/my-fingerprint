@@ -61,12 +61,14 @@ export type FConfigSelectItemProps<T = any> = FConfigItemProps & {
 
 FConfigItem.Select = function <T = any>(props: FConfigSelectItemProps<T>) {
   return <>
-    <FConfigItem {...props} node={<Select<T>
-      onChange={props.onChangeOption}
-      defaultValue={props.defaultValue}
-      options={props.options}
-    />} />
-    {props.node}
+    <FConfigItem {...props} node={<>
+      <Select<T>
+        onChange={props.onChangeOption}
+        defaultValue={props.defaultValue}
+        options={props.options}
+      />
+      {props.node}
+    </>} />
   </>
 }
 

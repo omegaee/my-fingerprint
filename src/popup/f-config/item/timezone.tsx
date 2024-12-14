@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next"
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { msgSetConfig } from "@/message/runtime"
 import { HookType } from "@/types/enum"
 import FConfigItem from "./base"
+import { Form, Input, InputNumber } from "antd"
 
 const getTimezones = () => [
   {
@@ -153,7 +154,8 @@ const getTimezones = () => [
   },
 ]
 
-const DEFAULT_VALUE = '<default>'
+const DEFAULT_KEY = '<default>'
+const CUSTOM_KEY = '<custom>'
 
 export type FConfigTimezoneItemProps = {
   title: string
@@ -163,7 +165,11 @@ export type FConfigTimezoneItemProps = {
 
 export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
   const [t] = useTranslation()
+  const [selectd, setSelectd] = useState<string>(props.value?.zone ?? DEFAULT_KEY)
 
+  const [form] = Form.useForm<TimeZoneInfo>()
+
+  // Map<zone, info>
   const timezones = useMemo<Map<string, TimeZoneInfo>>(() => {
     const map = new Map<string, TimeZoneInfo>()
     for (const tz of getTimezones()) {
@@ -173,19 +179,24 @@ export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
     return map
   }, [])
 
-  const getOptions = () => {
-    const preset = { value: DEFAULT_VALUE, label: t('type.default') }
+  const options = useMemo(() => {
+    const sys = { value: DEFAULT_KEY, label: t('type.default') }
+    const custom = { value: CUSTOM_KEY, label: t('type.value') }
     const timezoneOptions = Array.from(timezones.entries()).map(([key, info]) => ({ value: key, label: `(${info.offset > 0 ? '+' + info.offset : info.offset}) ${info.text}` }))
-    return [preset, ...timezoneOptions]
-  }
+    return [sys, custom, ...timezoneOptions]
+  }, [])
 
-  const onChangeOption = (opt: string) => {
+  useEffect(() => {
     let timezone: ValueHookMode<TimeZoneInfo> | DefaultHookMode
-    if (opt === DEFAULT_VALUE) {
+    if (selectd === CUSTOM_KEY) {
+      return;
+    }
+    else if (selectd === DEFAULT_KEY) {
       timezone = { type: HookType.default }
-    } else {
-      const value = timezones.get(opt)
-      if (!value) return
+    }
+    else {
+      const value = timezones.get(selectd)
+      if (!value) return;
       timezone = { type: HookType.value, value }
     }
     msgSetConfig({
@@ -193,14 +204,30 @@ export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
         other: { timezone }
       }
     })
-  }
+  }, [selectd])
 
   return <FConfigItem.Select<string>
     title={props.title}
     desc={props.desc}
-    options={getOptions()}
-    defaultValue={props.value?.zone ?? DEFAULT_VALUE}
-    onChangeOption={onChangeOption}
+    options={options}
+    defaultValue={props.value?.zone ?? DEFAULT_KEY}
+    onChangeOption={setSelectd}
+    node={selectd === CUSTOM_KEY && <>
+      <Form form={form}
+        layout='horizontal'
+        onValuesChange={() => { }}
+        initialValues={{ offset: 0 }}>
+        <Form.Item name='offset' label={t('config.tz.offset')} className="mb-0">
+          <InputNumber min={-12} max={12} />
+        </Form.Item>
+        <Form.Item name='locale' label={t('config.tz.locale')} className="mb-0">
+          <Input placeholder='zh-CN' />
+        </Form.Item>
+        <Form.Item name='zone' label={t('config.tz.zone')} className="mb-0">
+          <Input placeholder='Asia/Shanghai' />
+        </Form.Item>
+      </Form>
+    </>}
   />
 }
 
