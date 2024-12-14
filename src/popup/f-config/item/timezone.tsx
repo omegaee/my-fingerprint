@@ -66,6 +66,11 @@ const getTimezones = () => [
     locale: 'zh-CN',
     offset: +8
   }, {
+    text: 'SG',
+    zone: 'Asia/Singapore',
+    locale: 'zh-SG',
+    offset: +8
+  }, {
     text: 'TY',
     zone: 'Asia/Tokyo',
     locale: 'ja-JP',
@@ -170,7 +175,7 @@ export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
 
   const getOptions = () => {
     const preset = { value: DEFAULT_VALUE, label: t('type.default') }
-    const timezoneOptions = Array.from(timezones.entries()).map(([key, info]) => ({ value: key, label: `(${info.offset > 0 ? '+'+info.offset : info.offset}) ${info.text}` }))
+    const timezoneOptions = Array.from(timezones.entries()).map(([key, info]) => ({ value: key, label: `(${info.offset > 0 ? '+' + info.offset : info.offset}) ${info.text}` }))
     return [preset, ...timezoneOptions]
   }
 
