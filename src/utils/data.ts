@@ -35,11 +35,12 @@ export const randomScreenSize = (seed: number): SizeInfo => {
   }
 }
 
+const rawLanguages = navigator.languages
 /**
  * 随机语言标识
  */
 export const randomLanguage = (seed: number) => {
-  return seededEl(navigator.languages, seed)
+  return seededEl(rawLanguages, seed)
 }
 
 /**

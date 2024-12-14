@@ -55,7 +55,7 @@ export interface RawHookObject {
  * 允许随机的getValue
  * [prefix.key#opt]
  */
-const seedFuncMap = {
+const seedFuncMap: Record<string, (seed: number) => any> = {
   'navigator.language': randomLanguage,
   'navigator.hardwareConcurrency': randomHardwareConcurrency,
   'screen.height': (seed: number) => randomScreenSize(seed).height,
@@ -65,14 +65,14 @@ const seedFuncMap = {
   'other.canvas': randomCanvasNoise,
   'other.audio': randomAudioNoise,
   'other.webgl': randomWebgNoise,
-  'other.webrtc': (seed: number) => 'hello',
+  // 'other.webrtc': (seed: number) => 'hello',
 }
 
 /**
  * 非随机的getValue
  */
-const valueFuncMap = {
-  'other.timezone': (value: TimeZoneInfo) => value,
+const valueFuncMap: Record<string, (value: any) => any> = {
+  // 'other.timezone': (value: TimeZoneInfo) => value,
 }
 
 // hook缓存
@@ -232,20 +232,17 @@ export class FingerprintHandler {
    */
   public getSeedByHookValue = (value?: any) => {
     switch (value?.type) {
-      case HookType.page: {
+      case HookType.page:
         return this.seed.page
-      }
-      case HookType.domain: {
+      case HookType.domain:
         return this.seed.domain
-      }
-      case HookType.browser: {
+      case HookType.browser:
         return this.seed.browser
-      }
-      case HookType.global: {
+      case HookType.global:
         return this.seed.global
-      }
       case HookType.default:
-      default: return null
+      default:
+        return null
     }
   }
 
@@ -257,19 +254,23 @@ export class FingerprintHandler {
     recordAndSend(key)  // 记录
     const target = `${prefix}.${key}${opt ? '#' + opt : ''}`
 
-    // @ts-ignore
-    const seedFunc = seedFuncMap[target]
-    if (seedFunc) {
-      if (mode.type === HookType.value) return null;
-      const seed = this.getSeedByHookValue(mode)
-      return seedFunc(seed)
+    if (mode.type === HookType.value) {
+      // @ts-ignore
+      const valueFunc = valueFuncMap[target]
+      if (valueFunc) {
+        return valueFunc(mode.value)
+      } else {
+        return mode.value
+      }
     }
 
     // @ts-ignore
-    const valueFunc = valueFuncMap[target]
-    if (valueFunc) {
-      if (mode.type !== HookType.value || mode.value === undefined) return null;
-      return valueFunc(mode.value)
+    const seedFunc = seedFuncMap[target]
+    if (seedFunc) {
+      const seed = this.getSeedByHookValue(mode)
+      if (seed) {
+        return seedFunc(seed)
+      }
     }
 
     return null
