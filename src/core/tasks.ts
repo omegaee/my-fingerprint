@@ -2,6 +2,7 @@ import { HookType } from '@/types/enum'
 import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { HookTask, recordAndSend } from "./core";
 import { drawNoise, drawNoiseToWebgl, proxyUserAgentData } from './utils';
+import { getStandardDateTimeParts } from '@/utils/time';
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
@@ -366,13 +367,59 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           },
         })
       }
-      if (!fh.rawObjects.getTimezoneOffset) {
-        fh.rawObjects.getTimezoneOffset = fh.win.Date.prototype.getTimezoneOffset
-        fh.win.Date.prototype.getTimezoneOffset = new Proxy(fh.rawObjects.getTimezoneOffset, {
-          apply: (target, thisArg: Date, args: Parameters<typeof Date.prototype.getTimezoneOffset>) => {
-            const currTimeZone = fh.getValue('other', 'timezone') as TimeZoneInfo
-            // return target.apply(thisArg, args)
-            return currTimeZone.offset * -60
+      if (!fh.rawObjects.dateGetTimezoneOffset || !fh.rawObjects.dateToString || !fh.rawObjects.dateToDateString || !fh.rawObjects.dateToTimeString) {
+        fh.rawObjects.dateGetTimezoneOffset = fh.win.Date.prototype.getTimezoneOffset
+        fh.rawObjects.dateToString = fh.win.Date.prototype.toString
+        fh.rawObjects.dateToDateString = fh.win.Date.prototype.toDateString
+        fh.rawObjects.dateToTimeString = fh.win.Date.prototype.toTimeString
+
+        const useHook = (handle: (thisArg: Date, tz: TimeZoneInfo) => any) => ({
+          apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toString>) => {
+            const tz: TimeZoneInfo | null = fh.getValue('other', 'timezone')
+            if (tz === null) return target.apply(thisArg, args);
+            return handle(thisArg, tz)
+          }
+        })
+        fh.win.Date.prototype.getTimezoneOffset = new Proxy(fh.rawObjects.dateGetTimezoneOffset, useHook((_, tz) => {
+          return tz.offset * -60
+        }))
+        fh.win.Date.prototype.toString = new Proxy(fh.rawObjects.dateToString, useHook((thisArg, tz) => {
+          const ps = getStandardDateTimeParts(thisArg, tz.zone)
+          return `${ps.weekday} ${ps.month} ${ps.day} ${ps.year} ${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
+        }))
+        fh.win.Date.prototype.toDateString = new Proxy(fh.rawObjects.dateToDateString, useHook((thisArg, tz) => {
+          const ps = getStandardDateTimeParts(thisArg, tz.zone)
+          return `${ps.weekday} ${ps.month} ${ps.day} ${ps.year}`
+        }))
+        fh.win.Date.prototype.toTimeString = new Proxy(fh.rawObjects.dateToTimeString, useHook((thisArg, tz) => {
+          const ps = getStandardDateTimeParts(thisArg, tz.zone)
+          return `${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
+        }))
+      }
+      if (!fh.rawObjects.dateToLocaleString || !fh.rawObjects.dateToLocaleDateString || !fh.rawObjects.dateToLocaleTimeString) {
+        fh.rawObjects.dateToLocaleString = fh.win.Date.prototype.toLocaleString
+        fh.rawObjects.dateToLocaleDateString = fh.win.Date.prototype.toLocaleDateString
+        fh.rawObjects.dateToLocaleTimeString = fh.win.Date.prototype.toLocaleTimeString
+
+        const hook = {
+          apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
+            const tz: TimeZoneInfo | null = fh.getValue('other', 'timezone')
+            if (tz) {
+              args[0] = args[0] ?? tz.locale
+              args[1] = Object.assign({ timeZone: tz.zone }, args[1]);
+            }
+            return target.apply(thisArg, args);
+          }
+        }
+        fh.win.Date.prototype.toLocaleString = new Proxy(fh.rawObjects.dateToLocaleString, hook)
+        fh.win.Date.prototype.toLocaleDateString = new Proxy(fh.rawObjects.dateToLocaleDateString, hook)
+        fh.win.Date.prototype.toLocaleTimeString = new Proxy(fh.rawObjects.dateToLocaleTimeString, hook)
+      }
+      if (!fh.rawObjects.Date) {
+        fh.rawObjects.Date = fh.win.Date
+        fh.win.Date = new Proxy(fh.rawObjects.Date, {
+          apply: (target, thisArg: Date, args: Parameters<typeof Date>) => {
+            return new Date().toString()
           }
         })
       }
@@ -382,9 +429,33 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         fh.win.Intl.DateTimeFormat = fh.rawObjects.DateTimeFormat
         fh.rawObjects.DateTimeFormat = undefined
       }
-      if (fh.rawObjects.getTimezoneOffset) {
-        fh.win.Date.prototype.getTimezoneOffset = fh.rawObjects.getTimezoneOffset
-        fh.rawObjects.getTimezoneOffset = undefined
+      if (fh.rawObjects.Date) {
+        fh.win.Date = fh.rawObjects.Date
+        fh.rawObjects.Date = undefined
+      }
+      if (fh.rawObjects.dateToString) {
+        fh.win.Date.prototype.toString = fh.rawObjects.dateToString
+        fh.rawObjects.dateToString = undefined
+      }
+      if (fh.rawObjects.dateToDateString) {
+        fh.win.Date.prototype.toDateString = fh.rawObjects.dateToDateString
+        fh.rawObjects.dateToDateString = undefined
+      }
+      if (fh.rawObjects.dateToTimeString) {
+        fh.win.Date.prototype.toTimeString = fh.rawObjects.dateToTimeString
+        fh.rawObjects.dateToTimeString = undefined
+      }
+      if (fh.rawObjects.dateToLocaleString) {
+        fh.win.Date.prototype.toLocaleString = fh.rawObjects.dateToLocaleString
+        fh.rawObjects.dateToLocaleString = undefined
+      }
+      if (fh.rawObjects.dateToLocaleDateString) {
+        fh.win.Date.prototype.toLocaleDateString = fh.rawObjects.dateToLocaleDateString
+        fh.rawObjects.dateToLocaleDateString = undefined
+      }
+      if (fh.rawObjects.dateToLocaleTimeString) {
+        fh.win.Date.prototype.toLocaleTimeString = fh.rawObjects.dateToLocaleTimeString
+        fh.rawObjects.dateToLocaleTimeString = undefined
       }
     }
   },

@@ -30,6 +30,7 @@ export interface RawHookObject {
   screenDescriptor: PropertyDescriptor
 
   DateTimeFormat: typeof Intl.DateTimeFormat
+  Date: typeof Date
 
   getOwnPropertyDescriptor: typeof Object.getOwnPropertyDescriptor
 
@@ -44,7 +45,13 @@ export interface RawHookObject {
 
   createDynamicsCompressor: typeof OfflineAudioContext.prototype.createDynamicsCompressor
 
-  getTimezoneOffset: typeof Date.prototype.getTimezoneOffset
+  dateGetTimezoneOffset: typeof Date.prototype.getTimezoneOffset
+  dateToString: typeof Date.prototype.toString
+  dateToDateString: typeof Date.prototype.toDateString
+  dateToTimeString: typeof Date.prototype.toTimeString
+  dateToLocaleString: typeof Date.prototype.toLocaleString
+  dateToLocaleDateString: typeof Date.prototype.toLocaleDateString
+  dateToLocaleTimeString: typeof Date.prototype.toLocaleTimeString
 
   appendChild: typeof HTMLElement.prototype.appendChild
   insertBefore: typeof HTMLElement.prototype.insertBefore

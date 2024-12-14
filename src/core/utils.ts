@@ -119,7 +119,7 @@ export const proxyUserAgentData = (seed: number, userAgentData?: any) => {
  * 在webgl上下文绘制噪音点
  * @param noisePosition 区间[-1, 1]
  */
-export const drawNoiseToWebgl = (gl: WebGLRenderingContext | WebGL2RenderingContext , noisePosition: [number, number]) => {
+export const drawNoiseToWebgl = (gl: WebGLRenderingContext | WebGL2RenderingContext, noisePosition: [number, number]) => {
   const vertexShaderSource = `attribute vec4 noise;void main() {gl_Position = noise;gl_PointSize = 0.001;}`;
   const fragmentShaderSource = `void main() {gl_FragColor = vec4(0.0, 0.0, 0.0, 0.01);}`;
 
