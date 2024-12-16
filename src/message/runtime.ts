@@ -7,7 +7,7 @@ export const msgSetConfig = (config: DeepPartial<LocalStorageConfig>) => {
   return chrome.runtime.sendMessage<SetConfigRequest, void>({
     type: RuntimeMsg.SetConfig,
     config,
-  }).catch(() => { })
+  })
 }
 
 /**
@@ -16,7 +16,7 @@ export const msgSetConfig = (config: DeepPartial<LocalStorageConfig>) => {
 export const msgGetNotice = (tabId: number, host: string) => {
   return chrome.runtime.sendMessage<GetNoticeRequest, GetNoticeMsg>({
     type: RuntimeMsg.GetNotice, tabId, host,
-  }).catch(() => { })
+  })
 }
 
 /**
@@ -26,7 +26,7 @@ export const msgSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey
   return chrome.runtime.sendMessage<SetHookRecordsRequest, void>({
     type: RuntimeMsg.SetHookRecords,
     data: hookRecords,
-  }).catch(() => { })
+  })
 }
 
 /**
@@ -37,7 +37,7 @@ export const msgAddWhiteList = (host: string | string[]) => {
     type: RuntimeMsg.UpdateWhitelist,
     mode: 'add',
     host,
-  }).catch(() => { })
+  })
 }
 
 /**
@@ -48,11 +48,11 @@ export const msgDelWhiteList = (host: string) => {
     type: RuntimeMsg.UpdateWhitelist,
     mode: 'del',
     host,
-  }).catch(() => { })
+  })
 }
 
 export const msgGetNewVersion = () => {
   return chrome.runtime.sendMessage<GetNewVersionRequest, GetNewVersionMsg>({
     type: RuntimeMsg.GetNewVersion,
-  }).catch(() => { })
+  })
 }

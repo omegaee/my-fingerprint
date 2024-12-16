@@ -7,5 +7,5 @@ export const tabChangeWhitelist = (tabId: number, mode: ChangeScriptWhitelistReq
   return chrome.tabs.sendMessage<ChangeScriptWhitelistRequest, void>(tabId, {
     type: RuntimeMsg.ChangeScriptWhitelist,
     mode,
-  }).catch(() => { })
+  })
 }
