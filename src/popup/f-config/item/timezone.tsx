@@ -4,6 +4,9 @@ import { msgSetConfig } from "@/message/runtime"
 import { HookType } from "@/types/enum"
 import FConfigItem from "./base"
 import { Form, Input, InputNumber } from "antd"
+import { useDebounceCallback } from "@/utils/hooks"
+
+type TimeZoneAttr = Omit<TimeZoneInfo, 'text'>
 
 const getTimezones = () => [
   {
@@ -165,9 +168,9 @@ export type FConfigTimezoneItemProps = {
 
 export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
   const [t] = useTranslation()
-  const [selectd, setSelectd] = useState<string>(props.value?.zone ?? DEFAULT_KEY)
+  const [selectd, setSelectd] = useState<string>(DEFAULT_KEY)
 
-  const [form] = Form.useForm<TimeZoneInfo>()
+  const [form] = Form.useForm<TimeZoneAttr>()
 
   // Map<zone, info>
   const timezones = useMemo<Map<string, TimeZoneInfo>>(() => {
@@ -179,6 +182,23 @@ export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
     return map
   }, [])
 
+  useEffect(() => {
+    if (!props.value) {
+      setSelectd(DEFAULT_KEY)
+      return;
+    }
+    if (props.value.text === CUSTOM_KEY) {
+      form.setFieldsValue({
+        offset: props.value.offset,
+        locale: props.value.locale,
+        zone: props.value.zone,
+      })
+      setSelectd(CUSTOM_KEY)
+      return;
+    }
+    setSelectd(props.value.zone)
+  }, [props.value])
+
   const options = useMemo(() => {
     const sys = { value: DEFAULT_KEY, label: t('type.default') }
     const custom = { value: CUSTOM_KEY, label: t('type.value') }
@@ -188,11 +208,20 @@ export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
 
   useEffect(() => {
     let timezone: ValueHookMode<TimeZoneInfo> | DefaultHookMode
-    if (selectd === CUSTOM_KEY) {
-      return;
-    }
-    else if (selectd === DEFAULT_KEY) {
+
+    if (selectd === DEFAULT_KEY) {
       timezone = { type: HookType.default }
+    }
+    else if (selectd === CUSTOM_KEY) {
+      const value = form.getFieldsValue()
+      if (value.offset === undefined || !value.locale || !value.zone) return;
+      timezone = {
+        type: HookType.value,
+        value: {
+          ...value,
+          text: CUSTOM_KEY,
+        }
+      }
     }
     else {
       const value = timezones.get(selectd)
@@ -206,28 +235,46 @@ export const FConfigTimezoneItem = (props: FConfigTimezoneItemProps) => {
     })
   }, [selectd])
 
+  const onValuesChange = useDebounceCallback((_, values: TimeZoneAttr) => {
+    if (values.offset === undefined || !values.locale || !values.zone) return;
+
+    msgSetConfig({
+      fingerprint: {
+        other: {
+          timezone: {
+            type: HookType.value, value: {
+              text: CUSTOM_KEY,
+              locale: values.locale.trim(),
+              zone: values.zone.trim(),
+              offset: values.offset,
+            }
+          }
+        }
+      }
+    })
+  }, 200, [])
+
   return <FConfigItem.Select<string>
     title={props.title}
     desc={props.desc}
     options={options}
-    defaultValue={props.value?.zone ?? DEFAULT_KEY}
+    value={selectd}
     onChangeOption={setSelectd}
-    node={selectd === CUSTOM_KEY && <>
-      <Form form={form}
-        layout='horizontal'
-        onValuesChange={() => { }}
-        initialValues={{ offset: 0 }}>
-        <Form.Item name='offset' label={t('config.tz.offset')} className="mb-0">
-          <InputNumber min={-12} max={12} />
-        </Form.Item>
-        <Form.Item name='locale' label={t('config.tz.locale')} className="mb-0">
-          <Input placeholder='zh-CN' />
-        </Form.Item>
-        <Form.Item name='zone' label={t('config.tz.zone')} className="mb-0">
-          <Input placeholder='Asia/Shanghai' />
-        </Form.Item>
-      </Form>
-    </>}
+    node={selectd === CUSTOM_KEY && <Form
+      form={form}
+      layout='inline'
+      onValuesChange={onValuesChange}
+      initialValues={{ offset: +8 }}>
+      <Form.Item name='offset' label={t('item.sub.tz.offset')} className="mb-0">
+        <InputNumber min={-12} max={12} />
+      </Form.Item>
+      <Form.Item name='locale' label={t('item.sub.tz.locale')} className="mb-0">
+        <Input placeholder='zh-CN' />
+      </Form.Item>
+      <Form.Item name='zone' label={t('item.sub.tz.zone')} className="mb-0">
+        <Input placeholder='Asia/Shanghai' />
+      </Form.Item>
+    </Form>}
   />
 }
 

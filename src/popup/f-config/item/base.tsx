@@ -54,6 +54,7 @@ export default FConfigItem
 /// **********
 
 export type FConfigSelectItemProps<T = any> = FConfigItemProps & {
+  value?: T
   options?: SelectProps['options']
   defaultValue?: SelectProps['defaultValue']
   onChangeOption?: (opt: T) => void
@@ -66,6 +67,7 @@ FConfigItem.Select = function <T = any>(props: FConfigSelectItemProps<T>) {
         onChange={props.onChangeOption}
         defaultValue={props.defaultValue}
         options={props.options}
+        value={props.value}
       />
       {props.node}
     </>} />

@@ -65,6 +65,13 @@
       "seed": "Global Seed, Acts on **Randomization based on global seed** Options",
       "hook-net-request": "When turned on, it affects all network requests\n\n**Note that turning it on may affect the styling of some pages**\n\nSupported configs: **Equipment Info**\n\nSupported options: **Every time the browser starts a random** & **Randomization based on global seed** & **Custom value**",
       "hook-iframe": "When turned on, Can proxy **All Iframe** content"
+    },
+    "sub": {
+      "tz": {
+        "offset": "Offset",
+        "locale": "Locale",
+        "zone": "Zone"
+      }
     }
   },
   "tip": {
