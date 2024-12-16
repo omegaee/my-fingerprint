@@ -290,7 +290,8 @@ const getBadgeContent = (records: Partial<Record<HookFingerprintKey, number>>): 
       baseNum += num
     }
   }
-  return [String(specialNum || baseNum), specialNum ? BADGE_COLOR.high : BADGE_COLOR.low]
+  const showNum = specialNum || baseNum
+  return [showNum >= 100 ? '99+' : String(showNum), specialNum ? BADGE_COLOR.high : BADGE_COLOR.low]
 }
 
 /**
