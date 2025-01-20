@@ -11,12 +11,13 @@ import {
   SafetyOutlined,
 } from '@ant-design/icons';
 
-import FHookRecord from "./f-record"
-import FConfig from "./f-config"
+import FHookRecord from "./record"
+import FConfig from "./config"
 import WhitelistView from "./whitelist"
 
 import { compareVersions, urlToHttpHost } from "@/utils/base"
 import { msgAddWhiteList, msgDelWhiteList, msgGetNewVersion, msgGetNotice, msgSetConfig } from "@/message/runtime"
+import { useConfigStore } from "./stores/config";
 
 function App() {
   const [t, i18n] = useTranslation()
@@ -33,6 +34,10 @@ function App() {
   const [messageApi, contextHolder] = message.useMessage();
 
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
+
+  useConfigStore((state) => {
+    state.config ?? state.loadStorage()
+  })
 
   useEffect(() => {
     chrome.storage.local.get(['config']).then(({ config }: Partial<LocalStorage>) => {
@@ -92,12 +97,12 @@ function App() {
   const tabItems = useMemo<TabsProps['items']>(() => {
     return [
       {
-        label: t('e.f-record'),
+        label: t('e.record'),
         icon: <AlertOutlined />,
         children: <FHookRecord tab={tab} config={config} records={hookRecords} />,
       },
       {
-        label: t('e.f-config'),
+        label: t('e.config'),
         icon: <SettingOutlined />,
         children: <FConfig tab={tab} config={config} />,
       },

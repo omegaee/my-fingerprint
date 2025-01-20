@@ -5,7 +5,8 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "preset": "Preset",
-    "custom": "Custom"
+    "custom": "Custom",
+    "special": "Special"
   },
   "e": {
     "enabled": "Extension Enabled",
@@ -14,10 +15,10 @@
     "whitelist-in": "In Whitelist",
     "whitelist-not": "Not In Whitelist",
     "whitelist-click-in": "Click To Whitelist",
-    "f-record": "Record",
-    "f-config": "Config",
-    "f-base-config": "Base Config",
-    "f-special-config": "Special Config",
+    "record": "Record",
+    "config": "Config",
+    "normal-fp": "Normal Config",
+    "special-fp": "Special Config",
     "other-config": "Other Config",
     "seed": "Seed"
   },
@@ -35,8 +36,7 @@
       "language": "Browser Language",
       "hardwareConcurrency": "Number of logical processors",
       "size": "Screen Size",
-      "colorDepth": "Screen Color Depth",
-      "pixelDepth": "Screen Pixel Depth",
+      "depth": "Screen Color Depth",
       "timezone": "Timezone",
       "canvas": "Canvas Fingerprint",
       "audio": "Audio Fingerprint",
@@ -45,7 +45,7 @@
 
       "e-language": "Language",
       "seed": "Global Seed",
-      "hook-net-request": "Web Request Hooks",
+      "hook-net-request": "Net Request Hooks",
       "hook-iframe": "Iframe Hooks"
     },
     "desc": {
@@ -53,8 +53,7 @@
       "language": "Browser Language\n\n**navigator.language**",
       "hardwareConcurrency": "Number of logical processors\n\n**navigator.hardwareConcurrency**",
       "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
-      "colorDepth": "Screen Color Depth\n\n**screen.colorDepth**",
-      "pixelDepth": "Screen Pixel Depth\n\n**screen.pixelDepth**",
+      "depth": "Screen Color Depth\n\n**screen.colorDepth**\n\n**screen.pixelDepth**",
       "timezone": "Browser Timezone",
       "canvas": "Canvas Fingerprint",
       "audio": "Audio Fingerprint",
@@ -65,6 +64,9 @@
       "seed": "Global Seed, Acts on **Randomization based on global seed** Options",
       "hook-net-request": "When turned on, it affects all network requests\n\n**Note that turning it on may affect the styling of some pages**\n\nSupported configs: **Equipment Info**\n\nSupported options: **Every time the browser starts a random** & **Randomization based on global seed** & **Custom value**",
       "hook-iframe": "When turned on, Can proxy **All Iframe** content"
+    },
+    "warn": {
+      "unsupported-net-hook": "Unsupported Net Request Hooks"
     },
     "sub": {
       "tz": {

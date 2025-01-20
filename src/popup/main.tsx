@@ -6,6 +6,7 @@ import '@/locales'
 import { ConfigProvider, theme, type ThemeConfig } from 'antd'
 
 const darkTheme: ThemeConfig = {
+  cssVar: true,
   token: {
     borderRadius: 4,
     wireframe: false,
@@ -17,6 +18,7 @@ const darkTheme: ThemeConfig = {
 }
 
 const lightTheme: ThemeConfig = {
+  cssVar: true,
   token: {
     borderRadius: 4,
     wireframe: false,
