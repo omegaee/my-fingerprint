@@ -6,6 +6,7 @@ import {
   randomColorDepth,
   randomHardwareConcurrency,
   randomLanguage,
+  randomLanguages,
   randomPixelDepth,
   randomScreenSize,
   randomWebgNoise,
@@ -64,6 +65,7 @@ export interface RawHookObject {
  */
 const seedFuncMap: Record<string, (seed: number) => any> = {
   'navigator.language': randomLanguage,
+  'navigator.languages': randomLanguages,
   'navigator.hardwareConcurrency': randomHardwareConcurrency,
   'screen.height': (seed: number) => randomScreenSize(seed).height,
   'screen.width': (seed: number) => randomScreenSize(seed).width,

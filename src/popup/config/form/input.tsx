@@ -11,7 +11,7 @@ export type InputLineProps = {
 } & InputProps
 
 export const InputLine = ({ name, label, defaultValue, initialValue, onDebouncedInput, ...props }: InputLineProps) => {
-  const [value, setValue] = useState<string>(String(initialValue))
+  const [value, setValue] = useState<string>(String(initialValue ?? defaultValue ?? ''))
 
   const onInput = useDebounceCallback(({ target }: any) => {
     const vl = target.value.trim()

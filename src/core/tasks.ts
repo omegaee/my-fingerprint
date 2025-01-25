@@ -129,9 +129,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                   return seed === null ? target[key] : proxyUserAgentData(seed, target[key])
                 }
                 case 'languages': {
-                  if (fh.conf?.fingerprint?.navigator?.language?.type !== HookType.default) {
-                    const language: string = fh.getValue('navigator', 'language')
-                    return [...new Set([language, ...Array.from(target[key])])]
+                  if (fh.conf?.fingerprint?.navigator?.languages?.type !== HookType.default) {
+                    return fh.getValue('navigator', 'languages') as string[]
                   }
                 }
               }

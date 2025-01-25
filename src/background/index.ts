@@ -10,7 +10,7 @@ import { genRandomVersionUserAgent, genRandomVersionUserAgentData } from "@/util
 // import contentSrc from '@/scripts/content?script&module'
 
 import { coreInject } from "@/core/output";
-import { randomLanguage } from "@/utils/data";
+import { randomLanguages } from "@/utils/data";
 
 const UA_NET_RULE_ID = 1
 
@@ -45,6 +45,7 @@ const genDefaultLocalStorage = (): LocalStorage => {
         navigator: {
           equipment: browserHook,
           language: defaultHook,
+          languages: defaultHook,
           hardwareConcurrency: defaultHook,
         },
         screen: {
@@ -171,29 +172,30 @@ const refreshRequestHeader = async () => {
     })
   }
 
-  const langMode = storage.config.fingerprint.navigator.language
-  if (langMode && langMode.type !== HookType.default) {
-    let lang: string | undefined
-    if (langMode.type === HookType.value) {
-      lang = langMode.value
+  const langsMode = storage.config.fingerprint.navigator.languages
+  if (langsMode && langsMode.type !== HookType.default) {
+    /* 获取种子 */
+    let langs: string[] | undefined
+    if (langsMode.type === HookType.value) {
+      langs = langsMode.value
     } else {
-      const langSeed = getSeedByMode(storage, langMode)
+      const langSeed = getSeedByMode(storage, langsMode)
       if (langSeed) {
-        lang = randomLanguage(langSeed)
+        langs = randomLanguages(langSeed)
       }
     }
-
-    if (lang) {
-      const langs = navigator.languages.filter((v) => v !== lang)
+    /* 修改 */
+    if (langs?.length) {
+      const [first, ...rest] = langs
       let qFactor = 1
-      for (let i = 0; i < langs.length && qFactor > 0.1; i++) {
+      for (let i = 0; i < rest.length && qFactor > 0.1; i++) {
         qFactor -= 0.1
-        langs[i] = `${langs[i]};q=${qFactor.toFixed(1)}`
+        rest[i] = `${rest[i]};q=${qFactor.toFixed(1)}`
       }
       requestHeaders.push({
         header: "Accept-Language",
         operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-        value: [lang, ...langs].join(","),
+        value: [first, ...rest].join(","),
       })
     }
   }
@@ -236,7 +238,11 @@ const saveLocalWhitelist = debounce((storage: LocalStorageObject) => {
  */
 const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>) => {
   const storage = await getLocalStorage()
-  storage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(storage.config, config)
+  storage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(
+    storage.config,
+    config,
+    { arrayMerge: (destinationArray, sourceArray, options) => sourceArray },
+  )
   saveLocalConfig(storage)
   if (
     config.enable !== undefined ||

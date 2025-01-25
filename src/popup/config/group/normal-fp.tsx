@@ -46,16 +46,28 @@ export const NormalFpConfigGroup = memo(() => {
     />
 
     <SelectFpConfigItem
-      title={t('item.title.language')}
-      desc={t('item.desc.language')}
+      title={t('item.title.languages')}
+      desc={t('item.desc.languages')}
       options={BASE_TYPES}
       deprecatedOptions={netDeprecatedTypes}
-      defaultValue={fp.navigator.language.type}
-      onChange={(type) => fp.navigator.language.type = type}
+      defaultValue={fp.navigator.languages.type}
+      // onChange={(type) => fp.navigator.languages.type = type}
+      // custom={<InputLine label="value"
+      //   defaultValue={navigator.language}
+      //   initialValue={(fp.navigator.language as ValueHookMode).value}
+      //   onDebouncedInput={(value) => (fp.navigator.language as ValueHookMode).value = value} />}
+      onChange={(type) => {
+        fp.navigator.language.type = type
+        fp.navigator.languages.type = type
+      }}
       custom={<InputLine label="value"
-        defaultValue={navigator.language}
-        initialValue={(fp.navigator.language as ValueHookMode).value}
-        onDebouncedInput={(value) => (fp.navigator.language as ValueHookMode).value = value} />}
+        defaultValue={navigator.languages.join(',')}
+        initialValue={(fp.navigator.languages as ValueHookMode<string[]>).value?.join(',')}
+        onDebouncedInput={(value) => {
+          const parts = [...new Set(value.split(",").filter((v) => !!v.trim()))];          
+          (fp.navigator.languages as ValueHookMode<string[]>).value = parts;
+          (fp.navigator.language as ValueHookMode<string>).value = parts[0];
+        }} />}
     />
 
     <SelectFpConfigItem

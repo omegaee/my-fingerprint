@@ -34,6 +34,7 @@
     "title": {
       "equipment": "Equipment Info",
       "language": "Browser Language",
+      "languages": "Browser Language",
       "hardwareConcurrency": "Number of logical processors",
       "size": "Screen Size",
       "depth": "Screen Color Depth",
@@ -51,6 +52,7 @@
     "desc": {
       "equipment": "Equipment Info\n\n**navigator.appVersion**\n\n**navigator.userAgent**\n\n**navigator.userAgentData**",
       "language": "Browser Language\n\n**navigator.language**",
+      "languages": "Browser Language\n\n**navigator.language**\n\nMultiple values are separated by commas",
       "hardwareConcurrency": "Number of logical processors\n\n**navigator.hardwareConcurrency**",
       "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
       "depth": "Screen Color Depth\n\n**screen.colorDepth**\n\n**screen.pixelDepth**",

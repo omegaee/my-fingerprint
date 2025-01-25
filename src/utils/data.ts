@@ -16,6 +16,28 @@ const seededEl = <T>(arr: Readonly<T[]>, seed: number): T => {
   return arr[seed % arr.length];
 }
 
+/**
+ * 数组洗牌
+ */
+const shuffleArray = <T>(array: Readonly<T[]>, seed: number): T[] => {
+  const _array = [...array]
+  let m = _array.length, t: T, i: number;
+
+  const random = () => {
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  }
+
+  while (m) {
+    i = Math.floor(random() * m--);
+    t = _array[m];
+    _array[m] = _array[i];
+    _array[i] = t;
+  }
+
+  return _array;
+}
+
 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 const hardwareConcurrencys = [8, 12, 16]
 const colorDepths = [16, 24, 32]
@@ -41,6 +63,13 @@ const rawLanguages = navigator.languages
  */
 export const randomLanguage = (seed: number) => {
   return seededEl(rawLanguages, seed)
+}
+
+/**
+ * 随机语言标识
+ */
+export const randomLanguages = (seed: number) => {
+  return shuffleArray(rawLanguages, seed)
 }
 
 /**
