@@ -28,7 +28,9 @@
     "page": "每个标签页随机值",
     "browser": "每次启动浏览器随机值",
     "domain": "根据访问域名随机值",
-    "global": "根据全局种子随机值"
+    "global": "根据全局种子随机值",
+    "enabled": "启用",
+    "disabled": "禁用"
   },
   "item": {
     "title": {

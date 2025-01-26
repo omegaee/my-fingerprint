@@ -118,7 +118,7 @@ const getNewVersion = async () => {
 /**
  * 获取seed
  */
-const getSeedByMode = (storage: LocalStorageObject, mode: BaseHookMode) => {
+const getSeedByMode = (storage: LocalStorageObject, mode: HookMode) => {
   switch (mode?.type) {
     case HookType.browser:
       return storage.config.browserSeed

@@ -24,22 +24,22 @@ type LocalStorageConfig = {
 type HookFingerprint = {
   navigator: {
     equipment: BaseHookMode
-    language: HookMode<string>
-    languages: HookMode<string[]>
-    hardwareConcurrency: HookMode<number>
+    language: BaseHookMode | ValueHookMode<string>
+    languages: BaseHookMode | ValueHookMode<string[]>
+    hardwareConcurrency: BaseHookMode | ValueHookMode<number>
   }
   screen: {
-    height: HookMode<number>
-    width: HookMode<number>
-    colorDepth: HookMode<number>
-    pixelDepth: HookMode<number>
+    height: BaseHookMode | ValueHookMode<number>
+    width: BaseHookMode | ValueHookMode<number>
+    colorDepth: BaseHookMode | ValueHookMode<number>
+    pixelDepth: BaseHookMode | ValueHookMode<number>
   }
   other: {
+    timezone: DefaultHookMode | ValueHookMode<TimeZoneInfo>
     canvas: BaseHookMode
     audio: BaseHookMode
     webgl: BaseHookMode
-    webrtc: BaseHookMode
-    timezone: DefaultHookMode | ValueHookMode<TimeZoneInfo>
+    webrtc: DefaultHookMode | DisableHookMode
   }
 }
 

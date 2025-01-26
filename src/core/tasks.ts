@@ -105,13 +105,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook navigator': {
-    condition: (fh) => !fh.isAllDefault(fh.conf?.fingerprint?.navigator),
+    condition: (fh) => !fh.isAllDefault(fh.conf?.fingerprint?.navigator) || fh.conf?.fingerprint?.other?.webrtc?.type !== HookType.default,
     onEnable: (fh) => {
       if (!fh.rawObjects.navigatorDescriptor) {
         fh.rawObjects.navigatorDescriptor = fh.win.Object.getOwnPropertyDescriptor(fh.win, "navigator");
         fh.win.Object.defineProperty(fh.win, 'navigator', {
           value: new Proxy(fh.win.navigator, {
-            get: (target, key: keyof Navigator) => {
+            get: (target: any, key: keyof Navigator | (string & {})) => {
               switch (key) {
                 case 'userAgent': {
                   const seed = fh.getSeedByHookValue(fh.conf?.fingerprint?.navigator?.equipment)
@@ -132,6 +132,21 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                   if (fh.conf?.fingerprint?.navigator?.languages?.type !== HookType.default) {
                     return fh.getValue('navigator', 'languages') as string[]
                   }
+                  break
+                }
+                case 'getUserMedia':
+                case 'mozGetUserMedia':
+                case 'webkitGetUserMedia': {
+                  if (fh.conf?.fingerprint?.other?.webrtc?.type === HookType.disabled) {
+                    return undefined;
+                  }
+                  break
+                }
+                case 'mediaDevices': {
+                  if (fh.conf?.fingerprint?.other?.webrtc?.type === HookType.disabled) {
+                    return null;
+                  }
+                  break
                 }
               }
 
@@ -467,7 +482,38 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'hook webrtc': {
     condition: (fh) => fh.conf?.fingerprint?.other?.webrtc?.type !== HookType.default,
-  }
+    onEnable: (fh) => {
+      const win = fh.win
+      // @ts-ignore
+      if (win.RTCDataChannel) win.RTCDataChannel = undefined;
+      // @ts-ignore
+      if (win.RTCIceCandidate) win.RTCIceCandidate = undefined;
+      // @ts-ignore
+      if (win.RTCConfiguration) win.RTCConfiguration = undefined;
+      // @ts-ignore
+      if (win.MediaStreamTrack) win.MediaStreamTrack = undefined;
+      // @ts-ignore
+      if (win.RTCPeerConnection) win.RTCPeerConnection = undefined;
+      // @ts-ignore
+      if (win.RTCSessionDescription) win.RTCSessionDescription = undefined;
+      // @ts-ignore
+      if (win.RTCDataChannel) win.RTCDataChannel = undefined;
+      // @ts-ignore
+      if (win.mozMediaStreamTrack) win.mozMediaStreamTrack = undefined;
+      // @ts-ignore
+      if (win.mozRTCPeerConnection) win.mozRTCPeerConnection = undefined;
+      // @ts-ignore
+      if (win.mozRTCSessionDescription) win.mozRTCSessionDescription = undefined;
+      // @ts-ignore
+      if (win.webkitMediaStreamTrack) win.webkitMediaStreamTrack = undefined;
+      // @ts-ignore
+      if (win.webkitRTCPeerConnection) win.webkitRTCPeerConnection = undefined;
+      // @ts-ignore
+      if (win.webkitRTCSessionDescription) win.webkitRTCSessionDescription = undefined;
+    },
+    onDisable: (fh) => {
+    }
+  },
 
 }
 

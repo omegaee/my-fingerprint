@@ -5,7 +5,8 @@ import SelectFpConfigItem from "../item/fp/select"
 import TimeZoneConfigItem from "../item/special/timezone"
 import { memo } from "react"
 
-const BASE_TYPES = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
+const BASE_TYPES: HookMode['type'][] = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
+const SWITCH_TYPES: HookMode['type'][] = [HookType.default, HookType.disabled]
 
 // export type SpecialFpConfigGroupProps = {
 // }
@@ -44,6 +45,14 @@ export const SpecialFpConfigGroup = memo(() => {
       options={BASE_TYPES}
       defaultValue={fp.other.webgl.type}
       onChange={(type) => fp.other.webgl.type = type as any}
+    />
+
+    <SelectFpConfigItem
+      title={t('item.title.webrtc')}
+      desc={t('item.desc.webrtc')}
+      options={SWITCH_TYPES}
+      defaultValue={fp.other.webrtc.type}
+      onChange={(type) => fp.other.webrtc.type = type as any}
     />
   </>
 })

@@ -28,7 +28,9 @@
     "page": "Randomized values per tab",
     "browser": "Every time the browser starts a random",
     "domain": "Randomized based on domain name",
-    "global": "Randomization based on global seed"
+    "global": "Randomization based on global seed",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "item": {
     "title": {

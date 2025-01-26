@@ -57,8 +57,8 @@ export const NormalFpConfigGroup = memo(() => {
       //   initialValue={(fp.navigator.language as ValueHookMode).value}
       //   onDebouncedInput={(value) => (fp.navigator.language as ValueHookMode).value = value} />}
       onChange={(type) => {
-        fp.navigator.language.type = type
-        fp.navigator.languages.type = type
+        fp.navigator.language.type = type as any;
+        fp.navigator.languages.type = type as any;
       }}
       custom={<InputLine label="value"
         defaultValue={navigator.languages.join(',')}
@@ -75,7 +75,7 @@ export const NormalFpConfigGroup = memo(() => {
       desc={t('item.desc.hardwareConcurrency')}
       options={BASE_TYPES}
       defaultValue={fp.navigator.hardwareConcurrency.type}
-      onChange={(type) => fp.navigator.hardwareConcurrency.type = type}
+      onChange={(type) => fp.navigator.hardwareConcurrency.type = type as any}
       custom={<InputLine label="value"
         defaultValue={navigator.hardwareConcurrency}
         initialValue={(fp.navigator.hardwareConcurrency as ValueHookMode).value}
@@ -88,8 +88,8 @@ export const NormalFpConfigGroup = memo(() => {
       options={BASE_TYPES}
       defaultValue={fp.screen.width.type}
       onChange={(type) => {
-        fp.screen.width.type = type
-        fp.screen.height.type = type
+        fp.screen.width.type = type as any;
+        fp.screen.height.type = type as any;
       }}
       custom={<>
         <InputLine label="width"
@@ -109,8 +109,8 @@ export const NormalFpConfigGroup = memo(() => {
       options={BASE_TYPES}
       defaultValue={fp.screen.colorDepth.type}
       onChange={(type) => {
-        fp.screen.colorDepth.type = type
-        fp.screen.pixelDepth.type = type
+        fp.screen.colorDepth.type = type as any;
+        fp.screen.pixelDepth.type = type as any;
       }}
       custom={<>
         <InputLine label="colorDepth"
