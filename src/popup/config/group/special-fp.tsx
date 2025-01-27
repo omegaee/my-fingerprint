@@ -54,6 +54,14 @@ export const SpecialFpConfigGroup = memo(() => {
       defaultValue={fp.other.webrtc.type}
       onChange={(type) => fp.other.webrtc.type = type as any}
     />
+
+    <SelectFpConfigItem
+      title={t('item.title.font')}
+      desc={t('item.desc.font')}
+      options={BASE_TYPES}
+      defaultValue={fp.other.font.type}
+      onChange={(type) => fp.other.font.type = type as any}
+    />
   </>
 })
 

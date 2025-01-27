@@ -1,12 +1,14 @@
+import { hashNumberFromString } from "./base"
+
 /**
  * 线性同余，根据seed产生随机数
  */
-export const seededRandom = function (seed: number, max?: number, min?: number) {
-  max = max ?? 1
-  min = min ?? 0
-  seed = (seed * 9301 + 49297) % 233280
-  const rnd = seed / 233280.0
-  return min + rnd * (max - min)
+export const seededRandom = function (seed: number, max: number = 1, min: number = 0): number {
+  const mod = 233280;
+  seed = (seed * 9301 + 49297) % mod;
+  if (seed < 0) seed += mod; // 确保 seed 为正数
+  const rnd = seed / mod;
+  return min + rnd * (max - min);
 }
 
 /**
@@ -114,6 +116,15 @@ export const randomAudioNoise = (seed: number) => {
 /**
  * 获取[x, y]，区间[-1, 1]
  */
-export const randomWebgNoise = (seed: number): [number, number] => {
+export const randomWebglNoise = (seed: number): [number, number] => {
   return [seededRandom(seed, 1, -1), seededRandom(seed + 1, 1, -1)]
+}
+
+/**
+ * 获取随机字体噪音
+ */
+export const randomFontNoise = (seed: number, len: number): 1 | 0 | -1 => {
+  const random = seededRandom(hashNumberFromString(String(len)), 1, 0)
+  if (random < 0.9) return 0;
+  return random < 0.5 ? -1 : 1
 }

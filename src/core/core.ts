@@ -4,15 +4,16 @@ import {
   randomAudioNoise,
   randomCanvasNoise,
   randomColorDepth,
+  randomFontNoise,
   randomHardwareConcurrency,
   randomLanguage,
   randomLanguages,
   randomPixelDepth,
   randomScreenSize,
-  randomWebgNoise,
+  randomWebglNoise,
   seededRandom
 } from "../utils/data";
-import { debounce } from "../utils/timer";
+import { debounce, debounceByFirstArg } from "../utils/timer";
 import { postSetHookRecords, unwrapMessage } from "@/message/content";
 import { genRandomSeed, hashNumberFromString } from "../utils/base";
 import { ContentMsg } from '@/types/enum'
@@ -60,10 +61,10 @@ export interface RawHookObject {
 }
 
 /**
- * 允许随机的getValue
- * [prefix.key#opt]
+ * Random Value
  */
-const seedFuncMap: Record<string, (seed: number) => any> = {
+// const seedFuncMap: Record<string, (seed: number) => any> = {
+const randomFuncMap = {
   'navigator.language': randomLanguage,
   'navigator.languages': randomLanguages,
   'navigator.hardwareConcurrency': randomHardwareConcurrency,
@@ -73,16 +74,22 @@ const seedFuncMap: Record<string, (seed: number) => any> = {
   'screen.pixelDepth': randomPixelDepth,
   'other.canvas': randomCanvasNoise,
   'other.audio': randomAudioNoise,
-  'other.webgl': randomWebgNoise,
+  'other.webgl': randomWebglNoise,
   // 'other.webrtc': (seed: number) => 'hello',
+  'other.font': randomFontNoise,
 }
 
 /**
- * 非随机的getValue
+ * Custom Value
  */
-const valueFuncMap: Record<string, (value: any) => any> = {
-  // 'other.timezone': (value: TimeZoneInfo) => value,
+// const valueFuncMap: Record<string, (value: any) => any> = {
+const valueFuncMap = {
+  'other.timezone': undefined,
 }
+
+type RandomFunc = (seed: number, args?: any) => any
+type ValueFunc = (value: any, args?: any) => any
+type FuncKey = keyof typeof randomFuncMap | keyof typeof valueFuncMap
 
 // hook缓存
 // const cache: Partial<Record<HookFingerprintKey, any>> = {}
@@ -100,10 +107,14 @@ export const sendRecordMessage = debounce(() => {
  * 记录并发送消息
  */
 export const recordAndSend = function (key: string) {
+  const parts = key.split('.')
+  key = parts[parts.length - 1]
   const oldValue = hookRecords.get(key) ?? 0
   hookRecords.set(key, oldValue + 1)
   sendRecordMessage()
 }
+
+export const recordAndSendDebounce = debounceByFirstArg(recordAndSend, 200)
 
 export type WindowInfo = {
   tabId: number,
@@ -123,12 +134,12 @@ export class FingerprintHandler {
   public info: WindowInfo
   public seed: SeedInfo
 
-  public conf: DeepPartial<LocalStorageConfig>
+  public conf: LocalStorageConfig
 
   public rawObjects: Partial<RawHookObject> = {}
   private onlyRecord: Record<string, boolean> = {}
 
-  public constructor(win: Window & typeof globalThis, info: WindowInfo, config: DeepPartial<LocalStorageConfig>) {
+  public constructor(win: Window & typeof globalThis, info: WindowInfo, config: LocalStorageConfig) {
     this.win = win
     this.info = info
     this.conf = config
@@ -188,9 +199,9 @@ export class FingerprintHandler {
   public setConfig(config?: DeepPartial<LocalStorageConfig>) {
     if (!config) return
     if (this.conf) {
-      this.conf = deepmerge(this.conf, config)
+      this.conf = deepmerge(this.conf, config) as LocalStorageConfig
     } else {
-      this.conf = config
+      this.conf = config as LocalStorageConfig
     }
     this.refresh()
   }
@@ -228,7 +239,7 @@ export class FingerprintHandler {
    * 是否所有字段的type都是default
    * ops为空则返回true
    */
-  public isAllDefault(ops?: DeepPartial<Record<string, HookMode>>) {
+  public isAllDefault(ops?: Record<string, HookMode>) {
     if (!ops) return true
     for (const value of Object.values(ops)) {
       if (value!.type !== HookType.default) return false
@@ -239,7 +250,7 @@ export class FingerprintHandler {
   /**
    * 获取value对应的的seed
    */
-  public getSeedByHookValue = (value?: any) => {
+  public getSeedByHookValue = (value?: any): number | null => {
     switch (value?.type) {
       case HookType.page:
         return this.seed.page
@@ -255,34 +266,43 @@ export class FingerprintHandler {
     }
   }
 
-  public getValue(prefix: string, key: string, opt?: string): any | null {
-    // @ts-ignore
-    const mode: HookMode = this.conf.fingerprint?.[prefix]?.[key]
-    if (!mode) return null;
-
-    recordAndSend(key)  // 记录
-    const target = `${prefix}.${key}${opt ? '#' + opt : ''}`
-
-    if (mode.type === HookType.value) {
-      // @ts-ignore
-      const valueFunc = valueFuncMap[target]
-      if (valueFunc) {
-        return valueFunc(mode.value)
-      } else {
-        return mode.value
+  private _getValue = (key: FuncKey, mode: HookMode, args?: any): any | null => {
+    switch (mode.type) {
+      case HookType.default: {
+        return null
+      }
+      case HookType.value: {
+        const func: ValueFunc | undefined = (valueFuncMap as any)[key];
+        return func ? func(mode.value, args) : mode.value;
+      }
+      case HookType.browser:
+      case HookType.domain:
+      case HookType.global:
+      case HookType.page: {
+        const func: RandomFunc | undefined = (randomFuncMap as any)[key];
+        if (func) {
+          const seed = this.getSeedByHookValue(mode)
+          if (seed !== null) return func(seed, args);
+        }
+        return null
+      }
+      default: {
+        return null
       }
     }
-
-    // @ts-ignore
-    const seedFunc = seedFuncMap[target]
-    if (seedFunc) {
-      const seed = this.getSeedByHookValue(mode)
-      if (seed) {
-        return seedFunc(seed)
-      }
-    }
-
-    return null
   }
+
+  public getValue = (key: FuncKey, mode?: HookMode, args?: any): any | null => {
+    if (!mode) return null;
+    recordAndSend(key)
+    return this._getValue(key, mode, args)
+  }
+
+  public getValueDebounce = (key: FuncKey, mode?: HookMode, args?: any): any | null => {
+    if (!mode) return null;
+    recordAndSendDebounce(key)
+    return this._getValue(key, mode, args)
+  }
+
 
 }

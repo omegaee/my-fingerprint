@@ -60,6 +60,7 @@ const genDefaultLocalStorage = (): LocalStorage => {
           audio: browserHook,
           webgl: browserHook,
           webrtc: defaultHook,
+          font: defaultHook,
         },
       },
       language: navigator.language,

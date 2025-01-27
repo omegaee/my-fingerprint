@@ -40,6 +40,7 @@ type HookFingerprint = {
     audio: BaseHookMode
     webgl: BaseHookMode
     webrtc: DefaultHookMode | DisableHookMode
+    font: BaseHookMode
   }
 }
 
