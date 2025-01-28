@@ -518,6 +518,45 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onDisable: (_) => { }
   },
 
+  'hook font': {
+    condition: ({ conf }) => conf.fingerprint.other.font.type !== HookType.default,
+    onEnable: ({ win, conf, getValueDebounce }) => {
+      const heightOwnGet = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetHeight")?.get
+      if (heightOwnGet) {
+        Object.defineProperty(win.HTMLElement.prototype, "offsetHeight", {
+          get: new Proxy(heightOwnGet, {
+            apply(target, thisArg: HTMLElement, args: any) {
+              try {
+                // const height = Math.floor(thisArg.getBoundingClientRect().height);
+                const height = target.apply(thisArg, args);
+                const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, height)
+                return height + noise;
+              } catch (_) {
+              }
+            }
+          })
+        });
+      }
+      const widthOwnGet = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetWidth")?.get
+      if (widthOwnGet) {
+        Object.defineProperty(win.HTMLElement.prototype, "offsetWidth", {
+          get: new Proxy(widthOwnGet, {
+            apply(target, thisArg: HTMLElement, args: any) {
+              try {
+                // const width = Math.floor(thisArg.getBoundingClientRect().width);
+                const width = target.apply(thisArg, args);
+                const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, width)
+                return width + noise;
+              } catch (_) {
+              }
+            }
+          })
+        });
+      }
+    },
+    onDisable: (_) => { },
+  },
+
 }
 
 export const hookTasks = Object.entries(hookTaskMap).map(([name, task]): HookTask => ({ ...task, name }))

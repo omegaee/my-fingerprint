@@ -124,7 +124,7 @@ export const randomWebglNoise = (seed: number): [number, number] => {
  * 获取随机字体噪音
  */
 export const randomFontNoise = (seed: number, len: number): 1 | 0 | -1 => {
-  const random = seededRandom(hashNumberFromString(String(len)), 1, 0)
+  const random = seededRandom(hashNumberFromString(String(seed + len)), 1, 0)
   if (random < 0.9) return 0;
   return random < 0.5 ? -1 : 1
 }
