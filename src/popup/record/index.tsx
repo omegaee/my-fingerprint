@@ -1,8 +1,6 @@
 const fKeys: string[] = ['appVersion', 'platform', 'userAgent', 'language', 'hardwareConcurrency', 'height', 'width', 'colorDepth', 'pixelDepth', 'timezone', 'canvas', 'audio', 'webgl', 'font']
 
 export type FHookRecordProps = {
-  tab?: chrome.tabs.Tab
-  config?: Partial<LocalStorageConfig>
   records?: ToolbarNoticeRecord['data']
 }
 

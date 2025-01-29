@@ -24,7 +24,6 @@ function App() {
   const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
   const [hostPart, setHostPart] = useState<[string, string]>()
-  const [config, setConfig] = useState<Partial<LocalStorageConfig>>()
 
   const [hookRecords, setHookRecords] = useState<ToolbarNoticeRecord['data']>()
   const [isWhitelist, setIsWhitelist] = useState(false)
@@ -35,14 +34,12 @@ function App() {
 
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
-  useConfigStore((state) => {
+  const config = useConfigStore((state) => {
     state.config ?? state.loadStorage()
+    return state.config
   })
 
   useEffect(() => {
-    chrome.storage.local.get(['config']).then(({ config }: Partial<LocalStorage>) => {
-      setConfig(config)
-    })
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
       const tab = tabs[0]
       setTab(tab)
@@ -68,7 +65,7 @@ function App() {
 
   useEffect(() => {
     if (!config) return
-    setEnabled(!!config.enable)
+    setEnabled(config.enable)
     i18n.changeLanguage(config.language)
   }, [config])
 
@@ -99,20 +96,20 @@ function App() {
       {
         label: t('e.record'),
         icon: <AlertOutlined />,
-        children: <FHookRecord tab={tab} config={config} records={hookRecords} />,
+        children: <FHookRecord records={hookRecords} />,
       },
       {
         label: t('e.config'),
         icon: <SettingOutlined />,
-        children: <FConfig tab={tab} config={config} />,
+        children: <FConfig />,
       },
       {
         label: t('e.whitelist'),
         icon: <SafetyOutlined />,
-        children: <WhitelistView tab={tab} config={config} msgApi={messageApi} />,
+        children: <WhitelistView msgApi={messageApi} />,
       },
     ].map((item, index) => ({ ...item, key: String(index) }))
-  }, [i18n.language, config, tab, hookRecords])
+  }, [i18n.language, tab, hookRecords])
 
   return (
     <Layout className="overflow-y-auto no-scrollbar p-2 w-72 flex flex-col">

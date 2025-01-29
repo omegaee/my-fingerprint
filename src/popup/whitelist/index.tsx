@@ -11,11 +11,7 @@ import WhitelistItem from "./item";
 import { type MessageInstance } from "antd/es/message/interface";
 import { useTranslation } from "react-i18next";
 
-// const domainRegex = /^[a-zA-Z0-9\u4e00-\u9fa5][-a-zA-Z0-9\u4e00-\u9fa5]{0,62}(\.[a-zA-Z0-9\u4e00-\u9fa5][-a-zA-Z0-9\u4e00-\u9fa5]{0,62})+$/
-
 export type WhitelistProps = {
-  tab?: chrome.tabs.Tab
-  config?: Partial<LocalStorageConfig>
   msgApi?: MessageInstance
 }
 
@@ -29,7 +25,8 @@ export const WhitelistView = (props: WhitelistProps) => {
     setFilterValue(value.trim())
   })
   const { token } = theme.useToken()
-  
+
+
   useEffect(() => {
     chrome.storage.local.get('whitelist').then(({whitelist}: Partial<LocalStorage>) => {
       setWhitelist(whitelist ?? [])

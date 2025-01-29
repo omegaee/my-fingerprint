@@ -5,14 +5,11 @@ import NormalFpConfigGroup from "./group/normal-fp"
 import SpecialFpConfigGroup from "./group/special-fp"
 import OtherConfigGroup from "./group/other"
 
-export type FConfigProps = {
-  tab?: chrome.tabs.Tab
-  config?: Partial<LocalStorageConfig>
-}
+// export type FConfigProps = {
+// }
 
-export const FConfig = (props: FConfigProps) => {
+export const FConfig = () => {
   const [t, i18n] = useTranslation()
-
   const { token } = theme.useToken();
 
   const items = useMemo<CollapseProps['items']>(() => {
@@ -40,7 +37,7 @@ export const FConfig = (props: FConfigProps) => {
         style,
       },
     ].map((item, key) => ({ ...item, key }))
-  }, [i18n.language, props.config])
+  }, [i18n.language])
 
   return <Collapse className="h-full" size='small'
     style={{

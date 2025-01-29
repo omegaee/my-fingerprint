@@ -44,7 +44,8 @@
       "canvas": "Canvas Fingerprint",
       "audio": "Audio Fingerprint",
       "webgl": "WebGL Fingerprint",
-      "webrtc": "WebRTC Fingerprint",
+      "webrtc": "WebRTC",
+      "font": "Font Fingerprint",
 
       "e-language": "Language",
       "seed": "Global Seed",
@@ -62,7 +63,8 @@
       "canvas": "Canvas Fingerprint",
       "audio": "Audio Fingerprint",
       "webgl": "WebGL Fingerprint",
-      "webrtc": "WebRTC Fingerprint",
+      "webrtc": "WebRTC",
+      "font": "Font Fingerprint",
 
       "e-language": "Language",
       "seed": "Global Seed, Acts on **Randomization based on global seed** Options",
