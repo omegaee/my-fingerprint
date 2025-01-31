@@ -36,16 +36,16 @@ export const genRandomSeed = function () {
 }
 
 /**
- * 对字符串hash，生成32位种子
+ * 字符串的number类型hash
  */
 export const hashNumberFromString = (input: string): number => {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
     let char = input.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
+    hash = hash & hash;
   }
-  return hash % 2147483647;
+  return hash % Number.MAX_SAFE_INTEGER;
 }
 
 /**

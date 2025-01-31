@@ -63,7 +63,7 @@ export interface RawHookObject {
 /**
  * Random Value
  */
-// const seedFuncMap: Record<string, (seed: number) => any> = {
+// type RandomFuncMap = Record<FuncKey, RandomFunc>
 const randomFuncMap = {
   'navigator.language': randomLanguage,
   'navigator.languages': randomLanguages,
@@ -75,14 +75,14 @@ const randomFuncMap = {
   'other.canvas': randomCanvasNoise,
   'other.audio': randomAudioNoise,
   'other.webgl': randomWebglNoise,
-  // 'other.webrtc': (seed: number) => 'hello',
   'other.font': randomFontNoise,
+  'other.webgpu': undefined,
 }
 
 /**
  * Custom Value
  */
-// const valueFuncMap: Record<string, (value: any) => any> = {
+// type ValueFuncMap = Record<FuncKey, ValueFunc>
 const valueFuncMap = {
   'other.timezone': undefined,
 }
@@ -144,7 +144,7 @@ export class FingerprintHandler {
     this.info = info
     this.conf = config
     this.seed = {
-      page: seededRandom(info.tabId),
+      page: seededRandom(info.tabId, Number.MAX_SAFE_INTEGER, 1),
       domain: hashNumberFromString(info.host),
       browser: config.browserSeed ?? genRandomSeed(),
       global: config.customSeed ?? genRandomSeed(),
@@ -231,7 +231,7 @@ export class FingerprintHandler {
   /**
    * hook iframe
    */
-  public hookIframe(iframe: HTMLIFrameElement) {
+  public hookIframe = (iframe: HTMLIFrameElement) => {
     new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
   }
 
@@ -304,5 +304,17 @@ export class FingerprintHandler {
     return this._getValue(key, mode, args)
   }
 
+  public random = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
+    recordAndSend(key)
+    const seed = this.getSeedByHookValue(mode)
+    return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
+  }
+
+  public randomDebounce = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
+    recordAndSendDebounce(key)
+    const seed = this.getSeedByHookValue(mode)
+    console.log(mode?.type, seed);
+    return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
+  }
 
 }

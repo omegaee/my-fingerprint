@@ -46,6 +46,7 @@
       "webgl": "WebGL指纹",
       "webrtc": "WebRTC",
       "font": "字体指纹",
+      "webgpu": "WebGPU指纹",
 
       "e-language": "语言",
       "seed": "全局种子",
@@ -65,6 +66,7 @@
       "webgl": "WebGL指纹",
       "webrtc": "WebRTC",
       "font": "字体指纹",
+      "webgpu": "WebGPU指纹",
 
       "e-language": "语言",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",

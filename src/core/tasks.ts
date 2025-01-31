@@ -557,6 +557,135 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onDisable: (_) => { },
   },
 
+  'hook webgpu': {
+    condition: ({ conf }) => conf.fingerprint.other.webgpu.type !== HookType.default,
+    onEnable: ({ win, conf, randomDebounce }) => {
+      /*** GPUAdapter ***/
+      // @ts-ignore
+      if (win.GPUAdapter) {
+        try {
+          const genNoise = (raw: any, offset: number) => {
+            const rn = randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset, 1, 64)!
+            return raw ? raw - Math.floor(rn) : raw;
+          }
+          // @ts-ignore
+          const _GPUAdapter = Object.getOwnPropertyDescriptor(win.GPUAdapter.prototype, "limits")!.get!;
+          // @ts-ignore
+          Object.defineProperty(win.GPUAdapter.prototype, "limits", {
+            get: new Proxy(_GPUAdapter, {
+              apply(target: any, self, args) {
+                const result = target.apply(self, args);
+                const _limits = _GPUAdapter.call(self);
+                return new Proxy(result, {
+                  get(target, prop) {
+                    switch (prop) {
+                      case "maxBufferSize": return genNoise(_limits[prop], 0);
+                      case "maxStorageBufferBindingSize": return genNoise(_limits[prop], 1);
+                    }
+                    const value = target[prop];
+                    return typeof value === "function" ? value.bind(target) : value;
+                  }
+                });
+              }
+            })
+          });
+        } catch (e) { }
+      }
+
+      /*** GPUDevice ***/
+      // @ts-ignore
+      if (win.GPUDevice) {
+        try {
+          const genNoise = (raw: any, offset: number) => {
+            const rn = randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset, 1, 64)!
+            return raw ? raw - Math.floor(rn) : raw;
+          }
+          // @ts-ignore
+          const _GPUDevice = Object.getOwnPropertyDescriptor(win.GPUDevice.prototype, "limits")!.get!;
+          // @ts-ignore
+          Object.defineProperty(win.GPUDevice.prototype, "limits", {
+            get: new Proxy(_GPUDevice, {
+              apply(target: any, self, args) {
+                const result = target.apply(self, args);
+                const _limits = _GPUDevice.call(self);
+                return new Proxy(result, {
+                  get(target, prop) {
+                    switch (prop) {
+                      case "maxBufferSize": return genNoise(_limits[prop], 0);
+                      case "maxStorageBufferBindingSize": return genNoise(_limits[prop], 1);
+                    }
+                    const value = target[prop];
+                    return typeof value === "function" ? value.bind(target) : value;
+                  }
+                });
+              }
+            })
+          });
+        } catch (e) { }
+      }
+
+      /*** GPUCommandEncoder ***/
+      // @ts-ignore
+      if (win.GPUCommandEncoder?.prototype?.beginRenderPass) {
+        try {
+          // @ts-ignore
+          win.GPUCommandEncoder.prototype.beginRenderPass = new Proxy(win.GPUCommandEncoder.prototype.beginRenderPass, {
+            apply(target, self, args) {
+              if (args?.[0]?.colorAttachments?.[0]?.clearValue) {
+                try {
+                  const _clearValue = args[0].colorAttachments[0].clearValue
+                  let offset = 0
+                  for (let key in _clearValue) {
+                    let value = _clearValue[key]
+                    const noise: number = randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset++, 0.01, 0.001)!
+                    value += value * noise * -1
+                    _clearValue[key] = Math.abs(value)
+                  }
+                  args[0].colorAttachments[0].clearValue = _clearValue;
+                } catch (e) { }
+              }
+              return target.apply(self, args);
+            }
+          });
+        } catch (e) { }
+      }
+
+      /*** GPUQueue ***/
+      // @ts-ignore
+      if (win.GPUQueue?.prototype?.writeBuffer) {
+        try {
+          // @ts-ignore
+          win.GPUQueue.prototype.writeBuffer = new Proxy(win.GPUQueue.prototype.writeBuffer, {
+            apply(target, self, args) {
+              const _data = args?.[2]
+              if (_data && _data instanceof Float32Array) {
+                try {
+                  const count = Math.ceil(_data.length * 0.05)
+                  let offset = 0
+                  const selected = Array(_data.length)
+                    .map((_, i) => i)
+                    .sort(() => randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset++, 1, -1)!)
+                    .slice(0, count);
+
+                  offset = 0
+                  for (let i = 0; i < selected.length; i++) {
+                    const index = selected[i];
+                    let value = _data[index];
+                    const noise: number = randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset++, +0.0001, -0.0001)!
+                    _data[index] += noise * value;
+                  }
+                  // args[2] = _data;
+                } catch (e) { }
+              }
+              return target.apply(self, args);
+            }
+          });
+        } catch (e) { }
+      }
+    },
+    onDisable(_) { },
+  }
+
 }
 
 export const hookTasks = Object.entries(hookTaskMap).map(([name, task]): HookTask => ({ ...task, name }))

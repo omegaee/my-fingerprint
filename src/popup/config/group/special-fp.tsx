@@ -62,6 +62,14 @@ export const SpecialFpConfigGroup = memo(() => {
       defaultValue={fp.other.font.type}
       onChange={(type) => fp.other.font.type = type as any}
     />
+
+    <SelectFpConfigItem
+      title={t('item.title.webgpu')}
+      desc={t('item.desc.webgpu')}
+      options={BASE_TYPES}
+      defaultValue={fp.other.webgpu.type}
+      onChange={(type) => fp.other.webgpu.type = type as any}
+    />
   </>
 })
 

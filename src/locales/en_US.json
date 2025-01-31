@@ -46,6 +46,7 @@
       "webgl": "WebGL Fingerprint",
       "webrtc": "WebRTC",
       "font": "Font Fingerprint",
+      "webgpu": "WebGPU Fingerprint",
 
       "e-language": "Language",
       "seed": "Global Seed",
@@ -65,6 +66,7 @@
       "webgl": "WebGL Fingerprint",
       "webrtc": "WebRTC",
       "font": "Font Fingerprint",
+      "webgpu": "WebGPU Fingerprint",
 
       "e-language": "Language",
       "seed": "Global Seed, Acts on **Randomization based on global seed** Options",

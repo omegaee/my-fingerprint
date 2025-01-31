@@ -41,6 +41,7 @@ type HookFingerprint = {
     webgl: BaseHookMode
     webrtc: DefaultHookMode | DisableHookMode
     font: BaseHookMode
+    webgpu: BaseHookMode
   }
 }
 
