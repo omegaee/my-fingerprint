@@ -34,8 +34,7 @@
   },
   "item": {
     "title": {
-      "equipment": "Equipment Info",
-      "language": "Browser Language",
+      "equipment": "UserAgent Info",
       "languages": "Browser Language",
       "hardwareConcurrency": "Number of logical processors",
       "size": "Screen Size",
@@ -54,9 +53,8 @@
       "hook-iframe": "Iframe Hooks"
     },
     "desc": {
-      "equipment": "Equipment Info\n\n**navigator.appVersion**\n\n**navigator.userAgent**\n\n**navigator.userAgentData**",
-      "language": "Browser Language\n\n**navigator.language**",
-      "languages": "Browser Language\n\n**navigator.language**\n\nMultiple values are separated by commas",
+      "equipment": "UserAgent Info\n\n**navigator.appVersion**\n\n**navigator.userAgent**\n\n**navigator.userAgentData**",
+      "languages": "Browser Language\n\n**navigator.languages**\n\n**navigator.language**\n\nMultiple values are separated by commas",
       "hardwareConcurrency": "Number of logical processors\n\n**navigator.hardwareConcurrency**",
       "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
       "depth": "Screen Color Depth\n\n**screen.colorDepth**\n\n**screen.pixelDepth**",

@@ -1,7 +1,6 @@
 import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
 import {
-  randomAudioNoise,
   randomCanvasNoise,
   randomColorDepth,
   randomFontNoise,
@@ -73,7 +72,7 @@ const randomFuncMap = {
   'screen.colorDepth': randomColorDepth,
   'screen.pixelDepth': randomPixelDepth,
   'other.canvas': randomCanvasNoise,
-  'other.audio': randomAudioNoise,
+  'other.audio': undefined,
   'other.webgl': randomWebglNoise,
   'other.font': randomFontNoise,
   'other.webgpu': undefined,
@@ -313,7 +312,6 @@ export class FingerprintHandler {
   public randomDebounce = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
     recordAndSendDebounce(key)
     const seed = this.getSeedByHookValue(mode)
-    console.log(mode?.type, seed);
     return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
   }
 

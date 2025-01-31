@@ -107,13 +107,6 @@ export const randomCanvasNoise = (seed: number) => {
 }
 
 /**
- * 随机音频噪音
- */
-export const randomAudioNoise = (seed: number) => {
-  return seededRandom(seed)
-}
-
-/**
  * 获取[x, y]，区间[-1, 1]
  */
 export const randomWebglNoise = (seed: number): [number, number] => {
@@ -121,10 +114,10 @@ export const randomWebglNoise = (seed: number): [number, number] => {
 }
 
 /**
- * 获取随机字体噪音
+ * 获取随机字体噪音 [-2, 2]
  */
-export const randomFontNoise = (seed: number, len: number): 1 | 0 | -1 => {
+export const randomFontNoise = (seed: number, len: number): number => {
   const random = seededRandom(hashNumberFromString(String(seed + len)), 1, 0)
   if (random < 0.9) return 0;
-  return random < 0.5 ? -1 : 1
+  return (Math.floor(random * 1000) % 5) - 2
 }

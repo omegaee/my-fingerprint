@@ -1,4 +1,4 @@
-const fKeys: string[] = ['appVersion', 'platform', 'userAgent', 'language', 'hardwareConcurrency', 'height', 'width', 'colorDepth', 'pixelDepth', 'timezone', 'canvas', 'audio', 'webgl', 'font', 'webgpu']
+const fKeys: string[] = ['appVersion', 'platform', 'userAgent', 'language', 'languages', 'hardwareConcurrency', 'height', 'width', 'colorDepth', 'pixelDepth', 'timezone', 'canvas', 'audio', 'font', 'webgl', 'webgpu', 'webrtc']
 
 export type FHookRecordProps = {
   records?: ToolbarNoticeRecord['data']

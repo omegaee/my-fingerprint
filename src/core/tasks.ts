@@ -344,12 +344,12 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'hook audio': {
     condition: ({ conf }) => conf.fingerprint.other.audio.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, getValue }) => {
+    onEnable: ({ win, conf, rawObjects, random }) => {
       if (!rawObjects.createDynamicsCompressor) {
         rawObjects.createDynamicsCompressor = win.OfflineAudioContext.prototype.createDynamicsCompressor
         win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(rawObjects.createDynamicsCompressor, {
           apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
-            const value: number | null = getValue('other.audio', conf.fingerprint.other.audio)
+            const value: number | null = random('other.audio', conf.fingerprint.other.audio)
             if (value === null) return target.apply(thisArg, args)
             const compressor = target.apply(thisArg, args)
             // 创建一个增益节点，添加噪音
@@ -521,10 +521,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   'hook font': {
     condition: ({ conf }) => conf.fingerprint.other.font.type !== HookType.default,
     onEnable: ({ win, conf, getValueDebounce }) => {
-      const heightOwnGet = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetHeight")?.get
-      if (heightOwnGet) {
+      const _offsetHeight = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetHeight")?.get
+      if (_offsetHeight) {
         Object.defineProperty(win.HTMLElement.prototype, "offsetHeight", {
-          get: new Proxy(heightOwnGet, {
+          get: new Proxy(_offsetHeight, {
             apply(target, thisArg: HTMLElement, args: any) {
               try {
                 // const height = Math.floor(thisArg.getBoundingClientRect().height);
@@ -537,10 +537,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           })
         });
       }
-      const widthOwnGet = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetWidth")?.get
-      if (widthOwnGet) {
+      const _offsetWidth = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetWidth")?.get
+      if (_offsetWidth) {
         Object.defineProperty(win.HTMLElement.prototype, "offsetWidth", {
-          get: new Proxy(widthOwnGet, {
+          get: new Proxy(_offsetWidth, {
             apply(target, thisArg: HTMLElement, args: any) {
               try {
                 // const width = Math.floor(thisArg.getBoundingClientRect().width);
@@ -575,14 +575,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             get: new Proxy(_GPUAdapter, {
               apply(target: any, self, args) {
                 const result = target.apply(self, args);
-                const _limits = _GPUAdapter.call(self);
+                // const _limits = _GPUAdapter.call(self);
                 return new Proxy(result, {
                   get(target, prop) {
-                    switch (prop) {
-                      case "maxBufferSize": return genNoise(_limits[prop], 0);
-                      case "maxStorageBufferBindingSize": return genNoise(_limits[prop], 1);
-                    }
                     const value = target[prop];
+                    switch (prop) {
+                      case "maxBufferSize": return genNoise(value, 0);
+                      case "maxStorageBufferBindingSize": return genNoise(value, 1);
+                    }
                     return typeof value === "function" ? value.bind(target) : value;
                   }
                 });
@@ -607,14 +607,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             get: new Proxy(_GPUDevice, {
               apply(target: any, self, args) {
                 const result = target.apply(self, args);
-                const _limits = _GPUDevice.call(self);
+                // const _limits = _GPUDevice.call(self);
                 return new Proxy(result, {
                   get(target, prop) {
-                    switch (prop) {
-                      case "maxBufferSize": return genNoise(_limits[prop], 0);
-                      case "maxStorageBufferBindingSize": return genNoise(_limits[prop], 1);
-                    }
                     const value = target[prop];
+                    switch (prop) {
+                      case "maxBufferSize": return genNoise(value, 0);
+                      case "maxStorageBufferBindingSize": return genNoise(value, 1);
+                    }
                     return typeof value === "function" ? value.bind(target) : value;
                   }
                 });

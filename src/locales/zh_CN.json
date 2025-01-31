@@ -34,8 +34,7 @@
   },
   "item": {
     "title": {
-      "equipment": "设备信息",
-      "language": "浏览器语言",
+      "equipment": "UserAgent信息",
       "languages": "浏览器语言",
       "hardwareConcurrency": "逻辑处理器数量",
       "size": "屏幕尺寸",
@@ -54,9 +53,8 @@
       "hook-iframe": "Iframe钩子"
     },
     "desc": {
-      "equipment": "设备信息\n\n**navigator.appVersion**\n\n**navigator.userAgent**\n\n**navigator.userAgentData**",
-      "language": "浏览器语言\n\n**navigator.language**",
-      "languages": "浏览器语言\n\n**navigator.language**\n\n多个值用逗号分隔",
+      "equipment": "UserAgent信息\n\n**navigator.appVersion**\n\n**navigator.userAgent**\n\n**navigator.userAgentData**",
+      "languages": "浏览器语言\n\n**navigator.languages**\n\n**navigator.language**\n\n多个值用逗号分隔",
       "hardwareConcurrency": "逻辑处理器数量\n\n**navigator.hardwareConcurrency**",
       "size": "屏幕尺寸\n\n**screen.width**\n\n**screen.height**",
       "depth": "屏幕颜色深度\n\n**screen.colorDepth**\n\n**screen.pixelDepth**",
