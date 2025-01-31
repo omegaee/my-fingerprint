@@ -43,7 +43,7 @@ const genDefaultLocalStorage = (): LocalStorage => {
       browserSeed: genRandomSeed(),
       fingerprint: {
         navigator: {
-          equipment: browserHook,
+          equipment: defaultHook,
           language: defaultHook,
           languages: defaultHook,
           hardwareConcurrency: defaultHook,
