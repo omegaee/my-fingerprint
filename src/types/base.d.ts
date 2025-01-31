@@ -21,7 +21,7 @@ type DefaultHookMode = {
   type: HookType.default
 }
 
-type BaseHookMode = DefaultHookMode | {
+type RandomHookMode = {
   type: HookType.page | HookType.browser | HookType.domain | HookType.global
 }
 
@@ -34,4 +34,4 @@ type DisableHookMode = {
   type: HookType.disabled
 }
 
-type HookMode<T=any> = BaseHookMode | ValueHookMode<T> | DisableHookMode
+type HookMode<T=any> = DefaultHookMode | RandomHookMode | ValueHookMode<T> | DisableHookMode

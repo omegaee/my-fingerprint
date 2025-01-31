@@ -34,7 +34,7 @@ let newVersion: string | undefined
 const genDefaultLocalStorage = (): LocalStorage => {
   const manifest = chrome.runtime.getManifest()
   const defaultHook: DefaultHookMode = { type: HookType.default }
-  const browserHook: BaseHookMode = { type: HookType.browser }
+  const browserHook: RandomHookMode = { type: HookType.browser }
   return {
     version: manifest.version,
     config: {

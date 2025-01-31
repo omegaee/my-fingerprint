@@ -23,25 +23,25 @@ type LocalStorageConfig = {
 
 type HookFingerprint = {
   navigator: {
-    equipment: BaseHookMode
-    language: BaseHookMode | ValueHookMode<string>
-    languages: BaseHookMode | ValueHookMode<string[]>
-    hardwareConcurrency: BaseHookMode | ValueHookMode<number>
+    equipment: DefaultHookMode | RandomHookMode
+    language: DefaultHookMode | RandomHookMode | ValueHookMode<string>
+    languages: DefaultHookMode | RandomHookMode | ValueHookMode<string[]>
+    hardwareConcurrency: DefaultHookMode | RandomHookMode | ValueHookMode<number>
   }
   screen: {
-    height: BaseHookMode | ValueHookMode<number>
-    width: BaseHookMode | ValueHookMode<number>
-    colorDepth: BaseHookMode | ValueHookMode<number>
-    pixelDepth: BaseHookMode | ValueHookMode<number>
+    height: DefaultHookMode | RandomHookMode | ValueHookMode<number>
+    width: DefaultHookMode | RandomHookMode | ValueHookMode<number>
+    colorDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
+    pixelDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
   }
   other: {
     timezone: DefaultHookMode | ValueHookMode<TimeZoneInfo>
-    canvas: BaseHookMode
-    audio: BaseHookMode
-    webgl: BaseHookMode
+    canvas: DefaultHookMode | RandomHookMode
+    audio: DefaultHookMode | RandomHookMode
+    webgl: DefaultHookMode | RandomHookMode
     webrtc: DefaultHookMode | DisableHookMode
-    font: BaseHookMode
-    webgpu: BaseHookMode
+    font: DefaultHookMode | RandomHookMode
+    webgpu: DefaultHookMode | RandomHookMode
   }
 }
 
