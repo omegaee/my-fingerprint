@@ -29,10 +29,10 @@ export const compareVersions = function (v1: string, v2: string): -1 | 0 | 1 {
 }
 
 /**
- * 生成最大32位的种子
+ * 生成随机的种子
  */
 export const genRandomSeed = function () {
-  return Math.floor(Math.random() * Math.pow(2, 32))
+  return Math.floor(seededRandom(Math.random() * 1e6, Number.MAX_SAFE_INTEGER, 1))
 }
 
 /**

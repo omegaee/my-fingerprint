@@ -4,6 +4,7 @@ import { useConfigStore } from "@/popup/stores/config"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown";
 import { memo, useMemo } from "react";
+import { hashNumberFromString } from "@/utils/base";
 
 const LANG_OPTIONS = [
   {
@@ -50,8 +51,17 @@ export const OtherConfigGroup = memo(() => {
     <ConfigItem.Input
       title={t('item.title.seed')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.seed')}</Markdown>} />}
-      defaultValue={config.customSeed}
-      onDebouncedInput={(value) => config.customSeed = Number(value)}
+      defaultValue={config.customSeedInput}
+      onDebouncedInput={(value) => {
+        config.customSeedInput = value
+
+        const _value = Number(value)
+        if (isNaN(_value)) {
+          config.customSeed = hashNumberFromString(value)
+        } else {
+          config.customSeed = _value
+        }
+      }}
     />
 
     <ConfigItem.Switch

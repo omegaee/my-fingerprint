@@ -3,7 +3,10 @@ import { hashNumberFromString } from "./base"
 /**
  * 线性同余，根据seed产生随机数
  */
-export const seededRandom = function (seed: number, max: number = 1, min: number = 0): number {
+export const seededRandom = function (seed: number | string, max: number = 1, min: number = 0): number {
+  if (typeof seed === 'string') {
+    seed = hashNumberFromString(seed)
+  }
   const mod = 233280;
   seed = (seed * 9301 + 49297) % mod;
   if (seed < 0) seed += mod; // 确保 seed 为正数
@@ -14,14 +17,14 @@ export const seededRandom = function (seed: number, max: number = 1, min: number
 /**
  * 根据种子随机获取数组中的元素
  */
-const seededEl = <T>(arr: Readonly<T[]>, seed: number): T => {
+export const seededEl = <T>(arr: Readonly<T[]>, seed: number): T => {
   return arr[seed % arr.length];
 }
 
 /**
  * 数组洗牌
  */
-const shuffleArray = <T>(array: Readonly<T[]>, seed: number): T[] => {
+export const shuffleArray = <T>(array: Readonly<T[]>, seed: number): T[] => {
   const _array = [...array]
   let m = _array.length, t: T, i: number;
 
@@ -40,10 +43,6 @@ const shuffleArray = <T>(array: Readonly<T[]>, seed: number): T[] => {
   return _array;
 }
 
-const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-const hardwareConcurrencys = [8, 12, 16]
-const colorDepths = [16, 24, 32]
-const pixelDepths = [16, 24, 32]
 
 /**
  * 随机屏幕宽高信息
@@ -60,6 +59,7 @@ export const randomScreenSize = (seed: number): SizeInfo => {
 }
 
 const rawLanguages = navigator.languages
+
 /**
  * 随机语言标识
  */
@@ -72,27 +72,6 @@ export const randomLanguage = (seed: number) => {
  */
 export const randomLanguages = (seed: number) => {
   return shuffleArray(rawLanguages, seed)
-}
-
-/**
- * 随机逻辑处理器数量
- */
-export const randomHardwareConcurrency = (seed: number) => {
-  return seededEl(hardwareConcurrencys, seed)
-}
-
-/**
- * 随机颜色深度
- */
-export const randomColorDepth = (seed: number) => {
-  return seededEl(colorDepths, seed)
-}
-
-/**
- * 随机位深度
- */
-export const randomPixelDepth = (seed: number) => {
-  return seededEl(pixelDepths, seed)
 }
 
 /**

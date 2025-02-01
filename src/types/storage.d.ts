@@ -15,10 +15,12 @@ type LocalStorageConfig = {
   browserSeed: number
   // 指纹
   fingerprint: HookFingerprint
-  // 其他
+  // 功能
   language: string
   hookNetRequest: boolean
   hookBlankIframe: boolean
+  // 其他
+  customSeedInput: string
 }
 
 type HookFingerprint = {

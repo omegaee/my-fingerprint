@@ -2,19 +2,17 @@ import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
 import {
   randomCanvasNoise,
-  randomColorDepth,
   randomFontNoise,
-  randomHardwareConcurrency,
   randomLanguage,
   randomLanguages,
-  randomPixelDepth,
   randomScreenSize,
   randomWebglNoise,
-  seededRandom
+  seededEl,
+  seededRandom,
 } from "../utils/data";
 import { debounce, debounceByFirstArg } from "../utils/timer";
 import { postSetHookRecords, unwrapMessage } from "@/message/content";
-import { genRandomSeed, hashNumberFromString } from "../utils/base";
+import { genRandomSeed } from "../utils/base";
 import { ContentMsg } from '@/types/enum'
 import hookTasks from "./tasks";
 
@@ -59,6 +57,13 @@ export interface RawHookObject {
   replaceChild: typeof HTMLElement.prototype.replaceChild
 }
 
+const RAW = {
+  // chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+  hardwareConcurrencys: [8, 12, 16],
+  colorDepths: [16, 24, 32],
+  pixelDepths: [16, 24, 32],
+}
+
 /**
  * Random Value
  */
@@ -66,11 +71,11 @@ export interface RawHookObject {
 const randomFuncMap = {
   'navigator.language': randomLanguage,
   'navigator.languages': randomLanguages,
-  'navigator.hardwareConcurrency': randomHardwareConcurrency,
+  'navigator.hardwareConcurrency': (seed: number) => seededEl(RAW.hardwareConcurrencys, seed),
   'screen.height': (seed: number) => randomScreenSize(seed).height,
   'screen.width': (seed: number) => randomScreenSize(seed).width,
-  'screen.colorDepth': randomColorDepth,
-  'screen.pixelDepth': randomPixelDepth,
+  'screen.colorDepth': (seed: number) => seededEl(RAW.colorDepths, seed),
+  'screen.pixelDepth': (seed: number) => seededEl(RAW.pixelDepths, seed),
   'other.canvas': randomCanvasNoise,
   'other.audio': undefined,
   'other.webgl': randomWebglNoise,
@@ -90,8 +95,6 @@ type RandomFunc = (seed: number, args?: any) => any
 type ValueFunc = (value: any, args?: any) => any
 type FuncKey = keyof typeof randomFuncMap | keyof typeof valueFuncMap
 
-// hook缓存
-// const cache: Partial<Record<HookFingerprintKey, any>> = {}
 // record缓存
 const hookRecords: Map<string, number> = new Map()
 
@@ -142,9 +145,10 @@ export class FingerprintHandler {
     this.win = win
     this.info = info
     this.conf = config
+    
     this.seed = {
-      page: seededRandom(info.tabId, Number.MAX_SAFE_INTEGER, 1),
-      domain: hashNumberFromString(info.host),
+      page: Math.floor(seededRandom(info.tabId, Number.MAX_SAFE_INTEGER, 1)),
+      domain: Math.floor(seededRandom(info.host, Number.MAX_SAFE_INTEGER, 1)),
       browser: config.browserSeed ?? genRandomSeed(),
       global: config.customSeed ?? genRandomSeed(),
     }

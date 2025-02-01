@@ -14,7 +14,7 @@ import { randomLanguages } from "@/utils/data";
 
 const UA_NET_RULE_ID = 1
 
-const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['canvas', 'audio', 'webgl', 'webrtc', 'timezone']
+const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['timezone', 'canvas', 'audio', 'font', 'webgl', 'webrtc', 'webgpu']
 
 let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
@@ -35,12 +35,15 @@ const genDefaultLocalStorage = (): LocalStorage => {
   const manifest = chrome.runtime.getManifest()
   const defaultHook: DefaultHookMode = { type: HookType.default }
   const browserHook: RandomHookMode = { type: HookType.browser }
+
+  const customSeed = genRandomSeed();
   return {
     version: manifest.version,
     config: {
       enable: true,
-      customSeed: genRandomSeed(),
+      customSeed,
       browserSeed: genRandomSeed(),
+      customSeedInput: String(customSeed),
       fingerprint: {
         navigator: {
           equipment: defaultHook,
