@@ -24,7 +24,7 @@ export type HookTask = {
 export interface RawHookObject {
   // navigatorDescriptor: PropertyDescriptor
   // screenDescriptor: PropertyDescriptor
-  
+
   getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
 }
 
@@ -79,7 +79,7 @@ export const sendRecordMessage = debounce(() => {
 /**
  * 记录并发送消息
  */
-export const recordAndSend = function (key: string) {
+export const recordHook = function (key: string) {
   const parts = key.split('.')
   key = parts[parts.length - 1]
   const oldValue = hookRecords.get(key) ?? 0
@@ -87,7 +87,7 @@ export const recordAndSend = function (key: string) {
   sendRecordMessage()
 }
 
-export const recordAndSendDebounce = debounceByFirstArg(recordAndSend, 200)
+export const recordHookDebounce = debounceByFirstArg(recordHook, 200)
 
 export type WindowInfo = {
   tabId: number,
@@ -174,8 +174,8 @@ export class FingerprintHandler {
   /**
    * 获取value对应的的seed
    */
-  public getSeedByHookValue = (value?: any): number | null => {
-    switch (value?.type) {
+  public getSeed = (type?: HookType): number | null => {
+    switch (type) {
       case HookType.page:
         return this.seed.page
       case HookType.domain:
@@ -205,7 +205,7 @@ export class FingerprintHandler {
       case HookType.page: {
         const func: RandomFunc | undefined = (randomFuncMap as any)[key];
         if (func) {
-          const seed = this.getSeedByHookValue(mode)
+          const seed = this.getSeed(mode.type)
           if (seed !== null) return func(seed, args);
         }
         return null
@@ -218,25 +218,25 @@ export class FingerprintHandler {
 
   public getValue = (key: FuncKey, mode?: HookMode, args?: any): any | null => {
     if (!mode) return null;
-    recordAndSend(key)
+    recordHook(key)
     return this._getValue(key, mode, args)
   }
 
   public getValueDebounce = (key: FuncKey, mode?: HookMode, args?: any): any | null => {
     if (!mode) return null;
-    recordAndSendDebounce(key)
+    recordHookDebounce(key)
     return this._getValue(key, mode, args)
   }
 
   public random = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
-    recordAndSend(key)
-    const seed = this.getSeedByHookValue(mode)
+    recordHook(key)
+    const seed = this.getSeed(mode?.type)
     return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
   }
 
   public randomDebounce = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
-    recordAndSendDebounce(key)
-    const seed = this.getSeedByHookValue(mode)
+    recordHookDebounce(key)
+    const seed = this.getSeed(mode?.type)
     return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
   }
 

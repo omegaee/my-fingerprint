@@ -1,6 +1,6 @@
 import { HookType } from '@/types/enum'
 import { genRandomVersionUserAgent } from "@/utils/equipment";
-import { HookTask, recordAndSend } from "./core";
+import { HookTask, recordHook } from "./core";
 import { drawNoise, drawNoiseToWebgl, proxyUserAgentData } from './utils';
 import { getStandardDateTimeParts } from '@/utils/time';
 
@@ -80,51 +80,61 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'hook navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fingerprint.navigator) || conf.fingerprint.other.webrtc.type !== HookType.default,
-    onEnable: ({ win, conf, getSeedByHookValue, getValue }) => {
-      // const _navigator = win.Object.getOwnPropertyDescriptor(win, "navigator");
-      win.Object.defineProperty(win, 'navigator', {
-        value: new Proxy(win.navigator, {
-          get: (target: any, key: keyof Navigator | (string & {})) => {
-            switch (key) {
-              /* ua */
-              case 'userAgent': {
-                const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
-                recordAndSend(key)
-                return seed === null ? target[key] : genRandomVersionUserAgent(seed, target)
+    onEnable: ({ win, conf, getSeed, getValue }) => {
+      const _navigator = Object.getOwnPropertyDescriptor(win, "navigator")?.get;
+      _navigator && Object.defineProperty(win, 'navigator', {
+        get: new Proxy(_navigator, {
+          apply: (target: any, thisArg, args) => {
+            const result = target.apply(thisArg, args)
+            return new Proxy(result, {
+              get: (target: any, key: keyof Navigator | (string & {})) => {
+                switch (key) {
+                  /* ua */
+                  case 'userAgent': {
+                    const seed = getSeed(conf.fingerprint.navigator.equipment.type)
+                    if (seed !== null) {
+                      recordHook(key)
+                      return genRandomVersionUserAgent(seed, target)
+                    }
+                  }
+                  case 'appVersion': {
+                    const seed = getSeed(conf.fingerprint.navigator.equipment.type)
+                    if (seed !== null) {
+                      recordHook(key)
+                      return genRandomVersionUserAgent(seed, target, true)
+                    }
+                  }
+                  case 'userAgentData' as any: {
+                    const seed = getSeed(conf.fingerprint.navigator.equipment.type)
+                    if (seed !== null) {
+                      recordHook(key)
+                      return proxyUserAgentData(seed, target[key])
+                    }
+                  }
+                  /* webrtc */
+                  case 'getUserMedia':
+                  case 'mozGetUserMedia':
+                  case 'webkitGetUserMedia': {
+                    if (conf.fingerprint.other.webrtc.type === HookType.disabled) return undefined;
+                    break
+                  }
+                  case 'mediaDevices': {
+                    if (conf.fingerprint.other.webrtc.type === HookType.disabled) return null;
+                    break
+                  }
+                  case 'languages':
+                  case 'hardwareConcurrency': {
+                    const mode: HookMode | undefined = (conf.fingerprint.navigator as any)[key]
+                    const _key: any = 'navigator.' + key
+                    const value = getValue(_key, mode)
+                    if (value !== null) return value;
+                  }
+                }
+                const value = target[key]
+                return typeof value === 'function' ? value.bind(target) : value
               }
-              case 'appVersion': {
-                const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
-                recordAndSend(key)
-                return seed === null ? target[key] : genRandomVersionUserAgent(seed, target, true)
-              }
-              case 'userAgentData' as any: {
-                const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
-                recordAndSend(key)
-                return seed === null ? target[key] : proxyUserAgentData(seed, target[key])
-              }
-              /* webrtc */
-              case 'getUserMedia':
-              case 'mozGetUserMedia':
-              case 'webkitGetUserMedia': {
-                if (conf.fingerprint.other.webrtc.type === HookType.disabled) return undefined;
-                break
-              }
-              case 'mediaDevices': {
-                if (conf.fingerprint.other.webrtc.type === HookType.disabled) return null;
-                break
-              }
-              case 'languages':
-              case 'hardwareConcurrency': {
-                const mode: HookMode | undefined = (conf.fingerprint.navigator as any)[key]
-                const _key: any = 'navigator.' + key
-                const value = getValue(_key, mode)
-                return value === null ? target[key] : value
-              }
-            }
-
-            const value = target[key]
-            return typeof value === 'function' ? value.bind(target) : value
-          }
+            })
+          },
         })
       });
 
@@ -134,25 +144,29 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   'hook screen': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fingerprint.screen),
     onEnable: ({ win, conf, getValue }) => {
-      // const _screen = win.Object.getOwnPropertyDescriptor(win, "screen");
-      win.Object.defineProperty(win, 'screen', {
-        value: new Proxy(win.screen, {
-          get: (target: any, key: keyof Screen | (string & {})) => {
-            switch (key) {
-              case 'width':
-              case 'height':
-              case 'colorDepth':
-              case 'pixelDepth': {
-                const mode: HookMode | undefined = (conf.fingerprint.screen as any)[key]
-                const _key: any = 'screen.' + key
-                const value = getValue(_key, mode)
-                return value === null ? target[key] : value
+      const _screen = Object.getOwnPropertyDescriptor(win, "screen")?.get;
+      _screen && Object.defineProperty(win, 'screen', {
+        get: new Proxy(_screen, {
+          apply: (target: any, thisArg, args) => {
+            const result = target.apply(thisArg, args);
+            return new Proxy(result, {
+              get: (target: any, key: keyof Screen | (string & {})) => {
+                switch (key) {
+                  case 'width':
+                  case 'height':
+                  case 'colorDepth':
+                  case 'pixelDepth': {
+                    const mode: HookMode | undefined = (conf.fingerprint.screen as any)[key]
+                    const _key: any = 'screen.' + key
+                    const value = getValue(_key, mode)
+                    if (value !== null) return value;
+                  }
+                }
+                const value = target[key]
+                return typeof value === 'function' ? value.bind(target) : value
               }
-            }
-
-            const value = target[key]
-            return typeof value === 'function' ? value.bind(target) : value
-          }
+            })
+          },
         })
       })
     },
