@@ -2,8 +2,7 @@ import { compareVersions, genRandomSeed, urlToHttpHost } from "@/utils/base";
 import { debounce, debouncedAsync } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { HookType, RuntimeMsg } from '@/types/enum'
-import { selectTabByHost, sendMessageToAllTags } from "@/utils/tabs";
-import { tabChangeWhitelist } from "@/message/tabs";
+import { selectTabByHost } from "@/utils/tabs";
 import { genRandomVersionUserAgent, genRandomVersionUserAgentData } from "@/utils/equipment";
 
 // // @ts-ignore
@@ -346,10 +345,10 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
   switch (msg.type) {
     case RuntimeMsg.SetConfig: {
       updateLocalConfig(msg.config)
-      sendMessageToAllTags<SetConfigRequest>({
-        type: RuntimeMsg.SetConfig,
-        config: msg.config
-      })
+      // sendMessageToAllTags<SetConfigRequest>({
+      //   type: RuntimeMsg.SetConfig,
+      //   config: msg.config
+      // })
       break
     }
     case RuntimeMsg.GetNotice: {
@@ -380,7 +379,7 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
         selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
           if (tab.id) {
             setBadgeWhitelist(tab.id)
-            tabChangeWhitelist(tab.id, 'into')
+            // tabChangeWhitelist(tab.id, 'into')
           }
         }))
       } else if (msg.mode === 'del') {
@@ -388,7 +387,7 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
         selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
           if (tab.id) {
             remBadge(tab.id)
-            tabChangeWhitelist(tab.id, 'leave')
+            // tabChangeWhitelist(tab.id, 'leave')
           }
         }))
       }

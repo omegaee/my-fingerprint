@@ -7,7 +7,6 @@ import { getStandardDateTimeParts } from '@/utils/time';
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'iframe html hook': {
-    onlyOnceEnable: true,
     condition: ({ conf }) => conf.hookBlankIframe,
     onEnable: ({ win, hookIframe }) => {
       // 监听DOM初始化
@@ -35,221 +34,170 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'iframe script hook': {
     condition: ({ conf }) => conf.hookBlankIframe,
-    onEnable: ({ win, rawObjects, hookIframe }) => {
-      if (!rawObjects.appendChild || !rawObjects.insertBefore || !rawObjects.replaceChild) {
-        const apply = (target: any, thisArg: Object, args: any) => {
-          const res = target.apply(thisArg, args)
-          const node = args[0]
-          if (node?.tagName === 'IFRAME') {
-            hookIframe(node as HTMLIFrameElement)
-          }
-          return res
+    onEnable: ({ win, hookIframe }) => {
+      const apply = (target: any, thisArg: Object, args: any) => {
+        const res = target.apply(thisArg, args)
+        const node = args[0]
+        if (node?.tagName === 'IFRAME') {
+          hookIframe(node as HTMLIFrameElement)
         }
+        return res
+      }
 
-        if (!rawObjects.appendChild) {
-          rawObjects.appendChild = win.HTMLElement.prototype.appendChild
-          win.HTMLElement.prototype.appendChild = new Proxy(rawObjects.appendChild, { apply })
-        }
-        if (!rawObjects.insertBefore) {
-          rawObjects.insertBefore = win.HTMLElement.prototype.insertBefore
-          win.HTMLElement.prototype.insertBefore = new Proxy(rawObjects.insertBefore, { apply })
-        }
-        if (!rawObjects.replaceChild) {
-          rawObjects.replaceChild = win.HTMLElement.prototype.replaceChild
-          win.HTMLElement.prototype.replaceChild = new Proxy(rawObjects.replaceChild, { apply })
-        }
-      }
-    },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.appendChild) {
-        win.HTMLElement.prototype.appendChild = rawObjects.appendChild
-        rawObjects.appendChild = undefined
-      }
-      if (rawObjects.insertBefore) {
-        win.HTMLElement.prototype.insertBefore = rawObjects.insertBefore
-        rawObjects.insertBefore = undefined
-      }
-      if (rawObjects.replaceChild) {
-        win.HTMLElement.prototype.replaceChild = rawObjects.replaceChild
-        rawObjects.replaceChild = undefined
-      }
+      const _appendChild = win.HTMLElement.prototype.appendChild
+      win.HTMLElement.prototype.appendChild = new Proxy(_appendChild, { apply })
+
+      const _insertBefore = win.HTMLElement.prototype.insertBefore
+      win.HTMLElement.prototype.insertBefore = new Proxy(_insertBefore, { apply })
+
+      const _replaceChild = win.HTMLElement.prototype.replaceChild
+      win.HTMLElement.prototype.replaceChild = new Proxy(_replaceChild, { apply })
     },
   },
 
-  'hook getOwnPropertyDescriptor': {
-    condition: () => true,
-    onEnable: ({ win, rawObjects }) => {
-      if (!rawObjects.getOwnPropertyDescriptor) {
-        rawObjects.getOwnPropertyDescriptor = win.Object.getOwnPropertyDescriptor
+  // 'hook getOwnPropertyDescriptor': {
+  //   condition: () => true,
+  //   onEnable: ({ win, rawObjects }) => {
+  //     if (!rawObjects.getOwnPropertyDescriptor) {
+  //       rawObjects.getOwnPropertyDescriptor = win.Object.getOwnPropertyDescriptor
 
-        const navigatorDesc = rawObjects.navigatorDescriptor ?? win.Object.getOwnPropertyDescriptor(win, 'navigator')
-        const screenDesc = rawObjects.screenDescriptor ?? win.Object.getOwnPropertyDescriptor(win, 'screen')
+  //       const navigatorDesc = rawObjects.navigatorDescriptor ?? win.Object.getOwnPropertyDescriptor(win, 'navigator')
+  //       const screenDesc = rawObjects.screenDescriptor ?? win.Object.getOwnPropertyDescriptor(win, 'screen')
 
-        win.Object.getOwnPropertyDescriptor = new Proxy(rawObjects.getOwnPropertyDescriptor, {
-          apply: (target, thisArg: Object, args: Parameters<typeof Object.getOwnPropertyDescriptor>) => {
-            const [obj, prop] = args
-            if (obj === win) {
-              if (prop === 'navigator') return navigatorDesc
-              if (prop === 'screen') return screenDesc
-            }
-            return target.apply(thisArg, args)
-          }
-        })
-      }
-    },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.getOwnPropertyDescriptor) {
-        win.Object.getOwnPropertyDescriptor = rawObjects.getOwnPropertyDescriptor
-        rawObjects.getOwnPropertyDescriptor = undefined
-      }
-    }
-  },
+  //       win.Object.getOwnPropertyDescriptor = new Proxy(rawObjects.getOwnPropertyDescriptor, {
+  //         apply: (target, thisArg: Object, args: Parameters<typeof Object.getOwnPropertyDescriptor>) => {
+  //           const [obj, prop] = args
+  //           if (obj === win) {
+  //             if (prop === 'navigator') return navigatorDesc
+  //             if (prop === 'screen') return screenDesc
+  //           }
+  //           return target.apply(thisArg, args)
+  //         }
+  //       })
+  //     }
+  //   },
+  // },
 
   'hook navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fingerprint.navigator) || conf.fingerprint.other.webrtc.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, getSeedByHookValue, getValue }) => {
-      if (!rawObjects.navigatorDescriptor) {
-        rawObjects.navigatorDescriptor = win.Object.getOwnPropertyDescriptor(win, "navigator");
-        win.Object.defineProperty(win, 'navigator', {
-          value: new Proxy(win.navigator, {
-            get: (target: any, key: keyof Navigator | (string & {})) => {
-              switch (key) {
-                /* ua */
-                case 'userAgent': {
-                  const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
-                  recordAndSend(key)
-                  return seed === null ? target[key] : genRandomVersionUserAgent(seed, target)
-                }
-                case 'appVersion': {
-                  const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
-                  recordAndSend(key)
-                  return seed === null ? target[key] : genRandomVersionUserAgent(seed, target, true)
-                }
-                case 'userAgentData' as any: {
-                  const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
-                  recordAndSend(key)
-                  return seed === null ? target[key] : proxyUserAgentData(seed, target[key])
-                }
-                /* webrtc */
-                case 'getUserMedia':
-                case 'mozGetUserMedia':
-                case 'webkitGetUserMedia': {
-                  if (conf.fingerprint.other.webrtc.type === HookType.disabled) return undefined;
-                  break
-                }
-                case 'mediaDevices': {
-                  if (conf.fingerprint.other.webrtc.type === HookType.disabled) return null;
-                  break
-                }
-                case 'languages':
-                case 'hardwareConcurrency': {
-                  const mode: HookMode | undefined = (conf.fingerprint.navigator as any)[key]
-                  const _key: any = 'navigator.' + key
-                  const value = getValue(_key, mode)
-                  return value === null ? target[key] : value
-                }
+    onEnable: ({ win, conf, getSeedByHookValue, getValue }) => {
+      // const _navigator = win.Object.getOwnPropertyDescriptor(win, "navigator");
+      win.Object.defineProperty(win, 'navigator', {
+        value: new Proxy(win.navigator, {
+          get: (target: any, key: keyof Navigator | (string & {})) => {
+            switch (key) {
+              /* ua */
+              case 'userAgent': {
+                const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
+                recordAndSend(key)
+                return seed === null ? target[key] : genRandomVersionUserAgent(seed, target)
               }
-
-              const value = target[key]
-              return typeof value === 'function' ? value.bind(target) : value
+              case 'appVersion': {
+                const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
+                recordAndSend(key)
+                return seed === null ? target[key] : genRandomVersionUserAgent(seed, target, true)
+              }
+              case 'userAgentData' as any: {
+                const seed = getSeedByHookValue(conf.fingerprint.navigator.equipment)
+                recordAndSend(key)
+                return seed === null ? target[key] : proxyUserAgentData(seed, target[key])
+              }
+              /* webrtc */
+              case 'getUserMedia':
+              case 'mozGetUserMedia':
+              case 'webkitGetUserMedia': {
+                if (conf.fingerprint.other.webrtc.type === HookType.disabled) return undefined;
+                break
+              }
+              case 'mediaDevices': {
+                if (conf.fingerprint.other.webrtc.type === HookType.disabled) return null;
+                break
+              }
+              case 'languages':
+              case 'hardwareConcurrency': {
+                const mode: HookMode | undefined = (conf.fingerprint.navigator as any)[key]
+                const _key: any = 'navigator.' + key
+                const value = getValue(_key, mode)
+                return value === null ? target[key] : value
+              }
             }
-          })
-        });
-      }
+
+            const value = target[key]
+            return typeof value === 'function' ? value.bind(target) : value
+          }
+        })
+      });
+
     },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.navigatorDescriptor) {
-        win.Object.defineProperty(win, "navigator", rawObjects.navigatorDescriptor)
-        rawObjects.navigatorDescriptor = undefined
-      }
-    }
   },
 
   'hook screen': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fingerprint.screen),
-    onEnable: ({ win, conf, rawObjects, getValue }) => {
-      if (!rawObjects.screenDescriptor) {
-        rawObjects.screenDescriptor = win.Object.getOwnPropertyDescriptor(win, "screen");
-        win.Object.defineProperty(win, 'screen', {
-          value: new Proxy(win.screen, {
-            get: (target: any, key: keyof Screen | (string & {})) => {
-              switch (key) {
-                case 'width':
-                case 'height':
-                case 'colorDepth':
-                case 'pixelDepth': {
-                  const mode: HookMode | undefined = (conf.fingerprint.screen as any)[key]
-                  const _key: any = 'screen.' + key
-                  const value = getValue(_key, mode)
-                  return value === null ? target[key] : value
-                }
+    onEnable: ({ win, conf, getValue }) => {
+      // const _screen = win.Object.getOwnPropertyDescriptor(win, "screen");
+      win.Object.defineProperty(win, 'screen', {
+        value: new Proxy(win.screen, {
+          get: (target: any, key: keyof Screen | (string & {})) => {
+            switch (key) {
+              case 'width':
+              case 'height':
+              case 'colorDepth':
+              case 'pixelDepth': {
+                const mode: HookMode | undefined = (conf.fingerprint.screen as any)[key]
+                const _key: any = 'screen.' + key
+                const value = getValue(_key, mode)
+                return value === null ? target[key] : value
               }
-
-              const value = target[key]
-              return typeof value === 'function' ? value.bind(target) : value
             }
-          })
+
+            const value = target[key]
+            return typeof value === 'function' ? value.bind(target) : value
+          }
         })
-      }
+      })
     },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.screenDescriptor) {
-        win.Object.defineProperty(win, "screen", rawObjects.screenDescriptor)
-        rawObjects.screenDescriptor = undefined
-      }
-    }
   },
 
   'hook canvas': {
     condition: ({ conf }) => conf.fingerprint.other.canvas.type !== HookType.default,
     onEnable: ({ win, conf, rawObjects, getValue }) => {
-      if (!rawObjects.getContext) {
-        rawObjects.getContext = win.HTMLCanvasElement.prototype.getContext
-        win.HTMLCanvasElement.prototype.getContext = new Proxy(rawObjects.getContext, {
-          apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
-            if (args[0] === '2d') {
-              const option = args[1] ?? {};
-              option.willReadFrequently = true;
-              args[1] = option
-            }
-            return target.apply(thisArg, args);
+      /* getContext */
+      const _getContext = win.HTMLCanvasElement.prototype.getContext
+      win.HTMLCanvasElement.prototype.getContext = new Proxy(_getContext, {
+        apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
+          if (args[0] === '2d') {
+            const option = args[1] ?? {};
+            option.willReadFrequently = true;
+            args[1] = option
           }
-        });
-      }
-      if (!rawObjects.getImageData) {
-        rawObjects.getImageData = win.CanvasRenderingContext2D.prototype.getImageData
-        win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(rawObjects.getImageData, {
-          apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
-            const value: number[] = getValue('other.canvas', conf.fingerprint.other.canvas)
-            if (value !== null) {
-              return drawNoise(
-                rawObjects.getImageData!, value,
-                thisArg, ...args)
-            }
-            return target.apply(thisArg, args);
+          return target.apply(thisArg, args);
+        }
+      });
+
+      /* getImageData */
+      const _getImageData = win.CanvasRenderingContext2D.prototype.getImageData
+      rawObjects.getImageData = _getImageData
+      win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(_getImageData, {
+        apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
+          const value: number[] = getValue('other.canvas', conf.fingerprint.other.canvas)
+          if (value !== null) {
+            return drawNoise(
+              _getImageData!, value,
+              thisArg, ...args)
           }
-        })
-      }
+          return target.apply(thisArg, args);
+        }
+      })
     },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.getImageData) {
-        win.CanvasRenderingContext2D.prototype.getImageData = rawObjects.getImageData
-        rawObjects.getImageData = undefined
-      }
-      if (rawObjects.getContext) {
-        win.HTMLCanvasElement.prototype.getContext = rawObjects.getContext
-        rawObjects.getContext = undefined
-      }
-    }
   },
 
   'hook webgl': {
     condition: ({ conf }) => conf.fingerprint.other.webgl.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, getValue }) => {
+    onEnable: ({ win, conf, getValue }) => {
       /* Image */
-      if (!rawObjects.readPixels || !rawObjects.readPixels2) {
-        rawObjects.readPixels = win.WebGLRenderingContext.prototype.readPixels
-        rawObjects.readPixels2 = win.WebGL2RenderingContext.prototype.readPixels
+      {
+        const _readPixels = win.WebGLRenderingContext.prototype.readPixels
+        const _readPixels2 = win.WebGL2RenderingContext.prototype.readPixels
 
         const hook = {
           apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
@@ -258,13 +206,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return target.apply(thisArg, args as any);
           }
         }
-        win.WebGLRenderingContext.prototype.readPixels = new Proxy(rawObjects.readPixels, hook)
-        win.WebGL2RenderingContext.prototype.readPixels = new Proxy(rawObjects.readPixels2, hook)
+        win.WebGLRenderingContext.prototype.readPixels = new Proxy(_readPixels, hook)
+        win.WebGL2RenderingContext.prototype.readPixels = new Proxy(_readPixels2, hook)
       }
+
       /* Report */
-      if (!rawObjects.getSupportedExtensions || !rawObjects.getSupportedExtensions2) {
-        rawObjects.getSupportedExtensions = win.WebGLRenderingContext.prototype.getSupportedExtensions
-        rawObjects.getSupportedExtensions2 = win.WebGL2RenderingContext.prototype.getSupportedExtensions
+      {
+        const _getSupportedExtensions = win.WebGLRenderingContext.prototype.getSupportedExtensions
+        const _getSupportedExtensions2 = win.WebGL2RenderingContext.prototype.getSupportedExtensions
 
         const hook = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
@@ -276,28 +225,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return res;
           }
         }
-        win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(rawObjects.getSupportedExtensions, hook)
-        win.WebGL2RenderingContext.prototype.getSupportedExtensions = new Proxy(rawObjects.getSupportedExtensions2, hook)
+        win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions, hook)
+        win.WebGL2RenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions2, hook)
       }
     },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.readPixels) {
-        win.WebGLRenderingContext.prototype.readPixels = rawObjects.readPixels
-        rawObjects.readPixels = undefined
-      }
-      if (rawObjects.readPixels2) {
-        win.WebGL2RenderingContext.prototype.readPixels = rawObjects.readPixels2
-        rawObjects.readPixels2 = undefined
-      }
-      if (rawObjects.getSupportedExtensions) {
-        win.WebGLRenderingContext.prototype.getSupportedExtensions = rawObjects.getSupportedExtensions
-        rawObjects.getSupportedExtensions = undefined
-      }
-      if (rawObjects.getSupportedExtensions2) {
-        win.WebGL2RenderingContext.prototype.getSupportedExtensions = rawObjects.getSupportedExtensions2
-        rawObjects.getSupportedExtensions2 = undefined
-      }
-    }
   },
 
   'hook toDataURL': {
@@ -305,79 +236,64 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       conf.fingerprint.other.canvas.type !== HookType.default ||
       conf.fingerprint.other.webgl.type !== HookType.default,
     onEnable: ({ win, conf, rawObjects, getValue }) => {
-      if (!rawObjects.toDataURL) {
-        rawObjects.toDataURL = win.HTMLCanvasElement.prototype.toDataURL
-        win.HTMLCanvasElement.prototype.toDataURL = new Proxy(rawObjects.toDataURL, {
-          apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
-            /* 2d */
-            if (conf?.fingerprint?.other?.canvas?.type !== HookType.default) {
-              const ctx = thisArg.getContext('2d');
-              if (ctx) {
-                const value: number[] = getValue('other.canvas', conf.fingerprint.other.canvas)
-                value && drawNoise(
-                  rawObjects.getImageData!, value,
-                  ctx, 0, 0, thisArg.width, thisArg.height)
-                return target.apply(thisArg, args);
-              }
+      const _toDataURL = win.HTMLCanvasElement.prototype.toDataURL
+      win.HTMLCanvasElement.prototype.toDataURL = new Proxy(_toDataURL, {
+        apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
+          /* 2d */
+          if (conf.fingerprint.other.canvas.type !== HookType.default) {
+            const ctx = thisArg.getContext('2d');
+            if (ctx) {
+              const value: number[] = getValue('other.canvas', conf.fingerprint.other.canvas)
+              value && rawObjects.getImageData && drawNoise(
+                rawObjects.getImageData, value,
+                ctx, 0, 0, thisArg.width, thisArg.height)
+              return target.apply(thisArg, args);
             }
-            /* webgl */
-            if (conf?.fingerprint?.other?.webgl?.type !== HookType.default) {
-              const gl = thisArg.getContext('webgl') ?? thisArg.getContext('webgl2')
-              if (gl) {
-                const value: [number, number] = getValue('other.webgl', conf.fingerprint.other.webgl)
-                value && drawNoiseToWebgl(gl as any, value)
-                return target.apply(thisArg, args);
-              }
-            }
-            return target.apply(thisArg, args);
           }
-        })
-      }
+          /* webgl */
+          if (conf.fingerprint.other.webgl.type !== HookType.default) {
+            const gl = thisArg.getContext('webgl') ?? thisArg.getContext('webgl2')
+            if (gl) {
+              const value: [number, number] = getValue('other.webgl', conf.fingerprint.other.webgl)
+              value && drawNoiseToWebgl(gl as any, value)
+              return target.apply(thisArg, args);
+            }
+          }
+          return target.apply(thisArg, args);
+        }
+      })
     },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.toDataURL) {
-        win.HTMLCanvasElement.prototype.toDataURL = rawObjects.toDataURL
-        rawObjects.toDataURL = undefined
-      }
-    }
   },
 
   'hook audio': {
     condition: ({ conf }) => conf.fingerprint.other.audio.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, random }) => {
-      if (!rawObjects.createDynamicsCompressor) {
-        rawObjects.createDynamicsCompressor = win.OfflineAudioContext.prototype.createDynamicsCompressor
-        win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(rawObjects.createDynamicsCompressor, {
-          apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
-            const value: number | null = random('other.audio', conf.fingerprint.other.audio)
-            if (value === null) return target.apply(thisArg, args)
-            const compressor = target.apply(thisArg, args)
-            // 创建一个增益节点，添加噪音
-            const gain = thisArg.createGain()
-            // 根据需要设置噪音的强度
-            gain.gain.value = value * 0.01
-            compressor.connect(gain)
-            // 将增益节点的输出连接到上下文的目标
-            gain.connect(thisArg.destination)
-            return compressor
-          }
-        })
-      }
+    onEnable: ({ win, conf, random }) => {
+      const _createDynamicsCompressor = win.OfflineAudioContext.prototype.createDynamicsCompressor
+      win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(_createDynamicsCompressor, {
+        apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
+          const value: number | null = random('other.audio', conf.fingerprint.other.audio)
+          if (value === null) return target.apply(thisArg, args)
+          const compressor = target.apply(thisArg, args)
+          // 创建一个增益节点，添加噪音
+          const gain = thisArg.createGain()
+          // 根据需要设置噪音的强度
+          gain.gain.value = value * 0.01
+          compressor.connect(gain)
+          // 将增益节点的输出连接到上下文的目标
+          gain.connect(thisArg.destination)
+          return compressor
+        }
+      })
     },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.createDynamicsCompressor) {
-        win.OfflineAudioContext.prototype.createDynamicsCompressor = rawObjects.createDynamicsCompressor
-        rawObjects.createDynamicsCompressor = undefined
-      }
-    }
   },
 
   'hook timezone': {
     condition: ({ conf }) => conf.fingerprint.other.timezone.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, getValue }) => {
-      if (!rawObjects.DateTimeFormat) {
-        rawObjects.DateTimeFormat = win.Intl.DateTimeFormat
-        win.Intl.DateTimeFormat = new Proxy(rawObjects.DateTimeFormat, {
+    onEnable: ({ win, conf, getValue }) => {
+      /* DateTimeFormat */
+      {
+        const _DateTimeFormat = win.Intl.DateTimeFormat
+        win.Intl.DateTimeFormat = new Proxy(_DateTimeFormat, {
           construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
             const currTimeZone: TimeZoneInfo = getValue('other.timezone', conf.fingerprint.other.timezone)
             args[0] = args[0] ?? currTimeZone.locale
@@ -392,11 +308,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           },
         })
       }
-      if (!rawObjects.dateGetTimezoneOffset || !rawObjects.dateToString || !rawObjects.dateToDateString || !rawObjects.dateToTimeString) {
-        rawObjects.dateGetTimezoneOffset = win.Date.prototype.getTimezoneOffset
-        rawObjects.dateToString = win.Date.prototype.toString
-        rawObjects.dateToDateString = win.Date.prototype.toDateString
-        rawObjects.dateToTimeString = win.Date.prototype.toTimeString
+
+      /* getTimezoneOffset & toString */
+      {
+        const _getTimezoneOffset = win.Date.prototype.getTimezoneOffset
+        const _toString = win.Date.prototype.toString
+        const _toDateString = win.Date.prototype.toDateString
+        const _toTimeString = win.Date.prototype.toTimeString
 
         const useHook = (handle: (thisArg: Date, tz: TimeZoneInfo) => any) => ({
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toString>) => {
@@ -405,26 +323,28 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return handle(thisArg, tz)
           }
         })
-        win.Date.prototype.getTimezoneOffset = new Proxy(rawObjects.dateGetTimezoneOffset, useHook((_, tz) => {
+        win.Date.prototype.getTimezoneOffset = new Proxy(_getTimezoneOffset, useHook((_, tz) => {
           return tz.offset * -60
         }))
-        win.Date.prototype.toString = new Proxy(rawObjects.dateToString, useHook((thisArg, tz) => {
+        win.Date.prototype.toString = new Proxy(_toString, useHook((thisArg, tz) => {
           const ps = getStandardDateTimeParts(thisArg, tz.zone)
           return `${ps.weekday} ${ps.month} ${ps.day} ${ps.year} ${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
         }))
-        win.Date.prototype.toDateString = new Proxy(rawObjects.dateToDateString, useHook((thisArg, tz) => {
+        win.Date.prototype.toDateString = new Proxy(_toDateString, useHook((thisArg, tz) => {
           const ps = getStandardDateTimeParts(thisArg, tz.zone)
           return `${ps.weekday} ${ps.month} ${ps.day} ${ps.year}`
         }))
-        win.Date.prototype.toTimeString = new Proxy(rawObjects.dateToTimeString, useHook((thisArg, tz) => {
+        win.Date.prototype.toTimeString = new Proxy(_toTimeString, useHook((thisArg, tz) => {
           const ps = getStandardDateTimeParts(thisArg, tz.zone)
           return `${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
         }))
       }
-      if (!rawObjects.dateToLocaleString || !rawObjects.dateToLocaleDateString || !rawObjects.dateToLocaleTimeString) {
-        rawObjects.dateToLocaleString = win.Date.prototype.toLocaleString
-        rawObjects.dateToLocaleDateString = win.Date.prototype.toLocaleDateString
-        rawObjects.dateToLocaleTimeString = win.Date.prototype.toLocaleTimeString
+
+      /* toLocaleString */
+      {
+        const _toLocaleString = win.Date.prototype.toLocaleString
+        const _toLocaleDateString = win.Date.prototype.toLocaleDateString
+        const _toLocaleTimeString = win.Date.prototype.toLocaleTimeString
 
         const hook = {
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
@@ -436,53 +356,21 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return target.apply(thisArg, args);
           }
         }
-        win.Date.prototype.toLocaleString = new Proxy(rawObjects.dateToLocaleString, hook)
-        win.Date.prototype.toLocaleDateString = new Proxy(rawObjects.dateToLocaleDateString, hook)
-        win.Date.prototype.toLocaleTimeString = new Proxy(rawObjects.dateToLocaleTimeString, hook)
+        win.Date.prototype.toLocaleString = new Proxy(_toLocaleString, hook)
+        win.Date.prototype.toLocaleDateString = new Proxy(_toLocaleDateString, hook)
+        win.Date.prototype.toLocaleTimeString = new Proxy(_toLocaleTimeString, hook)
       }
-      if (!rawObjects.Date) {
-        rawObjects.Date = win.Date
-        win.Date = new Proxy(rawObjects.Date, {
+
+      /* Date */
+      {
+        const _Date = win.Date
+        win.Date = new Proxy(_Date, {
           apply: (target, thisArg: Date, args: Parameters<typeof Date>) => {
             return new Date().toString()
           }
         })
       }
     },
-    onDisable: ({ win, rawObjects }) => {
-      if (rawObjects.DateTimeFormat) {
-        win.Intl.DateTimeFormat = rawObjects.DateTimeFormat
-        rawObjects.DateTimeFormat = undefined
-      }
-      if (rawObjects.Date) {
-        win.Date = rawObjects.Date
-        rawObjects.Date = undefined
-      }
-      if (rawObjects.dateToString) {
-        win.Date.prototype.toString = rawObjects.dateToString
-        rawObjects.dateToString = undefined
-      }
-      if (rawObjects.dateToDateString) {
-        win.Date.prototype.toDateString = rawObjects.dateToDateString
-        rawObjects.dateToDateString = undefined
-      }
-      if (rawObjects.dateToTimeString) {
-        win.Date.prototype.toTimeString = rawObjects.dateToTimeString
-        rawObjects.dateToTimeString = undefined
-      }
-      if (rawObjects.dateToLocaleString) {
-        win.Date.prototype.toLocaleString = rawObjects.dateToLocaleString
-        rawObjects.dateToLocaleString = undefined
-      }
-      if (rawObjects.dateToLocaleDateString) {
-        win.Date.prototype.toLocaleDateString = rawObjects.dateToLocaleDateString
-        rawObjects.dateToLocaleDateString = undefined
-      }
-      if (rawObjects.dateToLocaleTimeString) {
-        win.Date.prototype.toLocaleTimeString = rawObjects.dateToLocaleTimeString
-        rawObjects.dateToLocaleTimeString = undefined
-      }
-    }
   },
 
   'hook webrtc': {
@@ -515,7 +403,6 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       // @ts-ignore
       if (win.webkitRTCSessionDescription) win.webkitRTCSessionDescription = undefined;
     },
-    onDisable: (_) => { }
   },
 
   'hook font': {
@@ -554,7 +441,6 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         });
       }
     },
-    onDisable: (_) => { },
   },
 
   'hook webgpu': {
@@ -683,7 +569,6 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         } catch (e) { }
       }
     },
-    onDisable(_) { },
   }
 
 }

@@ -1,4 +1,3 @@
-import deepmerge from "deepmerge";
 import { HookType } from '@/types/enum'
 import {
   randomCanvasNoise,
@@ -11,50 +10,22 @@ import {
   seededRandom,
 } from "../utils/data";
 import { debounce, debounceByFirstArg } from "../utils/timer";
-import { postSetHookRecords, unwrapMessage } from "@/message/content";
+import { postSetHookRecords } from "@/message/content";
 import { genRandomSeed } from "../utils/base";
 import { ContentMsg } from '@/types/enum'
 import hookTasks from "./tasks";
 
 export type HookTask = {
   name: string
-  onlyOnceEnable?: boolean  // 是否onEnable只执行一次
   condition?: (fh: FingerprintHandler) => boolean | undefined
   onEnable?: (fh: FingerprintHandler) => void
-  onDisable?: (fh: FingerprintHandler) => void
 }
 
 export interface RawHookObject {
-  navigatorDescriptor: PropertyDescriptor
-  screenDescriptor: PropertyDescriptor
-
-  DateTimeFormat: typeof Intl.DateTimeFormat
-  Date: typeof Date
-
-  getOwnPropertyDescriptor: typeof Object.getOwnPropertyDescriptor
-
-  toDataURL: typeof HTMLCanvasElement.prototype.toDataURL
+  // navigatorDescriptor: PropertyDescriptor
+  // screenDescriptor: PropertyDescriptor
+  
   getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
-  getContext: typeof HTMLCanvasElement.prototype.getContext
-
-  readPixels: typeof WebGLRenderingContext.prototype.readPixels
-  getSupportedExtensions: typeof WebGLRenderingContext.prototype.getSupportedExtensions
-  readPixels2: typeof WebGL2RenderingContext.prototype.readPixels
-  getSupportedExtensions2: typeof WebGL2RenderingContext.prototype.getSupportedExtensions
-
-  createDynamicsCompressor: typeof OfflineAudioContext.prototype.createDynamicsCompressor
-
-  dateGetTimezoneOffset: typeof Date.prototype.getTimezoneOffset
-  dateToString: typeof Date.prototype.toString
-  dateToDateString: typeof Date.prototype.toDateString
-  dateToTimeString: typeof Date.prototype.toTimeString
-  dateToLocaleString: typeof Date.prototype.toLocaleString
-  dateToLocaleDateString: typeof Date.prototype.toLocaleDateString
-  dateToLocaleTimeString: typeof Date.prototype.toLocaleTimeString
-
-  appendChild: typeof HTMLElement.prototype.appendChild
-  insertBefore: typeof HTMLElement.prototype.insertBefore
-  replaceChild: typeof HTMLElement.prototype.replaceChild
 }
 
 const RAW = {
@@ -139,13 +110,12 @@ export class FingerprintHandler {
   public conf: LocalStorageConfig
 
   public rawObjects: Partial<RawHookObject> = {}
-  private onlyRecord: Record<string, boolean> = {}
 
   public constructor(win: Window & typeof globalThis, info: WindowInfo, config: LocalStorageConfig) {
     this.win = win
     this.info = info
     this.conf = config
-    
+
     this.seed = {
       page: Math.floor(seededRandom(info.tabId, Number.MAX_SAFE_INTEGER, 1)),
       domain: Math.floor(seededRandom(info.host, Number.MAX_SAFE_INTEGER, 1)),
@@ -158,35 +128,9 @@ export class FingerprintHandler {
     if (!win[key as any]) {
       // @ts-ignore
       win[key] = true
-      this.listenMessage()
-      this.refresh()
+      // this.listenMessage()
+      this.hook()
     }
-  }
-
-  /**
-   * 监听消息
-   */
-  private listenMessage() {
-    // 接收顶级window对象的消息
-    this.win.addEventListener('message', (ev) => {
-      // if (ev.origin != location.origin) return
-      const msg = unwrapMessage(ev.data) as ContentRequest | undefined
-      switch (msg?.type) {
-        case ContentMsg.SetConfig: {
-          this.setConfig(msg.config)
-          break
-        }
-        case ContentMsg.ChangeWhitelist: {
-          if (msg.mode === 'into') {
-            this.info.inWhitelist = true
-          } else if (msg.mode === 'leave') {
-            this.info.inWhitelist = false
-          }
-          this.refresh()
-          break
-        }
-      }
-    })
   }
 
   /**
@@ -197,36 +141,13 @@ export class FingerprintHandler {
   }
 
   /**
-   * 配置
+   * hook内容
    */
-  public setConfig(config?: DeepPartial<LocalStorageConfig>) {
-    if (!config) return
-    if (this.conf) {
-      this.conf = deepmerge(this.conf, config) as LocalStorageConfig
-    } else {
-      this.conf = config as LocalStorageConfig
-    }
-    this.refresh()
-  }
-
-  /**
-   * 刷新hook内容
-   */
-  public refresh() {
-    const enable = this.isEnable()
+  public hook() {
+    if (!this.isEnable()) return;
     for (const task of hookTasks) {
-      if (enable && (!task.condition || task.condition(this) === true)) {
-        if (task.onlyOnceEnable === true) {
-          // 仅执行一次onEnable
-          if (!this.onlyRecord[task.name]) {
-            task.onEnable?.(this)
-            this.onlyRecord[task.name] = true
-          }
-        } else {
-          task.onEnable?.(this)
-        }
-      } else {
-        task.onDisable?.(this)
+      if (!task.condition || task.condition(this) === true) {
+        task.onEnable?.(this)
       }
     }
   }

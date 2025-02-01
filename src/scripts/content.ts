@@ -1,4 +1,4 @@
-import { postSetConfig, postChangeWhitelist, unwrapMessage } from '@/message/content';
+import { unwrapMessage } from '@/message/content';
 import { msgSetHookRecords } from '@/message/runtime';
 import { RuntimeMsg, ContentMsg } from '@/types/enum'
 
@@ -16,17 +16,17 @@ window.addEventListener('message', (ev) => {
   }
 })
 
-/**
- * runtime消息处理
- */
-chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse) => {
-  switch(msg.type){
-    case RuntimeMsg.SetConfig: {
-      postSetConfig(msg.config)
-      break
-    }
-    case RuntimeMsg.ChangeScriptWhitelist: {
-      postChangeWhitelist(msg.mode)
-    }
-  }
-})
+// /**
+//  * runtime消息处理
+//  */
+// chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse) => {
+//   switch(msg.type){
+//     case RuntimeMsg.SetConfig: {
+//       postSetConfig(msg.config)
+//       break
+//     }
+//     case RuntimeMsg.ChangeScriptWhitelist: {
+//       postChangeWhitelist(msg.mode)
+//     }
+//   }
+// })
