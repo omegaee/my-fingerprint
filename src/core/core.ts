@@ -2,12 +2,10 @@ import { HookType } from '@/types/enum'
 import {
   randomCanvasNoise,
   randomFontNoise,
-  randomLanguage,
-  randomLanguages,
-  randomScreenSize,
   randomWebglNoise,
   seededEl,
   seededRandom,
+  shuffleArray,
 } from "../utils/data";
 import { debounce, debounceByFirstArg } from "../utils/timer";
 import { postSetHookRecords } from "@/message/content";
@@ -29,6 +27,12 @@ export interface RawHookObject {
 }
 
 const RAW = {
+  languages: navigator.languages,
+  width: screen.width,
+  height: screen.height,
+}
+
+const RANDOM = {
   // chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   hardwareConcurrencys: [8, 12, 16],
   colorDepths: [16, 24, 32],
@@ -40,13 +44,20 @@ const RAW = {
  */
 // type RandomFuncMap = Record<FuncKey, RandomFunc>
 const randomFuncMap = {
-  'navigator.language': randomLanguage,
-  'navigator.languages': randomLanguages,
-  'navigator.hardwareConcurrency': (seed: number) => seededEl(RAW.hardwareConcurrencys, seed),
-  'screen.height': (seed: number) => randomScreenSize(seed).height,
-  'screen.width': (seed: number) => randomScreenSize(seed).width,
-  'screen.colorDepth': (seed: number) => seededEl(RAW.colorDepths, seed),
-  'screen.pixelDepth': (seed: number) => seededEl(RAW.pixelDepths, seed),
+  'navigator.language': (seed: number) => seededEl(RAW.languages, seed),
+  'navigator.languages': (seed: number) => shuffleArray(RAW.languages, seed),
+  'navigator.hardwareConcurrency': (seed: number) => seededEl(RANDOM.hardwareConcurrencys, seed),
+  'screen.height': (seed: number) => {
+    const offset = (seed % 100) - 50
+    const width = RAW.width + offset
+    return Math.round((width * RAW.height) / RAW.width)
+  },
+  'screen.width': (seed: number) => {
+    const offset = (seed % 100) - 50
+    return RAW.width + offset
+  },
+  'screen.colorDepth': (seed: number) => seededEl(RANDOM.colorDepths, seed),
+  'screen.pixelDepth': (seed: number) => seededEl(RANDOM.pixelDepths, seed),
   'other.canvas': randomCanvasNoise,
   'other.audio': undefined,
   'other.webgl': randomWebglNoise,

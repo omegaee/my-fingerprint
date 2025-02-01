@@ -43,37 +43,6 @@ export const shuffleArray = <T>(array: Readonly<T[]>, seed: number): T[] => {
   return _array;
 }
 
-
-/**
- * 随机屏幕宽高信息
- */
-export const randomScreenSize = (seed: number): SizeInfo => {
-  const offset = (seed % 100) - 50  // 偏移幅度为50
-  const rawWidth = screen.width
-  const rawHeight = screen.height
-  const width = rawWidth + offset
-  return {
-    width: width,
-    height: Math.round((width * rawHeight) / rawWidth),
-  }
-}
-
-const rawLanguages = navigator.languages
-
-/**
- * 随机语言标识
- */
-export const randomLanguage = (seed: number) => {
-  return seededEl(rawLanguages, seed)
-}
-
-/**
- * 随机语言标识
- */
-export const randomLanguages = (seed: number) => {
-  return shuffleArray(rawLanguages, seed)
-}
-
 /**
  * 随机canvas噪音
  */

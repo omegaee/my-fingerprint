@@ -9,7 +9,7 @@ import { genRandomVersionUserAgent, genRandomVersionUserAgentData } from "@/util
 // import contentSrc from '@/scripts/content?script&module'
 
 import { coreInject } from "@/core/output";
-import { randomLanguages } from "@/utils/data";
+import { shuffleArray } from "@/utils/data";
 
 const UA_NET_RULE_ID = 1
 
@@ -17,6 +17,10 @@ const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['timezone', 'canvas', 
 
 let localStorage: LocalStorageObject | undefined
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
+
+const RAW = {
+  languages: navigator.languages,
+}
 
 const BADGE_COLOR = {
   whitelist: '#fff',
@@ -185,7 +189,7 @@ const refreshRequestHeader = async () => {
     } else {
       const langSeed = getSeedByMode(storage, langsMode)
       if (langSeed) {
-        langs = randomLanguages(langSeed)
+        langs = shuffleArray(RAW.languages, langSeed)
       }
     }
     /* 修改 */
