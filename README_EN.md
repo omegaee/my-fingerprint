@@ -75,7 +75,7 @@
 
 **Other Config**
 - [x] Language - Languages used by browser extensions
-- [x] Global Seed - Global Seed, Acts on `Randomization based on global seed` Options
+- [x] Global Seed - Global Seed, Acts on `Random by Global Seed` Options
 - [x] Web Request Hooks - Making changes to web request headers
 - [x] Iframe Hooks - Injection into Iframe
 
