@@ -17,18 +17,18 @@
     "whitelist-click-in": "Click To Whitelist",
     "record": "Record",
     "config": "Config",
-    "normal-fp": "Normal Config",
-    "special-fp": "Special Config",
+    "normal-fp": "Normal Fingerprint",
+    "special-fp": "Special Fingerprint",
     "other-config": "Other Config",
     "seed": "Seed"
   },
   "type": {
     "default": "Default",
     "value": "Custom value",
-    "page": "Randomized values per tab",
-    "browser": "Every time the browser starts a random",
-    "domain": "Randomized based on domain name",
-    "global": "Randomization based on global seed",
+    "page": "Random by Tab Page",
+    "browser": "Random by Browser Start",
+    "domain": "Random by Domain",
+    "global": "Random by Global Seed",
     "enabled": "Enabled",
     "disabled": "Disabled"
   },
@@ -67,8 +67,8 @@
       "webgpu": "WebGPU Fingerprint",
 
       "e-language": "Language",
-      "seed": "Global Seed, Acts on **Randomization based on global seed** Options",
-      "hook-net-request": "When turned on, it affects all network requests\n\n**Note that turning it on may affect the styling of some pages**\n\nSupported configs: **Equipment Info**\n\nSupported options: **Every time the browser starts a random** & **Randomization based on global seed** & **Custom value**",
+      "seed": "Global Seed, Acts on **Random by Global Seed** Options",
+      "hook-net-request": "When turned on, it affects all network requests",
       "hook-iframe": "When turned on, Can proxy **All Iframe** content"
     },
     "warn": {

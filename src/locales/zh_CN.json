@@ -17,7 +17,7 @@
     "whitelist-click-in": "点击加入白名单",
     "record": "记录",
     "config": "配置",
-    "normal-fp": "正常指纹",
+    "normal-fp": "普通指纹",
     "special-fp": "特殊指纹",
     "other-config": "其他配置",
     "seed": "种子"
@@ -68,7 +68,7 @@
 
       "e-language": "语言",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",
-      "hook-net-request": "开启后，会影响所有网络请求\n\n**注意，开启后可能会影响某些网页的样式**\n\n支持配置：**设备信息**\n\n支持选项：**每次启动浏览器随机值**、**根据全局种子随机值**、**自定义值**",
+      "hook-net-request": "开启后，会影响所有网络请求",
       "hook-iframe": "开启后，能代理**所有Iframe**的内容"
     },
     "warn": {
