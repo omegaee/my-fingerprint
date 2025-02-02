@@ -39,7 +39,7 @@ export const OtherConfigGroup = memo(() => {
     }
   }, [config])
 
-  return config && <>
+  return config ? <>
     <ConfigItem.Select
       title={t('item.title.e-language')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.e-language')}</Markdown>} />}
@@ -77,7 +77,7 @@ export const OtherConfigGroup = memo(() => {
       defaultChecked={config.hookNetRequest}
       onChange={(checked) => config.hookNetRequest = checked}
     />
-  </>
+  </> : <></>
 })
 
 export default OtherConfigGroup

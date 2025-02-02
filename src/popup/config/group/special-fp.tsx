@@ -20,7 +20,7 @@ export const SpecialFpConfigGroup = memo(() => {
   })
   const fp = config?.fingerprint
 
-  return fp && <>
+  return fp ? <>
     <TimeZoneConfigItem />
 
     <SelectFpConfigItem
@@ -70,7 +70,7 @@ export const SpecialFpConfigGroup = memo(() => {
       defaultValue={fp.other.webgpu.type}
       onChange={(type) => fp.other.webgpu.type = type as any}
     />
-  </>
+  </> : <></>
 })
 
 export default SpecialFpConfigGroup

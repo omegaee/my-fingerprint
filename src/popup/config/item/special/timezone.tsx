@@ -252,7 +252,7 @@ export const TimeZoneConfigItem = () => {
     setOption(opt)
   }, [config])
 
-  return fp && <ConfigItem.Select<OptionType>
+  return fp ? <ConfigItem.Select<OptionType>
     title={t('item.title.timezone')}
     action={<TipIcon.Question content={<Markdown>{t('item.desc.timezone')}</Markdown>} />}
     options={options}
@@ -276,7 +276,7 @@ export const TimeZoneConfigItem = () => {
         onDebouncedInput={(value) => (fp.other.timezone as ValueHookMode<TimeZoneInfo>).value.zone = value}
       />
     </>}
-  />
+  /> : <></>
 }
 
 export default TimeZoneConfigItem

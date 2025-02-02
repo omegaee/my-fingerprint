@@ -35,7 +35,7 @@ export const NormalFpConfigGroup = memo(() => {
   })
   const fp = config?.fingerprint
 
-  return fp && <>
+  return fp ? <>
     <SelectFpConfigItem
       title={t('item.title.equipment')}
       desc={t('item.desc.equipment')}
@@ -64,7 +64,7 @@ export const NormalFpConfigGroup = memo(() => {
         defaultValue={navigator.languages.join(',')}
         initialValue={(fp.navigator.languages as ValueHookMode<string[]>).value?.join(',')}
         onDebouncedInput={(value) => {
-          const parts = [...new Set(value.split(",").filter((v) => !!v.trim()))];          
+          const parts = [...new Set(value.split(",").filter((v) => !!v.trim()))];
           (fp.navigator.languages as ValueHookMode<string[]>).value = parts;
           (fp.navigator.language as ValueHookMode<string>).value = parts[0];
         }} />}
@@ -123,7 +123,7 @@ export const NormalFpConfigGroup = memo(() => {
           onDebouncedInput={(value) => (fp.screen.pixelDepth as ValueHookMode).value = value} />
       </>}
     />
-  </>
+  </> : <></>
 })
 
 export default NormalFpConfigGroup

@@ -159,7 +159,7 @@ export const subversionRandom = (
 /**
  * 深度代理
  */
-export const deepProxy = (obj: any, handler: ProxyHandler<any>, seen = new WeakMap()) => {
+export const deepProxy = <T>(obj: T, handler: ProxyHandler<any>, seen = new WeakMap<any>()): T => {
   if (seen.has(obj)) { return seen.get(obj) }
   const proxy = new Proxy(obj, {
     get(target, property, receiver) {
