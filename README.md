@@ -3,7 +3,7 @@
 
 ---
 
-> [v2.2 版本更新](https://github.com/omegaee/my-fingerprint/releases/latest)
+[--- v2.3 版本更新 ---](https://github.com/omegaee/my-fingerprint/releases/latest)
 
 # My Fingerprint
 
@@ -15,11 +15,15 @@
 
 **支持指纹**
 - [x] UserAgent系列
-- [x] Screen系列
-- [x] Canvas指纹
-- [x] WebGL指纹
-- [x] Audio指纹
+- [x] 屏幕系列
+- [x] 语言
 - [x] 时区
+- [x] Canvas指纹
+- [x] Audio指纹
+- [x] Font指纹
+- [x] WebGL指纹
+- [x] WebRTC保护
+- [x] WebGPU指纹
 
 # 目录
 - [使用](#使用)
@@ -29,6 +33,7 @@
   - [白名单模块](#白名单模块)
 - [测试目标](#测试目标)
 - [支持一下](#支持一下)
+- [声明](#声明)
 
 # 使用
 
@@ -52,31 +57,28 @@
 ## 配置模块
 - 用于对各种指纹的自定义
 
-> 目前支持选项：
-> - 系统值
-> - 自定义值（某些）
-> - 每个标签页随机值
-> - 每次启动浏览器随机值
-> - 根据访问域名随机值
-> - 根据全局种子随机值
+**普通指纹配置**
+- [x] UserAgent系列信息
+- [x] 浏览器语言
+- [x] 逻辑处理器数量
+- [x] 屏幕尺寸
+- [x] 屏幕颜色深度
 
-- **基础指纹配置**
-  - [x] 设备信息 (UserAgent系列)
-  - [x] 浏览器语言
-  - [x] 逻辑处理器数量
-  - [x] 屏幕尺寸
-  - [x] 屏幕颜色深度
-  - [x] 屏幕位深度
-- **特殊指纹配置**
-  - [x] 时区
-  - [x] Canvas画布指纹
-  - [x] Audio音频指纹
-  - [x] WebGL指纹
-- **其他配置**
-  - [x] 语言 - 扩展使用语言
-  - [x] 全局种子 - 作用于指纹配置的全局种子选项
-  - [x] 网络请求钩子 - 对网络请求进行修改（`设备信息`）
-  - [x] 空白源Iframe钩子 - 对空白源Iframe进行注入
+**特殊指纹配置**
+- [x] 时区
+- [x] Canvas指纹
+- [x] Audio指纹
+- [x] Font指纹
+- [x] WebGL指纹
+- [x] WebRTC保护
+- [x] WebGPU指纹
+
+**其他配置**
+- [x] 语言 - 扩展使用语言
+- [x] 全局种子 - 作用于`根据全局种子随机值`选项
+- [x] 网络请求钩子 - 根据配置内容修改网络请求头
+- [x] Iframe钩子 - 对Iframe进行注入
+
 
 ## 记录模块
 > 显示了当前标签页对各种指纹的访问次数
@@ -86,6 +88,7 @@
 
 
 # 测试目标
+- [x] https://webbrowsertools.com/
 - [x] https://www.yalala.com/
 - [x] https://uutool.cn/browser/
 - [x] https://www.ip77.net/
@@ -100,3 +103,8 @@
 | 微信 |
 | :---: |
 | <img src='./images/wechat-code.png' title='微信' width='210px' height='210px'  /> |
+
+
+# 声明
+- 若要进行某些较敏感的操作，请使用更加专业的工具。
+- 本项目仅用于学习和研究，开发者不对因使用本项目而导致的任何损失或问题负责。
