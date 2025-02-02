@@ -47,12 +47,15 @@ export const SelectFpConfigItem = ({ title, desc, defaultValue, options, depreca
   }, [deprecatedOptions])
 
   const finalOptions = useMemo(() => {
-    const presetList = options.filter((v) => v !== undefined).map((opt) => ({
-      value: opt,
-      label: deprecatedMap?.[opt] !== undefined ?
-        <Typography.Text type='secondary' delete>{t('type.' + HookType[opt])}</Typography.Text> :
-        t('type.' + HookType[opt]),
-    }))
+    const presetList = options.map((opt) => {
+      if (opt === undefined) return undefined;
+      return {
+        value: opt,
+        label: deprecatedMap?.[opt] !== undefined ?
+          <Typography.Text type='secondary' delete>{t('type.' + HookType[opt])}</Typography.Text> :
+          t('type.' + HookType[opt]),
+      }
+    }).filter((v) => !!v)
     const otherList = [
       custom ? {
         value: HookType.value,
