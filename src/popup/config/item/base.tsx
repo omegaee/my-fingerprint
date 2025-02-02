@@ -11,7 +11,7 @@ export type ConfigItemProps = {
 export const ConfigItem = ({ title, type, node, action }: ConfigItemProps) => {
   switch (type) {
     case 'single': {
-      return <section className="p-1 mb-1 last:mb-0 flex gap-2 items-center justify-between rounded hover:bg-[--ant-color-bg-spotlight] duration-200">
+      return <section className="p-1 mb-1 last:mb-0 flex gap-2 items-center justify-between rounded hover:bg-[--ant-color-primary-bg-hover] duration-200">
         <Typography.Text>{title}</Typography.Text>
         <section className="flex items-center gap-3">
           {action}
@@ -21,7 +21,7 @@ export const ConfigItem = ({ title, type, node, action }: ConfigItemProps) => {
     }
     case 'multiple':
     default: {
-      return <section className="mb-1 last:mb-0 flex flex-col gap-2 p-1 rounded hover:bg-[--ant-color-bg-spotlight] duration-200">
+      return <section className="mb-1 last:mb-0 flex flex-col gap-2 p-1 rounded hover:bg-[--ant-color-primary-bg-hover] duration-200">
         <section className="flex items-center justify-between">
           <Typography.Text>{title}</Typography.Text>
           {action}
