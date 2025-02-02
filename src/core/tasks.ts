@@ -288,12 +288,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           const value: number | null = random('other.audio', conf.fingerprint.other.audio)
           if (value === null) return target.apply(thisArg, args)
           const compressor = target.apply(thisArg, args)
-          // 创建一个增益节点，添加噪音
           const gain = thisArg.createGain()
-          // 根据需要设置噪音的强度
-          gain.gain.value = value * 0.01
+          gain.gain.value = value * 0.001
           compressor.connect(gain)
-          // 将增益节点的输出连接到上下文的目标
           gain.connect(thisArg.destination)
           return compressor
         }
