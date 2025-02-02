@@ -5,6 +5,8 @@ import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown";
 import { memo, useMemo } from "react";
 import { hashNumberFromString } from "@/utils/base";
+import { Spin } from "antd";
+import { LoadingOutlined } from '@ant-design/icons'
 
 const LANG_OPTIONS = [
   {
@@ -77,7 +79,7 @@ export const OtherConfigGroup = memo(() => {
       defaultChecked={config.hookNetRequest}
       onChange={(checked) => config.hookNetRequest = checked}
     />
-  </> : <></>
+  </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
 export default OtherConfigGroup

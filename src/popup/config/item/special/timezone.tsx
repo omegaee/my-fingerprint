@@ -6,6 +6,8 @@ import Markdown from "react-markdown"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { HookType } from '@/types/enum'
 import { InputLine, InputNumberLine } from "../../../config/form/input"
+import { LoadingOutlined } from '@ant-design/icons'
+import { Spin } from "antd"
 
 const TIMEZONE_LIST: Required<TimeZoneInfo>[] = [
   {
@@ -276,7 +278,7 @@ export const TimeZoneConfigItem = () => {
         onDebouncedInput={(value) => (fp.other.timezone as ValueHookMode<TimeZoneInfo>).value.zone = value}
       />
     </>}
-  /> : <></>
+  /> : <Spin indicator={<LoadingOutlined spin />} />
 }
 
 export default TimeZoneConfigItem

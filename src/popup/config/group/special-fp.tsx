@@ -4,6 +4,8 @@ import { HookType } from '@/types/enum'
 import SelectFpConfigItem from "../item/fp/select"
 import TimeZoneConfigItem from "../item/special/timezone"
 import { memo } from "react"
+import { Spin } from "antd"
+import { LoadingOutlined } from '@ant-design/icons'
 
 const BASE_TYPES: HookMode['type'][] = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const SWITCH_TYPES: HookMode['type'][] = [HookType.default, HookType.disabled]
@@ -70,7 +72,7 @@ export const SpecialFpConfigGroup = memo(() => {
       defaultValue={fp.other.webgpu.type}
       onChange={(type) => fp.other.webgpu.type = type as any}
     />
-  </> : <></>
+  </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
 export default SpecialFpConfigGroup

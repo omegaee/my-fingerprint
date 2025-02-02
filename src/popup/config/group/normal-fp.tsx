@@ -4,6 +4,8 @@ import { HookType } from '@/types/enum'
 import { InputLine } from "../../config/form/input"
 import { useTranslation } from "react-i18next"
 import SelectFpConfigItem from "../item/fp/select"
+import { Spin } from "antd"
+import { LoadingOutlined } from '@ant-design/icons'
 
 type DeprecatedType = {
   option: HookType,
@@ -123,7 +125,7 @@ export const NormalFpConfigGroup = memo(() => {
           onDebouncedInput={(value) => (fp.screen.pixelDepth as ValueHookMode).value = value} />
       </>}
     />
-  </> : <></>
+  </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
 export default NormalFpConfigGroup
