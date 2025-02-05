@@ -55,29 +55,6 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  // 'hook getOwnPropertyDescriptor': {
-  //   condition: () => true,
-  //   onEnable: ({ win, rawObjects }) => {
-  //     if (!rawObjects.getOwnPropertyDescriptor) {
-  //       rawObjects.getOwnPropertyDescriptor = win.Object.getOwnPropertyDescriptor
-
-  //       const navigatorDesc = rawObjects.navigatorDescriptor ?? win.Object.getOwnPropertyDescriptor(win, 'navigator')
-  //       const screenDesc = rawObjects.screenDescriptor ?? win.Object.getOwnPropertyDescriptor(win, 'screen')
-
-  //       win.Object.getOwnPropertyDescriptor = new Proxy(rawObjects.getOwnPropertyDescriptor, {
-  //         apply: (target, thisArg: Object, args: Parameters<typeof Object.getOwnPropertyDescriptor>) => {
-  //           const [obj, prop] = args
-  //           if (obj === win) {
-  //             if (prop === 'navigator') return navigatorDesc
-  //             if (prop === 'screen') return screenDesc
-  //           }
-  //           return target.apply(thisArg, args)
-  //         }
-  //       })
-  //     }
-  //   },
-  // },
-
   'hook navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fingerprint.navigator) || conf.fingerprint.other.webrtc.type !== HookType.default,
     onEnable: ({ win, conf, getSeed, getValue }) => {
@@ -85,7 +62,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       _navigator && Object.defineProperty(win, 'navigator', {
         get: new Proxy(_navigator, {
           apply: (target: any, thisArg, args) => {
-            const result = target.apply(thisArg, args)
+            const result = _navigator.call(thisArg)
             return new Proxy(result, {
               get: (target: any, key: keyof Navigator | (string & {})) => {
                 switch (key) {
@@ -148,7 +125,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       _screen && Object.defineProperty(win, 'screen', {
         get: new Proxy(_screen, {
           apply: (target: any, thisArg, args) => {
-            const result = target.apply(thisArg, args);
+            const result = _screen.call(thisArg);
             return new Proxy(result, {
               get: (target: any, key: keyof Screen | (string & {})) => {
                 switch (key) {
@@ -420,37 +397,33 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) => conf.fingerprint.other.font.type !== HookType.default,
     onEnable: ({ win, conf, getValueDebounce }) => {
       const _offsetHeight = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetHeight")?.get
-      if (_offsetHeight) {
-        Object.defineProperty(win.HTMLElement.prototype, "offsetHeight", {
-          get: new Proxy(_offsetHeight, {
-            apply(target, thisArg: HTMLElement, args: any) {
-              try {
-                // const height = Math.floor(thisArg.getBoundingClientRect().height);
-                const height = target.apply(thisArg, args);
-                const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, height)
-                return height + noise;
-              } catch (_) {
-              }
+      _offsetHeight && Object.defineProperty(win.HTMLElement.prototype, "offsetHeight", {
+        get: new Proxy(_offsetHeight, {
+          apply(target, thisArg: HTMLElement, args: any) {
+            try {
+              const height = _offsetHeight.call(thisArg);
+              const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, height)
+              return height + noise;
+            } catch (_) {
             }
-          })
-        });
-      }
+          }
+        })
+      });
+
       const _offsetWidth = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetWidth")?.get
-      if (_offsetWidth) {
-        Object.defineProperty(win.HTMLElement.prototype, "offsetWidth", {
-          get: new Proxy(_offsetWidth, {
-            apply(target, thisArg: HTMLElement, args: any) {
-              try {
-                // const width = Math.floor(thisArg.getBoundingClientRect().width);
-                const width = target.apply(thisArg, args);
-                const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, width)
-                return width + noise;
-              } catch (_) {
-              }
+      _offsetWidth && Object.defineProperty(win.HTMLElement.prototype, "offsetWidth", {
+        get: new Proxy(_offsetWidth, {
+          apply(target, thisArg: HTMLElement, args: any) {
+            try {
+              const width = _offsetWidth.call(thisArg);
+              const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, width)
+              return width + noise;
+            } catch (_) {
             }
-          })
-        });
-      }
+          }
+        })
+      });
+
     },
   },
 
