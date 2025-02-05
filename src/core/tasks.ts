@@ -439,9 +439,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return raw ? raw - Math.floor(rn) : raw;
           }
           // @ts-ignore
-          const _GPUAdapter = Object.getOwnPropertyDescriptor(win.GPUAdapter.prototype, "limits")!.get!;
+          const _GPUAdapter = Object.getOwnPropertyDescriptor(win.GPUAdapter.prototype, "limits")?.get;
           // @ts-ignore
-          Object.defineProperty(win.GPUAdapter.prototype, "limits", {
+          _GPUAdapter && Object.defineProperty(win.GPUAdapter.prototype, "limits", {
             get: new Proxy(_GPUAdapter, {
               apply(target: any, self, args) {
                 const result = target.apply(self, args);
@@ -471,9 +471,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return raw ? raw - Math.floor(rn) : raw;
           }
           // @ts-ignore
-          const _GPUDevice = Object.getOwnPropertyDescriptor(win.GPUDevice.prototype, "limits")!.get!;
+          const _GPUDevice = Object.getOwnPropertyDescriptor(win.GPUDevice.prototype, "limits")?.get;
           // @ts-ignore
-          Object.defineProperty(win.GPUDevice.prototype, "limits", {
+          _GPUDevice && Object.defineProperty(win.GPUDevice.prototype, "limits", {
             get: new Proxy(_GPUDevice, {
               apply(target: any, self, args) {
                 const result = target.apply(self, args);
