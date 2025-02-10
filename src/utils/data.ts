@@ -62,10 +62,10 @@ export const randomWebglNoise = (seed: number): [number, number] => {
 }
 
 /**
- * 获取随机字体噪音 [-2, 2]
+ * 获取随机字体噪音
  */
-export const randomFontNoise = (seed: number, len: number): number => {
-  const random = seededRandom(hashNumberFromString(String(seed + len)), 1, 0)
-  if (random < 0.9) return 0;
-  return (Math.floor(random * 1000) % 5) - 2
+export const randomFontNoise = (seed: number, mark: string): number => {
+  const random = seededRandom((seed + hashNumberFromString(mark)) % Number.MAX_SAFE_INTEGER, 3, 0)
+  if ((random * 10) % 1 < 0.9) return 0;
+  return Math.floor(random) - 1;
 }

@@ -402,9 +402,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           apply(target, thisArg: HTMLElement, args: any) {
             try {
               const height = _offsetHeight.call(thisArg);
-              const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, height)
+              const mark = thisArg.style.fontFamily ?? 'h' + height;
+              const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, mark)
               return height + noise;
             } catch (_) {
+              return _offsetHeight.call(thisArg);
             }
           }
         })
@@ -416,14 +418,15 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           apply(target, thisArg: HTMLElement, args: any) {
             try {
               const width = _offsetWidth.call(thisArg);
-              const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, width)
+              const mark = thisArg.style.fontFamily ?? 'w' + width;
+              const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, mark)
               return width + noise;
             } catch (_) {
+              return _offsetWidth.call(thisArg);
             }
           }
         })
       });
-
     },
   },
 
