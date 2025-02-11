@@ -43,14 +43,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         return res
       }
 
-      const _appendChild = win.HTMLElement.prototype.appendChild
-      win.HTMLElement.prototype.appendChild = new Proxy(_appendChild, { apply })
+      const _appendChild = win.Node.prototype.appendChild
+      win.Node.prototype.appendChild = new Proxy(_appendChild, { apply })
 
-      const _insertBefore = win.HTMLElement.prototype.insertBefore
-      win.HTMLElement.prototype.insertBefore = new Proxy(_insertBefore, { apply })
+      const _insertBefore = win.Node.prototype.insertBefore
+      win.Node.prototype.insertBefore = new Proxy(_insertBefore, { apply })
 
-      const _replaceChild = win.HTMLElement.prototype.replaceChild
-      win.HTMLElement.prototype.replaceChild = new Proxy(_replaceChild, { apply })
+      const _replaceChild = win.Node.prototype.replaceChild
+      win.Node.prototype.replaceChild = new Proxy(_replaceChild, { apply })
     },
   },
 
