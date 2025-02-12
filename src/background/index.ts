@@ -417,7 +417,7 @@ const injectScript = (tabId: number, storage: LocalStorageObject) => {
     },
     world: 'MAIN',
     injectImmediately: true,
-    args: [tabId, { ...storage, whitelist: [...storage.whitelist] }],
+    args: [{ ...storage, whitelist: [...storage.whitelist] }],
     func: coreInject,
   }).catch(() => { })
 }

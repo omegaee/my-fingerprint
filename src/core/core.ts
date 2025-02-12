@@ -26,6 +26,8 @@ export interface RawHookObject {
   getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
 }
 
+const WIN_KEY = 'my_fingerprint_'
+
 const RAW = {
   languages: navigator.languages,
   width: screen.width,
@@ -100,10 +102,20 @@ export const recordHook = function (key: string) {
 
 export const recordHookDebounce = debounceByFirstArg(recordHook, 200)
 
-export type WindowInfo = {
-  tabId: number,
+const getTopRandom = (win: Window & typeof globalThis): number => {
+  const top = win.top ?? win
+  // @ts-ignore
+  let data = top[WIN_KEY]
+  if (data === undefined || data === null) {
+    data = genRandomSeed()
+    // @ts-ignore
+    top[WIN_KEY] = data
+  }
+  return data
+}
+
+type WindowInfo = {
   host: string,
-  inWhitelist: boolean,
 }
 
 type SeedInfo = {
@@ -128,15 +140,16 @@ export class FingerprintHandler {
     this.conf = config
 
     this.seed = {
-      page: Math.floor(seededRandom(info.tabId, Number.MAX_SAFE_INTEGER, 1)),
+      page: getTopRandom(win),
       domain: Math.floor(seededRandom(info.host, Number.MAX_SAFE_INTEGER, 1)),
       browser: config.browserSeed ?? genRandomSeed(),
       global: config.customSeed ?? genRandomSeed(),
     }
 
     if (!win) return
-    const key = '__MyFingerprint__' + info.tabId
-    if (!win[key as any]) {
+    const key = WIN_KEY + 'state_'
+    // @ts-ignore
+    if (!win[key]) {
       // @ts-ignore
       win[key] = true
       // this.listenMessage()
@@ -148,7 +161,7 @@ export class FingerprintHandler {
    * 脚本是否启动
    */
   public isEnable() {
-    return !!this.conf.enable && !this.info.inWhitelist
+    return !!this.conf.enable
   }
 
   /**

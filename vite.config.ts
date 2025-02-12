@@ -13,7 +13,7 @@ export default defineConfig({
       inputFilePath: 'src/core/index.ts',
       outputFilePath: 'src/core/output.js',
       functionName: 'coreInject',
-      params: '_tid,_local',
+      params: '_local',
     }),
     react(),
     crx({manifest} as any),
