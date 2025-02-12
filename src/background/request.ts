@@ -12,7 +12,7 @@ const RAW = {
 /**
  * 获取seed
  */
-const getSeedByMode = (storage: LocalStorageObject, mode: HookMode) => {
+const getSeedByMode = (storage: LocalStorage, mode: HookMode) => {
   switch (mode?.type) {
     case HookType.browser:
       return storage.config.browserSeed
@@ -27,7 +27,7 @@ const getSeedByMode = (storage: LocalStorageObject, mode: HookMode) => {
  * 刷新请求头UA
  */
 export const refreshRequestHeader = async () => {
-  const storage = await getLocalStorage()
+  const [storage] = await getLocalStorage()
 
   const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
     removeRuleIds: [UA_NET_RULE_ID],

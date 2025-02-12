@@ -4,7 +4,8 @@ import deepmerge from "deepmerge";
 import { refreshRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
 
-let localStorage: LocalStorageObject | undefined
+let mStorage: LocalStorage | undefined
+let mWhitelist: Set<string> | undefined
 
 /**
  * 生成默认配置
@@ -61,25 +62,26 @@ export const initLocalStorage = debouncedAsync(async (previousVersion?: string) 
 
   const data = await chrome.storage.local.get() as LocalStorage
 
-  let storage: LocalStorage
+  let _storage: LocalStorage
   if (!data.version || compareVersions(previousVersion, '2.0.0') < 0) {
     await chrome.storage.local.clear()
-    storage = genDefaultLocalStorage()
+    _storage = genDefaultLocalStorage()
   } else {
-    storage = deepmerge(genDefaultLocalStorage(), data)
-    storage.config.browserSeed = genRandomSeed()
+    _storage = deepmerge(genDefaultLocalStorage(), data)
+    _storage.config.browserSeed = genRandomSeed()
   }
-  localStorage = { ...storage, whitelist: new Set(storage.whitelist) }
-  chrome.storage.local.set(storage).then(() => refreshRequestHeader())
-  return localStorage
+  mStorage = _storage
+  mWhitelist = new Set(_storage.whitelist)
+  chrome.storage.local.set(_storage).then(() => refreshRequestHeader())
+  return [mStorage, mWhitelist] as const
 })
 
 /**
  * 获取配置
  */
-export const getLocalStorage = async (): Promise<LocalStorageObject> => {
-  if (localStorage) {
-    return localStorage
+export const getLocalStorage = async () => {
+  if (mStorage !== undefined && mWhitelist !== undefined) {
+    return [mStorage, mWhitelist] as const
   } else {
     return await initLocalStorage()
   }
@@ -88,28 +90,32 @@ export const getLocalStorage = async (): Promise<LocalStorageObject> => {
 /**
  * 存储配置
  */
-export const saveLocalConfig = debounce((storage: LocalStorageObject) => {
-  chrome.storage.local.set({ config: storage.config })
+export const saveLocalConfig = debounce((config: LocalStorageConfig) => {
+  chrome.storage.local.set({ config })
 }, 500)
 
 /**
  * 存储白名单
  */
-export const saveLocalWhitelist = debounce((storage: LocalStorageObject) => {
-  chrome.storage.local.set({ whitelist: [...storage.whitelist] })
+export const saveLocalWhitelist = debounce((whitelist: string[] | Set<string>) => {
+  if (whitelist instanceof Set) {
+    chrome.storage.local.set({ whitelist: [...whitelist] })
+  } else {
+    chrome.storage.local.set({ whitelist })
+  }
 }, 500)
 
 /**
  * 修改配置
  */
 export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>) => {
-  const storage = await getLocalStorage()
+  const [storage] = await getLocalStorage()
   storage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(
     storage.config,
     config,
     { arrayMerge: (destinationArray, sourceArray, options) => sourceArray },
   )
-  saveLocalConfig(storage)
+  saveLocalConfig(storage.config)
   if (
     config.enable !== undefined ||
     config.hookNetRequest !== undefined ||
@@ -124,25 +130,26 @@ export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>)
  * 修改白名单
  */
 export const updateLocalWhitelist = async (type: 'add' | 'del', host: string | string[]) => {
-  const storage = await getLocalStorage()
+  const [storage, mWhitelist] = await getLocalStorage()
   if (Array.isArray(host)) {
     if (type === 'add') {
       for (const hh of host) {
-        storage.whitelist.add(hh)
+        mWhitelist.add(hh)
       }
     } else if (type === 'del') {
       for (const hh of host) {
-        storage.whitelist.delete(hh)
+        mWhitelist.delete(hh)
       }
     }
   } else {
     if (type === 'add') {
-      storage.whitelist.add(host)
+      mWhitelist.add(host)
     } else if (type === 'del') {
-      storage.whitelist.delete(host)
+      mWhitelist.delete(host)
     }
   }
-  saveLocalWhitelist(storage)
+  storage.whitelist = [...mWhitelist]
+  saveLocalWhitelist(storage.whitelist)
   if (storage.config.enable && storage.config.hookNetRequest && storage.config.fingerprint.navigator.equipment) {
     refreshRequestHeader()
   }

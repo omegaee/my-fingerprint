@@ -57,8 +57,8 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       break
     }
     case RuntimeMsg.GetNotice: {
-      getLocalStorage().then((storage) => {
-        const isWhitelist = storage.whitelist.has(msg.host);
+      getLocalStorage().then(([_, whitelist]) => {
+        const isWhitelist = whitelist.has(msg.host);
         (sendResponse as RespFunc<GetNoticeMsg>)(isWhitelist ?
           {
             type: 'whitelist',
@@ -110,7 +110,7 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
 /**
  * 注入脚本
  */
-const injectScript = (tabId: number, storage: LocalStorageObject) => {
+const injectScript = (tabId: number, storage: LocalStorage) => {
   chrome.scripting.executeScript({
     target: {
       tabId,
@@ -118,7 +118,7 @@ const injectScript = (tabId: number, storage: LocalStorageObject) => {
     },
     world: 'MAIN',
     injectImmediately: true,
-    args: [{ ...storage, whitelist: [...storage.whitelist] }],
+    args: [storage],
     func: coreInject,
   }).catch(() => { })
 }
@@ -127,9 +127,9 @@ const injectScriptSolution = (tabId: number, url: string) => {
   const host = urlToHttpHost(url)
   if (!host) return
 
-  getLocalStorage().then((storage) => {
+  getLocalStorage().then(([storage, whitelist]) => {
     injectScript(tabId, storage)
-    if (storage.whitelist.has(host)) {
+    if (whitelist.has(host)) {
       setBadgeWhitelist(tabId)
     }
   })
