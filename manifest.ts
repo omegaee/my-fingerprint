@@ -11,6 +11,7 @@ export const manifest: chrome.runtime.ManifestV3 = {
     'activeTab', 
     'webNavigation', 
     'scripting',
+    'userScripts',
     'declarativeNetRequest',
   ],
   host_permissions: [
