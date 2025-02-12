@@ -8,9 +8,8 @@ import {
   shuffleArray,
 } from "../utils/data";
 import { debounce, debounceByFirstArg } from "../utils/timer";
-import { postSetHookRecords } from "@/message/content";
+import { sendContentSetHookRecords } from "@/message/content";
 import { genRandomSeed } from "../utils/base";
-import { ContentMsg } from '@/types/enum'
 import hookTasks from "./tasks";
 
 export type HookTask = {
@@ -86,7 +85,7 @@ const hookRecords: Map<string, number> = new Map()
  * 发送record消息
  */
 export const sendRecordMessage = debounce(() => {
-  postSetHookRecords(Object.fromEntries(hookRecords))
+  sendContentSetHookRecords(Object.fromEntries(hookRecords))
 })
 
 /**
@@ -135,6 +134,8 @@ export class FingerprintHandler {
   public rawObjects: Partial<RawHookObject> = {}
 
   public constructor(win: Window & typeof globalThis, info: WindowInfo, config: LocalStorageConfig) {
+    if (!win) throw new Error('win is required');
+
     this.win = win
     this.info = info
     this.conf = config
@@ -146,7 +147,6 @@ export class FingerprintHandler {
       global: config.customSeed ?? genRandomSeed(),
     }
 
-    if (!win) return
     const key = WIN_KEY + 'state_'
     // @ts-ignore
     if (!win[key]) {

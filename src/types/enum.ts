@@ -17,10 +17,3 @@ export enum RuntimeMsg {
   ChangeScriptWhitelist = 'change-script-whitelist',
   GetNewVersion = 'get-new-version',
 }
-
-export enum ContentMsg {
-  SetConfig = 'set-config',
-  SetHookRecords = 'set-hook-records',
-  // UpdateState = 'update-state',
-  ChangeWhitelist = 'change-whitelist',
-}

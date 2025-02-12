@@ -7,12 +7,6 @@ declare enum RuntimeMsg {
   GetNewVersion = 'get-new-version',
 }
 
-declare enum ContentMsg {
-  SetConfig = 'set-config',
-  SetHookRecords = 'set-hook-records',
-  ChangeWhitelist = 'change-whitelist',
-}
-
 // **********
 // RuntimeMsg
 // **********
@@ -54,23 +48,3 @@ type RespFunc<T=any> = (msg: T) => void
 type GetNoticeMsg = ToolbarNotice
 
 type GetNewVersionMsg = string | undefined
-
-// **********
-// ContentMsg
-// **********
-type PostSetHookRecords = {
-  type: ContentMsg.SetHookRecords,
-  data: Partial<Record<string, number>>,
-}
-
-type PostSetConfig = {
-  type: ContentMsg.SetConfig,
-  config: DeepPartial<LocalStorageConfig>,
-}
-
-type PostChangeWhitelist = {
-  type: ContentMsg.ChangeWhitelist,
-  mode: 'into' | 'leave'
-}
-
-type ContentRequest = PostSetHookRecords | PostSetConfig | PostChangeWhitelist

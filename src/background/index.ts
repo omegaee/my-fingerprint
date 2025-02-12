@@ -116,8 +116,8 @@ if (isRegScript) {
   reRegisterScript();
 } else {
   /**
-  * 监听tab变化
-  */
+   * 监听tab变化
+   */
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (!tab.url) return;
     if (changeInfo.status === 'loading') {

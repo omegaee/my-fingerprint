@@ -1,6 +1,29 @@
-import { ContentMsg } from '@/types/enum'
+///
+/// TYPE
+///
 
-export const IDENTIFY = '__MyFingerprint__'
+export const enum ContentMessageType {
+  SetHookRecords = 'set-hook-records',
+  SetBadge = 'set-badge',
+}
+
+type SetHookRecordsMsg = {
+  type: ContentMessageType.SetHookRecords,
+  data: Partial<Record<string, number>>,
+}
+
+type SetBadgeMsg = {
+  type: ContentMessageType.SetBadge,
+  data: 'whitelist',
+}
+
+export type ContentMessage = SetHookRecordsMsg | SetBadgeMsg
+
+///
+/// API
+///
+
+const IDENTIFY = 'my_fingerprint'
 
 /**
  * 解包postMessage请求体
@@ -12,36 +35,26 @@ export const unwrapMessage = (msg: any): any => {
 /**
  * 包装Message
  */
-export const wrapMessage = <T=any>(msg: T) => {
-  return {[IDENTIFY]: msg}
+export const wrapMessage = <T = any>(msg: T) => {
+  return { [IDENTIFY]: msg }
 }
 
 /**
  * 设置hook记录
  */
-export const postSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey, number>>) => {
-  postMessage(wrapMessage<PostSetHookRecords>({
-    type: ContentMsg.SetHookRecords,
+export const sendContentSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey, number>>) => {
+  postMessage(wrapMessage<SetHookRecordsMsg>({
+    type: ContentMessageType.SetHookRecords,
     data: hookRecords,
   }), location.origin)
 }
 
 /**
- * 修改配置
+ * 设置Badge
  */
-export const postSetConfig = (config: DeepPartial<LocalStorageConfig>) => {
-  postMessage(wrapMessage<PostSetConfig>({
-    type: ContentMsg.SetConfig,
-    config,
-  }), location.origin)
-}
-
-/**
- * 更新白名单
- */
-export const postChangeWhitelist = (mode: PostChangeWhitelist['mode']) => {
-  postMessage(wrapMessage<PostChangeWhitelist>({
-    type: ContentMsg.ChangeWhitelist,
-    mode,
+export const sendContentSetBadge = (data: SetBadgeMsg['data']) => {
+  postMessage(wrapMessage<SetBadgeMsg>({
+    type: ContentMessageType.SetBadge,
+    data,
   }), location.origin)
 }

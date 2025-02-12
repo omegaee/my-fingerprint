@@ -1,16 +1,18 @@
-import { unwrapMessage } from '@/message/content';
+import { unwrapMessage, ContentMessageType, type ContentMessage } from '@/message/content';
 import { msgSetHookRecords } from '@/message/runtime';
-import { RuntimeMsg, ContentMsg } from '@/types/enum'
 
 /**
  * 同页消息处理
  */
 window.addEventListener('message', (ev) => {
-  if(ev.origin != location.origin) return
-  const msg = unwrapMessage(ev.data) as ContentRequest | undefined
-  switch(msg?.type){
-    case ContentMsg.SetHookRecords: {
+  if (ev.origin != location.origin) return;
+  const msg = unwrapMessage(ev.data) as ContentMessage | undefined
+  switch (msg?.type) {
+    case ContentMessageType.SetHookRecords: {
       msgSetHookRecords(msg.data)
+      break
+    }
+    case ContentMessageType.SetBadge: {
       break
     }
   }
