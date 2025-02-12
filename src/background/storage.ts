@@ -130,25 +130,25 @@ export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>)
  * 修改白名单
  */
 export const updateLocalWhitelist = async (type: 'add' | 'del', host: string | string[]) => {
-  const [storage, mWhitelist] = await getLocalStorage()
+  const [storage, whitelist] = await getLocalStorage()
   if (Array.isArray(host)) {
     if (type === 'add') {
       for (const hh of host) {
-        mWhitelist.add(hh)
+        whitelist.add(hh)
       }
     } else if (type === 'del') {
       for (const hh of host) {
-        mWhitelist.delete(hh)
+        whitelist.delete(hh)
       }
     }
   } else {
     if (type === 'add') {
-      mWhitelist.add(host)
+      whitelist.add(host)
     } else if (type === 'del') {
-      mWhitelist.delete(host)
+      whitelist.delete(host)
     }
   }
-  storage.whitelist = [...mWhitelist]
+  storage.whitelist = [...whitelist]
   saveLocalWhitelist(storage.whitelist)
   if (storage.config.enable && storage.config.hookNetRequest && storage.config.fingerprint.navigator.equipment) {
     refreshRequestHeader()
