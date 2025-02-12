@@ -1,9 +1,10 @@
 export const manifest: chrome.runtime.ManifestV3 = {
   manifest_version: 3,
+  minimum_chrome_version: '88',
+  default_locale: 'en',
   name: 'My Fingerprint',
-  description: 'Custom your browser fingerprint',
-  // description: '__MSG_extension_description__',
-  version: '2.3.2',
+  description: '__MSG_ext_desc__',
+  version: '2.3.3',
   permissions: [
     'storage', 
     'tabs', 
