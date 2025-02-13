@@ -1,19 +1,15 @@
-import { urlToHttpHost } from "@/utils/base";
 import { getLocalStorage } from "./storage";
-import { setBadgeWhitelist } from "./badge";
 import { coreInject } from "@/core/output";
+
+// // @ts-ignore
+// import contentSrc from '@/scripts/content?script&module'
 
 export const isRegScript = chrome.userScripts ? true : false
 
 const REG_ID = 'core'
 let mScriptCode: string | undefined = undefined
 
-export const injectScript = async (tabId: number, url: string) => {
-  const host = urlToHttpHost(url)
-  if (!host) return;
-
-  const [storage, whitelist] = await getLocalStorage()
-
+export const injectScript = async (tabId: number, storage: LocalStorage) => {
   /* 注入脚本 */
   await chrome.scripting.executeScript({
     target: {
@@ -24,11 +20,7 @@ export const injectScript = async (tabId: number, url: string) => {
     injectImmediately: true,
     args: [storage],
     func: coreInject,
-  })
-
-  if (whitelist.has(host)) {
-    setBadgeWhitelist(tabId)
-  }
+  }).catch(() => {})
 }
 
 /**

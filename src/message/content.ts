@@ -1,6 +1,5 @@
 export const enum MContentType {
   SetHookRecords = 'set-hook-records',
-  SetBadge = 'set-badge',
 }
 
 ///
@@ -10,10 +9,6 @@ export type MContentRequest = {
   [MContentType.SetHookRecords]: {
     type: MContentType.SetHookRecords,
     data: Partial<Record<string, number>>,
-  }
-  [MContentType.SetBadge]: {
-    type: MContentType.SetBadge,
-    data: 'whitelist',
   }
 }
 
@@ -40,15 +35,5 @@ export const sendContentSetHookRecords = (hookRecords: Partial<Record<HookFinger
   sendMessage({
     type: MContentType.SetHookRecords,
     data: hookRecords,
-  })
-}
-
-/**
- * 设置Badge
- */
-export const sendContentSetBadge = (data: MContentRequest[MContentType.SetBadge]['data']) => {
-  sendMessage({
-    type: MContentType.SetBadge,
-    data,
   })
 }

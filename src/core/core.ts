@@ -180,7 +180,9 @@ export class FingerprintHandler {
    * hook iframe
    */
   public hookIframe = (iframe: HTMLIFrameElement) => {
-    new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
+    try {
+      new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
+    } catch (_) { }
   }
 
   /**

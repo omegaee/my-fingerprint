@@ -3,9 +3,7 @@ import { getLocalStorage, initLocalStorage, updateLocalConfig, updateLocalWhitel
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
 import { type MRuntimeRequest, MRuntimeResponse, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
-
-// // @ts-ignore
-// import contentSrc from '@/scripts/content?script&module'
+import { urlToHttpHost } from "@/utils/base";
 
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
@@ -50,10 +48,6 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
   switch (msg.type) {
     case MRuntimeType.SetConfig: {
       updateLocalConfig(msg.config)
-      // sendMessageToAllTags<SetConfigRequest>({
-      //   type: RuntimeMsg.SetConfig,
-      //   config: msg.config
-      // })
       if (isRegScript) {
         reRegisterScript();
       }
@@ -85,18 +79,8 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
     case MRuntimeType.UpdateWhitelist: {
       if (msg.mode === 'add') {
         updateLocalWhitelist('add', msg.host)
-        selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
-          if (tab.id) {
-            setBadgeWhitelist(tab.id)
-          }
-        }))
       } else if (msg.mode === 'del') {
         updateLocalWhitelist('del', msg.host)
-        selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
-          if (tab.id) {
-            removeBadge(tab.id)
-          }
-        }))
       }
       if (isRegScript) {
         reRegisterScript();
@@ -112,24 +96,33 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
   }
 })
 
+/**
+ * 监听tab变化
+ */
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'loading') {
+    const [storage, whitelist] = await getLocalStorage()
+
+    if (!isRegScript) {
+      injectScript(tabId, storage)
+    }
+
+    const host = tab.url ? urlToHttpHost(tab.url) : undefined
+    if (!host) return;
+
+    if (whitelist.has(host)) {
+      setBadgeWhitelist(tabId)
+    }
+  }
+});
+
+// /**
+//  * 监听导航
+//  */
+// chrome.webNavigation.onCommitted.addListener((details) => {
+// })
+
 if (isRegScript) {
   /* 注册脚本 */
   reRegisterScript();
-} else {
-  /**
-   * 监听tab变化
-   */
-  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (!tab.url) return;
-    if (changeInfo.status === 'loading') {
-      injectScript(tabId, tab.url)
-    }
-  });
-
-  // /**
-  //  * 监听导航
-  //  */
-  // chrome.webNavigation.onCommitted.addListener((details) => {
-  //   injectScript(details.tabId, details.url)
-  // })
 }

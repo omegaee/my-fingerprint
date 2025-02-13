@@ -1,4 +1,3 @@
-import { sendContentSetBadge } from "@/message/content";
 import { FingerprintHandler } from "./core";
 import { urlToHttpHost } from "@/utils/base";
 
@@ -12,11 +11,7 @@ const storage: LocalStorage = _local;
   if (!window) return;
 
   const host = urlToHttpHost(location.href)
-  if (!host) return;
-
-  if (storage.whitelist.includes(host)) {
-    sendContentSetBadge('whitelist')
-  }
+  if (!host || storage.whitelist.includes(host)) return;
 
   try {
     new FingerprintHandler(window, { host }, storage.config);
