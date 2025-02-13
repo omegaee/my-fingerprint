@@ -1,8 +1,8 @@
-import { RuntimeMsg } from '@/types/enum'
 import { selectTabByHost } from "@/utils/tabs";
 import { getLocalStorage, initLocalStorage, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
+import { type MRuntimeRequest, MRuntimeResponse, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
 
 // // @ts-ignore
 // import contentSrc from '@/scripts/content?script&module'
@@ -46,9 +46,9 @@ chrome.runtime.onStartup.addListener(() => {
 /**
  * 消息处理
  */
-chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: RespFunc) => {
+chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender, sendResponse: MRuntimeResponseCall) => {
   switch (msg.type) {
-    case RuntimeMsg.SetConfig: {
+    case MRuntimeType.SetConfig: {
       updateLocalConfig(msg.config)
       // sendMessageToAllTags<SetConfigRequest>({
       //   type: RuntimeMsg.SetConfig,
@@ -59,20 +59,21 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       }
       break
     }
-    case RuntimeMsg.GetNotice: {
+    case MRuntimeType.GetNotice: {
       getLocalStorage().then(([_, whitelist]) => {
         const isWhitelist = whitelist.has(msg.host);
-        (sendResponse as RespFunc<GetNoticeMsg>)(isWhitelist ?
+        const result: MRuntimeResponse[MRuntimeType.GetNotice] = isWhitelist ?
           {
             type: 'whitelist',
           } : {
             type: 'record',
             data: hookRecords.get(msg.tabId)
-          })
+          };
+        sendResponse(result);
       })
       return true
     }
-    case RuntimeMsg.SetHookRecords: {
+    case MRuntimeType.SetHookRecords: {
       const tabId = sender.tab?.id
       if (tabId === undefined) return
       hookRecords.set(tabId, msg.data)
@@ -81,7 +82,7 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       chrome.action.setBadgeBackgroundColor({ tabId, color });
       break
     }
-    case RuntimeMsg.UpdateWhitelist: {
+    case MRuntimeType.UpdateWhitelist: {
       if (msg.mode === 'add') {
         updateLocalWhitelist('add', msg.host)
         selectTabByHost(msg.host).then((tabs) => tabs.forEach((tab) => {
@@ -102,9 +103,9 @@ chrome.runtime.onMessage.addListener((msg: MsgRequest, sender, sendResponse: Res
       }
       break
     }
-    case RuntimeMsg.GetNewVersion: {
+    case MRuntimeType.GetNewVersion: {
       getNewVersion().then((version) => {
-        (sendResponse as RespFunc<GetNewVersionMsg>)(version)
+        sendResponse(version)
       })
       return true
     }

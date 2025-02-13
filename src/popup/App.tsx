@@ -16,7 +16,7 @@ import FConfig from "./config"
 import WhitelistView from "./whitelist"
 
 import { compareVersions, urlToHttpHost } from "@/utils/base"
-import { msgAddWhiteList, msgDelWhiteList, msgGetNewVersion, msgGetNotice, msgSetConfig } from "@/message/runtime"
+import { sendRuntimeAddWhiteList, sendRuntimeDelWhiteList, sendRuntimeGetNewVersion, sendRuntimeGetNotice, sendRuntimeSetConfig } from "@/message/runtime"
 import { useConfigStore } from "./stores/config";
 
 function App() {
@@ -49,7 +49,7 @@ function App() {
       const temp = host.split(':')
       setHostPart([temp[0], temp[1]])
       if (!tab.id) return
-      msgGetNotice(tab.id, host).then((data) => {
+      sendRuntimeGetNotice(tab.id, host).then((data) => {
         if (data.type === 'record') {
           setHookRecords(data.data)
         } else if (data.type === 'whitelist') {
@@ -57,7 +57,7 @@ function App() {
         }
       })
     })
-    msgGetNewVersion().then((version) => {
+    sendRuntimeGetNewVersion().then((version) => {
       if(!version)return
       setHasNewVersion(compareVersions(manifest.version, version) === -1)
     })
@@ -71,10 +71,10 @@ function App() {
 
   const switchEnable = () => {
     if (enabled) {
-      msgSetConfig({ enable: false })
+      sendRuntimeSetConfig({ enable: false })
       setEnabled(false)
     } else {
-      msgSetConfig({ enable: true })
+      sendRuntimeSetConfig({ enable: true })
       setEnabled(true)
     }
   }
@@ -83,10 +83,10 @@ function App() {
     if (!hostPart) return
     const host = hostPart.join(':')
     if (isWhitelist) {
-      msgDelWhiteList(host)
+      sendRuntimeDelWhiteList(host)
       setIsWhitelist(false)
     } else {
-      msgAddWhiteList(host)
+      sendRuntimeAddWhiteList(host)
       setIsWhitelist(true)
     }
   }

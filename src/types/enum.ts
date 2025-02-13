@@ -8,12 +8,3 @@ export enum HookType {
   enabled = 6,  // 启用
   disabled = 7,  // 禁用
 }
-
-export enum RuntimeMsg {
-  SetConfig = 'set-config',
-  GetNotice = 'get-notice',
-  SetHookRecords = 'set-hook-records',
-  UpdateWhitelist = 'update-whitelist',
-  ChangeScriptWhitelist = 'change-script-whitelist',
-  GetNewVersion = 'get-new-version',
-}

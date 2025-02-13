@@ -11,9 +11,7 @@ const storage: LocalStorage = _local;
 (() => {
   if (!window) return;
 
-  const top = window.top ?? window;
-
-  const host = urlToHttpHost(top.location.href)
+  const host = urlToHttpHost(location.href)
   if (!host) return;
 
   if (storage.whitelist.includes(host)) {

@@ -1,18 +1,18 @@
-import { unwrapMessage, ContentMessageType, type ContentMessage } from '@/message/content';
-import { msgSetHookRecords } from '@/message/runtime';
+import { unwrapMessage, MContentType, MContentRequest } from '@/message/content';
+import { sendRuntimeSetHookRecords } from '@/message/runtime';
 
 /**
  * 同页消息处理
  */
 window.addEventListener('message', (ev) => {
-  if (ev.origin != location.origin) return;
-  const msg = unwrapMessage(ev.data) as ContentMessage | undefined
+  if (ev.origin !== location.origin) return;
+  const msg = unwrapMessage(ev.data) as MContentRequest[MContentType] | undefined
   switch (msg?.type) {
-    case ContentMessageType.SetHookRecords: {
-      msgSetHookRecords(msg.data)
+    case MContentType.SetHookRecords: {
+      sendRuntimeSetHookRecords(msg.data)
       break
     }
-    case ContentMessageType.SetBadge: {
+    case MContentType.SetBadge: {
       break
     }
   }

@@ -6,7 +6,7 @@ import {
   PlusOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { msgAddWhiteList, msgDelWhiteList } from "@/message/runtime";
+import { sendRuntimeAddWhiteList, sendRuntimeDelWhiteList } from "@/message/runtime";
 import WhitelistItem from "./item";
 import { type MessageInstance } from "antd/es/message/interface";
 import { useTranslation } from "react-i18next";
@@ -53,19 +53,19 @@ export const WhitelistView = (props: WhitelistProps) => {
         return
       }
       const host = `${hostname}:${port}`
-      msgAddWhiteList(host)
+      sendRuntimeAddWhiteList(host)
       setWhitelist([...whitelist, host])
       setAddValue('')
     }else{
       const host = [hostname + ':80', hostname + ':443']
-      msgAddWhiteList(host)
+      sendRuntimeAddWhiteList(host)
       setWhitelist([...whitelist, ...host])
       setAddValue('')
     }
   }
 
   const deleteItem = (item: string) => {
-    msgDelWhiteList(item)
+    sendRuntimeDelWhiteList(item)
     setWhitelist(whitelist.filter((value) => value !== item))
   }
 

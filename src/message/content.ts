@@ -1,29 +1,30 @@
-///
-/// TYPE
-///
-
-export const enum ContentMessageType {
+export const enum MContentType {
   SetHookRecords = 'set-hook-records',
   SetBadge = 'set-badge',
 }
 
-type SetHookRecordsMsg = {
-  type: ContentMessageType.SetHookRecords,
-  data: Partial<Record<string, number>>,
+///
+/// TYPE
+///
+export type MContentRequest = {
+  [MContentType.SetHookRecords]: {
+    type: MContentType.SetHookRecords,
+    data: Partial<Record<string, number>>,
+  }
+  [MContentType.SetBadge]: {
+    type: MContentType.SetBadge,
+    data: 'whitelist',
+  }
 }
-
-type SetBadgeMsg = {
-  type: ContentMessageType.SetBadge,
-  data: 'whitelist',
-}
-
-export type ContentMessage = SetHookRecordsMsg | SetBadgeMsg
 
 ///
 /// API
 ///
-
 const IDENTIFY = 'my_fingerprint'
+
+const sendMessage = <T extends MContentType>(msg: MContentRequest[T]) => {
+  postMessage({ [IDENTIFY]: msg }, location.origin)
+}
 
 /**
  * 解包postMessage请求体
@@ -33,28 +34,21 @@ export const unwrapMessage = (msg: any): any => {
 }
 
 /**
- * 包装Message
- */
-export const wrapMessage = <T = any>(msg: T) => {
-  return { [IDENTIFY]: msg }
-}
-
-/**
  * 设置hook记录
  */
 export const sendContentSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey, number>>) => {
-  postMessage(wrapMessage<SetHookRecordsMsg>({
-    type: ContentMessageType.SetHookRecords,
+  sendMessage({
+    type: MContentType.SetHookRecords,
     data: hookRecords,
-  }), location.origin)
+  })
 }
 
 /**
  * 设置Badge
  */
-export const sendContentSetBadge = (data: SetBadgeMsg['data']) => {
-  postMessage(wrapMessage<SetBadgeMsg>({
-    type: ContentMessageType.SetBadge,
+export const sendContentSetBadge = (data: MContentRequest[MContentType.SetBadge]['data']) => {
+  sendMessage({
+    type: MContentType.SetBadge,
     data,
-  }), location.origin)
+  })
 }

@@ -1,4 +1,4 @@
-import { msgSetConfig } from "@/message/runtime"
+import { sendRuntimeSetConfig } from "@/message/runtime"
 import { deepProxy } from "@/utils/base"
 import { debounce, debouncedAsync } from "@/utils/timer"
 import { create } from "zustand"
@@ -32,7 +32,7 @@ export const useConfigStore = create<State & Actions>(((set, get) => {
   const saveStorage = debounce(() => {
     const config = get().config
     if (config) {
-      msgSetConfig(config)
+      sendRuntimeSetConfig(config)
     }
   }, 300)
 
