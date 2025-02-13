@@ -10,9 +10,9 @@ const storage: LocalStorage = _local;
 (() => {
   if (!window) return;
 
+  const WIN_KEY = 'my_fingerprint_';
   let data: WindowStorage | undefined
   if (window.top === window) {
-    const WIN_KEY = 'my_fingerprint_';
     data = {
       url: location.href,
       host: urlToHttpHost(location.href) ?? location.host,
