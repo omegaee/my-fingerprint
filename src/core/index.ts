@@ -1,5 +1,5 @@
 import { FingerprintHandler } from "./core";
-import { urlToHttpHost } from "@/utils/base";
+import { genRandomSeed, urlToHttpHost } from "@/utils/base";
 
 // @ts-ignore
 const storage: LocalStorage = _local;
@@ -10,10 +10,25 @@ const storage: LocalStorage = _local;
 (() => {
   if (!window) return;
 
-  const host = urlToHttpHost(location.href)
-  if (!host || storage.whitelist.includes(host)) return;
+  let data: WindowStorage | undefined
+  if (window.top === window) {
+    const WIN_KEY = 'my_fingerprint_';
+    data = {
+      url: location.href,
+      host: urlToHttpHost(location.href) ?? location.host,
+      seed: genRandomSeed(),
+      hooked: new Set(),
+    }
+    // @ts-ignore
+    window[WIN_KEY] = data;
+  } else {
+    // @ts-ignore
+    data = window[WIN_KEY]
+  }
+
+  if (!data || storage.whitelist.includes(data.host)) return;
 
   try {
-    new FingerprintHandler(window, { host }, storage.config);
+    new FingerprintHandler(window, data, storage.config);
   } catch (_) { }
 })()

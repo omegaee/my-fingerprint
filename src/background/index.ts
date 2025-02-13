@@ -103,12 +103,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
     const [storage, whitelist] = await getLocalStorage()
 
+    const host = tab.url ? urlToHttpHost(tab.url) : undefined
+    if (!host) return;
+
     if (!isRegScript) {
       injectScript(tabId, storage)
     }
-
-    const host = tab.url ? urlToHttpHost(tab.url) : undefined
-    if (!host) return;
 
     if (whitelist.has(host)) {
       setBadgeWhitelist(tabId)

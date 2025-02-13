@@ -101,22 +101,6 @@ export const recordHook = function (key: string) {
 
 export const recordHookDebounce = debounceByFirstArg(recordHook, 200)
 
-const getTopRandom = (win: Window & typeof globalThis): number => {
-  const top = win.top ?? win
-  // @ts-ignore
-  let data = top[WIN_KEY]
-  if (data === undefined || data === null) {
-    data = genRandomSeed()
-    // @ts-ignore
-    top[WIN_KEY] = data
-  }
-  return data
-}
-
-type WindowInfo = {
-  host: string,
-}
-
 type SeedInfo = {
   page: number
   domain: number
@@ -126,35 +110,31 @@ type SeedInfo = {
 
 export class FingerprintHandler {
   public win: Window & typeof globalThis
-  public info: WindowInfo
+  public info: WindowStorage
   public seed: SeedInfo
 
   public conf: LocalStorageConfig
 
   public rawObjects: Partial<RawHookObject> = {}
 
-  public constructor(win: Window & typeof globalThis, info: WindowInfo, config: LocalStorageConfig) {
+  public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
     if (!win) throw new Error('win is required');
+    if (info.hooked.has(win)) throw new Error('win is already hooked');
+    info.hooked.add(win)
 
     this.win = win
     this.info = info
     this.conf = config
 
     this.seed = {
-      page: getTopRandom(win),
+      page: info.seed,
       domain: Math.floor(seededRandom(info.host, Number.MAX_SAFE_INTEGER, 1)),
       browser: config.browserSeed ?? genRandomSeed(),
       global: config.customSeed ?? genRandomSeed(),
     }
 
-    const key = WIN_KEY + 'state_'
-    // @ts-ignore
-    if (!win[key]) {
-      // @ts-ignore
-      win[key] = true
-      // this.listenMessage()
-      this.hook()
-    }
+    // this.listenMessage()
+    this.hook()
   }
 
   /**

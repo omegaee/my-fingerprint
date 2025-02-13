@@ -48,3 +48,10 @@ type HookFingerprint = {
 }
 
 type HookFingerprintKey = keyof HookFingerprint['navigator'] | keyof HookFingerprint['screen'] | keyof HookFingerprint['other']
+
+type WindowStorage = {
+  url: string
+  host: string
+  seed: number
+  hooked: Set<Window>
+}
