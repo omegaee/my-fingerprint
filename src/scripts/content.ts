@@ -12,9 +12,6 @@ window.addEventListener('message', (ev) => {
       sendRuntimeSetHookRecords(msg.data)
       break
     }
-    case MContentType.SetBadge: {
-      break
-    }
   }
 })
 

@@ -10,6 +10,7 @@ const REG_ID = 'core'
 let mScriptCode: string | undefined = undefined
 
 export const injectScript = async (tabId: number, storage: LocalStorage) => {
+  if (isRegScript || !storage.config.enable) return;
   /* 注入脚本 */
   await chrome.scripting.executeScript({
     target: {
@@ -20,7 +21,7 @@ export const injectScript = async (tabId: number, storage: LocalStorage) => {
     injectImmediately: true,
     args: [storage],
     func: coreInject,
-  }).catch(() => {})
+  }).catch(() => { })
 }
 
 /**
