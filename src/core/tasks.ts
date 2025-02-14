@@ -10,7 +10,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onEnable: ({ win, hookIframe }) => {
       // 监听DOM初始化
       const observer = new MutationObserver((mutations) => {
-        if (mutations.length == 1) return;
+        // if (mutations.length == 1) return;
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
             if (node.nodeName === 'IFRAME') {

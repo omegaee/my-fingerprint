@@ -53,5 +53,5 @@ type WindowStorage = {
   url: string
   host: string
   seed: number
-  hooked: Set<Window>
+  hooked: Window[]
 }
