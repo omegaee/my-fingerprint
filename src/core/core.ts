@@ -126,8 +126,14 @@ export class FingerprintHandler {
       if (info.hooked) throw new Error('win is already hooked');
       info.hooked = true;
     } else {
-      // @ts-ignore
-      if (win[WIN_KEY]) throw new Error('win is already hooked');
+      let hooked: boolean = false
+      try {
+        // @ts-ignore
+        hooked = win[WIN_KEY]
+      } catch (_) {
+        throw new Error('unable to access cross source');
+      }
+      if (hooked) throw new Error('win is already hooked');
       // @ts-ignore
       win[WIN_KEY] = true;
     }
