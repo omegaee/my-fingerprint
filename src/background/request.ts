@@ -3,77 +3,77 @@ import { getLocalStorage } from "./storage"
 import { shuffleArray } from "@/utils/data"
 import { HookType } from '@/types/enum'
 
+type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
+
 const UA_NET_RULE_ID = 1
 
 const RAW = {
   languages: navigator.languages,
 }
 
+const MEMORY = {
+  ua: new Map<string, readonly RuleHeader[]>(),
+}
+
 /**
  * 获取seed
  */
-const getSeedByMode = (storage: LocalStorage, mode: HookMode) => {
+const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
   switch (mode?.type) {
     case HookType.browser:
-      return storage.config.browserSeed
+      return config.browserSeed
     case HookType.global:
-      return storage.config.customSeed
+      return config.customSeed
     default:
       return undefined
   }
 }
 
-/**
- * 刷新请求头UA
- */
-export const refreshRequestHeader = async () => {
-  const [storage] = await getLocalStorage()
+const genUaRules = async ({ config }: LocalStorage): Promise<readonly RuleHeader[]> => {
+  const key = JSON.stringify(config.fingerprint.navigator.equipment)
+  const mem = MEMORY.ua.get(key)
+  if (mem) return mem;
 
-  const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
-    removeRuleIds: [UA_NET_RULE_ID],
-  }
-
-  if (!storage.config.enable || !storage.config.hookNetRequest) {
-    chrome.declarativeNetRequest.updateSessionRules(options)
-    return
-  }
-
-  const requestHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = []
-
-  const equipmentSeed = getSeedByMode(storage, storage.config.fingerprint.navigator.equipment);
-  if (equipmentSeed) {
-    requestHeaders.push({
+  const res: RuleHeader[] = []
+  const uaSeed = getSeedByMode(config, config.fingerprint.navigator.equipment);
+  if (uaSeed) {
+    res.push({
       header: "User-Agent",
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-      value: genRandomVersionUserAgent(equipmentSeed, navigator),
+      value: genRandomVersionUserAgent(uaSeed, navigator),
     })
-
-    const uaData = await genRandomVersionUserAgentData(equipmentSeed, navigator)
-    uaData.brands && requestHeaders.push({
+    const uaData = await genRandomVersionUserAgentData(uaSeed, navigator)
+    uaData.brands && res.push({
       header: "Sec-Ch-Ua",
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
       value: uaData.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
     })
-    uaData.fullVersionList && requestHeaders.push({
+    uaData.fullVersionList && res.push({
       header: "Sec-Ch-Ua-Full-Version-List",
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
       value: uaData.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
     })
-    uaData.uaFullVersion && requestHeaders.push({
+    uaData.uaFullVersion && res.push({
       header: "Sec-Ch-Ua-Full-Version",
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
       value: uaData.uaFullVersion,
     })
   }
 
-  const langsMode = storage.config.fingerprint.navigator.languages
+  MEMORY.ua.set(key, res)
+  return res;
+}
+
+const genLanguageRules = ({ config }: LocalStorage): readonly RuleHeader[] => {
+  const res: RuleHeader[] = []
+  const langsMode = config.fingerprint.navigator.languages
   if (langsMode && langsMode.type !== HookType.default) {
     /* 获取种子 */
     let langs: string[] | undefined
     if (langsMode.type === HookType.value) {
       langs = langsMode.value
     } else {
-      const langSeed = getSeedByMode(storage, langsMode)
+      const langSeed = getSeedByMode(config, langsMode)
       if (langSeed) {
         langs = shuffleArray(RAW.languages, langSeed)
       }
@@ -86,26 +86,46 @@ export const refreshRequestHeader = async () => {
         qFactor -= 0.1
         rest[i] = `${rest[i]};q=${qFactor.toFixed(1)}`
       }
-      requestHeaders.push({
+      res.push({
         header: "Accept-Language",
         operation: chrome.declarativeNetRequest.HeaderOperation.SET,
         value: [first, ...rest].join(","),
       })
     }
   }
+  return res
+}
 
-  if (requestHeaders.length) {
+/**
+ * 刷新请求头UA
+ */
+export const refreshRequestHeader = async () => {
+  const [storage, whitelist] = await getLocalStorage()
+
+  const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
+    removeRuleIds: [UA_NET_RULE_ID],
+  }
+
+  if (!storage.config.enable || !storage.config.hookNetRequest) {
+    chrome.declarativeNetRequest.updateSessionRules(options)
+    return
+  }
+
+  const headers = [
+    ...await genUaRules(storage),
+    ...genLanguageRules(storage),
+  ]
+
+  if (headers.length) {
     options.addRules = [{
       id: UA_NET_RULE_ID,
-      // priority: 1,
       condition: {
-        excludedInitiatorDomains: [...new Set([...storage.whitelist].map((host) => host.split(':')[0]))],
+        excludedInitiatorDomains: [...whitelist].map((host) => host.split(':')[0]),
         resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-        // resourceTypes: [RT.MAIN_FRAME, RT.SUB_FRAME, RT.IMAGE, RT.FONT, RT.MEDIA, RT.STYLESHEET, RT.SCRIPT ],
       },
       action: {
         type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-        requestHeaders,
+        requestHeaders: headers,
       },
     }]
   }
