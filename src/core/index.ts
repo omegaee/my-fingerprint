@@ -1,4 +1,4 @@
-import { type MContentRequest, MContentType } from "@/message/content";
+import { type MContentRequest, MContentType, sendContentMessage, unwrapContentMessage } from "@/message/content";
 import { FingerprintHandler } from "./core";
 import { genRandomSeed, urlToHttpHost } from "@/utils/base";
 
@@ -31,11 +31,10 @@ const storage: LocalStorage = _local;
     // @ts-ignore
     window[WIN_KEY] = data;
     window.addEventListener('message', (ev) => {
-      const msg: MContentRequest[MContentType] | undefined = ev.data[WIN_KEY]
+      const msg = unwrapContentMessage(ev)
       if (!msg || !ev.source) return;
       if (msg.type === MContentType.GetHookInfo) {
-        // @ts-ignore
-        ev.source.postMessage({ [WIN_KEY]: { type: MContentType.StartHook, data: data_s } }, ev.origin);
+        sendContentMessage(ev.source as any, { type: MContentType.StartHook, data: data_s }, ev.origin)
       }
     })
     hook(window, data)
@@ -50,18 +49,12 @@ const storage: LocalStorage = _local;
   } catch (_) {
     /* 跨源 */
     window.addEventListener('message', (ev) => {
-      const msg: MContentRequest[MContentType] | undefined = ev.data[WIN_KEY]
+      const msg = unwrapContentMessage(ev)
       if (msg?.type === MContentType.StartHook) {
-        const _data = JSON.parse(msg.data)
-        hook(window, _data)
+        hook(window, JSON.parse(msg.data))
       }
     })
-    const top = window.top ?? window;
-    top.postMessage({
-      [WIN_KEY]: {
-        type: MContentType.GetHookInfo
-      }
-    }, '*')
+    sendContentMessage(window.top ?? window, { type: MContentType.GetHookInfo }, '*')
   }
 
 })()

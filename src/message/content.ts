@@ -26,23 +26,16 @@ export type MContentRequest = {
 ///
 const IDENTIFY = 'my_fingerprint'
 
-const sendMessage = <T extends MContentType>(msg: MContentRequest[T]) => {
-  postMessage({ [IDENTIFY]: msg }, location.origin)
+/**
+ * 解包Content消息
+ */
+export const unwrapContentMessage = (ev: MessageEvent<any>): MContentRequest[MContentType] | undefined => {
+  return ev.data?.[IDENTIFY]
 }
 
 /**
- * 解包postMessage请求体
+ * 发送Content消息
  */
-export const unwrapMessage = (msg: any): any => {
-  return msg[IDENTIFY]
-}
-
-/**
- * 设置hook记录
- */
-export const sendContentSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey, number>>) => {
-  sendMessage({
-    type: MContentType.SetHookRecords,
-    data: hookRecords,
-  })
+export const sendContentMessage = <T extends MContentType>(win: Window, msg: MContentRequest[T], origin?: string) => {
+  win.postMessage({ [IDENTIFY]: msg }, origin ?? location.origin)
 }

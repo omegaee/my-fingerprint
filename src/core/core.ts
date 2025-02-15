@@ -8,7 +8,7 @@ import {
   shuffleArray,
 } from "../utils/data";
 import { debounce, debounceByFirstArg } from "../utils/timer";
-import { sendContentSetHookRecords } from "@/message/content";
+import { MContentType, sendContentMessage } from "@/message/content";
 import { genRandomSeed } from "../utils/base";
 import hookTasks from "./tasks";
 
@@ -85,7 +85,10 @@ const hookRecords: Map<string, number> = new Map()
  * 发送record消息
  */
 export const sendRecordMessage = debounce(() => {
-  sendContentSetHookRecords(Object.fromEntries(hookRecords))
+  sendContentMessage(window.top ?? window, {
+    type: MContentType.SetHookRecords,
+    data: Object.fromEntries(hookRecords),
+  }, '*')
 })
 
 /**
