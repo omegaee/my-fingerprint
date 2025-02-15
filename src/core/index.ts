@@ -1,4 +1,4 @@
-import { type MContentRequest, MContentType, sendContentMessage, unwrapContentMessage } from "@/message/content";
+import { MContentType, sendContentMessage, unwrapContentMessage } from "@/message/content";
 import { FingerprintHandler } from "./core";
 import { genRandomSeed, urlToHttpHost } from "@/utils/base";
 
@@ -25,16 +25,15 @@ const storage: LocalStorage = _local;
       url: location.href,
       host: urlToHttpHost(location.href) ?? location.host,
       seed: genRandomSeed(),
-      hooked: [],
+      hooked: false,
     }
-    const data_s = JSON.stringify(data)
     // @ts-ignore
     window[WIN_KEY] = data;
     window.addEventListener('message', (ev) => {
       const msg = unwrapContentMessage(ev)
       if (!msg || !ev.source) return;
       if (msg.type === MContentType.GetHookInfo) {
-        sendContentMessage(ev.source as any, { type: MContentType.StartHook, data: data_s }, ev.origin)
+        sendContentMessage(ev.source as any, { type: MContentType.StartHook, data }, ev.origin)
       }
     })
     hook(window, data)
@@ -51,7 +50,7 @@ const storage: LocalStorage = _local;
     window.addEventListener('message', (ev) => {
       const msg = unwrapContentMessage(ev)
       if (msg?.type === MContentType.StartHook) {
-        hook(window, JSON.parse(msg.data))
+        hook(window, msg.data)
       }
     })
     sendContentMessage(window.top ?? window, { type: MContentType.GetHookInfo }, '*')

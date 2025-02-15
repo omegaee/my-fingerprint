@@ -122,8 +122,15 @@ export class FingerprintHandler {
 
   public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
     if (!win) throw new Error('win is required');
-    if (info.hooked.includes(win)) throw new Error('win is already hooked');
-    info.hooked.push(win)
+    if (win === window.top) {
+      if (info.hooked) throw new Error('win is already hooked');
+      info.hooked = true;
+    } else {
+      // @ts-ignore
+      if (win[WIN_KEY]) throw new Error('win is already hooked');
+      // @ts-ignore
+      win[WIN_KEY] = true;
+    }
 
     this.win = win
     this.info = info

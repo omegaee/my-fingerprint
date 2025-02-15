@@ -17,7 +17,7 @@ export type MContentRequest = {
   }
   [MContentType.StartHook]: {
     type: MContentType.StartHook,
-    data: string,
+    data: WindowStorage,
   }
 }
 
