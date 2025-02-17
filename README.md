@@ -25,17 +25,16 @@
 - [x] WebRTC保护
 - [x] WebGPU指纹
 
-# 目录
+## 目录
 - [使用](#使用)
 - [功能模块](#功能模块)
-  - [配置模块](#配置模块)
-  - [记录模块](#记录模块)
-  - [白名单模块](#白名单模块)
 - [测试目标](#测试目标)
+- [社区](#社区)
 - [支持一下](#支持一下)
 - [声明](#声明)
 
-# 使用
+
+## 使用
 
 ***插件安装：***
 1. 下载扩展最新版本的`zip` -- [扩展下载](https://github.com/omegaee/my-fingerprint/releases/latest)
@@ -48,13 +47,13 @@
 - （可选）左键插件图标进入配置页面进行自定义配置
 
 ***前置：***
-- 支持`Manifest V3`扩展的浏览器（大多数浏览器都支持）
+- 浏览器版本需求 - `Chrome 90+`
 
-# 功能模块
+## 功能模块
 
 <img src='./images/zh/ui.png' width='360px' />
 
-## 配置模块
+### 配置模块
 - 用于对各种指纹的自定义
 
 **普通指纹配置**
@@ -80,14 +79,14 @@
 - [x] Iframe钩子 - 对Iframe进行注入
 
 
-## 记录模块
+### 记录模块
 > 显示了当前标签页对各种指纹的访问次数
 
-## 白名单模块
+### 白名单模块
 > 可对以白名单列表进行编辑
 
 
-# 测试目标
+## 测试目标
 - [x] https://webbrowsertools.com/
 - [x] https://www.yalala.com/
 - [x] https://uutool.cn/browser/
@@ -95,7 +94,13 @@
 - [x] https://www.browserscan.net/
 
 
-# 支持一下
+## 社区
+> 为了统一管理，建议优先使用 `Issues` 、 `Pull requests` 等功能
+
+[![QQ群](https://img.shields.io/badge/QQ%E7%BE%A4-971379868-fedcba?style=flat-square&logo=qq&logoColor=white)](https://qm.qq.com/q/hxchiOUTtu)
+
+
+## 支持一下
 - 本项目免费开源，如果你觉得对你有帮助，请给我一颗Star
 - 如果有好的建议或意见，欢迎提交Issue或Pull Request
 - 欢迎赞赏支持
@@ -105,6 +110,6 @@
 | <img src='./images/wechat-code.png' title='微信' width='210px' height='210px'  /> |
 
 
-# 声明
+## 声明
 - 若要进行某些较敏感的操作，请使用更加专业的工具。
 - 本项目仅用于学习和研究，开发者不对因使用本项目而导致的任何损失或问题负责。
