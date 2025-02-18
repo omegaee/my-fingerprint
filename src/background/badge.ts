@@ -28,13 +28,13 @@ export const getBadgeContent = (records: Partial<Record<HookFingerprintKey, numb
  * 设置白名单标识
  */
 export const setBadgeWhitelist = (tabId: number) => {
-  chrome.action.setBadgeText({ tabId, text: ' ' });
-  chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR.whitelist })
+  chrome.action.setBadgeText({ tabId, text: ' ' }).catch(() => { })
+  chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR.whitelist }).catch(() => { })
 }
 
 /**
  * 移除标识
  */
 export const removeBadge = (tabId: number) => {
-  chrome.action.setBadgeText({ tabId, text: '' })
+  chrome.action.setBadgeText({ tabId, text: '' }).catch(() => { })
 }
