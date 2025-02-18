@@ -1,7 +1,7 @@
 import { compareVersions, genRandomSeed } from "@/utils/base";
 import { debounce, debouncedAsync } from "@/utils/timer";
 import deepmerge from "deepmerge";
-import { refreshRequestHeader } from "./request";
+import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
 
 let mStorage: LocalStorage | undefined
@@ -72,7 +72,7 @@ export const initLocalStorage = debouncedAsync(async (previousVersion?: string) 
   }
   mStorage = _storage
   mWhitelist = new Set(_storage.whitelist)
-  chrome.storage.local.set(_storage).then(() => refreshRequestHeader())
+  chrome.storage.local.set(_storage).then(() => reRequestHeader())
   return [mStorage, mWhitelist] as const
 })
 
@@ -122,7 +122,7 @@ export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>)
     config.fingerprint?.navigator?.equipment !== undefined ||
     config.fingerprint?.navigator?.language !== undefined
   ) {
-    refreshRequestHeader()
+    reRequestHeader()
   }
 }
 
@@ -151,6 +151,6 @@ export const updateLocalWhitelist = async (type: 'add' | 'del', host: string | s
   storage.whitelist = [...whitelist]
   saveLocalWhitelist(storage.whitelist)
   if (storage.config.enable && storage.config.hookNetRequest && storage.config.fingerprint.navigator.equipment) {
-    refreshRequestHeader()
+    reRequestHeader()
   }
 }

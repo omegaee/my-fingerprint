@@ -1,9 +1,9 @@
-import { selectTabByHost } from "@/utils/tabs";
 import { getLocalStorage, initLocalStorage, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
 import { type MRuntimeRequest, MRuntimeResponse, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
 import { urlToHttpHost } from "@/utils/base";
+import { reRequestHeader } from "./request";
 
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
@@ -111,10 +111,20 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (!host) return;
 
     if (whitelist.has(host)) {
+      reRequestHeader(tabId)
       setBadgeWhitelist(tabId)
     }
   }
 });
+
+/**
+ * 监听tab关闭
+ */
+chrome.tabs.onRemoved.addListener((tabId) => {
+  reRequestHeader(undefined, tabId)
+  hookRecords.delete(tabId)
+  removeBadge(tabId)
+})
 
 // /**
 //  * 监听导航

@@ -15,6 +15,40 @@ const MEMORY = {
   ua: new Map<string, readonly RuleHeader[]>(),
 }
 
+let excludeTabIds: Set<number> | undefined = undefined
+
+/**
+ * 获取已排除的tabID
+ */
+const getExcludeTabIds = async (excludeIds?: number | number[], passIds?: number | number[]) => {
+  if (!excludeTabIds) {
+    const rules = await chrome.declarativeNetRequest.getSessionRules()
+    excludeTabIds = new Set(rules[0]?.condition?.excludedTabIds)
+  }
+
+  if (excludeIds !== undefined) {
+    if (Array.isArray(excludeIds)) {
+      for (const excludeTabId of excludeIds) {
+        excludeTabIds.add(excludeTabId)
+      }
+    } else {
+      excludeTabIds.add(excludeIds)
+    }
+  }
+
+  if (passIds !== undefined) {
+    if (Array.isArray(passIds)) {
+      for (const passTabId of passIds) {
+        excludeTabIds.delete(passTabId)
+      }
+    } else {
+      excludeTabIds.delete(passIds)
+    }
+  }
+
+  return excludeTabIds
+}
+
 /**
  * 获取seed
  */
@@ -99,7 +133,7 @@ const genLanguageRules = ({ config }: LocalStorage): readonly RuleHeader[] => {
 /**
  * 刷新请求头UA
  */
-export const refreshRequestHeader = async () => {
+export const reRequestHeader = async (excludeTabIds?: number | number[], passTabIds?: number | number[]) => {
   const [storage, whitelist] = await getLocalStorage()
 
   const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
@@ -122,6 +156,7 @@ export const refreshRequestHeader = async () => {
       condition: {
         excludedInitiatorDomains: [...whitelist].map((host) => host.split(':')[0]),
         resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+        excludedTabIds: [...await getExcludeTabIds(excludeTabIds, passTabIds)],
       },
       action: {
         type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
@@ -130,5 +165,5 @@ export const refreshRequestHeader = async () => {
     }]
   }
 
-  chrome.declarativeNetRequest.updateSessionRules(options)
+  await chrome.declarativeNetRequest.updateSessionRules(options).catch(() => { })
 }
