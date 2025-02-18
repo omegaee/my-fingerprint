@@ -4,6 +4,9 @@ import { shuffleArray } from "@/utils/data"
 import { HookType } from '@/types/enum'
 
 type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
+type RuleSignal = {
+  isUpdate: boolean
+}
 
 const UA_NET_RULE_ID = 1
 
@@ -13,40 +16,53 @@ const RAW = {
 
 const MEMORY = {
   ua: new Map<string, readonly RuleHeader[]>(),
+  lang: new Map<string, readonly RuleHeader[]>(),
 }
 
-let excludeTabIds: Set<number> | undefined = undefined
+let mExcludeIds: Set<number> | undefined = undefined
 
 /**
  * 获取已排除的tabID
  */
-const getExcludeTabIds = async (excludeIds?: number | number[], passIds?: number | number[]) => {
-  if (!excludeTabIds) {
+const getExcludeTabIds = async (singal: RuleSignal, excludeIds?: number | number[], passIds?: number | number[]) => {
+  if (!mExcludeIds) {
     const rules = await chrome.declarativeNetRequest.getSessionRules()
-    excludeTabIds = new Set(rules[0]?.condition?.excludedTabIds)
+    mExcludeIds = new Set(rules[0]?.condition?.excludedTabIds)
   }
 
   if (excludeIds !== undefined) {
     if (Array.isArray(excludeIds)) {
       for (const excludeTabId of excludeIds) {
-        excludeTabIds.add(excludeTabId)
+        if (!mExcludeIds.has(excludeTabId)) {
+          mExcludeIds.add(excludeTabId)
+          singal.isUpdate = true
+        }
       }
     } else {
-      excludeTabIds.add(excludeIds)
+      if (!mExcludeIds.has(excludeIds)) {
+        mExcludeIds.add(excludeIds)
+        singal.isUpdate = true
+      }
     }
   }
 
   if (passIds !== undefined) {
     if (Array.isArray(passIds)) {
       for (const passTabId of passIds) {
-        excludeTabIds.delete(passTabId)
+        if (mExcludeIds.has(passTabId)) {
+          mExcludeIds.delete(passTabId)
+          singal.isUpdate = true
+        }
       }
     } else {
-      excludeTabIds.delete(passIds)
+      if (mExcludeIds.has(passIds)) {
+        mExcludeIds.delete(passIds)
+        singal.isUpdate = true
+      }
     }
   }
 
-  return excludeTabIds
+  return mExcludeIds
 }
 
 /**
@@ -63,7 +79,7 @@ const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
   }
 }
 
-const genUaRules = async ({ config }: LocalStorage): Promise<readonly RuleHeader[]> => {
+const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
   const key = JSON.stringify(config.fingerprint.navigator.equipment)
   const mem = MEMORY.ua.get(key)
   if (mem) return mem;
@@ -95,10 +111,15 @@ const genUaRules = async ({ config }: LocalStorage): Promise<readonly RuleHeader
   }
 
   MEMORY.ua.set(key, res)
+  singal.isUpdate = true;
   return res;
 }
 
-const genLanguageRules = ({ config }: LocalStorage): readonly RuleHeader[] => {
+const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonly RuleHeader[] => {
+  const key = JSON.stringify(config.fingerprint.navigator.languages)
+  const mem = MEMORY.lang.get(key)
+  if (mem) return mem;
+
   const res: RuleHeader[] = []
   const langsMode = config.fingerprint.navigator.languages
   if (langsMode && langsMode.type !== HookType.default) {
@@ -127,43 +148,49 @@ const genLanguageRules = ({ config }: LocalStorage): readonly RuleHeader[] => {
       })
     }
   }
-  return res
+
+  MEMORY.lang.set(key, res)
+  singal.isUpdate = true;
+  return res;
 }
 
 /**
- * 刷新请求头UA
+ * 刷新请求头
  */
 export const reRequestHeader = async (excludeTabIds?: number | number[], passTabIds?: number | number[]) => {
   const [storage, whitelist] = await getLocalStorage()
 
-  const options: chrome.declarativeNetRequest.UpdateRuleOptions = {
-    removeRuleIds: [UA_NET_RULE_ID],
-  }
-
   if (!storage.config.enable || !storage.config.hookNetRequest) {
-    chrome.declarativeNetRequest.updateSessionRules(options)
+    await chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: [UA_NET_RULE_ID],
+    }).catch(() => { })
     return
   }
 
-  const headers = [
-    ...await genUaRules(storage),
-    ...genLanguageRules(storage),
-  ]
+  const singal: RuleSignal = { isUpdate: false }
 
-  if (headers.length) {
-    options.addRules = [{
-      id: UA_NET_RULE_ID,
-      condition: {
-        excludedInitiatorDomains: [...whitelist].map((host) => host.split(':')[0]),
-        resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-        excludedTabIds: [...await getExcludeTabIds(excludeTabIds, passTabIds)],
-      },
-      action: {
-        type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-        requestHeaders: headers,
-      },
-    }]
+  const uaRules = await genUaRules(storage, singal)
+  const langRules = genLanguageRules(storage, singal)
+  const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
+
+  if (singal.isUpdate) {
+    await chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: [UA_NET_RULE_ID],
+      addRules: [{
+        id: UA_NET_RULE_ID,
+        condition: {
+          excludedInitiatorDomains: [...whitelist].map((host) => host.split(':')[0]),
+          resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+          excludedTabIds: [...exTabIds],
+        },
+        action: {
+          type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+          requestHeaders: [
+            ...uaRules,
+            ...langRules,
+          ],
+        },
+      }]
+    }).catch(() => { })
   }
-
-  await chrome.declarativeNetRequest.updateSessionRules(options).catch(() => { })
 }

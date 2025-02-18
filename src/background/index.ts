@@ -113,6 +113,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (whitelist.has(host)) {
       reRequestHeader(tabId)
       setBadgeWhitelist(tabId)
+    } else {
+      reRequestHeader(undefined, tabId)
     }
   }
 });
