@@ -20,7 +20,8 @@
     "normal-fp": "Normal Fingerprint",
     "special-fp": "Special Fingerprint",
     "other-config": "Other Config",
-    "seed": "Seed"
+    "seed": "Seed",
+    "more": "More"
   },
   "type": {
     "default": "Default",

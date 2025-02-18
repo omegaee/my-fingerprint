@@ -1,17 +1,17 @@
 import { sendRuntimeSetConfig } from "@/message/runtime"
 import { deepProxy } from "@/utils/base"
 import { debounce, debouncedAsync } from "@/utils/timer"
+import deepmerge from "deepmerge"
 import { create } from "zustand"
 
 type State = {
-  version: number
   config?: LocalStorageConfig
 }
 
 type Actions = {
   loadStorage: () => Promise<void>
   saveStorage: () => void
-  updateState: () => void
+  importConfig: (config: LocalStorageConfig) => Promise<void>
 }
 
 export const useConfigStore = create<State & Actions>(((set, get) => {
@@ -36,16 +36,30 @@ export const useConfigStore = create<State & Actions>(((set, get) => {
     }
   }, 300)
 
-  const updateState = () => {
-    set((state) => ({ version: state.version + 1 }))
+  const importConfig = async (config: LocalStorageConfig) => {
+    const rawConfig = get().config
+    if (!rawConfig) throw '未加载配置';
+
+    /* 简单过滤 */
+    const _config = Object.keys(config).filter(key => key in rawConfig).reduce((acc, key) => {
+      // @ts-ignore
+      acc[key] = config[key]
+      return acc
+    }, {} as LocalStorageConfig)
+
+    /* 合并 */
+    const finalConfig = deepmerge(
+      rawConfig,
+      _config,
+      { arrayMerge: (_, sourceArray, __) => sourceArray, },
+    )
+    set({ config: finalConfig })
   }
 
   return {
-    version: 0,
     storage: undefined,
-
     loadStorage,
     saveStorage,
-    updateState,
+    importConfig,
   }
 }))

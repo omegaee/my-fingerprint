@@ -6,9 +6,6 @@ import {
   GithubOutlined,
   CheckOutlined,
   CloseOutlined,
-  AlertOutlined,
-  SettingOutlined,
-  SafetyOutlined,
 } from '@ant-design/icons';
 
 import FHookRecord from "./record"
@@ -18,6 +15,7 @@ import WhitelistView from "./whitelist"
 import { compareVersions, urlToHttpHost } from "@/utils/base"
 import { sendRuntimeAddWhiteList, sendRuntimeDelWhiteList, sendRuntimeGetNewVersion, sendRuntimeGetNotice, sendRuntimeSetConfig } from "@/message/runtime"
 import { useConfigStore } from "./stores/config";
+import MoreView from "./more";
 
 function App() {
   const [t, i18n] = useTranslation()
@@ -58,7 +56,7 @@ function App() {
       })
     })
     sendRuntimeGetNewVersion().then((version) => {
-      if(!version)return
+      if (!version) return
       setHasNewVersion(compareVersions(manifest.version, version) === -1)
     })
   }, [])
@@ -95,19 +93,24 @@ function App() {
     return [
       {
         label: t('e.record'),
-        icon: <AlertOutlined />,
+        // icon: <AlertOutlined />,
         children: <FHookRecord records={hookRecords} />,
       },
       {
         label: t('e.config'),
-        icon: <SettingOutlined />,
+        // icon: <SettingOutlined />,
         children: <FConfig />,
       },
       {
         label: t('e.whitelist'),
-        icon: <SafetyOutlined />,
+        // icon: <SafetyOutlined />,
         children: <WhitelistView msgApi={messageApi} />,
       },
+      {
+        label: t('e.more'),
+        // icon: <MoreOutlined />,
+        children: <MoreView msgApi={messageApi} />,
+      }
     ].map((item, index) => ({ ...item, key: String(index) }))
   }, [i18n.language, tab, hookRecords])
 

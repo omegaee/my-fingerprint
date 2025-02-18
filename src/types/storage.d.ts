@@ -4,10 +4,6 @@ type LocalStorage = {
   whitelist: string[]  // 白名单
 }
 
-type LocalStorageObject = Omit<LocalStorage, 'whitelist'> & {
-  whitelist: Set<string>
-}
-
 type LocalStorageConfig = {
   enable: boolean
   // 种子

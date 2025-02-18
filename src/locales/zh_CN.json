@@ -20,7 +20,8 @@
     "normal-fp": "普通指纹",
     "special-fp": "特殊指纹",
     "other-config": "其他配置",
-    "seed": "种子"
+    "seed": "种子",
+    "more": "更多"
   },
   "type": {
     "default": "系统值",
