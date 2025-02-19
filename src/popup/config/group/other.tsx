@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import ConfigItem from "../item/base"
-import { useConfigStore } from "@/popup/stores/config"
+import { useStorageStore } from "@/popup/stores/storage"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown";
 import { memo, useMemo } from "react";
@@ -25,7 +25,7 @@ const LANG_OPTIONS = [
 export const OtherConfigGroup = memo(() => {
   const [t] = useTranslation()
 
-  const config = useConfigStore((state) => {
+  const config = useStorageStore((state) => {
     state.config ?? state.loadStorage()
     return state.config
   })

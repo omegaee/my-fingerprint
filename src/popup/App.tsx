@@ -13,9 +13,10 @@ import FConfig from "./config"
 import WhitelistView from "./whitelist"
 
 import { compareVersions, urlToHttpHost } from "@/utils/base"
-import { sendRuntimeAddWhiteList, sendRuntimeDelWhiteList, sendRuntimeGetNewVersion, sendRuntimeGetNotice, sendRuntimeSetConfig } from "@/message/runtime"
-import { useConfigStore } from "./stores/config";
+import { sendRuntimeGetNewVersion, sendRuntimeGetNotice, sendRuntimeSetConfig } from "@/message/runtime"
+import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
+import { useShallow } from "zustand/shallow";
 
 function App() {
   const [t, i18n] = useTranslation()
@@ -32,10 +33,14 @@ function App() {
 
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
-  const config = useConfigStore((state) => {
+  const { config, addWhitelist, deleteWhitelist } = useStorageStore(useShallow((state) => {
     state.config ?? state.loadStorage()
-    return state.config
-  })
+    return {
+      config: state.config,
+      addWhitelist: state.addWhitelist,
+      deleteWhitelist: state.deleteWhitelist,
+    }
+  }))
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
@@ -81,10 +86,10 @@ function App() {
     if (!hostPart) return
     const host = hostPart.join(':')
     if (isWhitelist) {
-      sendRuntimeDelWhiteList(host)
+      deleteWhitelist(host)
       setIsWhitelist(false)
     } else {
-      sendRuntimeAddWhiteList(host)
+      addWhitelist(host)
       setIsWhitelist(true)
     }
   }

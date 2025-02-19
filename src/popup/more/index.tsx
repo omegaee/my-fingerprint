@@ -5,7 +5,7 @@ import {
 } from '@ant-design/icons';
 import { type MessageInstance } from "antd/es/message/interface";
 import { type ChangeEvent, useCallback, useRef } from "react";
-import { useConfigStore } from "../stores/config";
+import { useStorageStore } from "../stores/storage";
 import { useShallow } from 'zustand/shallow'
 import { saveAs } from 'file-saver';
 import { useTranslation } from "react-i18next";
@@ -18,9 +18,9 @@ export const MoreView = ({ msgApi }: MoreViewProps) => {
   const [t] = useTranslation()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const { config, importConfig } = useConfigStore(useShallow((state) => ({
-    config: state.config,
-    importConfig: state.importConfig
+  const { storage, importStorage } = useStorageStore(useShallow((state) => ({
+    storage: state.storage,
+    importStorage: state.importStorage
   })))
 
   const onChangeFiles = useCallback((ev: ChangeEvent<HTMLInputElement>) => {
@@ -28,8 +28,8 @@ export const MoreView = ({ msgApi }: MoreViewProps) => {
     if (!file) return;
     file.text().then((text) => {
       try {
-        const config = JSON.parse(text)
-        importConfig(config).then(() => {
+        const ss = JSON.parse(text)
+        importStorage(ss).then(() => {
           msgApi?.success(t('tip.ok.config-import'))
         }).catch((err) => {
           msgApi?.error(`${t('tip.err.config-import')}: ${t(err)}`)
@@ -47,8 +47,8 @@ export const MoreView = ({ msgApi }: MoreViewProps) => {
         onChange={onChangeFiles} />
       <Button icon={<ImportOutlined />} onClick={() => fileRef.current?.click()}>{t('label.config-import')}</Button>
       <Button icon={<ExportOutlined />} onClick={() => {
-        const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
-        saveAs(blob, "config.json");
+        const blob = new Blob([JSON.stringify(storage, null, 2)], { type: "application/json" });
+        saveAs(blob, "my-fingerprint-config.json");
       }}>{t('label.config-export')}</Button>
     </section>
   </>

@@ -99,7 +99,8 @@
       "input-port": "Please enter the correct port number",
       "config-parse": "Config Parse Error",
       "config-import": "Import Config Error",
-      "config-unloaded": "Config Unloaded"
+      "config-unloaded": "Config Unloaded",
+      "import-empty": "Import Config is Empty"
     }
   },
   "city": {

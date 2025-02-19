@@ -99,7 +99,8 @@
       "input-port": "请输入正确的端口号",
       "config-parse": "配置解析失败",
       "config-import": "配置导入失败",
-      "config-unloaded": "配置未加载"
+      "config-unloaded": "配置未加载",
+      "import-empty": "导入配置为空"
     }
   },
   "city": {

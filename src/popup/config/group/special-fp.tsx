@@ -1,4 +1,4 @@
-import { useConfigStore } from "@/popup/stores/config"
+import { useStorageStore } from "@/popup/stores/storage"
 import { useTranslation } from "react-i18next"
 import { HookType } from '@/types/enum'
 import SelectFpConfigItem from "../item/fp/select"
@@ -16,7 +16,7 @@ const SWITCH_TYPES: HookMode['type'][] = [HookType.default, HookType.disabled]
 export const SpecialFpConfigGroup = memo(() => {
   const [t] = useTranslation()
 
-  const config = useConfigStore((state) => {
+  const config = useStorageStore((state) => {
     state.config ?? state.loadStorage()
     return state.config
   })

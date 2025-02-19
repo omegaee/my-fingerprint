@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import ConfigItem from "../base"
-import { useConfigStore } from "@/popup/stores/config"
+import { useStorageStore } from "@/popup/stores/storage"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -182,7 +182,7 @@ export const TimeZoneConfigItem = () => {
   const [t, i18n] = useTranslation()
   const [option, setOption] = useState<OptionType>()
 
-  const config = useConfigStore((state) => {
+  const config = useStorageStore((state) => {
     state.config ?? state.loadStorage()
     return state.config
   })

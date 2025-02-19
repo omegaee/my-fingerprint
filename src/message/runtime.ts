@@ -100,7 +100,7 @@ export const sendRuntimeAddWhiteList = (host: string | string[]) => {
 /**
  * 删除白名单
  */
-export const sendRuntimeDelWhiteList = (host: string) => {
+export const sendRuntimeDelWhiteList = (host: string | string[]) => {
   return sendMessage<MRuntimeType.UpdateWhitelist>({
     type: MRuntimeType.UpdateWhitelist,
     mode: 'del',

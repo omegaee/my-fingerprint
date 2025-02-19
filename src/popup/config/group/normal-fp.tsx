@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react"
-import { useConfigStore } from "@/popup/stores/config"
+import { useStorageStore } from "@/popup/stores/storage"
 import { HookType } from '@/types/enum'
 import { InputLine } from "../../config/form/input"
 import { useTranslation } from "react-i18next"
@@ -31,7 +31,7 @@ export const NormalFpConfigGroup = memo(() => {
     },
   ], [i18n.language])
 
-  const config = useConfigStore((state) => {
+  const config = useStorageStore((state) => {
     state.config ?? state.loadStorage()
     return state.config
   })
