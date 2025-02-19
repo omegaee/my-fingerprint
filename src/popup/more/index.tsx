@@ -8,12 +8,14 @@ import { type ChangeEvent, useCallback, useRef } from "react";
 import { useConfigStore } from "../stores/config";
 import { useShallow } from 'zustand/shallow'
 import { saveAs } from 'file-saver';
+import { useTranslation } from "react-i18next";
 
 export type MoreViewProps = {
   msgApi?: MessageInstance
 }
 
 export const MoreView = ({ msgApi }: MoreViewProps) => {
+  const [t] = useTranslation()
   const fileRef = useRef<HTMLInputElement>(null)
 
   const { config, importConfig } = useConfigStore(useShallow((state) => ({
@@ -28,12 +30,12 @@ export const MoreView = ({ msgApi }: MoreViewProps) => {
       try {
         const config = JSON.parse(text)
         importConfig(config).then(() => {
-          msgApi?.success('配置导入成功')
+          msgApi?.success(t('tip.ok.config-import'))
         }).catch((err) => {
-          msgApi?.error('配置导入失败: ' + err)
+          msgApi?.error(`${t('tip.err.config-import')}: ${t(err)}`)
         })
       } catch (_) {
-        msgApi?.error('配置解析失败')
+        msgApi?.error(t('tip.err.config-parse'))
       }
     })
   }, [])
@@ -43,11 +45,11 @@ export const MoreView = ({ msgApi }: MoreViewProps) => {
       <input ref={fileRef} type="file" className="hidden"
         accept="application/json"
         onChange={onChangeFiles} />
-      <Button icon={<ImportOutlined />} onClick={() => fileRef.current?.click()}>导入配置</Button>
+      <Button icon={<ImportOutlined />} onClick={() => fileRef.current?.click()}>{t('label.config-import')}</Button>
       <Button icon={<ExportOutlined />} onClick={() => {
         const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
         saveAs(blob, "config.json");
-      }}>导出配置</Button>
+      }}>{t('label.config-export')}</Button>
     </section>
   </>
 }

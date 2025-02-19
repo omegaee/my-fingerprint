@@ -23,6 +23,10 @@
     "seed": "种子",
     "more": "更多"
   },
+  "label": {
+    "config-import": "导入配置",
+    "config-export": "导出配置"
+  },
   "type": {
     "default": "系统值",
     "value": "自定义值",
@@ -87,9 +91,15 @@
     "label": {
       "not-support-whitelist": "当前标签页不支持"
     },
+    "ok": {
+      "config-import": "配置导入成功"
+    },
     "err": {
       "input-hostname": "请输入正确的域名",
-      "input-port": "请输入正确的端口号"
+      "input-port": "请输入正确的端口号",
+      "config-parse": "配置解析失败",
+      "config-import": "配置导入失败",
+      "config-unloaded": "配置未加载"
     }
   },
   "city": {

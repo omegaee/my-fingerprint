@@ -38,7 +38,7 @@ export const useConfigStore = create<State & Actions>(((set, get) => {
 
   const importConfig = async (config: LocalStorageConfig) => {
     const rawConfig = get().config
-    if (!rawConfig) throw '未加载配置';
+    if (!rawConfig) throw 'tip.err.config-unloaded';
 
     /* 简单过滤 */
     const _config = Object.keys(config).filter(key => key in rawConfig).reduce((acc, key) => {

@@ -23,6 +23,10 @@
     "seed": "Seed",
     "more": "More"
   },
+  "label": {
+    "config-import": "Import Config",
+    "config-export": "Export Config"
+  },
   "type": {
     "default": "Default",
     "value": "Custom value",
@@ -87,9 +91,15 @@
     "label": {
       "not-support-whitelist": "Not Supported"
     },
+    "ok": {
+      "config-import": "Import Config Success"
+    },
     "err": {
       "input-hostname": "Please enter the correct domain name",
-      "input-port": "Please enter the correct port number"
+      "input-port": "Please enter the correct port number",
+      "config-parse": "Config Parse Error",
+      "config-import": "Import Config Error",
+      "config-unloaded": "Config Unloaded"
     }
   },
   "city": {
