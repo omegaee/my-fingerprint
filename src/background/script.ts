@@ -29,7 +29,7 @@ export const injectScript = async (tabId: number, storage: LocalStorage) => {
  */
 const getRegScriptCode = (storage: LocalStorage) => {
   if (!mScriptCode) mScriptCode = coreInject.toString();
-  return `(function(){${mScriptCode};coreInject(${JSON.stringify(storage)});})()`
+  return `(function(fun){fun(${JSON.stringify(storage)});})(${mScriptCode});`
 }
 
 /**
