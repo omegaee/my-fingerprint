@@ -30,6 +30,7 @@ export const SelectFpConfigItem = ({ title, desc, defaultValue, options, depreca
   const [option, setOption] = useState<HookType>(defaultValue ?? HookType.default)
 
   useEffect(() => {
+    setOption(defaultValue ?? HookType.default)
     setIsCustom(defaultValue === HookType.value)
   }, [defaultValue])
 
@@ -80,7 +81,7 @@ export const SelectFpConfigItem = ({ title, desc, defaultValue, options, depreca
   return <ConfigItem.Select<HookType>
     title={title}
     options={finalOptions}
-    defaultValue={option}
+    value={option}
     onChange={onChangeOption}
     node={isCustom && custom}
     action={<div className="flex gap-2">

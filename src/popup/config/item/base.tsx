@@ -1,5 +1,6 @@
 import { Form, Input, type InputProps, Select, type SelectProps, Switch, SwitchProps, Typography } from "antd"
 import { useDebounceCallback } from "@/utils/hooks";
+import { useEffect, useState } from "react";
 
 export type ConfigItemProps = {
   title: string
@@ -44,14 +45,20 @@ ConfigItem.Select = <T,>({ title, type, node, action, ...props }: ConfigItemProp
 }
 
 ConfigItem.Input = ({
-  title, type, node, action, onDebouncedInput,
+  title, type, node, action, currentValue, onDebouncedInput,
   ...props
 }: ConfigItemProps & InputProps & {
+  currentValue?: string
   onDebouncedInput?: (value: string) => void
 }) => {
+  const [value, setValue] = useState(currentValue ?? '')
   const onInput = useDebounceCallback(({ target }: any) => {
     onDebouncedInput?.(target.value)
   }, 200, [onDebouncedInput])
+
+  useEffect(() => {
+    setValue(currentValue ?? '')
+  }, [currentValue])
 
   return <ConfigItem
     title={title}
@@ -59,7 +66,8 @@ ConfigItem.Input = ({
     action={action}
     node={<>
       <Form.Item className="mb-0">
-        <Input {...props} onInput={(...args) => {
+        <Input {...props} value={value} onInput={(...args) => {
+          setValue((args[0] as any).target.value)
           props.onInput?.(...args)
           onDebouncedInput && onInput(...args)
         }} />
@@ -68,13 +76,24 @@ ConfigItem.Input = ({
     </>} />
 }
 
-ConfigItem.Switch = ({ title, type = "single", node, action, ...props }: ConfigItemProps & SwitchProps) => {
+ConfigItem.Switch = ({ title, type = "single", node, action, currentValue, ...props }: ConfigItemProps & SwitchProps & {
+  currentValue?: boolean
+}) => {
+  const [checked, setChecked] = useState(currentValue ?? false)
+
+  useEffect(() => {
+    setChecked(currentValue ?? false)
+  }, [currentValue])
+
   return <ConfigItem
     title={title}
     type={type}
     action={action}
     node={<>
-      <Form.Item className="mb-0"><Switch {...props} /></Form.Item>
+      <Form.Item className="mb-0"><Switch {...props} checked={checked} onChange={(...args) => {
+        setChecked(args[0] as boolean)
+        props.onChange?.(...args)
+      }} /></Form.Item>
       {node}
     </>} />
 }

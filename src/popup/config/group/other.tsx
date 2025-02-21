@@ -53,10 +53,9 @@ export const OtherConfigGroup = memo(() => {
     <ConfigItem.Input
       title={t('item.title.seed')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.seed')}</Markdown>} />}
-      defaultValue={config.customSeedInput}
+      currentValue={config.customSeedInput}
       onDebouncedInput={(value) => {
         config.customSeedInput = value
-
         const _value = Number(value)
         if (isNaN(_value)) {
           config.customSeed = hashNumberFromString(value)
@@ -69,15 +68,15 @@ export const OtherConfigGroup = memo(() => {
     <ConfigItem.Switch
       title={t('item.title.hook-net-request')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.hook-net-request')}</Markdown>} />}
-      defaultChecked={config.hookNetRequest}
+      currentValue={config.hookNetRequest}
       onChange={(checked) => config.hookNetRequest = checked}
     />
 
     <ConfigItem.Switch
       title={t('item.title.hook-iframe')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.hook-iframe')}</Markdown>} />}
-      defaultChecked={config.hookNetRequest}
-      onChange={(checked) => config.hookNetRequest = checked}
+      currentValue={config.hookBlankIframe}
+      onChange={(checked) => config.hookBlankIframe = checked}
     />
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })

@@ -65,13 +65,13 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
       }, {} as LocalStorageConfig)
 
       if (Object.keys(_config).length) {
-        storage.config = deepmerge(
+        storage.config = proxyConfig(deepmerge(
           storage.config,
           _config,
           { arrayMerge: (_, sourceArray, __) => sourceArray, },
-        )
+        ))
         saveStorage()
-        set({ config: proxyConfig(storage.config) })
+        set({ config: storage.config })
         isImported = true
       }
     }
