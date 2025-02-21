@@ -72,9 +72,9 @@ const getExcludeTabIds = async (singal: RuleSignal, excludeIds?: number | number
 const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
   switch (mode?.type) {
     case HookType.browser:
-      return config.browserSeed
+      return config.seed.browser
     case HookType.global:
-      return config.customSeed
+      return config.seed.global
     default:
       return undefined
   }

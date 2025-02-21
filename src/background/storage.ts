@@ -15,14 +15,15 @@ export const genDefaultLocalStorage = (): LocalStorage => {
   const defaultHook: DefaultHookMode = { type: HookType.default }
   const browserHook: RandomHookMode = { type: HookType.browser }
 
-  const customSeed = genRandomSeed();
+  const sGlobal = genRandomSeed();
   return {
     version: manifest.version,
     config: {
       enable: true,
-      customSeed,
-      browserSeed: genRandomSeed(),
-      customSeedInput: String(customSeed),
+      seed: {
+        browser: genRandomSeed(),
+        global: sGlobal,
+      },
       fp: {
         navigator: {
           equipment: defaultHook,
@@ -49,6 +50,9 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       language: navigator.language,
       hookNetRequest: true,
       hookBlankIframe: true,
+      input: {
+        globalSeed: String(sGlobal),
+      },
     },
     whitelist: []
   }
@@ -150,7 +154,7 @@ export const updateLocalWhitelist = async (type: 'add' | 'del', host: string | s
  */
 export const reBrowserSeed = async () => {
   const [storage] = await getLocalStorage()
-  storage.config.browserSeed = genRandomSeed()
+  storage.config.seed.browser = genRandomSeed()
   saveLocalConfig(storage.config)
   reRequestHeader()
 }

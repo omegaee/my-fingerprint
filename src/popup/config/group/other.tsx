@@ -53,14 +53,14 @@ export const OtherConfigGroup = memo(() => {
     <ConfigItem.Input
       title={t('item.title.seed')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.seed')}</Markdown>} />}
-      currentValue={config.customSeedInput}
+      currentValue={config.input.globalSeed}
       onDebouncedInput={(value) => {
-        config.customSeedInput = value
+        config.input.globalSeed = value
         const _value = Number(value)
         if (isNaN(_value)) {
-          config.customSeed = hashNumberFromString(value)
+          config.seed.global = hashNumberFromString(value)
         } else {
-          config.customSeed = _value
+          config.seed.global = _value
         }
       }}
     />

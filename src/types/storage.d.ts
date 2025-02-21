@@ -7,16 +7,20 @@ type LocalStorage = {
 type LocalStorageConfig = {
   enable: boolean
   // 种子
-  customSeed: number
-  browserSeed: number
+  seed: {
+    browser: number
+    global: number
+  }
   // 指纹
   fp: HookFingerprint
   // 功能
   language: string
   hookNetRequest: boolean
   hookBlankIframe: boolean
-  // 其他
-  customSeedInput: string
+  // 输入
+  input: {
+    globalSeed: string
+  }
 }
 
 type HookFingerprint = {

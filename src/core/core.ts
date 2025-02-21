@@ -145,8 +145,8 @@ export class FingerprintHandler {
     this.seed = {
       page: info.seed,
       domain: Math.floor(seededRandom(info.host, Number.MAX_SAFE_INTEGER, 1)),
-      browser: config.browserSeed ?? genRandomSeed(),
-      global: config.customSeed ?? genRandomSeed(),
+      browser: config.seed.browser ?? genRandomSeed(),
+      global: config.seed.global ?? genRandomSeed(),
     }
 
     // this.listenMessage()
