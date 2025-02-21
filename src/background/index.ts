@@ -1,4 +1,4 @@
-import { getLocalStorage, initLocalStorage, updateLocalConfig, updateLocalWhitelist } from "./storage";
+import { getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
 import { type MRuntimeRequest, MRuntimeResponse, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
@@ -30,7 +30,8 @@ chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
     reason === chrome.runtime.OnInstalledReason.INSTALL ||
     reason === chrome.runtime.OnInstalledReason.UPDATE
   ) {
-    initLocalStorage(previousVersion, true)
+    initLocalStorage(previousVersion)
+    reBrowserSeed()
   }
 });
 
@@ -38,7 +39,8 @@ chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-  initLocalStorage(chrome.runtime.getManifest().version, true)
+  initLocalStorage(chrome.runtime.getManifest().version)
+  reBrowserSeed()
 });
 
 /**
