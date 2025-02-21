@@ -13,14 +13,17 @@ type LocalStorageConfig = {
   }
   // 指纹
   fp: HookFingerprint
-  // 功能
-  language: string
-  hookNetRequest: boolean
-  hookBlankIframe: boolean
+  // 操作
+  action: {
+    hookNetRequest: boolean
+    hookBlankIframe: boolean
+  }
   // 输入
   input: {
     globalSeed: string
   }
+  // 其他
+  language: string
 }
 
 type HookFingerprint = {

@@ -6,7 +6,7 @@ import { drawNoise, drawNoiseToWebgl, proxyUserAgentData } from './utils';
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'iframe html hook': {
-    condition: ({ conf }) => conf.hookBlankIframe,
+    condition: ({ conf }) => conf.action.hookBlankIframe,
     onEnable: ({ win, hookIframe }) => {
       // 监听DOM初始化
       const observer = new MutationObserver((mutations) => {
@@ -32,7 +32,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'iframe script hook': {
-    condition: ({ conf }) => conf.hookBlankIframe,
+    condition: ({ conf }) => conf.action.hookBlankIframe,
     onEnable: ({ win, hookIframe }) => {
       const apply = (target: any, thisArg: Object, args: any) => {
         const res = target.apply(thisArg, args)

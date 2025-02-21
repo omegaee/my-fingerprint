@@ -47,12 +47,14 @@ export const genDefaultLocalStorage = (): LocalStorage => {
           webgpu: defaultHook,
         },
       },
-      language: navigator.language,
-      hookNetRequest: true,
-      hookBlankIframe: true,
+      action: {
+        hookNetRequest: true,
+        hookBlankIframe: true,
+      },
       input: {
         globalSeed: String(sGlobal),
       },
+      language: navigator.language,
     },
     whitelist: []
   }

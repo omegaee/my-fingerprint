@@ -170,7 +170,7 @@ const removeRules = async () => {
 export const reRequestHeader = async (excludeTabIds?: number | number[], passTabIds?: number | number[]) => {
   const [storage, whitelist] = await getLocalStorage()
 
-  if (!storage.config.enable || !storage.config.hookNetRequest) {
+  if (!storage.config.enable || !storage.config.action.hookNetRequest) {
     return await removeRules()
   }
 

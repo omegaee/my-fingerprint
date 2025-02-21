@@ -68,15 +68,15 @@ export const OtherConfigGroup = memo(() => {
     <ConfigItem.Switch
       title={t('item.title.hook-net-request')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.hook-net-request')}</Markdown>} />}
-      currentValue={config.hookNetRequest}
-      onChange={(checked) => config.hookNetRequest = checked}
+      currentValue={config.action.hookNetRequest}
+      onChange={(checked) => config.action.hookNetRequest = checked}
     />
 
     <ConfigItem.Switch
       title={t('item.title.hook-iframe')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.hook-iframe')}</Markdown>} />}
-      currentValue={config.hookBlankIframe}
-      onChange={(checked) => config.hookBlankIframe = checked}
+      currentValue={config.action.hookBlankIframe}
+      onChange={(checked) => config.action.hookBlankIframe = checked}
     />
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
