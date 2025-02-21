@@ -15,33 +15,32 @@ const RAW = {
 }
 
 const MEMORY = {
-  ua: new Map<string, readonly RuleHeader[]>(),
-  lang: new Map<string, readonly RuleHeader[]>(),
-  whitelistSize: 0,
+  ua: undefined as Pair<string, readonly RuleHeader[]> | undefined,
+  lang: undefined as Pair<string, readonly RuleHeader[]> | undefined,
+  exIds: undefined as Set<number> | undefined,
+  whitelistSize: 0 as number,
 }
-
-let mExcludeIds: Set<number> | undefined = undefined
 
 /**
  * 获取已排除的tabID
  */
 const getExcludeTabIds = async (singal: RuleSignal, excludeIds?: number | number[], passIds?: number | number[]) => {
-  if (!mExcludeIds) {
+  if (!MEMORY.exIds) {
     const rules = await chrome.declarativeNetRequest.getSessionRules()
-    mExcludeIds = new Set(rules[0]?.condition?.excludedTabIds)
+    MEMORY.exIds = new Set(rules[0]?.condition?.excludedTabIds)
   }
 
   if (excludeIds !== undefined) {
     if (Array.isArray(excludeIds)) {
       for (const excludeTabId of excludeIds) {
-        if (!mExcludeIds.has(excludeTabId)) {
-          mExcludeIds.add(excludeTabId)
+        if (!MEMORY.exIds.has(excludeTabId)) {
+          MEMORY.exIds.add(excludeTabId)
           singal.isUpdate = true
         }
       }
     } else {
-      if (!mExcludeIds.has(excludeIds)) {
-        mExcludeIds.add(excludeIds)
+      if (!MEMORY.exIds.has(excludeIds)) {
+        MEMORY.exIds.add(excludeIds)
         singal.isUpdate = true
       }
     }
@@ -50,20 +49,20 @@ const getExcludeTabIds = async (singal: RuleSignal, excludeIds?: number | number
   if (passIds !== undefined) {
     if (Array.isArray(passIds)) {
       for (const passTabId of passIds) {
-        if (mExcludeIds.has(passTabId)) {
-          mExcludeIds.delete(passTabId)
+        if (MEMORY.exIds.has(passTabId)) {
+          MEMORY.exIds.delete(passTabId)
           singal.isUpdate = true
         }
       }
     } else {
-      if (mExcludeIds.has(passIds)) {
-        mExcludeIds.delete(passIds)
+      if (MEMORY.exIds.has(passIds)) {
+        MEMORY.exIds.delete(passIds)
         singal.isUpdate = true
       }
     }
   }
 
-  return mExcludeIds
+  return MEMORY.exIds
 }
 
 /**
@@ -81,12 +80,13 @@ const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
 }
 
 const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
-  const key = `${config.fp.navigator.equipment.type}:${config.seed.global}:${config.seed.browser}`
-  const mem = MEMORY.ua.get(key)
-  if (mem) return mem;
+  const uaMode = config.fp.navigator.equipment
+  const key = `${uaMode.type}:${config.seed.global}:${config.seed.browser}`
+  const mem = MEMORY.ua
+  if (mem && mem[0] === key) return mem[1];
 
   const res: RuleHeader[] = []
-  const uaSeed = getSeedByMode(config, config.fp.navigator.equipment);
+  const uaSeed = getSeedByMode(config, uaMode);
   if (uaSeed) {
     res.push({
       header: "User-Agent",
@@ -111,7 +111,7 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
     })
   }
 
-  MEMORY.ua.set(key, res)
+  MEMORY.ua = [key, res]
   singal.isUpdate = true;
   return res;
 }
@@ -119,8 +119,8 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
 const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonly RuleHeader[] => {
   const langsMode = config.fp.navigator.languages
   const key = `${langsMode.type}:${(langsMode as any).value ?? ''}:${config.seed.global}:${config.seed.browser}`
-  const mem = MEMORY.lang.get(key)
-  if (mem) return mem;
+  const mem = MEMORY.lang
+  if (mem && mem[0] === key) return mem[1];
 
   const res: RuleHeader[] = []
   if (langsMode && langsMode.type !== HookType.default) {
@@ -150,9 +150,18 @@ const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonl
     }
   }
 
-  MEMORY.lang.set(key, res)
+  MEMORY.lang = [key, res]
   singal.isUpdate = true;
   return res;
+}
+
+/**
+ * 删除请求头规则
+ */
+const removeRules = async () => {
+  return await chrome.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: [UA_NET_RULE_ID],
+  }).catch(() => { })
 }
 
 /**
@@ -162,10 +171,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
   const [storage, whitelist] = await getLocalStorage()
 
   if (!storage.config.enable || !storage.config.hookNetRequest) {
-    await chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: [UA_NET_RULE_ID],
-    }).catch(() => { })
-    return
+    return await removeRules()
   }
 
   const singal: RuleSignal = { isUpdate: false }
@@ -173,13 +179,20 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
   const uaRules = await genUaRules(storage, singal)
   const langRules = genLanguageRules(storage, singal)
   const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
-  if (whitelist.size !== MEMORY.whitelistSize){
+  if (whitelist.size !== MEMORY.whitelistSize) {
     MEMORY.whitelistSize = whitelist.size
     singal.isUpdate = true
   }
 
   if (singal.isUpdate) {
-    await chrome.declarativeNetRequest.updateSessionRules({
+    const rules = [
+      ...uaRules,
+      ...langRules,
+    ]
+    if (rules.length === 0) {
+      return await removeRules()
+    }
+    return await chrome.declarativeNetRequest.updateSessionRules({
       removeRuleIds: [UA_NET_RULE_ID],
       addRules: [{
         id: UA_NET_RULE_ID,
@@ -190,10 +203,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
         },
         action: {
           type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-          requestHeaders: [
-            ...uaRules,
-            ...langRules,
-          ],
+          requestHeaders: rules,
         },
       }]
     }).catch(() => { })

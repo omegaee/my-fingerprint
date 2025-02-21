@@ -67,7 +67,7 @@ export const initLocalStorage = debouncedAsync(async (previousVersion?: string) 
   const data = await chrome.storage.local.get() as LocalStorage
 
   let _storage: LocalStorage
-  if (!data.version || compareVersions(previousVersion, '2.0.0') < 0) {
+  if (!data.version || compareVersions(previousVersion, '2.4.0') < 0) {
     await chrome.storage.local.clear()
     _storage = genDefaultLocalStorage()
   } else {

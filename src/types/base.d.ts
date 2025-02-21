@@ -6,6 +6,8 @@ type DeepPartial<T> = {
     : DeepPartial<T[P]>
 };
 
+type Pair<K, V> = [K, V]
+
 declare enum HookType {
   default = 0,  // 系统值
   value = 1,  // 自定义值
