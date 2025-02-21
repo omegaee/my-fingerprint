@@ -81,7 +81,7 @@ const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
 }
 
 const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
-  const key = JSON.stringify(config.fp.navigator.equipment)
+  const key = `${config.fp.navigator.equipment.type}:${config.seed.global}:${config.seed.browser}`
   const mem = MEMORY.ua.get(key)
   if (mem) return mem;
 
@@ -117,12 +117,12 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
 }
 
 const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonly RuleHeader[] => {
-  const key = JSON.stringify(config.fp.navigator.languages)
+  const langsMode = config.fp.navigator.languages
+  const key = `${langsMode.type}:${(langsMode as any).value ?? ''}:${config.seed.global}:${config.seed.browser}`
   const mem = MEMORY.lang.get(key)
   if (mem) return mem;
 
   const res: RuleHeader[] = []
-  const langsMode = config.fp.navigator.languages
   if (langsMode && langsMode.type !== HookType.default) {
     /* 获取种子 */
     let langs: string[] | undefined
