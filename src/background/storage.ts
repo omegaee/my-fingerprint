@@ -115,14 +115,7 @@ export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>)
     { arrayMerge: (_, sourceArray, __) => sourceArray },
   )
   saveLocalConfig(storage.config)
-  if (
-    config.enable !== undefined ||
-    config.hookNetRequest !== undefined ||
-    config.fp?.navigator?.equipment !== undefined ||
-    config.fp?.navigator?.language !== undefined
-  ) {
-    reRequestHeader()
-  }
+  reRequestHeader()
 }
 
 /**
@@ -149,9 +142,7 @@ export const updateLocalWhitelist = async (type: 'add' | 'del', host: string | s
   }
   storage.whitelist = [...whitelist]
   saveLocalWhitelist(storage.whitelist)
-  if (storage.config.enable && storage.config.hookNetRequest && storage.config.fp.navigator.equipment) {
-    reRequestHeader()
-  }
+  reRequestHeader()
 }
 
 /**
@@ -161,4 +152,5 @@ export const reBrowserSeed = async () => {
   const [storage] = await getLocalStorage()
   storage.config.browserSeed = genRandomSeed()
   saveLocalConfig(storage.config)
+  reRequestHeader()
 }

@@ -17,6 +17,7 @@ const RAW = {
 const MEMORY = {
   ua: new Map<string, readonly RuleHeader[]>(),
   lang: new Map<string, readonly RuleHeader[]>(),
+  whitelistSize: 0,
 }
 
 let mExcludeIds: Set<number> | undefined = undefined
@@ -172,6 +173,10 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
   const uaRules = await genUaRules(storage, singal)
   const langRules = genLanguageRules(storage, singal)
   const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
+  if (whitelist.size !== MEMORY.whitelistSize){
+    MEMORY.whitelistSize = whitelist.size
+    singal.isUpdate = true
+  }
 
   if (singal.isUpdate) {
     await chrome.declarativeNetRequest.updateSessionRules({
