@@ -10,7 +10,7 @@ type LocalStorageConfig = {
   customSeed: number
   browserSeed: number
   // 指纹
-  fingerprint: HookFingerprint
+  fp: HookFingerprint
   // 功能
   language: string
   hookNetRequest: boolean

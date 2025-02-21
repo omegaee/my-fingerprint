@@ -55,7 +55,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook navigator': {
-    condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fingerprint.navigator) || conf.fingerprint.other.webrtc.type !== HookType.default,
+    condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator) || conf.fp.other.webrtc.type !== HookType.default,
     onEnable: ({ win, conf, getSeed, getValue }) => {
       const _navigator = Object.getOwnPropertyDescriptor(win, "navigator")?.get;
       _navigator && Object.defineProperty(win, 'navigator', {
@@ -67,21 +67,21 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                 switch (key) {
                   /* ua */
                   case 'userAgent': {
-                    const seed = getSeed(conf.fingerprint.navigator.equipment.type)
+                    const seed = getSeed(conf.fp.navigator.equipment.type)
                     if (seed !== null) {
                       recordHook(key)
                       return genRandomVersionUserAgent(seed, target)
                     }
                   }
                   case 'appVersion': {
-                    const seed = getSeed(conf.fingerprint.navigator.equipment.type)
+                    const seed = getSeed(conf.fp.navigator.equipment.type)
                     if (seed !== null) {
                       recordHook(key)
                       return genRandomVersionUserAgent(seed, target, true)
                     }
                   }
                   case 'userAgentData' as any: {
-                    const seed = getSeed(conf.fingerprint.navigator.equipment.type)
+                    const seed = getSeed(conf.fp.navigator.equipment.type)
                     if (seed !== null) {
                       recordHook(key)
                       return proxyUserAgentData(seed, target[key])
@@ -91,16 +91,16 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                   case 'getUserMedia':
                   case 'mozGetUserMedia':
                   case 'webkitGetUserMedia': {
-                    if (conf.fingerprint.other.webrtc.type === HookType.disabled) return undefined;
+                    if (conf.fp.other.webrtc.type === HookType.disabled) return undefined;
                     break
                   }
                   case 'mediaDevices': {
-                    if (conf.fingerprint.other.webrtc.type === HookType.disabled) return null;
+                    if (conf.fp.other.webrtc.type === HookType.disabled) return null;
                     break
                   }
                   case 'languages':
                   case 'hardwareConcurrency': {
-                    const mode: HookMode | undefined = (conf.fingerprint.navigator as any)[key]
+                    const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
                     const _key: any = 'navigator.' + key
                     const value = getValue(_key, mode)
                     if (value !== null) return value;
@@ -118,7 +118,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook screen': {
-    condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fingerprint.screen),
+    condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.screen),
     onEnable: ({ win, conf, getValue }) => {
       const _screen = Object.getOwnPropertyDescriptor(win, "screen")?.get;
       _screen && Object.defineProperty(win, 'screen', {
@@ -132,7 +132,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                   case 'height':
                   case 'colorDepth':
                   case 'pixelDepth': {
-                    const mode: HookMode | undefined = (conf.fingerprint.screen as any)[key]
+                    const mode: HookMode | undefined = (conf.fp.screen as any)[key]
                     const _key: any = 'screen.' + key
                     const value = getValue(_key, mode)
                     if (value !== null) return value;
@@ -149,7 +149,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook canvas': {
-    condition: ({ conf }) => conf.fingerprint.other.canvas.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
     onEnable: ({ win, conf, rawObjects, getValue }) => {
       /* getContext */
       const _getContext = win.HTMLCanvasElement.prototype.getContext
@@ -169,7 +169,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       rawObjects.getImageData = _getImageData
       win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(_getImageData, {
         apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
-          const value: number[] = getValue('other.canvas', conf.fingerprint.other.canvas)
+          const value: number[] = getValue('other.canvas', conf.fp.other.canvas)
           if (value !== null) {
             return drawNoise(
               _getImageData!, value,
@@ -182,7 +182,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook webgl': {
-    condition: ({ conf }) => conf.fingerprint.other.webgl.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default,
     onEnable: ({ win, conf, getValue }) => {
       /* Image */
       {
@@ -191,7 +191,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
         const hook = {
           apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
-            const value: [number, number] = getValue('other.webgl', conf.fingerprint.other.webgl)
+            const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
             value && drawNoiseToWebgl(thisArg, value)
             return target.apply(thisArg, args as any);
           }
@@ -209,7 +209,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const res = target.apply(thisArg, args)
             if (res) {
-              const value: [number, number] = getValue('other.webgl', conf.fingerprint.other.webgl)
+              const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
               res.push?.('EXT_' + value[0] + value[1])
             }
             return res;
@@ -223,17 +223,17 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'hook toDataURL': {
     condition: ({ conf }) =>
-      conf.fingerprint.other.canvas.type !== HookType.default ||
-      conf.fingerprint.other.webgl.type !== HookType.default,
+      conf.fp.other.canvas.type !== HookType.default ||
+      conf.fp.other.webgl.type !== HookType.default,
     onEnable: ({ win, conf, rawObjects, getValue }) => {
       const _toDataURL = win.HTMLCanvasElement.prototype.toDataURL
       win.HTMLCanvasElement.prototype.toDataURL = new Proxy(_toDataURL, {
         apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
           /* 2d */
-          if (conf.fingerprint.other.canvas.type !== HookType.default) {
+          if (conf.fp.other.canvas.type !== HookType.default) {
             const ctx = thisArg.getContext('2d');
             if (ctx) {
-              const value: number[] = getValue('other.canvas', conf.fingerprint.other.canvas)
+              const value: number[] = getValue('other.canvas', conf.fp.other.canvas)
               value && rawObjects.getImageData && drawNoise(
                 rawObjects.getImageData, value,
                 ctx, 0, 0, thisArg.width, thisArg.height)
@@ -241,10 +241,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
           }
           /* webgl */
-          if (conf.fingerprint.other.webgl.type !== HookType.default) {
+          if (conf.fp.other.webgl.type !== HookType.default) {
             const gl = thisArg.getContext('webgl') ?? thisArg.getContext('webgl2')
             if (gl) {
-              const value: [number, number] = getValue('other.webgl', conf.fingerprint.other.webgl)
+              const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
               value && drawNoiseToWebgl(gl as any, value)
               return target.apply(thisArg, args);
             }
@@ -256,12 +256,12 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook audio': {
-    condition: ({ conf }) => conf.fingerprint.other.audio.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.audio.type !== HookType.default,
     onEnable: ({ win, conf, random }) => {
       const _createDynamicsCompressor = win.OfflineAudioContext.prototype.createDynamicsCompressor
       win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(_createDynamicsCompressor, {
         apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
-          const value: number | null = random('other.audio', conf.fingerprint.other.audio)
+          const value: number | null = random('other.audio', conf.fp.other.audio)
           if (value === null) return target.apply(thisArg, args)
           const compressor = target.apply(thisArg, args)
           const gain = thisArg.createGain()
@@ -275,7 +275,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook timezone': {
-    condition: ({ conf }) => conf.fingerprint.other.timezone.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
     onEnable: ({ win, conf, getValueDebounce }) => {
       const _DateTimeFormat = win.Intl.DateTimeFormat;
       const _Date = win.Date;
@@ -310,13 +310,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       {
         win.Intl.DateTimeFormat = new Proxy(_DateTimeFormat, {
           construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
-            const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fingerprint.other.timezone)
+            const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
             args[0] = args[0] ?? currTimeZone.locale
             args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
             return new target(...args)
           },
           apply: (target, thisArg: Intl.DateTimeFormat, args: Parameters<typeof Intl.DateTimeFormat>) => {
-            const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fingerprint.other.timezone)
+            const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
             args[0] = args[0] ?? currTimeZone.locale
             args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
             return target.apply(thisArg, args)
@@ -342,7 +342,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
         const useHook = (handle: (thisArg: Date, tz: TimeZoneInfo) => string | number | null) => ({
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toString>) => {
-            const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fingerprint.other.timezone)
+            const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
             if (tz === null) return target.apply(thisArg, args);
             const result = handle(thisArg, tz)
             return result === null ? target.apply(thisArg, args) : result
@@ -373,7 +373,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
         const hook = {
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
-            const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fingerprint.other.timezone)
+            const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
             if (tz) {
               args[0] = args[0] ?? tz.locale
               args[1] = Object.assign({ timeZone: tz.zone }, args[1]);
@@ -389,7 +389,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook webrtc': {
-    condition: ({ conf }) => conf.fingerprint.other.webrtc.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.webrtc.type !== HookType.default,
     onEnable: ({ win }) => {
       // @ts-ignore
       if (win.RTCDataChannel) win.RTCDataChannel = undefined;
@@ -421,7 +421,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook font': {
-    condition: ({ conf }) => conf.fingerprint.other.font.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
     onEnable: ({ win, conf, getValueDebounce }) => {
       const _offsetHeight = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetHeight")?.get
       _offsetHeight && Object.defineProperty(win.HTMLElement.prototype, "offsetHeight", {
@@ -430,7 +430,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             try {
               const height = _offsetHeight.call(thisArg);
               const mark = thisArg.style.fontFamily ?? 'h' + height;
-              const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, mark)
+              const noise: number = getValueDebounce('other.font', conf.fp.other.font, mark)
               return height + noise;
             } catch (_) {
               return _offsetHeight.call(thisArg);
@@ -446,7 +446,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             try {
               const width = _offsetWidth.call(thisArg);
               const mark = thisArg.style.fontFamily ?? 'w' + width;
-              const noise: number = getValueDebounce('other.font', conf.fingerprint.other.font, mark)
+              const noise: number = getValueDebounce('other.font', conf.fp.other.font, mark)
               return width + noise;
             } catch (_) {
               return _offsetWidth.call(thisArg);
@@ -458,14 +458,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook webgpu': {
-    condition: ({ conf }) => conf.fingerprint.other.webgpu.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.webgpu.type !== HookType.default,
     onEnable: ({ win, conf, randomDebounce }) => {
       /*** GPUAdapter ***/
       // @ts-ignore
       if (win.GPUAdapter) {
         try {
           const genNoise = (raw: any, offset: number) => {
-            const rn = randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset, 1, 64)!
+            const rn = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset, 1, 64)!
             return raw ? raw - Math.floor(rn) : raw;
           }
           // @ts-ignore
@@ -497,7 +497,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (win.GPUDevice) {
         try {
           const genNoise = (raw: any, offset: number) => {
-            const rn = randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset, 1, 64)!
+            const rn = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset, 1, 64)!
             return raw ? raw - Math.floor(rn) : raw;
           }
           // @ts-ignore
@@ -537,7 +537,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                   let offset = 0
                   for (let key in _clearValue) {
                     let value = _clearValue[key]
-                    const noise: number = randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset++, 0.01, 0.001)!
+                    const noise: number = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, 0.01, 0.001)!
                     value += value * noise * -1
                     _clearValue[key] = Math.abs(value)
                   }
@@ -564,14 +564,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                   let offset = 0
                   const selected = Array(_data.length)
                     .map((_, i) => i)
-                    .sort(() => randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset++, 1, -1)!)
+                    .sort(() => randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, 1, -1)!)
                     .slice(0, count);
 
                   offset = 0
                   for (let i = 0; i < selected.length; i++) {
                     const index = selected[i];
                     let value = _data[index];
-                    const noise: number = randomDebounce('other.webgpu', conf.fingerprint.other.webgpu, offset++, +0.0001, -0.0001)!
+                    const noise: number = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, +0.0001, -0.0001)!
                     _data[index] += noise * value;
                   }
                   // args[2] = _data;

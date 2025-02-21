@@ -20,7 +20,7 @@ export const SpecialFpConfigGroup = memo(() => {
     state.config ?? state.loadStorage()
     return state.config
   })
-  const fp = config?.fingerprint
+  const fp = config?.fp
 
   return fp ? <>
     <TimeZoneConfigItem />

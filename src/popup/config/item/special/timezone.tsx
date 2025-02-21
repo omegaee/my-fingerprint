@@ -186,7 +186,7 @@ export const TimeZoneConfigItem = () => {
     state.config ?? state.loadStorage()
     return state.config
   })
-  const fp = config?.fingerprint
+  const fp = config?.fp
 
   const options = useMemo(() => {
     return [
