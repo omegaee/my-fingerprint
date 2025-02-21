@@ -57,7 +57,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
 /**
  * 初始化默认配置
  */
-export const initLocalStorage = debouncedAsync(async (previousVersion?: string) => {
+export const initLocalStorage = debouncedAsync(async (previousVersion?: string, isRestart?: boolean) => {
   previousVersion = previousVersion ?? chrome.runtime.getManifest().version
 
   const data = await chrome.storage.local.get() as LocalStorage
@@ -68,7 +68,9 @@ export const initLocalStorage = debouncedAsync(async (previousVersion?: string) 
     _storage = genDefaultLocalStorage()
   } else {
     _storage = deepmerge(genDefaultLocalStorage(), data)
-    _storage.config.browserSeed = genRandomSeed()
+    if (isRestart) {
+      _storage.config.browserSeed = genRandomSeed()
+    }
   }
   mStorage = _storage
   mWhitelist = new Set(_storage.whitelist)

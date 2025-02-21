@@ -30,7 +30,7 @@ chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
     reason === chrome.runtime.OnInstalledReason.INSTALL ||
     reason === chrome.runtime.OnInstalledReason.UPDATE
   ) {
-    initLocalStorage(previousVersion)
+    initLocalStorage(previousVersion, true)
   }
 });
 
@@ -38,7 +38,7 @@ chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-  initLocalStorage(chrome.runtime.getManifest().version)
+  initLocalStorage(chrome.runtime.getManifest().version, true)
 });
 
 /**
