@@ -45,7 +45,7 @@ export const hashNumberFromString = (input: string): number => {
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
-  return hash % Number.MAX_SAFE_INTEGER;
+  return Math.abs(hash % Number.MAX_SAFE_INTEGER);
 }
 
 /**
