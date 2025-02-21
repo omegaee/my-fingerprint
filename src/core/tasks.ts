@@ -72,6 +72,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                       recordHook(key)
                       return genRandomVersionUserAgent(seed, target)
                     }
+                    break
                   }
                   case 'appVersion': {
                     const seed = getSeed(conf.fp.navigator.equipment.type)
@@ -79,6 +80,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                       recordHook(key)
                       return genRandomVersionUserAgent(seed, target, true)
                     }
+                    break
                   }
                   case 'userAgentData' as any: {
                     const seed = getSeed(conf.fp.navigator.equipment.type)
@@ -86,6 +88,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                       recordHook(key)
                       return proxyUserAgentData(seed, target[key])
                     }
+                    break
                   }
                   /* webrtc */
                   case 'getUserMedia':
@@ -104,6 +107,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     const _key: any = 'navigator.' + key
                     const value = getValue(_key, mode)
                     if (value !== null) return value;
+                    break
                   }
                 }
                 const value = target[key]
@@ -136,6 +140,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     const _key: any = 'screen.' + key
                     const value = getValue(_key, mode)
                     if (value !== null) return value;
+                    break
                   }
                 }
                 const value = target[key]
