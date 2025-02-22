@@ -3,15 +3,17 @@
 
 ---
 
-[--- v2.3 Update ---](https://github.com/omegaee/my-fingerprint/releases/latest)
+[--- v2.4 Update ---](https://github.com/omegaee/my-fingerprint/releases/latest)
 
 # My Fingerprint
 
-- Obfuscates Various Fingerprints of Browsers
-- Useful `Chrome / Edge` Extension
+- `Chrome / Edge` Extension
+- Modify various fingerprints of the browser
+- Optional fingerprints
+- Optional random conditions
 - Installation takes effect immediately
 - Monitor page access to fingerprints
-- Whitelisting module
+- Supports whitelist control
 
 **Supports fingerprints**
 - [x] UserAgent Series
@@ -35,18 +37,19 @@
 
 ## Usage
 
-***Plugin Installation:***
+***Installation:***
 1. Download the latest version of the Extension `zip` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
 2. Open the browser extension management, open the developer mode
 3. Drag and drop the downloaded `zip` into the Browser Extension Manager page.
 4. Enable the Extension (check `Allow in InPrivate` in `Details` if necessary).
 
-***Plugin Usage:***
+***Usage:***
 - Installation takes effect immediately (previously opened tabs have to be refreshed to take effect)
 - (Optional) Left-click on the plug-in icon to enter the configuration page for customized configuration.
 
 ***Frontend:***
-- Browser Version Requirements - `Chrome 90+`
+- Browser version required `Chrome 90+`, Recommended `Chrome 120+`.
+
 
 ## Popup Module
 
