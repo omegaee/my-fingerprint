@@ -133,8 +133,13 @@ export const subversionRandom = (
   sourceVersion: string,
   maxValue: number = 100,
   maxSegments?: number,
+  majorFallback: boolean = true,
 ): FullVersion => {
-  const [major, ...sublist] = sourceVersion.split('.')
+  let [major, ...sublist] = sourceVersion.split('.')
+  if (majorFallback){
+    let _major = Number(major)
+    major = !isNaN(_major) && _major > 1 ? String(_major - 1) : major
+  }
   if (sublist.length === 0) return { major, full: major };
 
   maxSegments = maxSegments ?? sublist.length
