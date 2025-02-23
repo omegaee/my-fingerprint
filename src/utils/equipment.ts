@@ -3,6 +3,10 @@ import { subversionRandom } from "./base"
 const uaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( \((?<engineDetails>.+?)\))?( (?<extensions>.+?))?$/
 const firefoxUaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( (?<extensions>.+?))?/
 
+const MEMORY = {
+  uaSeries: new Map<string, Record<'ua' | 'app', string>>(),
+}
+
 export class UAItem {
   public name: string
   public version?: string
@@ -115,16 +119,14 @@ export const genRandomVersionUserAgentData = async (seed: number, nav: Navigator
   return option
 }
 
-const uaCache = new Map<string, Record<'ua' | 'app', string>>()
-
 /**
  * 生成随机版本的 UserAgent
  */
 export const genRandomVersionUserAgent = (seed: number, nav: Navigator, ignoreProductName?: boolean) => {
   const uaIden = ignoreProductName ? 'app' : 'ua'
-
-  let item = uaCache.get(nav.userAgent)
-  if (item) return item[uaIden];
+  const key = `${seed}:${nav.userAgent}`
+  const mem = MEMORY.uaSeries.get(key)
+  if (mem) return mem[uaIden];
 
   try {
     const uaParser = new UAParser(nav.userAgent)
@@ -136,14 +138,13 @@ export const genRandomVersionUserAgent = (seed: number, nav: Navigator, ignorePr
     if (uaParser.extensions?.length) {
       uaParser.extensions.forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
     }
-    item = {
+    const res = {
       ua: uaParser.toString(),
       app: uaParser.toString(ignoreProductName),
     }
-    uaCache.set(nav.userAgent, item)
+    MEMORY.uaSeries.set(key, res)
+    return res[uaIden]
   } catch (_) {
     return ignoreProductName ? nav.appVersion : nav.userAgent
   }
-
-  return item[uaIden]
 }
