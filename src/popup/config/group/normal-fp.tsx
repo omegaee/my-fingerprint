@@ -13,6 +13,7 @@ type DeprecatedType = {
 }
 
 const BASE_TYPES = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
+const SYSTEM_TYPES = [HookType.default]
 
 // export type NormalFpConfigGroupProps = {
 // }
@@ -37,6 +38,18 @@ export const NormalFpConfigGroup = memo(() => {
   })
   const fp = config?.fp
 
+  const glInfo = useMemo(() => {
+    const cvs = document.createElement('canvas')
+    const gl = cvs.getContext("webgl2") ?? cvs.getContext("webgl")
+    if (!gl) return {};
+    const ex = gl.getExtension('WEBGL_debug_renderer_info')
+    if (!ex) return {};
+    return {
+      vendor: gl.getParameter(ex.UNMASKED_VENDOR_WEBGL),
+      renderer: gl.getParameter(ex.UNMASKED_RENDERER_WEBGL),
+    }
+  }, [])
+
   return fp ? <>
     <SelectFpConfigItem
       title={t('item.title.equipment')}
@@ -53,11 +66,6 @@ export const NormalFpConfigGroup = memo(() => {
       options={BASE_TYPES}
       deprecatedOptions={netDeprecatedTypes}
       defaultValue={fp.navigator.languages.type}
-      // onChange={(type) => fp.navigator.languages.type = type}
-      // custom={<InputLine label="value"
-      //   defaultValue={navigator.language}
-      //   initialValue={(fp.navigator.language as ValueHookMode).value}
-      //   onDebouncedInput={(value) => (fp.navigator.language as ValueHookMode).value = value} />}
       onChange={(type) => {
         fp.navigator.language.type = type as any;
         fp.navigator.languages.type = type as any;
@@ -123,6 +131,27 @@ export const NormalFpConfigGroup = memo(() => {
           defaultValue={screen.pixelDepth}
           initialValue={(fp.screen.pixelDepth as ValueHookMode).value}
           onDebouncedInput={(value) => (fp.screen.pixelDepth as ValueHookMode).value = value} />
+      </>}
+    />
+
+    <SelectFpConfigItem
+      title={t('item.title.glDriver')}
+      desc={t('item.desc.glDriver')}
+      options={SYSTEM_TYPES}
+      defaultValue={fp.normal.glRenderer.type}
+      onChange={(type) => {
+        fp.normal.glVendor.type = type as any;
+        fp.normal.glRenderer.type = type as any;
+      }}
+      custom={<>
+        <InputLine label={t('item.label.glVendor')}
+          defaultValue={glInfo.vendor}
+          initialValue={(fp.normal.glVendor as ValueHookMode).value}
+          onDebouncedInput={(value) => (fp.normal.glVendor as ValueHookMode).value = value} />
+        <InputLine label={t('item.label.glRenderer')}
+          defaultValue={glInfo.renderer}
+          initialValue={(fp.normal.glRenderer as ValueHookMode).value}
+          onDebouncedInput={(value) => (fp.normal.glRenderer as ValueHookMode).value = value} />
       </>}
     />
   </> : <Spin indicator={<LoadingOutlined spin />} />

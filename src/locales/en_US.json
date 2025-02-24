@@ -38,6 +38,10 @@
     "disabled": "Disabled"
   },
   "item": {
+    "label": {
+      "glVendor": "Vendor",
+      "glRenderer": "Renderer"
+    },
     "title": {
       "equipment": "UserAgent Info",
       "languages": "Browser Language",
@@ -51,6 +55,7 @@
       "webrtc": "WebRTC",
       "font": "Font Fingerprint",
       "webgpu": "WebGPU Fingerprint",
+      "glDriver": "Graphics Driver",
 
       "e-language": "Language",
       "seed": "Global Seed",
@@ -70,6 +75,7 @@
       "webrtc": "WebRTC",
       "font": "Font Fingerprint",
       "webgpu": "WebGPU Fingerprint",
+      "glDriver": "Graphics Driver Vendor\n\nGraphics Driver Renderer",
 
       "e-language": "Language",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",

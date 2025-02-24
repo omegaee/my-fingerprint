@@ -39,6 +39,10 @@ type HookFingerprint = {
     colorDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
     pixelDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
   }
+  normal: {
+    glVendor: DefaultHookMode | ValueHookMode<string>
+    glRenderer: DefaultHookMode | ValueHookMode<string>
+  }
   other: {
     timezone: DefaultHookMode | ValueHookMode<TimeZoneInfo>
     canvas: DefaultHookMode | RandomHookMode

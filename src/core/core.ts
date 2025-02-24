@@ -72,6 +72,8 @@ const randomFuncMap = {
 // type ValueFuncMap = Record<FuncKey, ValueFunc>
 const valueFuncMap = {
   'other.timezone': undefined,
+  'normal.glVendor': undefined,
+  'normal.glRenderer': undefined,
 }
 
 type RandomFunc = (seed: number, args?: any) => any

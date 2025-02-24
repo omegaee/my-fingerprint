@@ -38,6 +38,10 @@
     "disabled": "禁用"
   },
   "item": {
+    "label": {
+      "glVendor": "供应商",
+      "glRenderer": "渲染器"
+    },
     "title": {
       "equipment": "UserAgent信息",
       "languages": "浏览器语言",
@@ -51,6 +55,7 @@
       "webrtc": "WebRTC",
       "font": "字体指纹",
       "webgpu": "WebGPU指纹",
+      "glDriver": "图形驱动",
 
       "e-language": "语言",
       "seed": "全局种子",
@@ -70,6 +75,7 @@
       "webrtc": "WebRTC",
       "font": "字体指纹",
       "webgpu": "WebGPU指纹",
+      "glDriver": "图形驱动供应商\n\n图形驱动渲染器",
 
       "e-language": "语言",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",

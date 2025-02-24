@@ -187,10 +187,15 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'hook webgl': {
-    condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default ||
+      conf.fp.normal.glVendor.type !== HookType.default ||
+      conf.fp.normal.glRenderer.type !== HookType.default,
     onEnable: ({ win, conf, getValue }) => {
+      const isHookWebgl = conf.fp.other.webgl.type !== HookType.default
+      const isHookInfo = conf.fp.normal.glVendor.type !== HookType.default || conf.fp.normal.glRenderer.type !== HookType.default
+
       /* Image */
-      {
+      if (isHookWebgl) {
         const _readPixels = win.WebGLRenderingContext.prototype.readPixels
         const _readPixels2 = win.WebGL2RenderingContext.prototype.readPixels
 
@@ -205,8 +210,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         win.WebGL2RenderingContext.prototype.readPixels = new Proxy(_readPixels2, hook)
       }
 
-      /* Report */
-      {
+      /* Report: Supported Extensions */
+      if (isHookWebgl) {
         const _getSupportedExtensions = win.WebGLRenderingContext.prototype.getSupportedExtensions
         const _getSupportedExtensions2 = win.WebGL2RenderingContext.prototype.getSupportedExtensions
 
@@ -222,6 +227,30 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         }
         win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions, hook)
         win.WebGL2RenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions2, hook)
+      }
+
+      /* Report: Parameter */
+      if (isHookInfo) {
+        const _getParameter = win.WebGLRenderingContext.prototype.getParameter
+        const _getParameter2 = win.WebGL2RenderingContext.prototype.getParameter
+
+        const hook = {
+          apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
+            const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
+            if (ex) {
+              if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
+                const value: string | null = getValue('normal.glVendor', conf.fp.normal.glVendor)
+                if (value) return value;
+              } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
+                const value: string | null = getValue('normal.glRenderer', conf.fp.normal.glRenderer)
+                if (value) return value;
+              }
+            }
+            return target.apply(thisArg, args);
+          }
+        }
+        win.WebGLRenderingContext.prototype.getParameter = new Proxy(_getParameter, hook)
+        win.WebGL2RenderingContext.prototype.getParameter = new Proxy(_getParameter2, hook)
       }
     },
   },

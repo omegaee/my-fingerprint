@@ -37,6 +37,10 @@ export const genDefaultLocalStorage = (): LocalStorage => {
           colorDepth: defaultHook,
           pixelDepth: defaultHook,
         },
+        normal: {
+          glVendor: defaultHook,
+          glRenderer: defaultHook,
+        },
         other: {
           timezone: defaultHook,
           canvas: browserHook,
