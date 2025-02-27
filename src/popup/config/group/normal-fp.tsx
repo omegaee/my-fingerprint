@@ -52,8 +52,8 @@ export const NormalFpConfigGroup = memo(() => {
 
   return fp ? <>
     <SelectFpConfigItem
-      title={t('item.title.equipment')}
-      desc={t('item.desc.equipment')}
+      title={t('item.title.uaVersion')}
+      desc={t('item.desc.uaVersion')}
       options={BASE_TYPES}
       deprecatedOptions={netDeprecatedTypes}
       defaultValue={fp.navigator.uaVersion.type}

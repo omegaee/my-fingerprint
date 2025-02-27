@@ -43,7 +43,7 @@
       "glRenderer": "Renderer"
     },
     "title": {
-      "equipment": "UserAgent Info",
+      "uaVersion": "UserAgent Version",
       "languages": "Browser Language",
       "hardwareConcurrency": "Number of logical processors",
       "size": "Screen Size",
@@ -63,7 +63,7 @@
       "hook-iframe": "Iframe Hooks"
     },
     "desc": {
-      "equipment": "UserAgent Info\n\n**navigator.appVersion**\n\n**navigator.userAgent**\n\n**navigator.userAgentData**",
+      "uaVersion": "UserAgent version number information\n\nonly modifies subversion segments of **FullVersion** that are not **0**, so this may not change the contents of **navigator.userAgent**.\n\nDoes not modify **AppleWebKit** and **Safari** version numbers, they are fixed.",
       "languages": "Browser Language\n\n**navigator.languages**\n\n**navigator.language**\n\nMultiple values are separated by commas",
       "hardwareConcurrency": "Number of logical processors\n\n**navigator.hardwareConcurrency**",
       "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
