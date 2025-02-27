@@ -126,19 +126,29 @@ export const getMainVersion = (sourceVersion: string) => {
 }
 
 /**
+ * 向上取10的幂次
+ */
+const getNextPowerOfTen = (num: number) => {
+  if (num === 0) return 0;
+  else if (num === 1) return 10;
+
+  if (num < 0) num = -num;
+  return Math.pow(10, Math.ceil(Math.log10(num)));
+}
+
+/**
  * 随机子版本号（同一sourceVersion多次调用结果一致）
  */
 export const subversionRandom = (
   seed: number,
   sourceVersion: string,
-  maxValue: number = 100,
   maxSegments?: number,
-  majorFallback: boolean = true,
+  majorFallbackRange: number = 0,
 ): FullVersion => {
   let [major, ...sublist] = sourceVersion.split('.')
-  if (majorFallback){
+  if (majorFallbackRange > 0) {
     let _major = Number(major)
-    major = !isNaN(_major) && _major > 1 ? String(_major - 1) : major
+    major = !isNaN(_major) && _major >= majorFallbackRange ? String(Math.floor(seededRandom(seed, _major, _major - 10))) : major
   }
   if (sublist.length === 0) return { major, full: major };
 
@@ -151,7 +161,8 @@ export const subversionRandom = (
       nSublist.push(sublist[i])
       continue
     }
-    const ss = Math.floor(seededRandom(seed + i, maxValue, 0))
+    const next = getNextPowerOfTen(sub)
+    const ss = Math.floor(seededRandom(seed + i, next, 0))
     nSublist.push(ss.toString())
   }
 

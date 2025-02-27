@@ -130,13 +130,13 @@ export const genRandomVersionUserAgent = (seed: number, nav: Navigator, ignorePr
 
   try {
     const uaParser = new UAParser(nav.userAgent)
-    // AppleWebKit ...
-    if (uaParser.engine?.length) {
-      uaParser.engine.forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
-    }
     // Chrome Edg ...
     if (uaParser.extensions?.length) {
-      uaParser.extensions.forEach((item) => item.version && item.setVersion(subversionRandom(seed, item.version).full))
+      for (const item of uaParser.extensions) {
+        if (item.name?.toLocaleLowerCase() !== 'safari') {
+          item.version && item.setVersion(subversionRandom(seed, item.version).full)
+        }
+      }
     }
     const res = {
       ua: uaParser.toString(),
