@@ -56,8 +56,8 @@ export const NormalFpConfigGroup = memo(() => {
       desc={t('item.desc.equipment')}
       options={BASE_TYPES}
       deprecatedOptions={netDeprecatedTypes}
-      defaultValue={fp.navigator.equipment.type}
-      onChange={(type) => fp.navigator.equipment.type = type as any}
+      defaultValue={fp.navigator.uaVersion.type}
+      onChange={(type) => fp.navigator.uaVersion.type = type as any}
     />
 
     <SelectFpConfigItem

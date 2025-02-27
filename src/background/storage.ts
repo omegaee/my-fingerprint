@@ -26,7 +26,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       },
       fp: {
         navigator: {
-          equipment: defaultHook,
+          uaVersion: defaultHook,
           language: defaultHook,
           languages: defaultHook,
           hardwareConcurrency: defaultHook,

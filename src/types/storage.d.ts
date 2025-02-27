@@ -28,7 +28,7 @@ type LocalStorageConfig = {
 
 type HookFingerprint = {
   navigator: {
-    equipment: DefaultHookMode | RandomHookMode
+    uaVersion: DefaultHookMode | RandomHookMode
     language: DefaultHookMode | RandomHookMode | ValueHookMode<string>
     languages: DefaultHookMode | RandomHookMode | ValueHookMode<string[]>
     hardwareConcurrency: DefaultHookMode | RandomHookMode | ValueHookMode<number>
