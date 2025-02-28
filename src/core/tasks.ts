@@ -67,7 +67,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                 switch (key) {
                   /* ua */
                   case 'userAgent': {
-                    const seed = getSeed(conf.fp.navigator.equipment.type)
+                    const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)
                       return genRandomVersionUserAgent(seed, target)
@@ -75,7 +75,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     break
                   }
                   case 'appVersion': {
-                    const seed = getSeed(conf.fp.navigator.equipment.type)
+                    const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)
                       return genRandomVersionUserAgent(seed, target, true)
@@ -83,7 +83,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     break
                   }
                   case 'userAgentData' as any: {
-                    const seed = getSeed(conf.fp.navigator.equipment.type)
+                    const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)
                       return proxyUserAgentData(seed, target[key])

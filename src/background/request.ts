@@ -80,7 +80,7 @@ const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
 }
 
 const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
-  const uaMode = config.fp.navigator.equipment
+  const uaMode = config.fp.navigator.uaVersion
   const key = `${uaMode.type}:${config.seed.global}:${config.seed.browser}`
   const mem = MEMORY.ua
   if (mem && mem[0] === key) return mem[1];
