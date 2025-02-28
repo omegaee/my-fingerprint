@@ -101,6 +101,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     if (conf.fp.other.webrtc.type === HookType.disabled) return null;
                     break
                   }
+                  case 'language':
                   case 'languages':
                   case 'hardwareConcurrency': {
                     const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
