@@ -1,6 +1,6 @@
 import { useDebounceCallback } from "@/utils/hooks"
 import { Form, Input, InputNumber, InputNumberProps, InputProps } from "antd"
-import { useCallback, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useState, type ReactNode } from "react"
 
 export type InputLineProps = {
   name?: InputProps['name']
@@ -13,18 +13,23 @@ export type InputLineProps = {
 export const InputLine = ({ name, label, defaultValue, initialValue, onDebouncedInput, ...props }: InputLineProps) => {
   const [value, setValue] = useState<string>(String(initialValue ?? defaultValue ?? ''))
 
-  const onInput = useDebounceCallback(({ target }: any) => {
-    const vl = target.value.trim()
-    onDebouncedInput?.(vl ? vl : defaultValue)
+  const onInput = useDebounceCallback((text: string) => {
+    const _value = text.trim()
+    onDebouncedInput?.(_value ? _value : String(defaultValue))
   }, 200, [onDebouncedInput])
 
-  const onBlur = useCallback(({ target }: any) => {
-    if (defaultValue !== undefined && !target.value.trim()) {
-      const vl = String(defaultValue)
-      setValue(vl)
-      onDebouncedInput?.(vl)
+  const onBlur = useCallback((text: string) => {
+    if (defaultValue !== undefined && !text.trim()) {
+      const _value = String(defaultValue)
+      onDebouncedInput?.(_value)
+      setValue(_value)
     }
   }, [onDebouncedInput])
+
+  useEffect(() => {
+    if (!value.trim()) return;
+    onInput(value)
+  }, [value])
 
   return <Form.Item name={name} label={label} className="mb-0 [&_.ant-form-item-label.ant-col]:p-0">
     <Input {...props}
@@ -32,8 +37,8 @@ export const InputLine = ({ name, label, defaultValue, initialValue, onDebounced
       defaultValue={initialValue}
       placeholder={String(defaultValue)}
       onChange={({ target }) => setValue(target.value)}
-      onInput={onInput}
-      onBlur={onBlur}
+      onInput={({ target }: any) => onInput(target.value)}
+      onBlur={({ target }: any) => onBlur(target.value)}
     />
   </Form.Item>
 }
@@ -59,13 +64,17 @@ export const InputNumberLine = ({ name, label, defaultValue, initialValue, onDeb
     }
   }, 200, [onDebouncedInput])
 
-  const onBlur = useCallback(({ target }: any) => {
-    if (defaultValue !== undefined && !target.value) {
+  const onBlur = useCallback((text: string) => {
+    if (defaultValue !== undefined && !text) {
       const vl = Number(defaultValue)
       setValue(vl)
       onDebouncedInput?.(vl)
     }
   }, [onDebouncedInput])
+
+  useEffect(() => {
+    onInput(value)
+  }, [value])
 
   return <Form.Item name={name} label={label} className="mb-0 [&_.ant-form-item-label.ant-col]:p-0">
     <InputNumber {...props}
@@ -76,7 +85,7 @@ export const InputNumberLine = ({ name, label, defaultValue, initialValue, onDeb
         setValue(value ?? '')
         onInput(value ?? '')
       }}
-      onBlur={onBlur}
+      onBlur={({ target }: any) => onBlur(target.value)}
     />
   </Form.Item>
 }
