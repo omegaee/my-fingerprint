@@ -23,7 +23,7 @@ const LANG_OPTIONS = [
 // }
 
 export const OtherConfigGroup = memo(() => {
-  const [t] = useTranslation()
+  const [t, i18n] = useTranslation()
 
   const config = useStorageStore((state) => {
     state.config ?? state.loadStorage()
@@ -47,7 +47,10 @@ export const OtherConfigGroup = memo(() => {
       action={<TipIcon.Question content={<Markdown>{t('item.desc.e-language')}</Markdown>} />}
       options={LANG_OPTIONS}
       defaultValue={language}
-      onChange={(value) => config.language = value}
+      onChange={(value) => {
+        config.language = value
+        i18n.changeLanguage(value)
+      }}
     />
 
     <ConfigItem.Input
