@@ -63,7 +63,7 @@
       "hook-iframe": "Iframe Hooks"
     },
     "desc": {
-      "uaVersion": "UserAgent version number information\n\nonly modifies subversion segments of **FullVersion** that are not **0**, so this may not change the contents of **navigator.userAgent**.\n\nDoes not modify **AppleWebKit** and **Safari** version numbers, they are fixed.",
+      "uaVersion": "UserAgent version number information\n\nModify only the subversion segments in **FullVersion** that are not **0** \n\nSince chrome hides the subversion information in ua, this may not change the content of **navigator.userAgent**.\n\nDoes not modify **AppleWebKit** and **Safari** version numbers, they are fixed.",
       "languages": "Browser Language\n\n**navigator.languages**\n\n**navigator.language**\n\nMultiple values are separated by commas",
       "hardwareConcurrency": "Number of logical processors\n\n**navigator.hardwareConcurrency**",
       "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
