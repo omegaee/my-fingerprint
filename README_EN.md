@@ -26,6 +26,7 @@
 - [x] WebGL Fingerprint
 - [x] WebRTC Protection
 - [x] WebGPU Fingerprint
+- [x] Graphics Driver Info
 
 ## Table of Contents
 - [Usage](#usage)
@@ -64,6 +65,7 @@
 - [x] Number of logical processors
 - [x] Screen Size
 - [x] Screen Color Depth
+- [x] Graphics Driver Info
 
 **Special Fingerprint Config**
 - [x] Timezone
