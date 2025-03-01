@@ -63,7 +63,7 @@
       "hook-iframe": "Iframe钩子"
     },
     "desc": {
-      "uaVersion": "UserAgent版本号信息\n\n仅修改**FullVersion**中不为**0**的子版本号段\n\n由于chrome隐藏了ua中的子版本信息，因此，这也许并不会改变**navigator.userAgent**的内容\n\n不会修改**AppleWebKit**和**Safari**版本号，它们是固定的",
+      "uaVersion": "UserAgent版本号信息\n\n仅修改**FullVersion**中不为**0**的子版本号段，如**userAgentData**和**请求头**中的版本信息。\n\n由于**chrome**隐藏了**ua**中的子版本信息，因此，这也许并不会改变**userAgent**的版本信息。\n\n不会修改**AppleWebKit**和**Safari**版本号，它们是固定的。",
       "languages": "浏览器语言\n\n**navigator.languages**\n\n**navigator.language**\n\n多个值用逗号分隔",
       "hardwareConcurrency": "逻辑处理器数量\n\n**navigator.hardwareConcurrency**",
       "size": "屏幕尺寸\n\n**screen.width**\n\n**screen.height**",

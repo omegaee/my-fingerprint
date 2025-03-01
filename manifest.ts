@@ -4,7 +4,7 @@ export const manifest: chrome.runtime.ManifestV3 = {
   default_locale: 'en',
   name: 'My Fingerprint',
   description: '__MSG_ext_desc__',
-  version: '2.4.0',
+  version: '2.4.1',
   permissions: [
     'storage', 
     'tabs', 
