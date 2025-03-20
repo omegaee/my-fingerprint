@@ -168,7 +168,7 @@ const removeRules = async () => {
  * 刷新请求头
  */
 export const reRequestHeader = async (excludeTabIds?: number | number[], passTabIds?: number | number[]) => {
-  const [storage, whitelist] = await getLocalStorage()
+  const [storage] = await getLocalStorage()
 
   if (!storage.config.enable || !storage.config.action.hookNetRequest) {
     return await removeRules()
@@ -179,8 +179,8 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
   const uaRules = await genUaRules(storage, singal)
   const langRules = genLanguageRules(storage, singal)
   const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
-  if (whitelist.size !== MEMORY.whitelistSize) {
-    MEMORY.whitelistSize = whitelist.size
+  if (storage.whitelist.length !== MEMORY.whitelistSize) {
+    MEMORY.whitelistSize = storage.whitelist.length
     singal.isUpdate = true
   }
 
@@ -197,7 +197,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
       addRules: [{
         id: UA_NET_RULE_ID,
         condition: {
-          excludedInitiatorDomains: [...whitelist].map((host) => host.split(':')[0]),
+          excludedInitiatorDomains: [...storage.whitelist],
           resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
           excludedTabIds: [...exTabIds],
         },

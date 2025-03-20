@@ -52,7 +52,7 @@ function App() {
       const temp = host.split(':')
       setHostPart([temp[0], temp[1]])
       if (!tab.id) return
-      sendRuntimeGetNotice(tab.id, host).then((data) => {
+      sendRuntimeGetNotice(tab.id, temp[0]).then((data) => {
         if (data.type === 'record') {
           setHookRecords(data.data)
         } else if (data.type === 'whitelist') {
@@ -84,7 +84,7 @@ function App() {
 
   const switchWhitelist = () => {
     if (!hostPart) return
-    const host = hostPart.join(':')
+    const host = hostPart[0]
     if (isWhitelist) {
       deleteWhitelist(host)
       setIsWhitelist(false)

@@ -79,6 +79,15 @@ export const urlToHttpHost = function (url: string) {
   }
 }
 
+export const urlToHostname = (url: string) => {
+  try {
+    let _url = new URL(url);
+    return _url.hostname
+  } catch (err) {
+    return undefined
+  }
+}
+
 /**
  * 版本号随机偏移
  * @param sourceVersion 源版本号

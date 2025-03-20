@@ -2,7 +2,7 @@ import { getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, up
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
 import { type MRuntimeRequest, MRuntimeResponse, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
-import { urlToHttpHost } from "@/utils/base";
+import { urlToHostname } from "@/utils/base";
 import { reRequestHeader } from "./request";
 
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
@@ -56,8 +56,8 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       break
     }
     case MRuntimeType.GetNotice: {
-      getLocalStorage().then(([_, whitelist]) => {
-        const isWhitelist = whitelist.has(msg.host);
+      getLocalStorage().then(([_, { match }]) => {
+        const isWhitelist = match(msg.host);
         const result: MRuntimeResponse[MRuntimeType.GetNotice] = isWhitelist ?
           {
             type: 'whitelist',
@@ -103,16 +103,16 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
-    const [storage, whitelist] = await getLocalStorage()
+    const [storage, { match }] = await getLocalStorage()
 
     if (!isRegScript) {
       injectScript(tabId, storage)
     }
 
-    const host = tab.url ? urlToHttpHost(tab.url) : undefined
+    const host = tab.url ? urlToHostname(tab.url) : undefined
     if (!host) return;
 
-    if (whitelist.has(host)) {
+    if (match(host)) {
       reRequestHeader(tabId)
       setBadgeWhitelist(tabId)
     } else {

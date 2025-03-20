@@ -4,8 +4,44 @@ import deepmerge from "deepmerge";
 import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
 
-let mStorage: LocalStorage | undefined
-let mWhitelist: Set<string> | undefined
+let mContent: LocalStorageContent | undefined
+
+type LocalStorageWhitelist = {
+  match: (v: string) => boolean
+  add: (v: string) => void
+  remove: (v: string) => void
+}
+
+type LocalStorageContent = [
+  LocalStorage,
+  LocalStorageWhitelist,
+] & {
+  storage: LocalStorage
+  whitelist: LocalStorageWhitelist
+}
+
+const genStorageContent = (storage: LocalStorage): LocalStorageContent => ({
+  storage,
+  whitelist: {
+    match(v: string) {
+      return storage.whitelist.some((wHost) => {
+        v = '.' + v
+        wHost = '.' + wHost
+        return v === wHost || v.endsWith(wHost)
+      })
+    },
+    add(v: string) {
+      storage.whitelist.push(v)
+    },
+    remove(v: string) {
+      const index = storage.whitelist.indexOf(v)
+      storage.whitelist.splice(index, 1)
+    },
+  },
+  [Symbol.iterator]() {
+    return Object.values(this)[Symbol.iterator]();
+  },
+} as LocalStorageContent)
 
 /**
  * 生成默认配置
@@ -79,18 +115,17 @@ export const initLocalStorage = debouncedAsync(async (previousVersion?: string) 
   } else {
     _storage = deepmerge(genDefaultLocalStorage(), data)
   }
-  mStorage = _storage
-  mWhitelist = new Set(_storage.whitelist)
+  mContent = genStorageContent(_storage)
   chrome.storage.local.set(_storage).then(() => reRequestHeader())
-  return [mStorage, mWhitelist] as const
+  return mContent
 })
 
 /**
  * 获取配置
  */
 export const getLocalStorage = async () => {
-  if (mStorage !== undefined && mWhitelist !== undefined) {
-    return [mStorage, mWhitelist] as const
+  if (mContent !== undefined) {
+    return mContent
   } else {
     return await initLocalStorage()
   }
@@ -132,25 +167,24 @@ export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>)
  * 修改白名单
  */
 export const updateLocalWhitelist = async (type: 'add' | 'del', host: string | string[]) => {
-  const [storage, whitelist] = await getLocalStorage()
+  const [storage, { add, remove }] = await getLocalStorage()
   if (Array.isArray(host)) {
     if (type === 'add') {
       for (const hh of host) {
-        whitelist.add(hh)
+        add(hh)
       }
     } else if (type === 'del') {
       for (const hh of host) {
-        whitelist.delete(hh)
+        remove(hh)
       }
     }
   } else {
     if (type === 'add') {
-      whitelist.add(host)
+      add(host)
     } else if (type === 'del') {
-      whitelist.delete(host)
+      remove(host)
     }
   }
-  storage.whitelist = [...whitelist]
   saveLocalWhitelist(storage.whitelist)
   reRequestHeader()
 }

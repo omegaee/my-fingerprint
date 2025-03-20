@@ -38,27 +38,12 @@ export const WhitelistView = (props: WhitelistProps) => {
 
   const addItem = () => {
     if (!whitelist) return;
-    const part = addValue.split(':')
-    const hostname = part[0]?.trim()
-    const port = part[1]?.trim()
-    if (!hostname || !hostname.includes('.')) {
+    try {
+      const url = new URL(`http://${addValue}`)
+      addWhitelist(url.hostname)
+      setAddValue('')
+    } catch (err) {
       props.msgApi?.error(t('tip.err.input-hostname'))
-      return
-    }
-
-    if (port) {
-      const nPort = Number(port)
-      if (!Number.isInteger(nPort) || nPort <= 0 || nPort > 65535) {
-        props.msgApi?.error(t('tip.err.input-port'))
-        return
-      }
-      const host = `${hostname}:${port}`
-      addWhitelist(host)
-      setAddValue('')
-    } else {
-      const host = [hostname + ':80', hostname + ':443']
-      addWhitelist(host)
-      setAddValue('')
     }
   }
 
@@ -71,13 +56,13 @@ export const WhitelistView = (props: WhitelistProps) => {
     backgroundColor: token.colorBgContainer,
   }}>
     <Input suffix={<SearchOutlined />}
-      placeholder="hostname:port"
+      placeholder="hostname"
       onInput={({ target }: any) => debounceSetFilterValue(target.value)} />
     <section className="overflow-y-auto no-scrollbar grow flex flex-col">
       {filteredWhitelist.map((item) => <WhitelistItem key={item} item={item} filterValue={filterValue} onDelete={deleteItem} />)}
     </section>
     <Space.Compact>
-      <Input value={addValue} placeholder="hostname:port"
+      <Input value={addValue} placeholder="hostname"
         onChange={({ target }) => setAddValue(target.value)}
         onKeyDown={({ key }) => key === 'Enter' && addItem()} />
       <Button icon={<PlusOutlined />}
