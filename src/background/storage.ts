@@ -1,4 +1,4 @@
-import { compareVersions, genRandomSeed } from "@/utils/base";
+import { compareVersions, genRandomSeed, whitelistMatch } from "@/utils/base";
 import { debounce, debouncedAsync } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { reRequestHeader } from "./request";
@@ -23,13 +23,7 @@ type LocalStorageContent = [
 const genStorageContent = (storage: LocalStorage): LocalStorageContent => ({
   storage,
   whitelist: {
-    match(v: string) {
-      return storage.whitelist.some((wHost) => {
-        v = '.' + v
-        wHost = '.' + wHost
-        return v === wHost || v.endsWith(wHost)
-      })
-    },
+    match: (v: string) => whitelistMatch(storage.whitelist, v),
     add(v: string) {
       storage.whitelist.push(v)
     },

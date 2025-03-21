@@ -1,6 +1,6 @@
 import { MContentType, sendContentMessage, unwrapContentMessage } from "@/message/content";
 import { FingerprintHandler } from "./core";
-import { genRandomSeed } from "@/utils/base";
+import { genRandomSeed, whitelistMatch } from "@/utils/base";
 
 // @ts-ignore
 const storage: LocalStorage = _local;
@@ -13,11 +13,7 @@ const storage: LocalStorage = _local;
 
   const hook = (win: Window & typeof globalThis, data: WindowStorage | undefined) => {
     if (!data) return;
-    if (storage.whitelist.some((wHost) => {
-      const host = '.' + data.host
-      wHost = '.' + wHost
-      return host === wHost || host.endsWith(wHost)
-    })) return;
+    if (whitelistMatch(storage.whitelist, data.host)) return;
     try {
       new FingerprintHandler(win, data, storage.config);
     } catch (_) { }

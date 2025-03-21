@@ -1,7 +1,7 @@
 const fKeys: string[] = ['appVersion', 'platform', 'userAgent', 'language', 'languages', 'hardwareConcurrency', 'height', 'width', 'colorDepth', 'pixelDepth', 'glVendor', 'glRenderer', 'timezone', 'canvas', 'audio', 'font', 'webgl', 'webgpu', 'webrtc']
 
 export type FHookRecordProps = {
-  records?: ToolbarNoticeRecord['data']
+  records?: Partial<Record<string, number>>
 }
 
 export const FHookRecord = function ({records}: FHookRecordProps) {

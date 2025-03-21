@@ -103,6 +103,7 @@
     "err": {
       "input-hostname": "Please enter the correct domain name",
       "input-port": "Please enter the correct port number",
+      "host-exist": "Host already exists",
       "config-parse": "Config Parse Error",
       "config-import": "Import Config Error",
       "config-unloaded": "Config Unloaded",

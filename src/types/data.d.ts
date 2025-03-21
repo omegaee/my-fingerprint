@@ -1,14 +1,3 @@
-type ToolbarNoticeWhitelist = {
-  type: 'whitelist'
-}
-
-type ToolbarNoticeRecord = {
-  type: 'record'
-  data?: Partial<Record<string, number>>
-}
-
-type ToolbarNotice = ToolbarNoticeWhitelist | ToolbarNoticeRecord
-
 type SizeInfo = {
   width: number
   height: number

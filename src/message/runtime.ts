@@ -42,7 +42,7 @@ export type MRuntimeRequest = {
 /// Response Type
 ///
 export type MRuntimeResponse = {
-  [MRuntimeType.GetNotice]: ToolbarNotice,
+  [MRuntimeType.GetNotice]: Partial<Record<string, number>> | undefined,
   [MRuntimeType.GetNewVersion]: string | undefined,
 } & {
   [key in MRuntimeType]: void

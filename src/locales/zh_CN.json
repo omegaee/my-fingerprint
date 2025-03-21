@@ -103,6 +103,7 @@
     "err": {
       "input-hostname": "请输入正确的域名",
       "input-port": "请输入正确的端口号",
+      "host-exist": "域名已存在",
       "config-parse": "配置解析失败",
       "config-import": "配置导入失败",
       "config-unloaded": "配置未加载",

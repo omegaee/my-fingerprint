@@ -79,10 +79,9 @@ export const urlToHttpHost = function (url: string) {
   }
 }
 
-export const urlToHostname = (url: string) => {
+export const tryUrl = (url: string) => {
   try {
-    let _url = new URL(url);
-    return _url.hostname
+    return new URL(url);
   } catch (err) {
     return undefined
   }
@@ -198,4 +197,14 @@ export const deepProxy = <T>(obj: T, handler: ProxyHandler<any>, seen = new Weak
   });
   seen.set(obj, proxy);
   return proxy;
+}
+
+/**
+ * 域名白名单匹配
+ */
+export const whitelistMatch = (whitelist: string[], domain: string): boolean => {
+  if (!domain) return false;
+  if (!whitelist?.length) return false;
+  domain = '.' + domain
+  return whitelist.some((wDomain) => domain.endsWith('.' + wDomain))
 }

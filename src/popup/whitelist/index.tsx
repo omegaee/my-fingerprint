@@ -40,6 +40,10 @@ export const WhitelistView = (props: WhitelistProps) => {
     if (!whitelist) return;
     try {
       const url = new URL(`http://${addValue}`)
+      if (whitelist.includes(url.hostname)) {
+        props.msgApi?.error(t('tip.err.host-exist'))
+        return
+      }
       addWhitelist(url.hostname)
       setAddValue('')
     } catch (err) {

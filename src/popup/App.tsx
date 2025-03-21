@@ -12,7 +12,7 @@ import FHookRecord from "./record"
 import FConfig from "./config"
 import WhitelistView from "./whitelist"
 
-import { compareVersions, urlToHttpHost } from "@/utils/base"
+import { compareVersions, tryUrl } from "@/utils/base"
 import { sendRuntimeGetNewVersion, sendRuntimeGetNotice, sendRuntimeSetConfig } from "@/message/runtime"
 import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
@@ -22,9 +22,9 @@ function App() {
   const [t, i18n] = useTranslation()
   const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
-  const [hostPart, setHostPart] = useState<[string, string]>()
+  const [hostname, setHostname] = useState<string>()
 
-  const [hookRecords, setHookRecords] = useState<ToolbarNoticeRecord['data']>()
+  const [hookRecords, setHookRecords] = useState<Partial<Record<string, number>>>()
   const [isWhitelist, setIsWhitelist] = useState(false)
 
   const [hasNewVersion, setHasNewVersion] = useState(false)
@@ -46,19 +46,15 @@ function App() {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
       const tab = tabs[0]
       setTab(tab)
-      if (!tab?.url) return
-      const host = urlToHttpHost(tab.url)
-      if (!host) return
-      const temp = host.split(':')
-      setHostPart([temp[0], temp[1]])
-      if (!tab.id) return
-      sendRuntimeGetNotice(tab.id, temp[0]).then((data) => {
-        if (data.type === 'record') {
-          setHookRecords(data.data)
-        } else if (data.type === 'whitelist') {
-          setIsWhitelist(true)
-        }
-      })
+      if (!tab || !tab.url || !tab.id) return;
+      const _url = tryUrl(tab.url)
+      if(_url && (_url.protocol === 'http:' || _url.protocol === 'https:')){
+        /* 允许白名单 */
+        setHostname(_url.hostname)
+        sendRuntimeGetNotice(tab.id, _url.hostname).then((data) => {
+          data ? setHookRecords(data) : setIsWhitelist(true)
+        })
+      }
     })
     sendRuntimeGetNewVersion().then((version) => {
       if (!version) return
@@ -83,13 +79,12 @@ function App() {
   }
 
   const switchWhitelist = () => {
-    if (!hostPart) return
-    const host = hostPart[0]
+    if (!hostname) return;
     if (isWhitelist) {
-      deleteWhitelist(host)
+      deleteWhitelist(hostname)
       setIsWhitelist(false)
     } else {
-      addWhitelist(host)
+      addWhitelist(hostname)
       setIsWhitelist(true)
     }
   }
@@ -140,11 +135,11 @@ function App() {
         {/* 白名单开关 */}
         <section className="grow flex flex-col items-center gap-1">
           <Button type={isWhitelist ? 'primary' : 'default'}
-            danger={!hostPart}
+            danger={!hostname}
             className="font-mono font-bold"
             style={{ width: '100%' }}
             onClick={switchWhitelist} >
-            {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostPart?.[0] ?? t('tip.label.not-support-whitelist')}
+            {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostname ?? t('tip.label.not-support-whitelist')}
           </Button>
           <Typography.Text className="text-[13px]">{isWhitelist ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
         </section>
