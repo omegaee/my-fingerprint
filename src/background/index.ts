@@ -1,7 +1,7 @@
 import { getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
-import { type MRuntimeRequest, MRuntimeResponse, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
+import { type MRuntimeRequest, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
 import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 
@@ -56,10 +56,8 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       break
     }
     case MRuntimeType.GetNotice: {
-      getLocalStorage().then(([_, { match }]) => {
-        sendResponse(match(msg.host) ? undefined : (hookRecords.get(msg.tabId) ?? {}));
-      })
-      return true
+      sendResponse(hookRecords.get(msg.tabId));
+      break
     }
     case MRuntimeType.SetHookRecords: {
       const tabId = sender.tab?.id
@@ -71,11 +69,7 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       break
     }
     case MRuntimeType.UpdateWhitelist: {
-      if (msg.mode === 'add') {
-        updateLocalWhitelist('add', msg.host)
-      } else if (msg.mode === 'del') {
-        updateLocalWhitelist('del', msg.host)
-      }
+      updateLocalWhitelist(msg.data)
       if (isRegScript) {
         reRegisterScript();
       }

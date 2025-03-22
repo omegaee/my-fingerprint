@@ -1,4 +1,4 @@
-import { compareVersions, genRandomSeed, whitelistMatch } from "@/utils/base";
+import { compareVersions, genRandomSeed, existParentDomain } from "@/utils/base";
 import { debounce, debouncedAsync } from "@/utils/timer";
 import deepmerge from "deepmerge";
 import { reRequestHeader } from "./request";
@@ -23,13 +23,13 @@ type LocalStorageContent = [
 const genStorageContent = (storage: LocalStorage): LocalStorageContent => ({
   storage,
   whitelist: {
-    match: (v: string) => whitelistMatch(storage.whitelist, v),
+    match: (v: string) => existParentDomain(storage.whitelist, v),
     add(v: string) {
       storage.whitelist.push(v)
     },
     remove(v: string) {
       const index = storage.whitelist.indexOf(v)
-      storage.whitelist.splice(index, 1)
+      index !== -1 && storage.whitelist.splice(index, 1)
     },
   },
   [Symbol.iterator]() {
@@ -160,25 +160,10 @@ export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>)
 /**
  * 修改白名单
  */
-export const updateLocalWhitelist = async (type: 'add' | 'del', host: string | string[]) => {
+export const updateLocalWhitelist = async (data: { add?: string[], del?: string[] }) => {
   const [storage, { add, remove }] = await getLocalStorage()
-  if (Array.isArray(host)) {
-    if (type === 'add') {
-      for (const hh of host) {
-        add(hh)
-      }
-    } else if (type === 'del') {
-      for (const hh of host) {
-        remove(hh)
-      }
-    }
-  } else {
-    if (type === 'add') {
-      add(host)
-    } else if (type === 'del') {
-      remove(host)
-    }
-  }
+  data.del?.length && data.del.forEach(v => remove(v))
+  data.add?.length && data.add.forEach(v => add(v))
   saveLocalWhitelist(storage.whitelist)
   reRequestHeader()
 }

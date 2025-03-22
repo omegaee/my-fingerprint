@@ -26,8 +26,10 @@ export type MRuntimeRequest = {
   },
   [MRuntimeType.UpdateWhitelist]: {
     type: MRuntimeType.UpdateWhitelist,
-    mode: 'add' | 'del'
-    host: string | string[],
+    data: {
+      add?: string[],
+      del?: string[],
+    }
   },
   [MRuntimeType.ChangeScriptWhitelist]: {
     type: MRuntimeType.ChangeScriptWhitelist,
@@ -87,24 +89,12 @@ export const sendRuntimeSetHookRecords = (hookRecords: Partial<Record<HookFinger
 }
 
 /**
- * 添加白名单
+ * 更新白名单
  */
-export const sendRuntimeAddWhiteList = (host: string | string[]) => {
+export const sendRuntimeUpdateWhiteList = (data: MRuntimeRequest[MRuntimeType.UpdateWhitelist]['data']) => {
   return sendMessage<MRuntimeType.UpdateWhitelist>({
     type: MRuntimeType.UpdateWhitelist,
-    mode: 'add',
-    host,
-  })
-}
-
-/**
- * 删除白名单
- */
-export const sendRuntimeDelWhiteList = (host: string | string[]) => {
-  return sendMessage<MRuntimeType.UpdateWhitelist>({
-    type: MRuntimeType.UpdateWhitelist,
-    mode: 'del',
-    host,
+    data,
   })
 }
 

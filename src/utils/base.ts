@@ -200,11 +200,53 @@ export const deepProxy = <T>(obj: T, handler: ProxyHandler<any>, seen = new Weak
 }
 
 /**
- * 域名白名单匹配
+ * 是否存在父域名或自身
+ * @param src 子域名 
  */
-export const whitelistMatch = (whitelist: string[], domain: string): boolean => {
-  if (!domain) return false;
-  if (!whitelist?.length) return false;
-  domain = '.' + domain
-  return whitelist.some((wDomain) => domain.endsWith('.' + wDomain))
+export const existParentDomain = (domains: string[], src: string) => {
+  if (!src) return false;
+  if (!domains?.length) return false;
+  src = '.' + src
+  return domains.some((v) => src.endsWith('.' + v))
+}
+
+/**
+ * 是否存在子域名或自身
+ * @param src 父域名
+ */
+export const existChildDomain = (domains: string[], src: string) => {
+  if (!src) return false;
+  if (!domains?.length) return false;
+  src = '.' + src
+  return domains.some((v) => ('.' + v).endsWith(src))
+}
+
+/**
+ * 查找子域名和自身
+ * @param src 父域名
+ */
+export const selectChildDomains = (domains: string[], src: string) => {
+  if (!src) return []
+  if (!domains?.length) return []
+  src = '.' + src
+  const list: string[] = []
+  for (const domain of domains) {
+    if (('.' + domain).endsWith(src)) list.push(domain);
+  }
+  return list
+}
+
+/**
+ * 查找父域名和自身
+ * @param src 子域名 
+ */
+export const selectParentDomains = (domains: string[], src: string) => {
+  if (!src) return []
+  if (!domains?.length) return []
+  src = '.' + src
+  const list: string[] = []
+  for (const domain of domains) {
+    if (src.endsWith('.' + domain)) list.push(domain);
+  }
+  return list
 }

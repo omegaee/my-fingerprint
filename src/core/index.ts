@@ -1,6 +1,6 @@
 import { MContentType, sendContentMessage, unwrapContentMessage } from "@/message/content";
 import { FingerprintHandler } from "./core";
-import { genRandomSeed, whitelistMatch } from "@/utils/base";
+import { genRandomSeed, existParentDomain } from "@/utils/base";
 
 // @ts-ignore
 const storage: LocalStorage = _local;
@@ -13,7 +13,7 @@ const storage: LocalStorage = _local;
 
   const hook = (win: Window & typeof globalThis, data: WindowStorage | undefined) => {
     if (!data) return;
-    if (whitelistMatch(storage.whitelist, data.host)) return;
+    if (existParentDomain(storage.whitelist, data.host)) return;
     try {
       new FingerprintHandler(win, data, storage.config);
     } catch (_) { }
