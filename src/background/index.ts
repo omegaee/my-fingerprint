@@ -1,8 +1,8 @@
 import { getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
-import { type MRuntimeRequest, MRuntimeResponse, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
-import { urlToHttpHost } from "@/utils/base";
+import { type MRuntimeRequest, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
+import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
@@ -56,18 +56,8 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       break
     }
     case MRuntimeType.GetNotice: {
-      getLocalStorage().then(([_, whitelist]) => {
-        const isWhitelist = whitelist.has(msg.host);
-        const result: MRuntimeResponse[MRuntimeType.GetNotice] = isWhitelist ?
-          {
-            type: 'whitelist',
-          } : {
-            type: 'record',
-            data: hookRecords.get(msg.tabId)
-          };
-        sendResponse(result);
-      })
-      return true
+      sendResponse(hookRecords.get(msg.tabId));
+      break
     }
     case MRuntimeType.SetHookRecords: {
       const tabId = sender.tab?.id
@@ -79,11 +69,7 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       break
     }
     case MRuntimeType.UpdateWhitelist: {
-      if (msg.mode === 'add') {
-        updateLocalWhitelist('add', msg.host)
-      } else if (msg.mode === 'del') {
-        updateLocalWhitelist('del', msg.host)
-      }
+      updateLocalWhitelist(msg.data)
       if (isRegScript) {
         reRegisterScript();
       }
@@ -103,16 +89,16 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
-    const [storage, whitelist] = await getLocalStorage()
+    const [storage, { match }] = await getLocalStorage()
 
     if (!isRegScript) {
       injectScript(tabId, storage)
     }
 
-    const host = tab.url ? urlToHttpHost(tab.url) : undefined
-    if (!host) return;
+    const _url = tab.url ? tryUrl(tab.url) : undefined
+    if (!_url?.hostname) return;
 
-    if (whitelist.has(host)) {
+    if (match(_url.hostname)) {
       reRequestHeader(tabId)
       setBadgeWhitelist(tabId)
     } else {

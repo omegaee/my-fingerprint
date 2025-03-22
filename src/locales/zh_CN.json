@@ -6,7 +6,9 @@
     "disabled": "已关闭",
     "preset": "预设",
     "custom": "自定义",
-    "special": "特殊"
+    "special": "特殊",
+    "confirm": "确定",
+    "cancel": "取消"
   },
   "e": {
     "enabled": "扩展已开启",
@@ -103,10 +105,16 @@
     "err": {
       "input-hostname": "请输入正确的域名",
       "input-port": "请输入正确的端口号",
+      "domain-exist": "域名已存在",
+      "parent-domain-exist": "父域名已存在",
       "config-parse": "配置解析失败",
       "config-import": "配置导入失败",
       "config-unloaded": "配置未加载",
       "import-empty": "导入配置为空"
+    },
+    "if": {
+      "remove-parent-domain": "是否移除对应的父域名",
+      "remove-child-domain": "是否移对应的除子域名"
     }
   },
   "city": {

@@ -6,7 +6,9 @@
     "disabled": "Disabled",
     "preset": "Preset",
     "custom": "Custom",
-    "special": "Special"
+    "special": "Special",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   },
   "e": {
     "enabled": "Extension Enabled",
@@ -103,10 +105,16 @@
     "err": {
       "input-hostname": "Please enter the correct domain name",
       "input-port": "Please enter the correct port number",
+      "domain-exist": "Host already exists",
+      "parent-domain-exist": "Parent domain already exists",
       "config-parse": "Config Parse Error",
       "config-import": "Import Config Error",
       "config-unloaded": "Config Unloaded",
       "import-empty": "Import Config is Empty"
+    },
+    "if": {
+      "remove-parent-domain": "Whether to remove its parent domain",
+      "remove-child-domain": "Whether to remove its child domain"
     }
   },
   "city": {

@@ -18,7 +18,7 @@ const MEMORY = {
   ua: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   lang: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   exIds: undefined as Set<number> | undefined,
-  whitelistSize: 0 as number,
+  whitelistSet: undefined as Set<string> | undefined,
 }
 
 /**
@@ -155,6 +155,14 @@ const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonl
   return res;
 }
 
+const checkWhitelistDiff = ({ whitelist }: LocalStorage, singal: RuleSignal) => {
+  const mem = MEMORY.whitelistSet
+  if (!mem || mem.size !== whitelist.length || whitelist.some((v) => !mem.has(v))) {
+    MEMORY.whitelistSet = new Set(whitelist)
+    singal.isUpdate = true
+  }
+}
+
 /**
  * 删除请求头规则
  */
@@ -168,7 +176,7 @@ const removeRules = async () => {
  * 刷新请求头
  */
 export const reRequestHeader = async (excludeTabIds?: number | number[], passTabIds?: number | number[]) => {
-  const [storage, whitelist] = await getLocalStorage()
+  const [storage] = await getLocalStorage()
 
   if (!storage.config.enable || !storage.config.action.hookNetRequest) {
     return await removeRules()
@@ -179,10 +187,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
   const uaRules = await genUaRules(storage, singal)
   const langRules = genLanguageRules(storage, singal)
   const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
-  if (whitelist.size !== MEMORY.whitelistSize) {
-    MEMORY.whitelistSize = whitelist.size
-    singal.isUpdate = true
-  }
+  checkWhitelistDiff(storage, singal)
 
   if (singal.isUpdate) {
     const rules = [
@@ -197,7 +202,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
       addRules: [{
         id: UA_NET_RULE_ID,
         condition: {
-          excludedInitiatorDomains: [...whitelist].map((host) => host.split(':')[0]),
+          excludedInitiatorDomains: [...storage.whitelist],
           resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
           excludedTabIds: [...exTabIds],
         },

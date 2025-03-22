@@ -55,25 +55,9 @@ export const arrayFilter = function <T>(arr: (T | undefined | boolean)[]): T[] {
   return arr.filter(item => item !== undefined && item !== false) as T[]
 }
 
-/**
- * url转带端口的host
- */
-export const urlToHttpHost = function (url: string) {
+export const tryUrl = (url: string) => {
   try {
-    let _url = new URL(url);
-    if (_url.protocol !== 'http:' && _url.protocol !== 'https:') {
-      return undefined
-    }
-    let hostname = _url.hostname
-    let port = _url.port
-    if (port === "") {
-      if (_url.protocol === "http:") {
-        port = "80";
-      } else if (_url.protocol === "https:") {
-        port = "443";
-      }
-    }
-    return `${hostname}:${port}`
+    return new URL(url);
   } catch (err) {
     return undefined
   }
@@ -189,4 +173,56 @@ export const deepProxy = <T>(obj: T, handler: ProxyHandler<any>, seen = new Weak
   });
   seen.set(obj, proxy);
   return proxy;
+}
+
+/**
+ * 是否存在父域名或自身
+ * @param src 子域名 
+ */
+export const existParentDomain = (domains: string[], src: string) => {
+  if (!src) return false;
+  if (!domains?.length) return false;
+  src = '.' + src
+  return domains.some((v) => src.endsWith('.' + v))
+}
+
+/**
+ * 是否存在子域名或自身
+ * @param src 父域名
+ */
+export const existChildDomain = (domains: string[], src: string) => {
+  if (!src) return false;
+  if (!domains?.length) return false;
+  src = '.' + src
+  return domains.some((v) => ('.' + v).endsWith(src))
+}
+
+/**
+ * 查找子域名和自身
+ * @param src 父域名
+ */
+export const selectChildDomains = (domains: string[], src: string) => {
+  if (!src) return []
+  if (!domains?.length) return []
+  src = '.' + src
+  const list: string[] = []
+  for (const domain of domains) {
+    if (('.' + domain).endsWith(src)) list.push(domain);
+  }
+  return list
+}
+
+/**
+ * 查找父域名和自身
+ * @param src 子域名 
+ */
+export const selectParentDomains = (domains: string[], src: string) => {
+  if (!src) return []
+  if (!domains?.length) return []
+  src = '.' + src
+  const list: string[] = []
+  for (const domain of domains) {
+    if (src.endsWith('.' + domain)) list.push(domain);
+  }
+  return list
 }

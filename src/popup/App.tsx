@@ -1,4 +1,4 @@
-import { Badge, Button, Divider, Layout, Tabs, type TabsProps, Typography, message, theme } from "antd"
+import { Badge, Button, Divider, Layout, Popconfirm, Tabs, type TabsProps, Typography, message, theme } from "antd"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -12,7 +12,7 @@ import FHookRecord from "./record"
 import FConfig from "./config"
 import WhitelistView from "./whitelist"
 
-import { compareVersions, urlToHttpHost } from "@/utils/base"
+import { compareVersions, tryUrl, existParentDomain, selectParentDomains } from "@/utils/base"
 import { sendRuntimeGetNewVersion, sendRuntimeGetNotice, sendRuntimeSetConfig } from "@/message/runtime"
 import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
@@ -22,10 +22,11 @@ function App() {
   const [t, i18n] = useTranslation()
   const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
-  const [hostPart, setHostPart] = useState<[string, string]>()
+  const [hostname, setHostname] = useState<string>()
 
-  const [hookRecords, setHookRecords] = useState<ToolbarNoticeRecord['data']>()
-  const [isWhitelist, setIsWhitelist] = useState(false)
+  const [hookRecords, setHookRecords] = useState<Partial<Record<string, number>>>()
+  // const [isWhitelist, setIsWhitelist] = useState(false)
+  const [whitelistMode, setWhitelistMode] = useState<'none' | 'self' | 'sub'>('none')
 
   const [hasNewVersion, setHasNewVersion] = useState(false)
 
@@ -33,10 +34,11 @@ function App() {
 
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
-  const { config, addWhitelist, deleteWhitelist } = useStorageStore(useShallow((state) => {
+  const { config, whitelist, addWhitelist, deleteWhitelist } = useStorageStore(useShallow((state) => {
     state.config ?? state.loadStorage()
     return {
       config: state.config,
+      whitelist: state.whitelist,
       addWhitelist: state.addWhitelist,
       deleteWhitelist: state.deleteWhitelist,
     }
@@ -46,25 +48,28 @@ function App() {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
       const tab = tabs[0]
       setTab(tab)
-      if (!tab?.url) return
-      const host = urlToHttpHost(tab.url)
-      if (!host) return
-      const temp = host.split(':')
-      setHostPart([temp[0], temp[1]])
-      if (!tab.id) return
-      sendRuntimeGetNotice(tab.id, host).then((data) => {
-        if (data.type === 'record') {
-          setHookRecords(data.data)
-        } else if (data.type === 'whitelist') {
-          setIsWhitelist(true)
-        }
-      })
+      if (!tab || !tab.url || !tab.id) return;
+      const _url = tryUrl(tab.url)
+      if (_url && (_url.protocol === 'http:' || _url.protocol === 'https:')) {
+        /* 允许白名单 */
+        setHostname(_url.hostname)
+        sendRuntimeGetNotice(tab.id, _url.hostname).then((data) => setHookRecords(data))
+      }
     })
     sendRuntimeGetNewVersion().then((version) => {
       if (!version) return
       setHasNewVersion(compareVersions(manifest.version, version) === -1)
     })
   }, [])
+
+  useEffect(() => {
+    if (!whitelist || !hostname) return;
+    if (whitelist.includes(hostname)) {
+      setWhitelistMode('self')
+    } else if (existParentDomain(whitelist, hostname)) {
+      setWhitelistMode('sub')
+    }
+  }, [whitelist, hostname])
 
   useEffect(() => {
     if (!config) return
@@ -83,14 +88,19 @@ function App() {
   }
 
   const switchWhitelist = () => {
-    if (!hostPart) return
-    const host = hostPart.join(':')
-    if (isWhitelist) {
-      deleteWhitelist(host)
-      setIsWhitelist(false)
-    } else {
-      addWhitelist(host)
-      setIsWhitelist(true)
+    if (!hostname || !whitelist) return;
+    if (whitelistMode === 'none') {
+      /* 添加白名单 */
+      addWhitelist(hostname)
+      setWhitelistMode('self')
+    } else if (whitelistMode === 'self') {
+      /* 移除自身 */
+      deleteWhitelist(hostname)
+      setWhitelistMode('none')
+    } else if (whitelistMode === 'sub') {
+      /* 移除父域名 */
+      deleteWhitelist(selectParentDomains(whitelist, hostname))
+      setWhitelistMode('none')
     }
   }
 
@@ -139,14 +149,23 @@ function App() {
 
         {/* 白名单开关 */}
         <section className="grow flex flex-col items-center gap-1">
-          <Button type={isWhitelist ? 'primary' : 'default'}
-            danger={!hostPart}
-            className="font-mono font-bold"
-            style={{ width: '100%' }}
-            onClick={switchWhitelist} >
-            {isWhitelist ? <CheckOutlined /> : <CloseOutlined />} {hostPart?.[0] ?? t('tip.label.not-support-whitelist')}
-          </Button>
-          <Typography.Text className="text-[13px]">{isWhitelist ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
+          <Popconfirm
+            disabled={whitelistMode !== 'sub'}
+            title={t('tip.if.remove-parent-domain')}
+            placement='bottom'
+            onConfirm={switchWhitelist}
+            okText={t('g.confirm')}
+            cancelText={t('g.cancel')}
+            okType='danger' >
+            <Button type={whitelistMode !== 'none' ? 'primary' : 'default'}
+              danger={!hostname}
+              className="font-mono font-bold"
+              style={{ width: '100%' }}
+              onClick={whitelistMode !== 'sub' ? switchWhitelist : undefined} >
+              {whitelistMode !== 'none' ? <CheckOutlined /> : <CloseOutlined />} {hostname ?? t('tip.label.not-support-whitelist')}
+            </Button>
+          </Popconfirm>
+          <Typography.Text className="text-[13px]">{whitelistMode !== 'none' ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
         </section>
 
         {/* 插件开关 */}

@@ -1,5 +1,5 @@
-import { sendRuntimeAddWhiteList, sendRuntimeDelWhiteList, sendRuntimeSetConfig } from "@/message/runtime"
-import { deepProxy } from "@/utils/base"
+import { sendRuntimeSetConfig, sendRuntimeUpdateWhiteList } from "@/message/runtime"
+import { deepProxy, selectChildDomains, tryUrl } from "@/utils/base"
 import { debounce, debouncedAsync } from "@/utils/timer"
 import deepmerge from "deepmerge"
 import { create } from "zustand"
@@ -91,17 +91,45 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
   const addWhitelist = (list: string | string[]) => {
     const storage = get().storage
     if (!storage) return;
-    storage.whitelist = [...new Set([...storage.whitelist, ...Array.isArray(list) ? list : [list]])]
+    if (!Array.isArray(list)) list = [list];
+    const whitelist = [...storage.whitelist]
+    const del: string[] = []
+    for (const item of list) {
+      const url = tryUrl('http://' + item)
+      if (!url) continue;
+      for (const domain of selectChildDomains(whitelist, url.hostname)) {
+        const index = whitelist.indexOf(domain)
+        if (index !== -1) {
+          whitelist.splice(index, 1)
+          del.push(domain)
+        }
+      }
+      whitelist.push(url.hostname)
+    }
+    storage.whitelist = whitelist
     set({ whitelist: storage.whitelist })
-    sendRuntimeAddWhiteList(list)
+    sendRuntimeUpdateWhiteList({
+      add: list,
+      del,
+    })
   }
 
   const deleteWhitelist = (list: string | string[]) => {
     const storage = get().storage
     if (!storage) return;
-    storage.whitelist = storage.whitelist.filter(item => !Array.isArray(list) ? item !== list : !list.includes(item))
+    if (!Array.isArray(list)) list = [list];
+    const whitelist = [...storage.whitelist]
+    for (const item of list) {
+      const url = tryUrl('http://' + item)
+      if (!url) continue;
+      const index = whitelist.indexOf(url.hostname)
+      index !== -1 && whitelist.splice(index, 1)
+    }
+    storage.whitelist = whitelist
     set({ whitelist: storage.whitelist })
-    sendRuntimeDelWhiteList(list)
+    sendRuntimeUpdateWhiteList({
+      del: list,
+    })
   }
 
   return {
