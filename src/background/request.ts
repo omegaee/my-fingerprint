@@ -18,7 +18,7 @@ const MEMORY = {
   ua: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   lang: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   exIds: undefined as Set<number> | undefined,
-  whitelistSize: 0 as number,
+  whitelistSet: undefined as Set<string> | undefined,
 }
 
 /**
@@ -155,6 +155,14 @@ const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonl
   return res;
 }
 
+const checkWhitelistDiff = ({ whitelist }: LocalStorage, singal: RuleSignal) => {
+  const mem = MEMORY.whitelistSet
+  if (!mem || mem.size !== whitelist.length || whitelist.some((v) => !mem.has(v))) {
+    MEMORY.whitelistSet = new Set(whitelist)
+    singal.isUpdate = true
+  }
+}
+
 /**
  * 删除请求头规则
  */
@@ -179,10 +187,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
   const uaRules = await genUaRules(storage, singal)
   const langRules = genLanguageRules(storage, singal)
   const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
-  if (storage.whitelist.length !== MEMORY.whitelistSize) {
-    MEMORY.whitelistSize = storage.whitelist.length
-    singal.isUpdate = true
-  }
+  checkWhitelistDiff(storage, singal)
 
   if (singal.isUpdate) {
     const rules = [

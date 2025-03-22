@@ -57,7 +57,7 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
     }
     case MRuntimeType.GetNotice: {
       getLocalStorage().then(([_, { match }]) => {
-        sendResponse(match(msg.host) ? undefined : hookRecords.get(msg.tabId));
+        sendResponse(match(msg.host) ? undefined : (hookRecords.get(msg.tabId) ?? {}));
       })
       return true
     }
