@@ -1,7 +1,6 @@
 import { useDebounceCallback } from "@/utils/hooks"
 import { Button, Input, Popconfirm, Space, theme } from "antd"
 import { useEffect, useState } from "react"
-
 import {
   PlusOutlined,
   SearchOutlined,
@@ -76,13 +75,13 @@ export const WhitelistView = (props: WhitelistProps) => {
     backgroundColor: token.colorBgContainer,
   }}>
     <Input suffix={<SearchOutlined />}
-      placeholder="hostname"
+      placeholder="example.com"
       onInput={({ target }: any) => debounceSetFilterValue(target.value)} />
     <section className="overflow-y-auto no-scrollbar grow flex flex-col">
       {filteredWhitelist.map((item) => <WhitelistItem key={item} item={item} filterValue={filterValue} onDelete={deleteItem} />)}
     </section>
     <Space.Compact>
-      <Input value={addValue} placeholder="hostname"
+      <Input value={addValue} placeholder="example.com"
         onChange={({ target }) => setAddValue(target.value)}
         onKeyDown={({ key }) => key === 'Enter' && addItemHelper()} />
       <Popconfirm
