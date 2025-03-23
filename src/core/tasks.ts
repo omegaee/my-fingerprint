@@ -56,7 +56,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'hook navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator) || conf.fp.other.webrtc.type !== HookType.default,
-    onEnable: ({ win, conf, getSeed, getValue }) => {
+    onEnable: ({ win, conf, info, getSeed, getValue }) => {
       const _navigator = Object.getOwnPropertyDescriptor(win, "navigator")?.get;
       _navigator && Object.defineProperty(win, 'navigator', {
         get: new Proxy(_navigator, {
@@ -67,6 +67,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                 switch (key) {
                   /* ua */
                   case 'userAgent': {
+                    if (info.browser === 'firefox') break;
                     const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)
@@ -75,6 +76,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     break
                   }
                   case 'appVersion': {
+                    if (info.browser === 'firefox') break;
                     const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)
@@ -83,6 +85,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     break
                   }
                   case 'userAgentData' as any: {
+                    if (info.browser === 'firefox') break;
                     const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)

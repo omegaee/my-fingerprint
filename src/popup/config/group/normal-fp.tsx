@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import SelectFpConfigItem from "../item/fp/select"
 import { Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
+import { getBrowser } from "@/utils/equipment"
 
 type DeprecatedType = {
   option: HookType,
@@ -38,6 +39,8 @@ export const NormalFpConfigGroup = memo(() => {
   })
   const fp = config?.fp
 
+  const browser = useMemo(() => getBrowser(navigator.userAgent), [])
+
   const glInfo = useMemo(() => {
     const cvs = document.createElement('canvas')
     const gl = cvs.getContext("webgl2") ?? cvs.getContext("webgl")
@@ -51,14 +54,14 @@ export const NormalFpConfigGroup = memo(() => {
   }, [])
 
   return fp ? <>
-    <SelectFpConfigItem
+    {browser === 'chrome' && <SelectFpConfigItem
       title={t('item.title.uaVersion')}
       desc={t('item.desc.uaVersion')}
       options={BASE_TYPES}
       deprecatedOptions={netDeprecatedTypes}
       defaultValue={fp.navigator.uaVersion.type}
       onChange={(type) => fp.navigator.uaVersion.type = type as any}
-    />
+    />}
 
     <SelectFpConfigItem
       title={t('item.title.languages')}

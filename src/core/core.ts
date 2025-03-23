@@ -17,9 +17,6 @@ export type HookTask = {
 }
 
 export interface RawHookObject {
-  // navigatorDescriptor: PropertyDescriptor
-  // screenDescriptor: PropertyDescriptor
-
   getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
 }
 

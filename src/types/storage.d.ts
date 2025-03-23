@@ -61,4 +61,5 @@ type WindowStorage = {
   host: string
   seed: number
   hooked: boolean
+  browser?: BrowserType
 }

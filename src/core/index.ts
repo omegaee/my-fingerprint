@@ -1,6 +1,7 @@
 import { MContentType, sendContentMessage, unwrapContentMessage } from "@/message/content";
 import { FingerprintHandler } from "./core";
 import { genRandomSeed, existParentDomain } from "@/utils/base";
+import { getBrowser } from "@/utils/equipment";
 
 // @ts-ignore
 const storage: LocalStorage = _local;
@@ -27,6 +28,7 @@ const storage: LocalStorage = _local;
       host: location.hostname,
       seed: genRandomSeed(),
       hooked: false,
+      browser: getBrowser(navigator.userAgent),
     }
     // @ts-ignore
     window[WIN_KEY] = data;

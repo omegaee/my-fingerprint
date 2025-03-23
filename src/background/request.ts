@@ -1,4 +1,4 @@
-import { genRandomVersionUserAgent, genRandomVersionUserAgentData } from "@/utils/equipment"
+import { genRandomVersionUserAgent, genRandomVersionUserAgentData, getBrowser } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
 import { shuffleArray } from "@/utils/base"
 import { HookType } from '@/types/enum'
@@ -15,6 +15,7 @@ const RAW = {
 }
 
 const MEMORY = {
+  browser: getBrowser(navigator.userAgent),
   ua: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   lang: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   exIds: undefined as Set<number> | undefined,
@@ -184,7 +185,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
 
   const singal: RuleSignal = { isUpdate: false }
 
-  const uaRules = await genUaRules(storage, singal)
+  const uaRules = MEMORY.browser === 'firefox' ? [] : await genUaRules(storage, singal)
   const langRules = genLanguageRules(storage, singal)
   const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
   checkWhitelistDiff(storage, singal)
