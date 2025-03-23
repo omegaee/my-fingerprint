@@ -1,6 +1,6 @@
 import { genRandomVersionUserAgent, genRandomVersionUserAgentData } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
-import { shuffleArray } from "@/utils/data"
+import { shuffleArray } from "@/utils/base"
 import { HookType } from '@/types/enum'
 
 type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
@@ -90,23 +90,23 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
   if (uaSeed) {
     res.push({
       header: "User-Agent",
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      operation: "set" as any,
       value: genRandomVersionUserAgent(uaSeed, navigator),
     })
     const uaData = await genRandomVersionUserAgentData(uaSeed, navigator)
     uaData.brands && res.push({
       header: "Sec-Ch-Ua",
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      operation: "set" as any,
       value: uaData.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
     })
     uaData.fullVersionList && res.push({
       header: "Sec-Ch-Ua-Full-Version-List",
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      operation: "set" as any,
       value: uaData.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
     })
     uaData.uaFullVersion && res.push({
       header: "Sec-Ch-Ua-Full-Version",
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      operation: "set" as any,
       value: uaData.uaFullVersion,
     })
   }
@@ -144,7 +144,7 @@ const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonl
       }
       res.push({
         header: "Accept-Language",
-        operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+        operation: "set" as any,
         value: [first, ...rest].join(","),
       })
     }
@@ -207,7 +207,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
           excludedTabIds: [...exTabIds],
         },
         action: {
-          type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+          type: "modifyHeaders" as any,
           requestHeaders: rules,
         },
       }]

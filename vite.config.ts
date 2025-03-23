@@ -2,9 +2,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { resolve } from 'path'
 import { crx } from "@crxjs/vite-plugin"
-import { manifest } from './manifest'
+import { firefoxManifest, chromeManifest } from './manifest'
 import { coreBundle } from "./plugins/core-bundle";
 // import { type ManifestV3Export } from "@crxjs/vite-plugin"
+
+const args = process.argv
+const isFirefox = args.includes('--firefox')
+const isNoMinify = args.includes('--no-minify')
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -16,7 +20,10 @@ export default defineConfig({
       params: '_local',
     }),
     react(),
-    crx({manifest} as any),
+    crx({
+      browser: isFirefox ? 'firefox' : 'chrome',
+      manifest: isFirefox ? firefoxManifest : chromeManifest as any,
+    }),
   ],
   resolve: {
     alias: {
@@ -24,7 +31,8 @@ export default defineConfig({
     },
   },
   build: {
-    target: 'es2022'
+    target: 'es2022',
+    minify: isNoMinify ? false : 'esbuild',
   },
   server: { port: 3000, hmr: { port: 3000 } },
 })

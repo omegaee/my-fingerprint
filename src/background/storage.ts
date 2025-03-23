@@ -42,9 +42,6 @@ const genStorageContent = (storage: LocalStorage): LocalStorageContent => ({
  */
 export const genDefaultLocalStorage = (): LocalStorage => {
   const manifest = chrome.runtime.getManifest()
-  const defaultHook: DefaultHookMode = { type: HookType.default }
-  const browserHook: RandomHookMode = { type: HookType.browser }
-
   const sGlobal = genRandomSeed();
   return {
     version: manifest.version,
@@ -56,29 +53,29 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       },
       fp: {
         navigator: {
-          uaVersion: browserHook,
-          language: defaultHook,
-          languages: defaultHook,
-          hardwareConcurrency: defaultHook,
+          uaVersion: { type: HookType.browser },
+          language: { type: HookType.default },
+          languages: { type: HookType.default },
+          hardwareConcurrency: { type: HookType.default },
         },
         screen: {
-          height: defaultHook,
-          width: defaultHook,
-          colorDepth: defaultHook,
-          pixelDepth: defaultHook,
+          height: { type: HookType.default },
+          width: { type: HookType.default },
+          colorDepth: { type: HookType.default },
+          pixelDepth: { type: HookType.default },
         },
         normal: {
-          glVendor: defaultHook,
-          glRenderer: defaultHook,
+          glVendor: { type: HookType.default },
+          glRenderer: { type: HookType.default },
         },
         other: {
-          timezone: defaultHook,
-          canvas: browserHook,
-          audio: defaultHook,
-          webgl: browserHook,
-          webrtc: defaultHook,
-          font: defaultHook,
-          webgpu: defaultHook,
+          timezone: { type: HookType.default },
+          canvas: { type: HookType.browser },
+          audio: { type: HookType.default },
+          webgl: { type: HookType.browser },
+          webrtc: { type: HookType.default },
+          font: { type: HookType.default },
+          webgpu: { type: HookType.default },
         },
       },
       action: {
