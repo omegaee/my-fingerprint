@@ -194,7 +194,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default ||
       conf.fp.normal.glVendor.type !== HookType.default ||
       conf.fp.normal.glRenderer.type !== HookType.default,
-    onEnable: ({ win, conf, getValue }) => {
+    onEnable: ({ win, conf, getValue, random }) => {
       const isHookWebgl = conf.fp.other.webgl.type !== HookType.default
       const isHookInfo = conf.fp.normal.glVendor.type !== HookType.default || conf.fp.normal.glRenderer.type !== HookType.default
 
@@ -223,8 +223,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const res = target.apply(thisArg, args)
             if (res) {
-              const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
-              res.push?.('EXT_' + value[0] + value[1])
+              const value = random('other.webgl', conf.fp.other.webgl)
+              value && res.push?.('EXT_' + value)
             }
             return res;
           }

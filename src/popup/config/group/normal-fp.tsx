@@ -39,7 +39,7 @@ export const NormalFpConfigGroup = memo(() => {
   })
   const fp = config?.fp
 
-  const browser = useMemo(() => getBrowser(navigator.userAgent), [])
+  const browserType = useMemo(() => getBrowser(navigator.userAgent), [])
 
   const glInfo = useMemo(() => {
     const cvs = document.createElement('canvas')
@@ -54,7 +54,7 @@ export const NormalFpConfigGroup = memo(() => {
   }, [])
 
   return fp ? <>
-    {browser === 'chrome' && <SelectFpConfigItem
+    {browserType === 'chrome' && <SelectFpConfigItem
       title={t('item.title.uaVersion')}
       desc={t('item.desc.uaVersion')}
       options={BASE_TYPES}
