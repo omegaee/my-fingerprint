@@ -26,8 +26,10 @@
     "more": "More"
   },
   "label": {
+    "config-file": "Config File",
     "config-import": "Import Config",
-    "config-export": "Export Config"
+    "config-export": "Export Config",
+    "permission": "Permission"
   },
   "type": {
     "default": "Default",
@@ -97,7 +99,8 @@
   },
   "tip": {
     "label": {
-      "not-support-whitelist": "Not Supported"
+      "not-support-whitelist": "Not Supported",
+      "no-auth-required": "No Auth Required"
     },
     "ok": {
       "config-import": "Import Config Success"
@@ -114,7 +117,18 @@
     },
     "if": {
       "remove-parent-domain": "Whether to remove its parent domain",
-      "remove-child-domain": "Whether to remove its child domain"
+      "remove-child-domain": "Whether to remove its child domain",
+      "remove-permission": "Whether to remove its permissions"
+    }
+  },
+  "perm": {
+    "status": {
+      "on": "Granted",
+      "off": "Click to give permission",
+      "unknown": "Not supported by current browser version"
+    },
+    "desc": {
+      "userScripts": "Allow the extension to use the **userScripts** permission to make the extension adaptable to more sites"
     }
   },
   "city": {

@@ -4,13 +4,13 @@ import { coreInject } from "@/core/output";
 // // @ts-ignore
 // import contentSrc from '@/scripts/content?script&module'
 
-export const isRegScript = chrome.userScripts ? true : false
-
 const REG_ID = 'core'
 let mScriptCode: string | undefined = undefined
 
+export const isRegScript = () => chrome.userScripts ? true : false
+
 export const injectScript = async (tabId: number, storage: LocalStorage) => {
-  if (isRegScript || !storage.config.enable) return;
+  if (isRegScript() || !storage.config.enable) return;
   /* 注入脚本 */
   await chrome.scripting.executeScript({
     target: {
@@ -36,7 +36,7 @@ const getRegScriptCode = (storage: LocalStorage) => {
  * 注册脚本
  */
 export const reRegisterScript = async () => {
-  if (!isRegScript) return;
+  if (!isRegScript()) return;
 
   const [storage] = await getLocalStorage()
 
