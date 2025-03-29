@@ -26,10 +26,12 @@ const VALUES = {
     'webNavigation',
     'scripting',
     'declarativeNetRequest',
-  ],
+    'clipboardRead',
+    'clipboardWrite',
+  ] as chrome.runtime.ManifestPermissions[],
   optional_permissions: [
-    "userScripts"
-  ],
+    "userScripts",
+  ] as chrome.runtime.ManifestPermissions[],
   background: "src/background/index.ts",
   content: {
     matches: ["<all_urls>"],

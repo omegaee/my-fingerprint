@@ -29,6 +29,8 @@
     "config-file": "Config File",
     "config-import": "Import Config",
     "config-export": "Export Config",
+    "clipboard-export": "Export To Clipboard",
+    "clipboard-import": "Import From Clipboard",
     "permission": "Permission"
   },
   "type": {
@@ -100,10 +102,12 @@
   "tip": {
     "label": {
       "not-support-whitelist": "Not Supported",
-      "no-auth-required": "No Auth Required"
+      "no-auth-required": "No Auth Required",
+      "json": "Json Format"
     },
     "ok": {
-      "config-import": "Import Config Success"
+      "config-import": "Import Config Success",
+      "config-export": "Export Config Success"
     },
     "err": {
       "input-hostname": "Please enter the correct domain name",
@@ -112,13 +116,15 @@
       "parent-domain-exist": "Parent domain already exists",
       "config-parse": "Config Parse Error",
       "config-import": "Import Config Error",
+      "config-export": "Export Config Error",
       "config-unloaded": "Config Unloaded",
       "import-empty": "Import Config is Empty"
     },
     "if": {
       "remove-parent-domain": "Whether to remove its parent domain",
       "remove-child-domain": "Whether to remove its child domain",
-      "remove-permission": "Whether to remove its permissions"
+      "remove-permission": "Whether to remove its permissions",
+      "config-import": "Whether to overwrite the current config"
     }
   },
   "perm": {

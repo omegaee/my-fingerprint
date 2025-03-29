@@ -18,7 +18,7 @@ import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
 import { useShallow } from "zustand/shallow";
 
-function App() {
+function Application() {
   const [t, i18n] = useTranslation()
   const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
@@ -197,4 +197,4 @@ function App() {
   )
 }
 
-export default App
+export default Application
