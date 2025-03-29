@@ -1,6 +1,6 @@
-import { genRandomVersionUserAgent, genRandomVersionUserAgentData } from "@/utils/equipment"
+import { genRandomVersionUserAgent, genRandomVersionUserAgentData, getBrowser } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
-import { shuffleArray } from "@/utils/data"
+import { shuffleArray } from "@/utils/base"
 import { HookType } from '@/types/enum'
 
 type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
@@ -15,6 +15,7 @@ const RAW = {
 }
 
 const MEMORY = {
+  browser: getBrowser(navigator.userAgent),
   ua: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   lang: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   exIds: undefined as Set<number> | undefined,
@@ -90,23 +91,23 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
   if (uaSeed) {
     res.push({
       header: "User-Agent",
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      operation: "set" as any,
       value: genRandomVersionUserAgent(uaSeed, navigator),
     })
     const uaData = await genRandomVersionUserAgentData(uaSeed, navigator)
     uaData.brands && res.push({
       header: "Sec-Ch-Ua",
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      operation: "set" as any,
       value: uaData.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
     })
     uaData.fullVersionList && res.push({
       header: "Sec-Ch-Ua-Full-Version-List",
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      operation: "set" as any,
       value: uaData.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
     })
     uaData.uaFullVersion && res.push({
       header: "Sec-Ch-Ua-Full-Version",
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+      operation: "set" as any,
       value: uaData.uaFullVersion,
     })
   }
@@ -144,7 +145,7 @@ const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonl
       }
       res.push({
         header: "Accept-Language",
-        operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+        operation: "set" as any,
         value: [first, ...rest].join(","),
       })
     }
@@ -184,7 +185,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
 
   const singal: RuleSignal = { isUpdate: false }
 
-  const uaRules = await genUaRules(storage, singal)
+  const uaRules = MEMORY.browser === 'firefox' ? [] : await genUaRules(storage, singal)
   const langRules = genLanguageRules(storage, singal)
   const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
   checkWhitelistDiff(storage, singal)
@@ -207,7 +208,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
           excludedTabIds: [...exTabIds],
         },
         action: {
-          type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+          type: "modifyHeaders" as any,
           requestHeaders: rules,
         },
       }]

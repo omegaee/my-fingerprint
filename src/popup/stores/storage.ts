@@ -6,7 +6,7 @@ import { create } from "zustand"
 
 type State = {
   storage?: LocalStorage
-  config?: LocalStorageConfig
+  config?: LocalStorageConfig  // Proxy
   whitelist?: string[]
 }
 
@@ -21,7 +21,7 @@ type Actions = {
 export const useStorageStore = create<State & Actions>(((set, get) => {
 
   const saveStorage = debounce(() => {
-    const config = get().config
+    const config = get().storage?.config
     if (config) {
       sendRuntimeSetConfig(config)
     }
@@ -40,12 +40,9 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
 
   const loadStorage = debouncedAsync(async () => {
     const storage = await chrome.storage.local.get() as LocalStorage
-    if (storage?.config) {
-      storage.config = proxyConfig(storage.config)
-    }
     set({
       storage,
-      config: storage.config,
+      config: proxyConfig(storage.config),
       whitelist: storage.whitelist,
     })
   })
@@ -65,13 +62,13 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
       }, {} as LocalStorageConfig)
 
       if (Object.keys(_config).length) {
-        storage.config = proxyConfig(deepmerge(
+        storage.config = deepmerge(
           storage.config,
           _config,
           { arrayMerge: (_, sourceArray, __) => sourceArray, },
-        ))
+        )
         saveStorage()
-        set({ config: storage.config })
+        set({ config: proxyConfig(storage.config) })
         isImported = true
       }
     }

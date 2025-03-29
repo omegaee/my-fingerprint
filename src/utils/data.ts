@@ -1,47 +1,4 @@
-import { hashNumberFromString } from "./base"
-
-/**
- * 线性同余，根据seed产生随机数
- */
-export const seededRandom = function (seed: number | string, max: number = 1, min: number = 0): number {
-  if (typeof seed === 'string') {
-    seed = hashNumberFromString(seed)
-  }
-  const mod = 233280;
-  seed = (seed * 9301 + 49297) % mod;
-  if (seed < 0) seed += mod; // 确保 seed 为正数
-  const rnd = seed / mod;
-  return min + rnd * (max - min);
-}
-
-/**
- * 根据种子随机获取数组中的元素
- */
-export const seededEl = <T>(arr: Readonly<T[]>, seed: number): T => {
-  return arr[seed % arr.length];
-}
-
-/**
- * 数组洗牌
- */
-export const shuffleArray = <T>(array: Readonly<T[]>, seed: number): T[] => {
-  const _array = [...array]
-  let m = _array.length, t: T, i: number;
-
-  const random = () => {
-    const x = Math.sin(seed++) * 10000;
-    return x - Math.floor(x);
-  }
-
-  while (m) {
-    i = Math.floor(random() * m--);
-    t = _array[m];
-    _array[m] = _array[i];
-    _array[i] = t;
-  }
-
-  return _array;
-}
+import { hashNumberFromString, seededRandom } from "./base"
 
 /**
  * 随机canvas噪音

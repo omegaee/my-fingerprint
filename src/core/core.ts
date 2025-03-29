@@ -3,10 +3,8 @@ import {
   randomCanvasNoise,
   randomFontNoise,
   randomWebglNoise,
-  seededEl,
-  seededRandom,
-  shuffleArray,
 } from "../utils/data";
+import { shuffleArray, seededEl, seededRandom } from "@/utils/base";
 import { debounce, debounceByFirstArg } from "../utils/timer";
 import { MContentType, sendContentMessage } from "@/message/content";
 import { genRandomSeed } from "../utils/base";
@@ -19,9 +17,6 @@ export type HookTask = {
 }
 
 export interface RawHookObject {
-  // navigatorDescriptor: PropertyDescriptor
-  // screenDescriptor: PropertyDescriptor
-
   getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
 }
 

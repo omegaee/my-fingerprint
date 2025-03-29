@@ -1,10 +1,15 @@
 import { subversionRandom } from "./base"
 
-const uaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( \((?<engineDetails>.+?)\))?( (?<extensions>.+?))?$/
-const firefoxUaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( (?<extensions>.+?))?/
-
 const MEMORY = {
   uaSeries: new Map<string, Record<'ua' | 'app', string>>(),
+}
+
+export const getBrowser = (ua: string): BrowserType | undefined => {
+  if (ua.includes("Chrome")){
+    return 'chrome'
+  } else if (ua.includes("Firefox")){
+    return 'firefox'
+  }
 }
 
 export class UAItem {
@@ -35,6 +40,9 @@ export class UAItem {
 }
 
 export class UAParser {
+  public static uaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\)( (?<engine>.+?))?( \((?<engineDetails>.+?)\))?( (?<extensions>.+?))?$/
+  public static firefoxUaRule = /^(?<product>.+?) \((?<systemInfo>.+?)\) (?<extensions>.+?)$/
+
   private type: 'base' | 'firefox'
 
   public product: UAItem
@@ -47,10 +55,10 @@ export class UAParser {
     let groups
     if (ua.includes('Firefox')) {
       this.type = 'firefox'
-      groups = ua.match(firefoxUaRule)?.groups
+      groups = ua.match(UAParser.firefoxUaRule)?.groups
     } else {
       this.type = 'base'
-      groups = ua.match(uaRule)?.groups
+      groups = ua.match(UAParser.uaRule)?.groups
     }
 
     if (!groups) {

@@ -30,7 +30,9 @@ chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
     reason === chrome.runtime.OnInstalledReason.INSTALL ||
     reason === chrome.runtime.OnInstalledReason.UPDATE
   ) {
-    initLocalStorage(previousVersion)
+    initLocalStorage(previousVersion).then(() => {
+      if ((isRegScript())) reRegisterScript();
+    })
     reBrowserSeed()
   }
 });
@@ -39,7 +41,9 @@ chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-  initLocalStorage(chrome.runtime.getManifest().version)
+  initLocalStorage(chrome.runtime.getManifest().version).then(() => {
+    if (isRegScript()) reRegisterScript();
+  })
   reBrowserSeed()
 });
 
@@ -50,7 +54,7 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
   switch (msg.type) {
     case MRuntimeType.SetConfig: {
       updateLocalConfig(msg.config)
-      if (isRegScript) {
+      if (isRegScript()) {
         reRegisterScript();
       }
       break
@@ -70,7 +74,7 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
     }
     case MRuntimeType.UpdateWhitelist: {
       updateLocalWhitelist(msg.data)
-      if (isRegScript) {
+      if (isRegScript()) {
         reRegisterScript();
       }
       break
@@ -91,7 +95,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
     const [storage, { match }] = await getLocalStorage()
 
-    if (!isRegScript) {
+    if (!isRegScript()) {
       injectScript(tabId, storage)
     }
 
@@ -116,13 +120,13 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   removeBadge(tabId)
 })
 
-// /**
-//  * 监听导航
-//  */
-// chrome.webNavigation.onCommitted.addListener((details) => {
-// })
+// chrome.webNavigation.onCommitted.addListener((details) => {})
 
-if (isRegScript) {
-  /* 注册脚本 */
-  reRegisterScript();
-}
+/**
+ * 监听权限添加
+ */
+chrome.permissions.onAdded.addListener((perms) => {
+  if (perms.permissions?.includes('userScripts')) {
+    reRegisterScript()
+  }
+})

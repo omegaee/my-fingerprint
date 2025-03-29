@@ -56,7 +56,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'hook navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator) || conf.fp.other.webrtc.type !== HookType.default,
-    onEnable: ({ win, conf, getSeed, getValue }) => {
+    onEnable: ({ win, conf, info, getSeed, getValue }) => {
       const _navigator = Object.getOwnPropertyDescriptor(win, "navigator")?.get;
       _navigator && Object.defineProperty(win, 'navigator', {
         get: new Proxy(_navigator, {
@@ -67,6 +67,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                 switch (key) {
                   /* ua */
                   case 'userAgent': {
+                    if (info.browser === 'firefox') break;
                     const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)
@@ -75,6 +76,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     break
                   }
                   case 'appVersion': {
+                    if (info.browser === 'firefox') break;
                     const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)
@@ -83,6 +85,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
                     break
                   }
                   case 'userAgentData' as any: {
+                    if (info.browser === 'firefox') break;
                     const seed = getSeed(conf.fp.navigator.uaVersion.type)
                     if (seed !== null) {
                       recordHook(key)
@@ -191,7 +194,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default ||
       conf.fp.normal.glVendor.type !== HookType.default ||
       conf.fp.normal.glRenderer.type !== HookType.default,
-    onEnable: ({ win, conf, getValue }) => {
+    onEnable: ({ win, conf, getValue, random }) => {
       const isHookWebgl = conf.fp.other.webgl.type !== HookType.default
       const isHookInfo = conf.fp.normal.glVendor.type !== HookType.default || conf.fp.normal.glRenderer.type !== HookType.default
 
@@ -220,8 +223,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const res = target.apply(thisArg, args)
             if (res) {
-              const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
-              res.push?.('EXT_' + value[0] + value[1])
+              const value = random('other.webgl', conf.fp.other.webgl)
+              value && res.push?.('EXT_' + value)
             }
             return res;
           }

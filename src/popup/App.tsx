@@ -18,17 +18,15 @@ import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
 import { useShallow } from "zustand/shallow";
 
-function App() {
+function Application() {
   const [t, i18n] = useTranslation()
   const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
   const [hostname, setHostname] = useState<string>()
-
   const [hookRecords, setHookRecords] = useState<Partial<Record<string, number>>>()
-  // const [isWhitelist, setIsWhitelist] = useState(false)
   const [whitelistMode, setWhitelistMode] = useState<'none' | 'self' | 'sub'>('none')
-
   const [hasNewVersion, setHasNewVersion] = useState(false)
+  const [moreBadge, setMoreBadge] = useState(false)
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -43,6 +41,16 @@ function App() {
       deleteWhitelist: state.deleteWhitelist,
     }
   }))
+
+  useEffect(() => {
+    const opts = chrome.runtime.getManifest().optional_permissions
+    if (!opts?.length) return;
+    chrome.permissions.contains({ permissions: opts })
+      .then((res) => {
+        setMoreBadge(!res)
+      })
+      .catch(() => { })
+  }, [])
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
@@ -122,7 +130,7 @@ function App() {
         children: <WhitelistView msgApi={messageApi} />,
       },
       {
-        label: t('e.more'),
+        label: moreBadge ? <Badge dot>{t('e.more')}</Badge> : t('e.more'),
         // icon: <MoreOutlined />,
         children: <MoreView msgApi={messageApi} />,
       }
@@ -189,4 +197,4 @@ function App() {
   )
 }
 
-export default App
+export default Application

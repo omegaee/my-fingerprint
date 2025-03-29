@@ -28,7 +28,8 @@ export const getBadgeContent = (records: Partial<Record<HookFingerprintKey, numb
  * 设置白名单标识
  */
 export const setBadgeWhitelist = (tabId: number) => {
-  chrome.action.setBadgeText({ tabId, text: ' ' }).catch(() => { })
+  chrome.action.setBadgeText({ tabId, text: '-' }).catch(() => { })
+  chrome.action.setBadgeTextColor({ tabId, color: BADGE_COLOR.whitelist }).catch(() => { })
   chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_COLOR.whitelist }).catch(() => { })
 }
 

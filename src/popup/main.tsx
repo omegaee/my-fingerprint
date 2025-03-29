@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
+import Application from './App'
 import './index.css'
 import '@/locales'
-import { ConfigProvider, theme, type ThemeConfig } from 'antd'
+import { App, ConfigProvider, theme, type ThemeConfig } from 'antd'
 
 const darkTheme: ThemeConfig = {
   cssVar: true,
@@ -37,7 +37,9 @@ const isDarkTheme = function () {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ConfigProvider theme={isDarkTheme() ? darkTheme : lightTheme}>
-      <App />
+      <App>
+        <Application />
+      </App>
     </ConfigProvider>
   </React.StrictMode>,
 )

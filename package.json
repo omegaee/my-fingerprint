@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "dev:firefox": "vite build -- --firefox --no-minify",
+    "build:firefox": "tsc && vite build -- --firefox"
   },
   "dependencies": {
     "antd": "^5.18.3",
