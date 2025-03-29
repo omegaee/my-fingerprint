@@ -1,4 +1,4 @@
-import { Button, Popconfirm, Popover } from "antd";
+import { Badge, Button, Popconfirm, Popover } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -82,6 +82,29 @@ const PermissionItem = ({
     onClick={status === 'off' ? switchAuthStatus : undefined}
     children={name} />
 
+  let content: JSX.Element;
+  switch (status) {
+    case 'on':
+      content = <Popconfirm
+        title={t('tip.if.remove-permission')}
+        okText={t('g.confirm')}
+        cancelText={t('g.cancel')}
+        open={clicked}
+        onOpenChange={(open: boolean) => {
+          setHovered(false);
+          setClicked(open);
+        }}
+        onConfirm={switchAuthStatus}>{btn}
+      </Popconfirm>
+      break;
+    case "off":
+      content = <Badge dot>{btn}</Badge>
+      break;
+    case "unknown":
+      content = btn
+      break;
+  }
+
   return <Popover
     content={<div className="flex flex-col justify-center items-center">
       <div>{t('perm.status.' + status)}</div>
@@ -92,18 +115,8 @@ const PermissionItem = ({
     onOpenChange={(open: boolean) => {
       setHovered(open);
       setClicked(false);
-    }}>{status === 'on' ?
-      <Popconfirm
-        title={t('tip.if.remove-permission')}
-        okText={t('g.confirm')}
-        cancelText={t('g.cancel')}
-        open={clicked}
-        onOpenChange={(open: boolean) => {
-          setHovered(false);
-          setClicked(open);
-        }}
-        onConfirm={switchAuthStatus}>{btn}
-      </Popconfirm> : btn}
+    }}>
+    {content}
   </Popover>
 }
 
