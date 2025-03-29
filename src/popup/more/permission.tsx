@@ -30,10 +30,10 @@ export const PermissionView = ({ className }: {
     }
 
     Promise.all(promises).then((data) => {
-      const res = opts.reduce((prev, value, index) => {
-        prev[value] = data[index]
-        return prev
-      }, {} as Record<string, PermissionStatus>)
+      const res: Record<string, PermissionStatus> = {}
+      for (let i = 0; i < opts.length; ++i) {
+        res[opts[i]] = data[i]
+      }
       setPerms(res)
     })
   }, [version])
