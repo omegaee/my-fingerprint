@@ -1,7 +1,6 @@
 import { sendRuntimeSetConfig, sendRuntimeUpdateWhiteList } from "@/message/runtime"
 import { deepProxy, selectChildDomains, tryUrl } from "@/utils/base"
 import { debounce, debouncedAsync } from "@/utils/timer"
-import deepmerge from "deepmerge"
 import { create } from "zustand"
 
 type State = {
@@ -55,19 +54,9 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
 
     /* 导入配置 */
     if (ss.config) {
-      const _config = Object.keys(ss.config).filter(key => key in storage.config).reduce((acc, key) => {
-        // @ts-ignore
-        acc[key] = ss.config[key]
-        return acc
-      }, {} as LocalStorageConfig)
-
-      if (Object.keys(_config).length) {
-        storage.config = deepmerge(
-          storage.config,
-          _config,
-          { arrayMerge: (_, sourceArray, __) => sourceArray, },
-        )
-        saveStorage()
+      const _config = await sendRuntimeSetConfig(ss.config, true) as LocalStorageConfig | undefined
+      if (_config){
+        storage.config = _config
         set({ config: proxyConfig(storage.config) })
         isImported = true
       }

@@ -25,14 +25,12 @@ const getNewVersion = async () => {
 /**
  * 初次启动扩展时触发（浏览器更新、扩展更新触发）
  */
-chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
+chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (
     reason === chrome.runtime.OnInstalledReason.INSTALL ||
     reason === chrome.runtime.OnInstalledReason.UPDATE
   ) {
-    initLocalStorage(previousVersion).then(() => {
-      if ((isRegScript())) reRegisterScript();
-    })
+    initLocalStorage().then(() => reRegisterScript())
     reBrowserSeed()
   }
 });
@@ -41,9 +39,7 @@ chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-  initLocalStorage(chrome.runtime.getManifest().version).then(() => {
-    if (isRegScript()) reRegisterScript();
-  })
+  initLocalStorage().then(() => reRegisterScript())
   reBrowserSeed()
 });
 
@@ -53,11 +49,11 @@ chrome.runtime.onStartup.addListener(() => {
 chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender, sendResponse: MRuntimeResponseCall) => {
   switch (msg.type) {
     case MRuntimeType.SetConfig: {
-      updateLocalConfig(msg.config)
-      if (isRegScript()) {
-        reRegisterScript();
-      }
-      break
+      updateLocalConfig(msg.config).then((data) => {
+        reRegisterScript()
+        if (msg.result) sendResponse(data);
+      })
+      return msg.result
     }
     case MRuntimeType.GetNotice: {
       sendResponse(hookRecords.get(msg.tabId));
@@ -74,9 +70,7 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
     }
     case MRuntimeType.UpdateWhitelist: {
       updateLocalWhitelist(msg.data)
-      if (isRegScript()) {
-        reRegisterScript();
-      }
+      reRegisterScript()
       break
     }
     case MRuntimeType.GetNewVersion: {

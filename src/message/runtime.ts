@@ -14,6 +14,7 @@ export type MRuntimeRequest = {
   [MRuntimeType.SetConfig]: {
     type: MRuntimeType.SetConfig,
     config: DeepPartial<LocalStorageConfig>,
+    result?: boolean
   },
   [MRuntimeType.GetNotice]: {
     type: MRuntimeType.GetNotice,
@@ -44,6 +45,7 @@ export type MRuntimeRequest = {
 /// Response Type
 ///
 export type MRuntimeResponse = {
+  [MRuntimeType.SetConfig]: LocalStorageConfig | undefined,
   [MRuntimeType.GetNotice]: Partial<Record<string, number>> | undefined,
   [MRuntimeType.GetNewVersion]: string | undefined,
 } & {
@@ -62,10 +64,11 @@ const sendMessage = <T extends MRuntimeType>(message: MRuntimeRequest[T]) => {
 /**
  * 修改配置
  */
-export const sendRuntimeSetConfig = (config: DeepPartial<LocalStorageConfig>) => {
+export const sendRuntimeSetConfig = (config: DeepPartial<LocalStorageConfig>, result?: boolean) => {
   return sendMessage<MRuntimeType.SetConfig>({
     type: MRuntimeType.SetConfig,
     config,
+    result,
   })
 }
 

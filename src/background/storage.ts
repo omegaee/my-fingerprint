@@ -1,6 +1,5 @@
-import { compareVersions, genRandomSeed, existParentDomain } from "@/utils/base";
+import { genRandomSeed, existParentDomain } from "@/utils/base";
 import { debounce, debouncedAsync } from "@/utils/timer";
-import deepmerge from "deepmerge";
 import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
 
@@ -92,19 +91,55 @@ export const genDefaultLocalStorage = (): LocalStorage => {
 }
 
 /**
+ * 合并存储（dst覆盖src，合并到dst）
+ * 会修改dst
+ */
+const mergeStorage = (src: LocalStorageConfig, dst?: DeepPartial<LocalStorageConfig>): LocalStorageConfig => {
+  if (!dst) return src;
+  for (const key in dst) {
+    if (key === 'value') continue;
+    // @ts-ignore
+    if (!(key in src)) {
+      // @ts-ignore
+      delete dst[key];
+    }
+  }
+  for (const key in src) {
+    // @ts-ignore
+    const srcValue = src[key];
+    if (key in dst) {
+      if (key === 'value') continue;
+      if (typeof srcValue === 'object' && !Array.isArray(srcValue)) {
+        // @ts-ignore
+        mergeStorage(srcValue, dst[key]);
+      }
+    } else {
+      // @ts-ignore
+      dst[key] = srcValue;
+    }
+  }
+  // @ts-ignore
+  return dst;
+}
+
+/**
  * 初始化默认配置
  */
-export const initLocalStorage = debouncedAsync(async (previousVersion?: string) => {
-  previousVersion = previousVersion ?? chrome.runtime.getManifest().version
-
-  const data = await chrome.storage.local.get() as LocalStorage
-
-  let _storage: LocalStorage
-  if (!data.version || compareVersions(previousVersion, '2.4.0') < 0) {
-    await chrome.storage.local.clear()
-    _storage = genDefaultLocalStorage()
-  } else {
-    _storage = deepmerge(genDefaultLocalStorage(), data)
+export const initLocalStorage = debouncedAsync(async () => {
+  /* init config */
+  const _curr = await chrome.storage.local.get() as LocalStorage
+  let _new = genDefaultLocalStorage()
+  const _config = mergeStorage(_new.config, _curr.config)
+  /* clear */
+  const rem = Object.keys(_curr).filter((key) => !(key in _new))
+  if (rem.length) {
+    chrome.storage.local.remove(rem)
+  }
+  /* set */
+  const _storage: LocalStorage = {
+    version: _new.version,
+    config: _config,
+    whitelist: _curr.whitelist ?? _new.whitelist,
   }
   mContent = genStorageContent(_storage)
   chrome.storage.local.set(_storage).then(() => reRequestHeader())
@@ -145,13 +180,10 @@ export const saveLocalWhitelist = debounce((whitelist: string[] | Set<string>) =
  */
 export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>) => {
   const [storage] = await getLocalStorage()
-  storage.config = deepmerge<LocalStorageConfig, DeepPartial<LocalStorageConfig>>(
-    storage.config,
-    config,
-    { arrayMerge: (_, sourceArray, __) => sourceArray },
-  )
+  storage.config = mergeStorage(storage.config, config)
   saveLocalConfig(storage.config)
   reRequestHeader()
+  return storage.config
 }
 
 /**
@@ -163,6 +195,7 @@ export const updateLocalWhitelist = async (data: { add?: string[], del?: string[
   data.add?.length && data.add.forEach(v => add(v))
   saveLocalWhitelist(storage.whitelist)
   reRequestHeader()
+  return storage.whitelist
 }
 
 /**
