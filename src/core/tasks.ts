@@ -54,74 +54,167 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook navigator': {
+  // 'hook navigator': {
+  //   condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator) || conf.fp.other.webrtc.type !== HookType.default,
+  //   onEnable: ({ win, conf, info, getSeed, getValue }) => {
+  //     const _navigator = Object.getOwnPropertyDescriptor(win, "navigator")?.get;
+  //     _navigator && Object.defineProperty(win, 'navigator', {
+  //       get: new Proxy(_navigator, {
+  //         apply: (target: any, thisArg, args) => {
+  //           const result = _navigator.call(thisArg)
+  //           return new Proxy(result, {
+  //             get: (target: any, key: keyof Navigator | (string & {})) => {
+  //               switch (key) {
+  //                 /* ua */
+  //                 case 'userAgent': {
+  //                   if (info.browser === 'firefox') break;
+  //                   const seed = getSeed(conf.fp.navigator.uaVersion.type)
+  //                   if (seed !== null) {
+  //                     recordHook(key)
+  //                     return genRandomVersionUserAgent(seed, target)
+  //                   }
+  //                   break
+  //                 }
+  //                 case 'appVersion': {
+  //                   if (info.browser === 'firefox') break;
+  //                   const seed = getSeed(conf.fp.navigator.uaVersion.type)
+  //                   if (seed !== null) {
+  //                     recordHook(key)
+  //                     return genRandomVersionUserAgent(seed, target, true)
+  //                   }
+  //                   break
+  //                 }
+  //                 case 'userAgentData' as any: {
+  //                   if (info.browser === 'firefox') break;
+  //                   const seed = getSeed(conf.fp.navigator.uaVersion.type)
+  //                   if (seed !== null) {
+  //                     recordHook(key)
+  //                     return proxyUserAgentData(seed, target[key])
+  //                   }
+  //                   break
+  //                 }
+  //                 /* webrtc */
+  //                 case 'getUserMedia':
+  //                 case 'mozGetUserMedia':
+  //                 case 'webkitGetUserMedia': {
+  //                   if (conf.fp.other.webrtc.type === HookType.disabled) return undefined;
+  //                   break
+  //                 }
+  //                 case 'mediaDevices': {
+  //                   if (conf.fp.other.webrtc.type === HookType.disabled) return null;
+  //                   break
+  //                 }
+  //                 case 'language':
+  //                 case 'languages':
+  //                 case 'hardwareConcurrency': {
+  //                   const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
+  //                   const _key: any = 'navigator.' + key
+  //                   const value = getValue(_key, mode)
+  //                   if (value !== null) return value;
+  //                   break
+  //                 }
+  //               }
+  //               const value = target[key]
+  //               return typeof value === 'function' ? value.bind(target) : value
+  //             }
+  //           })
+  //         },
+  //       })
+  //     });
+
+  //   },
+  // },
+
+  'new hook navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator) || conf.fp.other.webrtc.type !== HookType.default,
     onEnable: ({ win, conf, info, getSeed, getValue }) => {
-      const _navigator = Object.getOwnPropertyDescriptor(win, "navigator")?.get;
-      _navigator && Object.defineProperty(win, 'navigator', {
-        get: new Proxy(_navigator, {
-          apply: (target: any, thisArg, args) => {
-            const result = _navigator.call(thisArg)
-            return new Proxy(result, {
-              get: (target: any, key: keyof Navigator | (string & {})) => {
-                switch (key) {
-                  /* ua */
-                  case 'userAgent': {
-                    if (info.browser === 'firefox') break;
-                    const seed = getSeed(conf.fp.navigator.uaVersion.type)
-                    if (seed !== null) {
-                      recordHook(key)
-                      return genRandomVersionUserAgent(seed, target)
-                    }
-                    break
-                  }
-                  case 'appVersion': {
-                    if (info.browser === 'firefox') break;
-                    const seed = getSeed(conf.fp.navigator.uaVersion.type)
-                    if (seed !== null) {
-                      recordHook(key)
-                      return genRandomVersionUserAgent(seed, target, true)
-                    }
-                    break
-                  }
-                  case 'userAgentData' as any: {
-                    if (info.browser === 'firefox') break;
-                    const seed = getSeed(conf.fp.navigator.uaVersion.type)
-                    if (seed !== null) {
-                      recordHook(key)
-                      return proxyUserAgentData(seed, target[key])
-                    }
-                    break
-                  }
-                  /* webrtc */
-                  case 'getUserMedia':
-                  case 'mozGetUserMedia':
-                  case 'webkitGetUserMedia': {
-                    if (conf.fp.other.webrtc.type === HookType.disabled) return undefined;
-                    break
-                  }
-                  case 'mediaDevices': {
-                    if (conf.fp.other.webrtc.type === HookType.disabled) return null;
-                    break
-                  }
-                  case 'language':
-                  case 'languages':
-                  case 'hardwareConcurrency': {
-                    const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
-                    const _key: any = 'navigator.' + key
-                    const value = getValue(_key, mode)
-                    if (value !== null) return value;
-                    break
-                  }
-                }
-                const value = target[key]
-                return typeof value === 'function' ? value.bind(target) : value
-              }
-            })
-          },
-        })
-      });
+      const desc = Object.getOwnPropertyDescriptors(win.Navigator.prototype)
+      if (!desc) return;
 
+      const _userAgent = desc.userAgent?.get
+      const _appVersion = desc.appVersion?.get
+      if (_userAgent && _appVersion) {
+        /* ua */
+        Object.defineProperty(win.navigator, "userAgent", {
+          get() {
+            if (info.browser === 'firefox') return _userAgent.call(this);
+            const seed = getSeed(conf.fp.navigator.uaVersion.type)
+            if (seed !== null) {
+              recordHook('userAgent')
+              return genRandomVersionUserAgent(seed, {
+                userAgent: _userAgent.call(this),
+                appVersion: _appVersion.call(this)
+              })
+            }
+            return _userAgent.call(this)
+          }
+        })
+        /* appVersion */
+        Object.defineProperty(win.navigator, "appVersion", {
+          get() {
+            if (info.browser === 'firefox') return _appVersion.call(this);
+            const seed = getSeed(conf.fp.navigator.uaVersion.type)
+            if (seed !== null) {
+              recordHook('appVersion')
+              return genRandomVersionUserAgent(seed, {
+                userAgent: _userAgent.call(this),
+                appVersion: _appVersion.call(this)
+              }, true)
+            }
+            return _appVersion.call(this)
+          }
+        })
+      }
+
+      /* userAgentData */
+      const _userAgentData = desc.userAgentData?.get
+      _userAgentData && Object.defineProperty(win.navigator, "userAgentData", {
+        get: new Proxy(_userAgentData, {
+          apply: (target, thisArg, args: any) => {
+            if (info.browser === 'firefox') return _userAgentData.call(thisArg);
+            const seed = getSeed(conf.fp.navigator.uaVersion.type)
+            if (seed !== null) {
+              recordHook('userAgent')
+              // Reflect.apply(target, thisArg, args)
+              return proxyUserAgentData(seed, target.apply(thisArg, args))
+            }
+            return _userAgentData.call(thisArg)
+          }
+        })
+      })
+
+      /* Simple hook */
+      const hookProp = (key: keyof Navigator) => {
+        const getter: (() => any) | undefined = desc[key]?.get
+        if (!getter) return;
+        Object.defineProperty(win.navigator, key, {
+          get() {
+            const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
+            const _key: any = 'navigator.' + key
+            const value = getValue(_key, mode)
+            if (value !== null) return value;
+            return getter.call(this)
+          }
+        })
+      }
+      hookProp('language')
+      hookProp('languages')
+      hookProp('hardwareConcurrency')
+
+      /* webrtc */
+      if (conf.fp.other.webrtc.type === HookType.disabled) {
+        // @ts-ignore
+        if (win.Navigator.prototype.getUserMedia) win.Navigator.prototype.getUserMedia = undefined;
+        // @ts-ignore
+        if (win.Navigator.prototype.mozGetUserMedia) win.Navigator.prototype.mozGetUserMedia = undefined;
+        // @ts-ignore
+        if (win.Navigator.prototype.webkitGetUserMedia) win.Navigator.prototype.webkitGetUserMedia = undefined;
+        // mediaDevices
+        const _mediaDevices = desc.mediaDevices?.get
+        _mediaDevices && Object.defineProperty(win.navigator, "mediaDevices", {
+          get() { return null }
+        })
+      }
     },
   },
 
@@ -266,6 +359,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onEnable: ({ win, conf, rawObjects, getValue }) => {
       const _toDataURL = win.HTMLCanvasElement.prototype.toDataURL
       win.HTMLCanvasElement.prototype.toDataURL = new Proxy(_toDataURL, {
+        get: (target, key, receiver) => {
+          if (key === 'toString') return _toDataURL.toString.bind(_toDataURL)
+          return Reflect.get(target, key, receiver)
+        },
         apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
           /* 2d */
           if (conf.fp.other.canvas.type !== HookType.default) {
