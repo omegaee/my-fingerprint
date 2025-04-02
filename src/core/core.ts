@@ -116,6 +116,9 @@ export class FingerprintHandler {
   public conf: LocalStorageConfig
 
   public rawObjects: Partial<RawHookObject> = {}
+  public symbol = {
+    own: Symbol('OwnProperty'),
+  }
 
   public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
     if (!win) throw new Error('win is required');

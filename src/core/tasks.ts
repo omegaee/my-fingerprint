@@ -1,7 +1,7 @@
 import { HookType } from '@/types/enum'
 import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { HookTask, recordHook } from "./core";
-import { drawNoise, drawNoiseToWebgl, proxyUserAgentData } from './utils';
+import { drawNoise, drawNoiseToWebgl, getOwnProperties, proxyUserAgentData } from './utils';
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
@@ -56,9 +56,12 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator),
-    onEnable: ({ win, conf, info, getSeed, getValue }) => {
+    onEnable: ({ win, conf, info, symbol, getSeed, getValue }) => {
       const desc = Object.getOwnPropertyDescriptors(win.Navigator.prototype)
       if (!desc) return;
+
+      // @ts-ignore
+      win.navigator[symbol.own] = getOwnProperties(win.navigator)
 
       const _userAgent = desc.userAgent?.get
       const _appVersion = desc.appVersion?.get
@@ -136,6 +139,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onEnable: ({ win, conf, getValue }) => {
       const desc = Object.getOwnPropertyDescriptors(win.Screen.prototype)
       if (!desc) return;
+
+      // @ts-ignore
+      win.screen[symbol.own] = getOwnProperties(win.screen)
 
       /* Simple hook */
       const hookProp = (key: keyof Screen) => {
@@ -444,7 +450,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       // @ts-ignore
       if (win.Navigator.prototype.mozGetUserMedia) win.Navigator.prototype.mozGetUserMedia = undefined;
       // @ts-ignore
-      if (win.Navigator.prototype.webkitGetUserMedia) win.Navigator.prototype.webkitGetUserMedia = undefined;      
+      if (win.Navigator.prototype.webkitGetUserMedia) win.Navigator.prototype.webkitGetUserMedia = undefined;
       // @ts-ignore
       if (win.RTCDataChannel) win.RTCDataChannel = undefined;
       // @ts-ignore
@@ -637,8 +643,44 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         } catch (e) { }
       }
     },
-  }
+  },
 
+  'OwnProperties': {
+    onEnable: ({ win, symbol }) => {
+      {
+        /* multi */
+        const useHandler = (type: keyof HookOwnProperties) => ({
+          apply(target: any, self: any, args: any[]) {
+            const src = args[0]
+            if (src != null && typeof src === 'object') {
+              const own: HookOwnProperties | undefined = src[symbol.own]
+              if (own) return own[type];
+            }
+            return target.apply(self, args as any)
+          }
+        })
+        win.Object.getOwnPropertyNames = new Proxy(win.Object.getOwnPropertyNames, useHandler('names'))
+        win.Object.getOwnPropertySymbols = new Proxy(win.Object.getOwnPropertySymbols, useHandler('symbols'))
+        win.Object.getOwnPropertyDescriptors = new Proxy(win.Object.getOwnPropertyDescriptors, useHandler('descriptors'))
+        win.Reflect.ownKeys = new Proxy(win.Reflect.ownKeys, useHandler('keys'))
+      }
+      {
+        /* one */
+        const useHandler = () => ({
+          apply(target: any, self: any, args: any[]) {
+            const src = args[0]
+            if (src != null && typeof src === 'object') {
+              const own: HookOwnProperties | undefined = src[symbol.own]
+              if (own) return own.descriptors?.[args[1]];
+            }
+            return target.apply(self, args as any)
+          }
+        })
+        win.Object.getOwnPropertyDescriptor = new Proxy(win.Object.getOwnPropertyDescriptor, useHandler())
+        win.Reflect.getOwnPropertyDescriptor = new Proxy(win.Reflect.getOwnPropertyDescriptor, useHandler())
+      }
+    }
+  },
 }
 
 export const hookTasks = Object.entries(hookTaskMap).map(([name, task]): HookTask => ({ ...task, name }))
