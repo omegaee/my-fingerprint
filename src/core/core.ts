@@ -116,8 +116,23 @@ export class FingerprintHandler {
   public conf: LocalStorageConfig
 
   public rawObjects: Partial<RawHookObject> = {}
+
+  /// hook索引
   public symbol = {
     own: Symbol('OwnProperty'),
+    raw: Symbol('RawValue'),
+  }
+
+  /// hook工具
+  public hooks = {
+    useRawValue: <T extends Object = any>(handler: ProxyHandler<T>): ProxyHandler<T> => ({
+      ...handler,
+      get: (target: T, prop: any, receiver: any) => {
+        if (prop === this.symbol.raw) return target;
+        const getter = handler.get ?? Reflect.get
+        return getter(target, prop, receiver)
+      }
+    })
   }
 
   public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
@@ -150,7 +165,7 @@ export class FingerprintHandler {
     }
 
     // this.listenMessage()
-    this.hook()
+    this.hookContent()
   }
 
   /**
@@ -163,7 +178,7 @@ export class FingerprintHandler {
   /**
    * hook内容
    */
-  public hook() {
+  public hookContent() {
     if (!this.isEnable()) return;
     for (const task of hookTasks) {
       if (!task.condition || task.condition(this) === true) {

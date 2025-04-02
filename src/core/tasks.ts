@@ -33,24 +33,21 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'iframe script hook': {
     condition: ({ conf }) => conf.action.hookBlankIframe,
-    onEnable: ({ win, hookIframe }) => {
-      const apply = (target: any, thisArg: Object, args: any) => {
-        const res = target.apply(thisArg, args)
-        const node = args[0]
-        if (node?.tagName === 'IFRAME') {
-          hookIframe(node as HTMLIFrameElement)
+    onEnable: ({ win, hooks, hookIframe }) => {
+      const handler = hooks.useRawValue({
+        apply(target: any, thisArg: Object, args: any) {
+          const res = target.apply(thisArg, args)
+          const node = args[0]
+          if (node?.tagName === 'IFRAME') {
+            hookIframe(node as HTMLIFrameElement)
+          }
+          return res
         }
-        return res
-      }
+      })
 
-      const _appendChild = win.Node.prototype.appendChild
-      win.Node.prototype.appendChild = new Proxy(_appendChild, { apply })
-
-      const _insertBefore = win.Node.prototype.insertBefore
-      win.Node.prototype.insertBefore = new Proxy(_insertBefore, { apply })
-
-      const _replaceChild = win.Node.prototype.replaceChild
-      win.Node.prototype.replaceChild = new Proxy(_replaceChild, { apply })
+      win.Node.prototype.appendChild = new Proxy(win.Node.prototype.appendChild, handler)
+      win.Node.prototype.insertBefore = new Proxy(win.Node.prototype.insertBefore, handler)
+      win.Node.prototype.replaceChild = new Proxy(win.Node.prototype.replaceChild, handler)
     },
   },
 
@@ -166,10 +163,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'canvas': {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, getValue }) => {
+    onEnable: ({ win, conf, hooks, rawObjects, getValue }) => {
       /* getContext */
       const _getContext = win.HTMLCanvasElement.prototype.getContext
-      win.HTMLCanvasElement.prototype.getContext = new Proxy(_getContext, {
+      win.HTMLCanvasElement.prototype.getContext = new Proxy(_getContext, hooks.useRawValue({
         apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
           if (args[0] === '2d') {
             const option = args[1] ?? {};
@@ -178,12 +175,12 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return target.apply(thisArg, args);
         }
-      });
+      }))
 
       /* getImageData */
       const _getImageData = win.CanvasRenderingContext2D.prototype.getImageData
       rawObjects.getImageData = _getImageData
-      win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(_getImageData, {
+      win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(_getImageData, hooks.useRawValue({
         apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
           const value: number[] = getValue('other.canvas', conf.fp.other.canvas)
           if (value !== null) {
@@ -193,7 +190,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return target.apply(thisArg, args);
         }
-      })
+      }))
     },
   },
 
@@ -201,7 +198,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default ||
       conf.fp.normal.glVendor.type !== HookType.default ||
       conf.fp.normal.glRenderer.type !== HookType.default,
-    onEnable: ({ win, conf, getValue, random }) => {
+    onEnable: ({ win, conf, hooks, getValue, random }) => {
       const isHookWebgl = conf.fp.other.webgl.type !== HookType.default
       const isHookInfo = conf.fp.normal.glVendor.type !== HookType.default || conf.fp.normal.glRenderer.type !== HookType.default
 
@@ -210,15 +207,15 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         const _readPixels = win.WebGLRenderingContext.prototype.readPixels
         const _readPixels2 = win.WebGL2RenderingContext.prototype.readPixels
 
-        const hook = {
+        const handler = hooks.useRawValue({
           apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
             const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
             value && drawNoiseToWebgl(thisArg, value)
             return target.apply(thisArg, args as any);
           }
-        }
-        win.WebGLRenderingContext.prototype.readPixels = new Proxy(_readPixels, hook)
-        win.WebGL2RenderingContext.prototype.readPixels = new Proxy(_readPixels2, hook)
+        })
+        win.WebGLRenderingContext.prototype.readPixels = new Proxy(_readPixels, handler)
+        win.WebGL2RenderingContext.prototype.readPixels = new Proxy(_readPixels2, handler)
       }
 
       /* Report: Supported Extensions */
@@ -226,7 +223,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         const _getSupportedExtensions = win.WebGLRenderingContext.prototype.getSupportedExtensions
         const _getSupportedExtensions2 = win.WebGL2RenderingContext.prototype.getSupportedExtensions
 
-        const hook = {
+        const handler = hooks.useRawValue({
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const res = target.apply(thisArg, args)
             if (res) {
@@ -235,9 +232,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
             return res;
           }
-        }
-        win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions, hook)
-        win.WebGL2RenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions2, hook)
+        })
+        win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions, handler)
+        win.WebGL2RenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions2, handler)
       }
 
       /* Report: Parameter */
@@ -245,7 +242,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         const _getParameter = win.WebGLRenderingContext.prototype.getParameter
         const _getParameter2 = win.WebGL2RenderingContext.prototype.getParameter
 
-        const hook = {
+        const handler = hooks.useRawValue({
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
             if (ex) {
@@ -259,9 +256,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
             return target.apply(thisArg, args);
           }
-        }
-        win.WebGLRenderingContext.prototype.getParameter = new Proxy(_getParameter, hook)
-        win.WebGL2RenderingContext.prototype.getParameter = new Proxy(_getParameter2, hook)
+        })
+        win.WebGLRenderingContext.prototype.getParameter = new Proxy(_getParameter, handler)
+        win.WebGL2RenderingContext.prototype.getParameter = new Proxy(_getParameter2, handler)
       }
     },
   },
@@ -270,13 +267,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) =>
       conf.fp.other.canvas.type !== HookType.default ||
       conf.fp.other.webgl.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, getValue }) => {
+    onEnable: ({ win, conf, hooks, rawObjects, getValue }) => {
       const _toDataURL = win.HTMLCanvasElement.prototype.toDataURL
-      win.HTMLCanvasElement.prototype.toDataURL = new Proxy(_toDataURL, {
-        get: (target, key, receiver) => {
-          if (key === 'toString') return _toDataURL.toString.bind(_toDataURL)
-          return Reflect.get(target, key, receiver)
-        },
+      win.HTMLCanvasElement.prototype.toDataURL = new Proxy(_toDataURL, hooks.useRawValue({
         apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
           /* 2d */
           if (conf.fp.other.canvas.type !== HookType.default) {
@@ -300,15 +293,15 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return target.apply(thisArg, args);
         }
-      })
+      }))
     },
   },
 
   'audio': {
     condition: ({ conf }) => conf.fp.other.audio.type !== HookType.default,
-    onEnable: ({ win, conf, random }) => {
+    onEnable: ({ win, conf, hooks, random }) => {
       const _createDynamicsCompressor = win.OfflineAudioContext.prototype.createDynamicsCompressor
-      win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(_createDynamicsCompressor, {
+      win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(_createDynamicsCompressor, hooks.useRawValue({
         apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
           const value: number | null = random('other.audio', conf.fp.other.audio)
           if (value === null) return target.apply(thisArg, args)
@@ -319,7 +312,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           gain.connect(thisArg.destination)
           return compressor
         }
-      })
+      }))
     },
   },
 
@@ -519,7 +512,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'webgpu': {
     condition: ({ conf }) => conf.fp.other.webgpu.type !== HookType.default,
-    onEnable: ({ win, conf, randomDebounce }) => {
+    onEnable: ({ win, conf, hooks, randomDebounce }) => {
       /*** GPUAdapter ***/
       // @ts-ignore
       if (win.GPUAdapter) {
@@ -589,7 +582,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (win.GPUCommandEncoder?.prototype?.beginRenderPass) {
         try {
           // @ts-ignore
-          win.GPUCommandEncoder.prototype.beginRenderPass = new Proxy(win.GPUCommandEncoder.prototype.beginRenderPass, {
+          win.GPUCommandEncoder.prototype.beginRenderPass = new Proxy(win.GPUCommandEncoder.prototype.beginRenderPass, hooks.useRawValue({
             apply(target, self, args) {
               if (args?.[0]?.colorAttachments?.[0]?.clearValue) {
                 try {
@@ -606,7 +599,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
               }
               return target.apply(self, args);
             }
-          });
+          }))
         } catch (e) { }
       }
 
@@ -615,7 +608,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (win.GPUQueue?.prototype?.writeBuffer) {
         try {
           // @ts-ignore
-          win.GPUQueue.prototype.writeBuffer = new Proxy(win.GPUQueue.prototype.writeBuffer, {
+          win.GPUQueue.prototype.writeBuffer = new Proxy(win.GPUQueue.prototype.writeBuffer, hooks.useRawValue({
             apply(target, self, args) {
               const _data = args?.[2]
               if (_data && _data instanceof Float32Array) {
@@ -639,17 +632,17 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
               }
               return target.apply(self, args);
             }
-          });
+          }))
         } catch (e) { }
       }
     },
   },
 
   'OwnProperties': {
-    onEnable: ({ win, symbol }) => {
+    onEnable: ({ win, symbol, hooks }) => {
       {
         /* multi */
-        const useHandler = (type: keyof HookOwnProperties) => ({
+        const useHandler = (type: keyof HookOwnProperties) => hooks.useRawValue({
           apply(target: any, self: any, args: any[]) {
             const src = args[0]
             if (src != null && typeof src === 'object') {
@@ -666,7 +659,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       }
       {
         /* one */
-        const useHandler = () => ({
+        const useHandler = () => hooks.useRawValue({
           apply(target: any, self: any, args: any[]) {
             const src = args[0]
             if (src != null && typeof src === 'object') {
@@ -679,6 +672,20 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         win.Object.getOwnPropertyDescriptor = new Proxy(win.Object.getOwnPropertyDescriptor, useHandler())
         win.Reflect.getOwnPropertyDescriptor = new Proxy(win.Reflect.getOwnPropertyDescriptor, useHandler())
       }
+    }
+  },
+
+  '.toString': {
+    onEnable: ({ win, symbol, hooks }) => {
+      win.Function.prototype.toString = new Proxy(win.Function.prototype.toString, hooks.useRawValue({
+        apply(target: any, self: any, args: any[]) {
+          if (self != null && typeof self === 'function') {
+            const raw = self[symbol.raw]
+            if (raw) return Reflect.apply(target, raw, args);
+          }
+          return Reflect.apply(target, self, args);
+        }
+      }))
     }
   },
 }
