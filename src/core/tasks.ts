@@ -131,35 +131,30 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook screen': {
+  'screen': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.screen),
     onEnable: ({ win, conf, getValue }) => {
-      const _screen = Object.getOwnPropertyDescriptor(win, "screen")?.get;
-      _screen && Object.defineProperty(win, 'screen', {
-        get: new Proxy(_screen, {
-          apply: (target: any, thisArg, args) => {
-            const result = _screen.call(thisArg);
-            return new Proxy(result, {
-              get: (target: any, key: keyof Screen | (string & {})) => {
-                switch (key) {
-                  case 'width':
-                  case 'height':
-                  case 'colorDepth':
-                  case 'pixelDepth': {
-                    const mode: HookMode | undefined = (conf.fp.screen as any)[key]
-                    const _key: any = 'screen.' + key
-                    const value = getValue(_key, mode)
-                    if (value !== null) return value;
-                    break
-                  }
-                }
-                const value = target[key]
-                return typeof value === 'function' ? value.bind(target) : value
-              }
-            })
-          },
+      const desc = Object.getOwnPropertyDescriptors(win.Screen.prototype)
+      if (!desc) return;
+
+      /* Simple hook */
+      const hookProp = (key: keyof Screen) => {
+        const getter: (() => any) | undefined = desc[key]?.get
+        if (!getter) return;
+        Object.defineProperty(win.screen, key, {
+          get() {
+            const mode: HookMode | undefined = (conf.fp.screen as any)[key]
+            const _key: any = 'screen.' + key
+            const value = getValue(_key, mode)
+            if (value !== null) return value;
+            return getter.call(this)
+          }
         })
-      })
+      }
+      hookProp('width')
+      hookProp('height')
+      hookProp('colorDepth')
+      hookProp('pixelDepth')
     },
   },
 
@@ -436,7 +431,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook webrtc': {
+  'webrtc': {
     condition: ({ conf }) => conf.fp.other.webrtc.type !== HookType.default,
     onEnable: ({ win }) => {
       // mediaDevices
