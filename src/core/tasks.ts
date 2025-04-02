@@ -158,7 +158,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook canvas': {
+  'canvas': {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
     onEnable: ({ win, conf, rawObjects, getValue }) => {
       /* getContext */
@@ -191,7 +191,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook webgl': {
+  'webgl': {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default ||
       conf.fp.normal.glVendor.type !== HookType.default ||
       conf.fp.normal.glRenderer.type !== HookType.default,
@@ -260,7 +260,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook toDataURL': {
+  'toDataURL': {
     condition: ({ conf }) =>
       conf.fp.other.canvas.type !== HookType.default ||
       conf.fp.other.webgl.type !== HookType.default,
@@ -298,7 +298,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook audio': {
+  'audio': {
     condition: ({ conf }) => conf.fp.other.audio.type !== HookType.default,
     onEnable: ({ win, conf, random }) => {
       const _createDynamicsCompressor = win.OfflineAudioContext.prototype.createDynamicsCompressor
@@ -317,7 +317,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook timezone': {
+  'timezone': {
     condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
     onEnable: ({ win, conf, getValueDebounce }) => {
       const _DateTimeFormat = win.Intl.DateTimeFormat;
@@ -474,7 +474,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook font': {
+  'font': {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
     onEnable: ({ win, conf, getValueDebounce }) => {
       const _offsetHeight = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetHeight")?.get
@@ -511,7 +511,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'hook webgpu': {
+  'webgpu': {
     condition: ({ conf }) => conf.fp.other.webgpu.type !== HookType.default,
     onEnable: ({ win, conf, randomDebounce }) => {
       /*** GPUAdapter ***/
