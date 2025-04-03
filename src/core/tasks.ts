@@ -34,7 +34,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   'iframe script hook': {
     condition: ({ conf }) => conf.action.hookBlankIframe,
     onEnable: ({ win, hooks, registry, hookIframe }) => {
-      const handler = hooks.useRawValue({
+      const handler = hooks.useBaseHandler({
         apply(target: any, thisArg: Object, args: any) {
           const res = Reflect.apply(target, thisArg, args)
           const node = args[0]
@@ -44,14 +44,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           return res
         }
       })
-
-      win.Node.prototype.appendChild = new Proxy(win.Node.prototype.appendChild, handler)
-      win.Node.prototype.insertBefore = new Proxy(win.Node.prototype.insertBefore, handler)
-      win.Node.prototype.replaceChild = new Proxy(win.Node.prototype.replaceChild, handler)
-
-      registry.add(win.Node.prototype.appendChild)
-      registry.add(win.Node.prototype.insertBefore)
-      registry.add(win.Node.prototype.replaceChild)
+      win.Node.prototype.appendChild = hooks.newProxy(win.Node.prototype.appendChild, handler)
+      win.Node.prototype.insertBefore = hooks.newProxy(win.Node.prototype.insertBefore, handler)
+      win.Node.prototype.replaceChild = hooks.newProxy(win.Node.prototype.replaceChild, handler)
     },
   },
 
@@ -170,7 +165,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onEnable: ({ win, conf, hooks, rawObjects, getValue }) => {
       /* getContext */
       const _getContext = win.HTMLCanvasElement.prototype.getContext
-      win.HTMLCanvasElement.prototype.getContext = new Proxy(_getContext, hooks.useRawValue({
+      win.HTMLCanvasElement.prototype.getContext = hooks.newBaseProxy(_getContext, {
         apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
           if (args[0] === '2d') {
             const option = args[1] ?? {};
@@ -179,12 +174,12 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return target.apply(thisArg, args);
         }
-      }))
+      })
 
       /* getImageData */
       const _getImageData = win.CanvasRenderingContext2D.prototype.getImageData
       rawObjects.getImageData = _getImageData
-      win.CanvasRenderingContext2D.prototype.getImageData = new Proxy(_getImageData, hooks.useRawValue({
+      win.CanvasRenderingContext2D.prototype.getImageData = hooks.newBaseProxy(_getImageData, {
         apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
           const value: number[] = getValue('other.canvas', conf.fp.other.canvas)
           if (value !== null) {
@@ -194,7 +189,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return target.apply(thisArg, args);
         }
-      }))
+      })
     },
   },
 
@@ -211,15 +206,15 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         const _readPixels = win.WebGLRenderingContext.prototype.readPixels
         const _readPixels2 = win.WebGL2RenderingContext.prototype.readPixels
 
-        const handler = hooks.useRawValue({
+        const handler = hooks.useBaseHandler({
           apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
             const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
             value && drawNoiseToWebgl(thisArg, value)
             return target.apply(thisArg, args as any);
           }
         })
-        win.WebGLRenderingContext.prototype.readPixels = new Proxy(_readPixels, handler)
-        win.WebGL2RenderingContext.prototype.readPixels = new Proxy(_readPixels2, handler)
+        win.WebGLRenderingContext.prototype.readPixels = hooks.newProxy(_readPixels, handler)
+        win.WebGL2RenderingContext.prototype.readPixels = hooks.newProxy(_readPixels2, handler)
       }
 
       /* Report: Supported Extensions */
@@ -227,7 +222,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         const _getSupportedExtensions = win.WebGLRenderingContext.prototype.getSupportedExtensions
         const _getSupportedExtensions2 = win.WebGL2RenderingContext.prototype.getSupportedExtensions
 
-        const handler = hooks.useRawValue({
+        const handler = hooks.useBaseHandler({
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const res = target.apply(thisArg, args)
             if (res) {
@@ -237,8 +232,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return res;
           }
         })
-        win.WebGLRenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions, handler)
-        win.WebGL2RenderingContext.prototype.getSupportedExtensions = new Proxy(_getSupportedExtensions2, handler)
+        win.WebGLRenderingContext.prototype.getSupportedExtensions = hooks.newProxy(_getSupportedExtensions, handler)
+        win.WebGL2RenderingContext.prototype.getSupportedExtensions = hooks.newProxy(_getSupportedExtensions2, handler)
       }
 
       /* Report: Parameter */
@@ -246,7 +241,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         const _getParameter = win.WebGLRenderingContext.prototype.getParameter
         const _getParameter2 = win.WebGL2RenderingContext.prototype.getParameter
 
-        const handler = hooks.useRawValue({
+        const handler = hooks.useBaseHandler({
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
             if (ex) {
@@ -261,8 +256,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return target.apply(thisArg, args);
           }
         })
-        win.WebGLRenderingContext.prototype.getParameter = new Proxy(_getParameter, handler)
-        win.WebGL2RenderingContext.prototype.getParameter = new Proxy(_getParameter2, handler)
+        win.WebGLRenderingContext.prototype.getParameter = hooks.newProxy(_getParameter, handler)
+        win.WebGL2RenderingContext.prototype.getParameter = hooks.newProxy(_getParameter2, handler)
       }
     },
   },
@@ -273,7 +268,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       conf.fp.other.webgl.type !== HookType.default,
     onEnable: ({ win, conf, hooks, rawObjects, getValue }) => {
       const _toDataURL = win.HTMLCanvasElement.prototype.toDataURL
-      win.HTMLCanvasElement.prototype.toDataURL = new Proxy(_toDataURL, hooks.useRawValue({
+      win.HTMLCanvasElement.prototype.toDataURL = hooks.newBaseProxy(_toDataURL, {
         apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
           /* 2d */
           if (conf.fp.other.canvas.type !== HookType.default) {
@@ -297,7 +292,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return target.apply(thisArg, args);
         }
-      }))
+      })
     },
   },
 
@@ -305,7 +300,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) => conf.fp.other.audio.type !== HookType.default,
     onEnable: ({ win, conf, hooks, random }) => {
       const _createDynamicsCompressor = win.OfflineAudioContext.prototype.createDynamicsCompressor
-      win.OfflineAudioContext.prototype.createDynamicsCompressor = new Proxy(_createDynamicsCompressor, hooks.useRawValue({
+      win.OfflineAudioContext.prototype.createDynamicsCompressor = hooks.newBaseProxy(_createDynamicsCompressor, {
         apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
           const value: number | null = random('other.audio', conf.fp.other.audio)
           if (value === null) return target.apply(thisArg, args)
@@ -316,13 +311,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           gain.connect(thisArg.destination)
           return compressor
         }
-      }))
+      })
     },
   },
 
   'timezone': {
     condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
-    onEnable: ({ win, conf, getValueDebounce }) => {
+    onEnable: ({ win, conf, hooks, getValueDebounce }) => {
       const _DateTimeFormat = win.Intl.DateTimeFormat;
       const _Date = win.Date;
 
@@ -354,7 +349,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
       /* DateTimeFormat */
       {
-        win.Intl.DateTimeFormat = new Proxy(_DateTimeFormat, {
+        win.Intl.DateTimeFormat = hooks.newBaseProxy(_DateTimeFormat, {
           construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
             const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
             args[0] = args[0] ?? currTimeZone.locale
@@ -372,7 +367,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
       /* Date */
       {
-        win.Date = new Proxy(_Date, {
+        win.Date = hooks.newBaseProxy(_Date, {
           apply: (target, thisArg: Date, args: Parameters<typeof Date>) => {
             return new target(...args).toString()
           }
@@ -381,12 +376,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
       /* getTimezoneOffset & toString */
       {
-        const _getTimezoneOffset = win.Date.prototype.getTimezoneOffset
-        const _toString = win.Date.prototype.toString
-        const _toDateString = win.Date.prototype.toDateString
-        const _toTimeString = win.Date.prototype.toTimeString
-
-        const useHook = (handle: (thisArg: Date, tz: TimeZoneInfo) => string | number | null) => ({
+        const useHook = (handle: (thisArg: Date, tz: TimeZoneInfo) => string | number | null) => hooks.useBaseHandler({
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toString>) => {
             const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
             if (tz === null) return target.apply(thisArg, args);
@@ -394,30 +384,34 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return result === null ? target.apply(thisArg, args) : result
           }
         })
-        win.Date.prototype.getTimezoneOffset = new Proxy(_getTimezoneOffset, useHook((_, tz) => {
-          return tz.offset * -60
-        }))
-        win.Date.prototype.toString = new Proxy(_toString, useHook((thisArg, tz) => {
-          const ps = getStandardDateTimeParts(thisArg, tz.zone)
-          return ps === null ? null : `${ps.weekday} ${ps.month} ${ps.day} ${ps.year} ${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
-        }))
-        win.Date.prototype.toDateString = new Proxy(_toDateString, useHook((thisArg, tz) => {
-          const ps = getStandardDateTimeParts(thisArg, tz.zone)
-          return ps === null ? null : `${ps.weekday} ${ps.month} ${ps.day} ${ps.year}`
-        }))
-        win.Date.prototype.toTimeString = new Proxy(_toTimeString, useHook((thisArg, tz) => {
-          const ps = getStandardDateTimeParts(thisArg, tz.zone)
-          return ps === null ? null : `${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
-        }))
+        win.Date.prototype.getTimezoneOffset = hooks.newProxy(
+          win.Date.prototype.getTimezoneOffset,
+          useHook((_, tz) => {
+            return tz.offset * -60
+          }))
+        win.Date.prototype.toString = hooks.newProxy(
+          win.Date.prototype.toString,
+          useHook((thisArg, tz) => {
+            const ps = getStandardDateTimeParts(thisArg, tz.zone)
+            return ps === null ? null : `${ps.weekday} ${ps.month} ${ps.day} ${ps.year} ${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
+          }))
+        win.Date.prototype.toDateString = hooks.newProxy(
+          win.Date.prototype.toDateString,
+          useHook((thisArg, tz) => {
+            const ps = getStandardDateTimeParts(thisArg, tz.zone)
+            return ps === null ? null : `${ps.weekday} ${ps.month} ${ps.day} ${ps.year}`
+          }))
+        win.Date.prototype.toTimeString = hooks.newProxy(
+          win.Date.prototype.toTimeString,
+          useHook((thisArg, tz) => {
+            const ps = getStandardDateTimeParts(thisArg, tz.zone)
+            return ps === null ? null : `${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
+          }))
       }
 
       /* toLocaleString */
       {
-        const _toLocaleString = win.Date.prototype.toLocaleString
-        const _toLocaleDateString = win.Date.prototype.toLocaleDateString
-        const _toLocaleTimeString = win.Date.prototype.toLocaleTimeString
-
-        const hook = {
+        const handler = hooks.useBaseHandler({
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
             const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
             if (tz) {
@@ -426,10 +420,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
             return target.apply(thisArg, args);
           }
-        }
-        win.Date.prototype.toLocaleString = new Proxy(_toLocaleString, hook)
-        win.Date.prototype.toLocaleDateString = new Proxy(_toLocaleDateString, hook)
-        win.Date.prototype.toLocaleTimeString = new Proxy(_toLocaleTimeString, hook)
+        })
+        win.Date.prototype.toLocaleString = hooks.newProxy(win.Date.prototype.toLocaleString, handler)
+        win.Date.prototype.toLocaleDateString = hooks.newProxy(win.Date.prototype.toLocaleDateString, handler)
+        win.Date.prototype.toLocaleTimeString = hooks.newProxy(win.Date.prototype.toLocaleTimeString, handler)
       }
     },
   },
@@ -586,7 +580,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (win.GPUCommandEncoder?.prototype?.beginRenderPass) {
         try {
           // @ts-ignore
-          win.GPUCommandEncoder.prototype.beginRenderPass = new Proxy(win.GPUCommandEncoder.prototype.beginRenderPass, hooks.useRawValue({
+          win.GPUCommandEncoder.prototype.beginRenderPass = new Proxy(win.GPUCommandEncoder.prototype.beginRenderPass, hooks.useBaseHandler({
             apply(target, self, args) {
               if (args?.[0]?.colorAttachments?.[0]?.clearValue) {
                 try {
@@ -612,7 +606,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (win.GPUQueue?.prototype?.writeBuffer) {
         try {
           // @ts-ignore
-          win.GPUQueue.prototype.writeBuffer = new Proxy(win.GPUQueue.prototype.writeBuffer, hooks.useRawValue({
+          win.GPUQueue.prototype.writeBuffer = new Proxy(win.GPUQueue.prototype.writeBuffer, hooks.useBaseHandler({
             apply(target, self, args) {
               const _data = args?.[2]
               if (_data && _data instanceof Float32Array) {
@@ -646,7 +640,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     onEnable: ({ win, symbol, hooks }) => {
       {
         /* multi */
-        const useHandler = (type: keyof HookOwnProperties) => hooks.useRawValue({
+        const useHandler = (type: keyof HookOwnProperties) => hooks.useBaseHandler({
           apply(target: any, self: any, args: any[]) {
             const src = args[0]
             if (src != null && typeof src === 'object') {
@@ -656,14 +650,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return target.apply(self, args as any)
           }
         })
-        win.Object.getOwnPropertyNames = new Proxy(win.Object.getOwnPropertyNames, useHandler('names'))
-        win.Object.getOwnPropertySymbols = new Proxy(win.Object.getOwnPropertySymbols, useHandler('symbols'))
-        win.Object.getOwnPropertyDescriptors = new Proxy(win.Object.getOwnPropertyDescriptors, useHandler('descriptors'))
-        win.Reflect.ownKeys = new Proxy(win.Reflect.ownKeys, useHandler('keys'))
+        win.Object.getOwnPropertyNames = hooks.newProxy(win.Object.getOwnPropertyNames, useHandler('names'))
+        win.Object.getOwnPropertySymbols = hooks.newProxy(win.Object.getOwnPropertySymbols, useHandler('symbols'))
+        win.Object.getOwnPropertyDescriptors = hooks.newProxy(win.Object.getOwnPropertyDescriptors, useHandler('descriptors'))
+        win.Reflect.ownKeys = hooks.newProxy(win.Reflect.ownKeys, useHandler('keys'))
       }
       {
         /* one */
-        const useHandler = () => hooks.useRawValue({
+        const handler = hooks.useBaseHandler({
           apply(target: any, self: any, args: any[]) {
             const src = args[0]
             if (src != null && typeof src === 'object') {
@@ -673,15 +667,15 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return target.apply(self, args as any)
           }
         })
-        win.Object.getOwnPropertyDescriptor = new Proxy(win.Object.getOwnPropertyDescriptor, useHandler())
-        win.Reflect.getOwnPropertyDescriptor = new Proxy(win.Reflect.getOwnPropertyDescriptor, useHandler())
+        win.Object.getOwnPropertyDescriptor = hooks.newProxy(win.Object.getOwnPropertyDescriptor, handler)
+        win.Reflect.getOwnPropertyDescriptor = hooks.newProxy(win.Reflect.getOwnPropertyDescriptor, handler)
       }
     }
   },
 
   '.prototypeOf': {
     onEnable: ({ win, symbol, registry, hooks }) => {
-      const handler = hooks.useRawValue({
+      const handler = hooks.useBaseHandler({
         apply(target: any, self: any, args: any[]) {
           const src = args[0]
           const dst = args[1]
@@ -692,16 +686,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           return Reflect.apply(target, self, args);
         }
       })
-      win.Object.setPrototypeOf = new Proxy(win.Object.setPrototypeOf, handler)
-      win.Reflect.setPrototypeOf = new Proxy(win.Reflect.setPrototypeOf, handler)
-      registry.add(win.Object.setPrototypeOf)
-      registry.add(win.Reflect.setPrototypeOf)
+      win.Object.setPrototypeOf = hooks.newProxy(win.Object.setPrototypeOf, handler)
+      win.Reflect.setPrototypeOf = hooks.newProxy(win.Reflect.setPrototypeOf, handler)
     }
   },
 
   '.toString': {
     onEnable: ({ win, symbol, registry, hooks }) => {
-      win.Function.prototype.toString = new Proxy(win.Function.prototype.toString, hooks.useRawValue({
+      win.Function.prototype.toString = hooks.newBaseProxy(win.Function.prototype.toString, {
         apply(target: any, self: any, args: any[]) {
           if (self != null && registry.has(self)) {
             const raw = self[symbol.raw]
@@ -709,14 +701,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return Reflect.apply(target, self, args);
         }
-      }))
-      registry.add(win.Function.prototype.toString)
+      })
     }
   },
 
   '.create': {
     onEnable: ({ win, symbol, registry, hooks }) => {
-      win.Object.create = new Proxy(win.Object.create, hooks.useRawValue({
+      win.Object.create = hooks.newBaseProxy(win.Object.create, {
         apply(target: any, self: any, args: any[]) {
           const src = args[0]
           if (src != null && registry.has(src)) {
@@ -725,8 +716,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return Reflect.apply(target, self, args);
         }
-      }))
-      registry.add(win.Object.create)
+      })
     }
   }
 }

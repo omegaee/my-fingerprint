@@ -118,7 +118,7 @@ export class FingerprintHandler {
   public rawObjects: Partial<RawHookObject> = {}
 
   /// hook存储
-  public registry = new Set<Object>()
+  public registry = new WeakSet<object>()
 
   /// hook索引
   public symbol = {
@@ -128,14 +128,22 @@ export class FingerprintHandler {
 
   /// hook工具
   public hooks = {
-    useRawValue: <T extends Object = any>(handler: ProxyHandler<T>): ProxyHandler<T> => ({
+    useBaseHandler: <T extends Object = any>(handler: ProxyHandler<T>): ProxyHandler<T> => ({
       ...handler,
       get: (target: T, prop: any, receiver: any) => {
         if (prop === this.symbol.raw) return target;
         const getter = handler.get ?? Reflect.get
         return getter(target, prop, receiver)
       }
-    })
+    }),
+    newProxy: <T extends object>(target: T, handler: ProxyHandler<T>): T => {
+      const proxy = new Proxy(target, handler)
+      this.registry.add(proxy)
+      return proxy
+    },
+    newBaseProxy: <T extends object>(target: T, handler: ProxyHandler<T>): T => {
+      return this.hooks.newProxy(target, this.hooks.useBaseHandler(handler))
+    }
   }
 
   public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
