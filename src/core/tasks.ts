@@ -33,10 +33,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'iframe script hook': {
     condition: ({ conf }) => conf.action.hookBlankIframe,
-    onEnable: ({ win, hooks, hookIframe }) => {
+    onEnable: ({ win, hooks, registry, hookIframe }) => {
       const handler = hooks.useRawValue({
         apply(target: any, thisArg: Object, args: any) {
-          const res = target.apply(thisArg, args)
+          const res = Reflect.apply(target, thisArg, args)
           const node = args[0]
           if (node?.tagName === 'IFRAME') {
             hookIframe(node as HTMLIFrameElement)
@@ -48,6 +48,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       win.Node.prototype.appendChild = new Proxy(win.Node.prototype.appendChild, handler)
       win.Node.prototype.insertBefore = new Proxy(win.Node.prototype.insertBefore, handler)
       win.Node.prototype.replaceChild = new Proxy(win.Node.prototype.replaceChild, handler)
+
+      registry.add(win.Node.prototype.appendChild)
+      registry.add(win.Node.prototype.insertBefore)
+      registry.add(win.Node.prototype.replaceChild)
     },
   },
 
@@ -638,7 +642,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'OwnProperties': {
+  '.ownProperties': {
     onEnable: ({ win, symbol, hooks }) => {
       {
         /* multi */
@@ -675,19 +679,56 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
+  '.prototypeOf': {
+    onEnable: ({ win, symbol, registry, hooks }) => {
+      const handler = hooks.useRawValue({
+        apply(target: any, self: any, args: any[]) {
+          const src = args[0]
+          const dst = args[1]
+          if (dst != null && registry.has(src)) {
+            const raw = dst[symbol.raw]
+            if (raw) args[1] = raw;
+          }
+          return Reflect.apply(target, self, args);
+        }
+      })
+      win.Object.setPrototypeOf = new Proxy(win.Object.setPrototypeOf, handler)
+      win.Reflect.setPrototypeOf = new Proxy(win.Reflect.setPrototypeOf, handler)
+      registry.add(win.Object.setPrototypeOf)
+      registry.add(win.Reflect.setPrototypeOf)
+    }
+  },
+
   '.toString': {
-    onEnable: ({ win, symbol, hooks }) => {
+    onEnable: ({ win, symbol, registry, hooks }) => {
       win.Function.prototype.toString = new Proxy(win.Function.prototype.toString, hooks.useRawValue({
         apply(target: any, self: any, args: any[]) {
-          if (self != null && typeof self === 'function') {
+          if (self != null && registry.has(self)) {
             const raw = self[symbol.raw]
             if (raw) return Reflect.apply(target, raw, args);
           }
           return Reflect.apply(target, self, args);
         }
       }))
+      registry.add(win.Function.prototype.toString)
     }
   },
+
+  '.create': {
+    onEnable: ({ win, symbol, registry, hooks }) => {
+      win.Object.create = new Proxy(win.Object.create, hooks.useRawValue({
+        apply(target: any, self: any, args: any[]) {
+          const src = args[0]
+          if (src != null && registry.has(src)) {
+            const raw = src[symbol.raw]
+            if (raw) args[0] = raw;
+          }
+          return Reflect.apply(target, self, args);
+        }
+      }))
+      registry.add(win.Object.create)
+    }
+  }
 }
 
 export const hookTasks = Object.entries(hookTaskMap).map(([name, task]): HookTask => ({ ...task, name }))

@@ -117,6 +117,9 @@ export class FingerprintHandler {
 
   public rawObjects: Partial<RawHookObject> = {}
 
+  /// hook存储
+  public registry = new Set<Object>()
+
   /// hook索引
   public symbol = {
     own: Symbol('OwnProperty'),
