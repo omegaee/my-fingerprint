@@ -473,10 +473,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'font': {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, getValueDebounce }) => {
+    onEnable: ({ win, conf, hooks, getValueDebounce }) => {
       const _offsetHeight = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetHeight")?.get
       _offsetHeight && Object.defineProperty(win.HTMLElement.prototype, "offsetHeight", {
-        get: new Proxy(_offsetHeight, {
+        get: hooks.newBaseProxy(_offsetHeight, {
           apply(target, thisArg: HTMLElement, args: any) {
             try {
               const height = _offsetHeight.call(thisArg);
@@ -492,7 +492,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
       const _offsetWidth = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetWidth")?.get
       _offsetWidth && Object.defineProperty(win.HTMLElement.prototype, "offsetWidth", {
-        get: new Proxy(_offsetWidth, {
+        get: hooks.newBaseProxy(_offsetWidth, {
           apply(target, thisArg: HTMLElement, args: any) {
             try {
               const width = _offsetWidth.call(thisArg);
@@ -523,11 +523,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           const _GPUAdapter = Object.getOwnPropertyDescriptor(win.GPUAdapter.prototype, "limits")?.get;
           // @ts-ignore
           _GPUAdapter && Object.defineProperty(win.GPUAdapter.prototype, "limits", {
-            get: new Proxy(_GPUAdapter, {
+            get: hooks.newBaseProxy(_GPUAdapter, {
               apply(target: any, self, args) {
                 const result = target.apply(self, args);
                 // const _limits = _GPUAdapter.call(self);
-                return new Proxy(result, {
+                return hooks.newBaseProxy(result, {
                   get(target, prop) {
                     const value = target[prop];
                     switch (prop) {
@@ -555,11 +555,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           const _GPUDevice = Object.getOwnPropertyDescriptor(win.GPUDevice.prototype, "limits")?.get;
           // @ts-ignore
           _GPUDevice && Object.defineProperty(win.GPUDevice.prototype, "limits", {
-            get: new Proxy(_GPUDevice, {
+            get: hooks.newBaseProxy(_GPUDevice, {
               apply(target: any, self, args) {
                 const result = target.apply(self, args);
                 // const _limits = _GPUDevice.call(self);
-                return new Proxy(result, {
+                return hooks.newBaseProxy(result, {
                   get(target, prop) {
                     const value = target[prop];
                     switch (prop) {
@@ -580,7 +580,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (win.GPUCommandEncoder?.prototype?.beginRenderPass) {
         try {
           // @ts-ignore
-          win.GPUCommandEncoder.prototype.beginRenderPass = new Proxy(win.GPUCommandEncoder.prototype.beginRenderPass, hooks.useBaseHandler({
+          win.GPUCommandEncoder.prototype.beginRenderPass = hooks.newBaseProxy(win.GPUCommandEncoder.prototype.beginRenderPass, {
             apply(target, self, args) {
               if (args?.[0]?.colorAttachments?.[0]?.clearValue) {
                 try {
@@ -597,7 +597,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
               }
               return target.apply(self, args);
             }
-          }))
+          })
         } catch (e) { }
       }
 
@@ -606,7 +606,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (win.GPUQueue?.prototype?.writeBuffer) {
         try {
           // @ts-ignore
-          win.GPUQueue.prototype.writeBuffer = new Proxy(win.GPUQueue.prototype.writeBuffer, hooks.useBaseHandler({
+          win.GPUQueue.prototype.writeBuffer = hooks.newBaseProxy(win.GPUQueue.prototype.writeBuffer, {
             apply(target, self, args) {
               const _data = args?.[2]
               if (_data && _data instanceof Float32Array) {
@@ -630,7 +630,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
               }
               return target.apply(self, args);
             }
-          }))
+          })
         } catch (e) { }
       }
     },
