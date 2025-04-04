@@ -1,5 +1,5 @@
 import { MContentType, sendContentMessage, unwrapContentMessage } from "@/message/content";
-import { FingerprintHandler } from "./core";
+import { FingerprintHandler, WIN_KEY } from "./core";
 import { genRandomSeed, existParentDomain } from "@/utils/base";
 import { getBrowser } from "@/utils/equipment";
 
@@ -19,8 +19,6 @@ const storage: LocalStorage = _local;
       new FingerprintHandler(win, data, storage.config);
     } catch (_) { }
   }
-
-  const WIN_KEY = 'my_fingerprint_';
 
   if (window.top === window) {
     const data: WindowStorage = {
