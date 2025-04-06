@@ -20,7 +20,8 @@ export interface RawHookObject {
   getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
 }
 
-export const WIN_KEY = Symbol('__my_fingerprint__')
+// export const WIN_KEY = Symbol('__my_fingerprint__')
+export const WIN_KEY = 'my_fingerprint'
 
 const RAW = {
   languages: navigator.languages,
