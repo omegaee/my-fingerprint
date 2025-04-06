@@ -3,11 +3,11 @@
 
 ---
 
-[--- v2.4 版本更新 ---](https://github.com/omegaee/my-fingerprint/releases/latest)
+[--- v2.5 版本更新 ---](https://github.com/omegaee/my-fingerprint/releases/latest)
 
 # My Fingerprint
 
-- `Chrome / Edge`扩展
+- `Chrome / Edge / Firefox`扩展
 - 可混淆各浏览器指纹标识
 - 可选指纹项
 - 可选随机条件
@@ -39,18 +39,37 @@
 
 ## 使用
 
+#### Chrome & Edge
+
 ***安装：***
-1. 下载扩展最新版本的`zip` -- [扩展下载](https://github.com/omegaee/my-fingerprint/releases/latest)
+1. 下载扩展最新版本的`.zip` -- [扩展下载](https://github.com/omegaee/my-fingerprint/releases/latest)
 2. 打开浏览器扩展管理，开启开发者模式
-3. 把下载好的`zip`拖拽进浏览器扩展管理页面
-4. 启用扩展（若有需要，可在`详细信息`里勾选`InPrivate中允许`）
+3. 把下载好的`.zip`拖拽进浏览器扩展管理页面
+4. 启用扩展（若有需要，可在`详细`里勾选`在无痕模式下启用 / InPrivate中允许`）
 
 ***使用：***
 - 安装即生效（之前打开的标签页要刷新才生效）
 - （可选）左键插件图标进入配置页面进行自定义配置
+- （可选）若不生效，尝试重启浏览器
 
 ***前置：***
-- 浏览器版本需求 `Chrome 90+`，推荐使用 `Chrome 120+`
+- 浏览器版本需求 `Chrome 120+` `Edge 120+`
+
+#### Firefox
+
+***安装：***
+1. 下载扩展最新版本的`.xpi` -- [扩展下载](https://github.com/omegaee/my-fingerprint/releases/latest)
+2. 直接将`.xpi`文件直接拖拽到浏览器窗口中
+3. 浏览器会弹出安装提示，点击添加即可
+4. 左键扩展图标进入扩展页面，点击 `更多 -> 授权` 进行功能授权
+
+***使用：***
+- 安装即生效（之前打开的标签页要刷新才生效）
+- （可选）左键扩展图标进入配置页面进行自定义配置
+- （可选）若不生效，尝试重启浏览器
+
+***前置：***
+- 浏览器版本需求 `Firefox 136+`
 
 
 ## 功能模块
@@ -62,6 +81,7 @@
 
 **普通指纹配置**
 - [x] UserAgent系列信息
+  - 仅适应于Chrome和Edge
 - [x] 浏览器语言
 - [x] 逻辑处理器数量
 - [x] 屏幕尺寸
@@ -89,6 +109,7 @@
 
 ### 白名单模块
 > 可对以白名单列表进行编辑
+> 支持子域名匹配
 
 
 ## 测试目标
@@ -97,6 +118,7 @@
 - [x] https://uutool.cn/browser/
 - [x] https://www.ip77.net/
 - [x] https://www.browserscan.net/
+- [x] https://abrahamjuliot.github.io/creepjs/
 
 
 ## 社区

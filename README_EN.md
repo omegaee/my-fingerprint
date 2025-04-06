@@ -3,11 +3,11 @@
 
 ---
 
-[--- v2.4 Update ---](https://github.com/omegaee/my-fingerprint/releases/latest)
+[--- v2.5 Update ---](https://github.com/omegaee/my-fingerprint/releases/latest)
 
 # My Fingerprint
 
-- `Chrome / Edge` Extension
+- `Chrome / Edge / Firefox` Extension
 - Modify various fingerprints of the browser
 - Optional fingerprints
 - Optional random conditions
@@ -38,18 +38,37 @@
 
 ## Usage
 
+#### Chrome & Edge
+
 ***Installation:***
-1. Download the latest version of the Extension `zip` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
+1. Download the latest version of the Extension `.zip` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
 2. Open the browser extension management, open the developer mode
-3. Drag and drop the downloaded `zip` into the Browser Extension Manager page.
-4. Enable the Extension (check `Allow in InPrivate` in `Details` if necessary).
+3. Drag and drop the downloaded `.zip` into the Browser Extension Manager page.
+4. Enable the Extension (check `Allow in Incognito / Allow in InPrivate` in `Details` if necessary).
 
 ***Usage:***
 - Installation takes effect immediately (previously opened tabs have to be refreshed to take effect)
 - (Optional) Left-click on the plug-in icon to enter the configuration page for customized configuration.
+- (Optional) If this does not work, try restarting your browser.
 
 ***Frontend:***
-- Browser version required `Chrome 90+`, Recommended `Chrome 120+`.
+- Browser version required `Chrome 120+` `Edge 120+`.
+
+#### Firefox
+
+***Installation:***
+1. Download the latest version of the Extension `.xpi` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
+2. Drag and drop the `.xpi` file directly into the browser window.
+3. The browser will pop up installation prompt.
+4. Left click on the extension icon to enter the extension page, click on `More -> Permission` to permission the feature.
+
+***Usage:***
+- Installation takes effect immediately (previously opened tabs have to be refreshed to take effect)
+- (Optional) Left-click on the plug-in icon to enter the configuration page for customized configuration.
+- (Optional) If this does not work, try restarting your browser.
+
+***Frontend:***
+- Browser version required `Firefox 136+`.
 
 
 ## Popup Module
@@ -61,6 +80,7 @@
 
 **Normal Fingerprint Config**
 - [x] UserAgent Series Info
+  - Only works on Chrome and Edge
 - [x] Browser Language
 - [x] Number of logical processors
 - [x] Screen Size
@@ -88,6 +108,7 @@
 
 ### Whitelist Module
 > The whitelist list can be edited
+> Support for sub-domain matching
 
 
 ## Test Target
@@ -96,6 +117,7 @@
 - [x] https://uutool.cn/browser/
 - [x] https://www.ip77.net/
 - [x] https://www.browserscan.net/
+- [x] https://abrahamjuliot.github.io/creepjs/
 
 
 ## Support
