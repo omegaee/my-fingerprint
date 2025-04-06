@@ -44,7 +44,7 @@ const VALUES = {
 
 export const chromeManifest: ManifestV3Export = {
   ...baseManifest,
-  minimum_chrome_version: '90',
+  minimum_chrome_version: '120',
   permissions: [
     ...VALUES.permissions,
     ...VALUES.optional_permissions,
@@ -66,7 +66,7 @@ export const firefoxManifest: ManifestV3Export & { [key: string]: any } = {
   browser_specific_settings: {
     gecko: {
       id: "omegaee@github.com",
-      strict_min_version: "113.0"
+      strict_min_version: "136.0"
     }
   },
   permissions: VALUES.permissions,
