@@ -130,8 +130,9 @@ export class FingerprintHandler {
   public hooks = {
     useBaseHandler: <T extends Object = any>(handler: ProxyHandler<T>): ProxyHandler<T> => ({
       ...handler,
-      get: (target: T, prop: any, receiver: any) => {
+      get: (target: any, prop: any, receiver: any) => {
         if (prop === this.symbol.raw) return target;
+        if (prop === 'caller' || prop === 'arguments') return target[prop];
         const getter = handler.get ?? Reflect.get
         return getter(target, prop, receiver)
       }
