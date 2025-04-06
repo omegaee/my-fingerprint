@@ -130,7 +130,7 @@ export const genRandomVersionUserAgentData = async (seed: number, nav: Navigator
 /**
  * 生成随机版本的 UserAgent
  */
-export const genRandomVersionUserAgent = (seed: number, nav: Navigator, ignoreProductName?: boolean) => {
+export const genRandomVersionUserAgent = (seed: number, nav: { userAgent: string, appVersion: string }, ignoreProductName?: boolean) => {
   const uaIden = ignoreProductName ? 'app' : 'ua'
   const key = `${seed}:${nav.userAgent}`
   const mem = MEMORY.uaSeries.get(key)

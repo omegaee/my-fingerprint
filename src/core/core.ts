@@ -20,7 +20,8 @@ export interface RawHookObject {
   getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
 }
 
-const WIN_KEY = 'my_fingerprint_'
+// export const WIN_KEY = Symbol('__my_fingerprint__')
+export const WIN_KEY = 'my_fingerprint'
 
 const RAW = {
   languages: navigator.languages,
@@ -117,6 +118,36 @@ export class FingerprintHandler {
 
   public rawObjects: Partial<RawHookObject> = {}
 
+  /// hook存储
+  public registry = new WeakSet<object>()
+
+  /// hook索引
+  public symbol = {
+    own: Symbol('OwnProperty'),
+    raw: Symbol('RawValue'),
+  }
+
+  /// hook工具
+  public hooks = {
+    useBaseHandler: <T extends Object = any>(handler: ProxyHandler<T>): ProxyHandler<T> => ({
+      ...handler,
+      get: (target: any, prop: any, receiver: any) => {
+        if (prop === this.symbol.raw) return target;
+        if (prop === 'caller' || prop === 'arguments') return target[prop];
+        const getter = handler.get ?? Reflect.get
+        return getter(target, prop, receiver)
+      }
+    }),
+    newProxy: <T extends object>(target: T, handler: ProxyHandler<T>): T => {
+      const proxy = new Proxy(target, handler)
+      this.registry.add(proxy)
+      return proxy
+    },
+    newBaseProxy: <T extends object>(target: T, handler: ProxyHandler<T>): T => {
+      return this.hooks.newProxy(target, this.hooks.useBaseHandler(handler))
+    }
+  }
+
   public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
     if (!win) throw new Error('win is required');
     if (win === window.top) {
@@ -147,7 +178,7 @@ export class FingerprintHandler {
     }
 
     // this.listenMessage()
-    this.hook()
+    this.hookContent()
   }
 
   /**
@@ -160,7 +191,7 @@ export class FingerprintHandler {
   /**
    * hook内容
    */
-  public hook() {
+  public hookContent() {
     if (!this.isEnable()) return;
     for (const task of hookTasks) {
       if (!task.condition || task.condition(this) === true) {

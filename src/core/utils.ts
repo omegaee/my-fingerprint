@@ -152,3 +152,13 @@ export const drawNoiseToWebgl = (gl: WebGLRenderingContext | WebGL2RenderingCont
   gl.vertexAttribPointer(noise, 2, gl.FLOAT, false, 0, 0);
   gl.drawArrays(gl.POINTS, 0, 1);
 }
+
+/**
+ * 获取属性
+ */
+export const getOwnProperties = (src: any): HookOwnProperties => ({
+  names: Object.getOwnPropertyNames(src),
+  symbols: Object.getOwnPropertySymbols(src),
+  descriptors: Object.getOwnPropertyDescriptors(src),
+  keys: Reflect.ownKeys(src),
+})
