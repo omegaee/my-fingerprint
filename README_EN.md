@@ -32,6 +32,7 @@
 - [Usage](#usage)
 - [Popup Module](#popup-module)
 - [Test Target](#test-target)
+- [Development](#development)
 - [Support](#support)
 - [Disclaimer](#disclaimer)
 
@@ -39,6 +40,9 @@
 ## Usage
 
 #### Chrome & Edge
+
+***Frontend:***
+- Browser version required `Chrome 120+` `Edge 120+`.
 
 ***Installation:***
 1. Download the latest version of the Extension `.zip` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
@@ -51,10 +55,10 @@
 - (Optional) Left-click on the plug-in icon to enter the configuration page for customized configuration.
 - (Optional) If this does not work, try restarting your browser.
 
-***Frontend:***
-- Browser version required `Chrome 120+` `Edge 120+`.
-
 #### Firefox
+
+***Frontend:***
+- Browser version required `Firefox 136+`.
 
 ***Installation:***
 1. Download the latest version of the Extension `.xpi` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
@@ -67,48 +71,26 @@
 - (Optional) Left-click on the plug-in icon to enter the configuration page for customized configuration.
 - (Optional) If this does not work, try restarting your browser.
 
-***Frontend:***
-- Browser version required `Firefox 136+`.
-
 
 ## Popup Module
 
 <img src='./images/en/ui.png' width='360px' />
 
 ### Configuration Module
-- For customization of various fingerprints
-
-**Normal Fingerprint Config**
-- [x] UserAgent Series Info
-  - Only works on Chrome and Edge
-- [x] Browser Language
-- [x] Number of logical processors
-- [x] Screen Size
-- [x] Screen Color Depth
-- [x] Graphics Driver Info
-
-**Special Fingerprint Config**
-- [x] Timezone
-- [x] Canvas Fingerprint
-- [x] Audio Fingerprint
-- [x] Font Fingerprint
-- [x] WebGL Fingerprint
-- [x] WebRTC Protection
-- [x] WebGPU Fingerprint
-
-**Other Config**
-- [x] Language - Languages used by browser extensions
-- [x] Global Seed - Global Seed, Acts on `Random by Global Seed` Options
-- [x] Web Request Hooks - Making changes to web request headers
-- [x] Iframe Hooks - Injection into Iframe
-
+- **Normal Fingerprint Config**
+- **Special Fingerprint Config**
+- **Other Config**
+  - [x] Language - Languages used by browser extensions
+  - [x] Global Seed - Global Seed, Acts on `Random by Global Seed` Options
+  - [x] Web Request Hooks - Making changes to web request headers
+  - [x] Iframe Hooks - Injection into Iframe
 
 ### Record Module
-> Shows how many times the current tab has been accessed for various fingerprints
+- Shows how many times the current tab has been accessed for various fingerprints
 
 ### Whitelist Module
-> The whitelist list can be edited
-> Support for sub-domain matching
+- The whitelist list can be edited
+- Support for sub-domain matching
 
 
 ## Test Target
@@ -118,6 +100,22 @@
 - [x] https://www.ip77.net/
 - [x] https://www.browserscan.net/
 - [x] https://abrahamjuliot.github.io/creepjs/
+
+
+## Development
+```sh
+cd <project>
+npm install
+```
+
+#### Chrome & Edge
+- Run `npm run dev`
+- In the browser extension interface, turn on `Developer Mode`, click `Load Unzipped Extension`, and select the `<project>/dist/` directory.
+
+#### Firefox
+- Run `npm run dev:firefox`, failing which you run it again.
+- In the browser extension interface, click `Load Temporary Extension` and select `<project>/dist/manifest.json`.
+- It is recommended to delete `<project>/src/core/output.js` before compiling for non-first time.
 
 
 ## Support
