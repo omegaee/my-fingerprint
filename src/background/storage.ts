@@ -19,6 +19,9 @@ type LocalStorageContent = [
   whitelist: LocalStorageWhitelist
 }
 
+/**
+ * 格式化LocalStorage
+ */
 const genStorageContent = (storage: LocalStorage): LocalStorageContent => ({
   storage,
   whitelist: {
@@ -91,6 +94,16 @@ export const genDefaultLocalStorage = (): LocalStorage => {
 }
 
 /**
+ * 订阅url
+ */
+const fetchJson = (url: string): Promise<object | undefined> => {
+  if (!url.includes("://")) url = chrome.runtime.getURL(url);
+  return fetch(url)
+    .then(data => data.json())
+    .catch(_ => console.warn('Pull config failed'))
+}
+
+/**
  * 合并存储（dst覆盖src，合并到dst）
  * 会修改dst
  */
@@ -143,6 +156,19 @@ export const initLocalStorage = debouncedAsync(async () => {
   }
   mContent = genStorageContent(_storage)
   chrome.storage.local.set(_storage).then(() => reRequestHeader())
+  fetchJson('config.json').then((data: DeepPartial<LocalStorage> | undefined) => {
+    if (!data) return;
+    /* 加载配置 */
+    if (data.config && Object.keys(data.config).length) {
+      updateLocalConfig(data.config)
+    }
+    /* 加载白名单 */
+    if (mContent && data.whitelist?.length) {
+      const [_, { match }] = mContent;
+      const wlist = data.whitelist.filter(v => !match(v))  // 去重
+      if (wlist.length) updateLocalWhitelist({ add: wlist })
+    }
+  })
   return mContent
 })
 
