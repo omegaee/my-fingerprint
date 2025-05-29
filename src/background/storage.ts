@@ -87,20 +87,13 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       input: {
         globalSeed: String(sGlobal),
       },
+      subscribe: {
+        url: 'config.json'
+      },
       language: navigator.language,
     },
     whitelist: []
   }
-}
-
-/**
- * 订阅url
- */
-const fetchJson = (url: string): Promise<object | undefined> => {
-  if (!url.includes("://")) url = chrome.runtime.getURL(url);
-  return fetch(url)
-    .then(data => data.json())
-    .catch(_ => console.warn('Pull config failed'))
 }
 
 /**
@@ -155,22 +148,38 @@ export const initLocalStorage = debouncedAsync(async () => {
     whitelist: _curr.whitelist ?? _new.whitelist,
   }
   mContent = genStorageContent(_storage)
-  chrome.storage.local.set(_storage).then(() => reRequestHeader())
-  fetchJson('config.json').then((data: DeepPartial<LocalStorage> | undefined) => {
-    if (!data) return;
-    /* 加载配置 */
-    if (data.config && Object.keys(data.config).length) {
-      updateLocalConfig(data.config)
-    }
-    /* 加载白名单 */
-    if (mContent && data.whitelist?.length) {
-      const [_, { match }] = mContent;
-      const wlist = data.whitelist.filter(v => !match(v))  // 去重
-      if (wlist.length) updateLocalWhitelist({ add: wlist })
-    }
+  chrome.storage.local.set(_storage).then(() => {
+    reRequestHeader()
+    applySubscribeStorage()
   })
   return mContent
 })
+
+/**
+ * 从url中拉取配置
+ */
+const applySubscribeStorage = async () => {
+  const [storage, { match }] = await getLocalStorage();
+  
+  let url = storage.config.subscribe.url
+  if (!url.includes("://")) url = chrome.runtime.getURL(url);
+
+  /* 拉取内容 */
+  const data = await fetch(url)
+    .then(data => data.json() as DeepPartial<LocalStorage>)
+    .catch(_ => console.warn('Pull config failed'))
+
+  if (!data) return;
+  /* 加载配置 */
+  if (data.config && Object.keys(data.config).length) {
+    updateLocalConfig(data.config)
+  }
+  /* 加载白名单 */
+  if (data.whitelist?.length) {
+    const wlist = data.whitelist.filter(v => !match(v))  // 去重
+    if (wlist.length) updateLocalWhitelist({ add: wlist });
+  }
+}
 
 /**
  * 获取配置
