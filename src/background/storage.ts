@@ -158,7 +158,7 @@ export const initLocalStorage = debouncedAsync(async () => {
 /**
  * 从url中拉取配置
  */
-const applySubscribeStorage = async () => {
+export const applySubscribeStorage = async () => {
   const [storage, { match }] = await getLocalStorage();
   
   let url = storage.config.subscribe.url
@@ -169,16 +169,17 @@ const applySubscribeStorage = async () => {
     .then(data => data.json() as DeepPartial<LocalStorage>)
     .catch(_ => console.warn('Pull config failed'))
 
-  if (!data) return;
+  if (!data) return false;
   /* 加载配置 */
   if (data.config && Object.keys(data.config).length) {
-    updateLocalConfig(data.config)
+    await updateLocalConfig(data.config)
   }
   /* 加载白名单 */
   if (data.whitelist?.length) {
     const wlist = data.whitelist.filter(v => !match(v))  // 去重
-    if (wlist.length) updateLocalWhitelist({ add: wlist });
+    if (wlist.length) await updateLocalWhitelist({ add: wlist });
   }
+  return true;
 }
 
 /**

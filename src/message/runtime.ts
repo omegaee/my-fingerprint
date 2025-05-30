@@ -5,6 +5,7 @@ export const enum MRuntimeType {
   UpdateWhitelist = 'update-whitelist',
   ChangeScriptWhitelist = 'change-script-whitelist',
   GetNewVersion = 'get-new-version',
+  Subscribe = 'subscribe',
 }
 
 ///
@@ -39,6 +40,10 @@ export type MRuntimeRequest = {
   [MRuntimeType.GetNewVersion]: {
     type: MRuntimeType.GetNewVersion,
   },
+  [MRuntimeType.Subscribe]: {
+    type: MRuntimeType.Subscribe,
+    url: string
+  },
 }
 
 ///
@@ -48,6 +53,7 @@ export type MRuntimeResponse = {
   [MRuntimeType.SetConfig]: LocalStorageConfig | undefined,
   [MRuntimeType.GetNotice]: Partial<Record<string, number>> | undefined,
   [MRuntimeType.GetNewVersion]: string | undefined,
+  [MRuntimeType.Subscribe]: LocalStorage | undefined
 } & {
   [key in MRuntimeType]: void
 }
@@ -107,5 +113,15 @@ export const sendRuntimeUpdateWhiteList = (data: MRuntimeRequest[MRuntimeType.Up
 export const sendRuntimeGetNewVersion = () => {
   return sendMessage<MRuntimeType.GetNewVersion>({
     type: MRuntimeType.GetNewVersion,
+  })
+}
+
+/**
+ * 订阅内容
+ */
+export const sendRuntimeSubscribe = (url: string) => {
+  return sendMessage<MRuntimeType.Subscribe>({
+    type: MRuntimeType.Subscribe,
+    url,
   })
 }

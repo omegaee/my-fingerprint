@@ -112,7 +112,8 @@
     "ok": {
       "config-import": "配置导入成功",
       "config-export": "配置导出成功",
-      "subscribe-test": "订阅测试通过"
+      "subscribe-test": "订阅测试通过",
+      "subscribe": "订阅成功"
     },
     "err": {
       "input-hostname": "请输入正确的域名",
@@ -124,7 +125,8 @@
       "config-export": "配置导出失败",
       "config-unloaded": "配置未加载",
       "import-empty": "导入配置为空",
-      "subscribe-test": "订阅测试失败"
+      "subscribe-test": "订阅测试失败",
+      "subscribe": "订阅失败"
     },
     "if": {
       "remove-parent-domain": "是否移除对应的父域名",

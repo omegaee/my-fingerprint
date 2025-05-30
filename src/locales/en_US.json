@@ -112,7 +112,8 @@
     "ok": {
       "config-import": "Import Config Success",
       "config-export": "Export Config Success",
-      "subscribe-test": "Subscription Test Passed"
+      "subscribe-test": "Subscription Test Passed",
+      "subscribe": "Subscription Success"
     },
     "err": {
       "input-hostname": "Please enter the correct domain name",
@@ -124,7 +125,8 @@
       "config-export": "Export Config Error",
       "config-unloaded": "Config Unloaded",
       "import-empty": "Import Config is Empty",
-      "subscribe-test": "Subscription Test Failed"
+      "subscribe-test": "Subscription Test Failed",
+      "subscribe": "Subscription Failed"
     },
     "if": {
       "remove-parent-domain": "Whether to remove its parent domain",

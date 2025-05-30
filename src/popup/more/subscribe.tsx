@@ -3,6 +3,8 @@ import { useStorageStore } from "../stores/storage"
 import { App, Button, Input, Tooltip } from "antd"
 import { ApiOutlined, CheckOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
+import { sendRuntimeSubscribe } from "@/message/runtime";
+import { useShallow } from "zustand/shallow";
 
 type SubscribeViewProps = {
   className?: string
@@ -13,7 +15,10 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
   const [input, setInput] = useState<string>('')
   const { message } = App.useApp()
 
-  const config = useStorageStore((state) => state.config)
+  const { config, syncLoadStorage } = useStorageStore(useShallow((state) => ({
+    config: state.config,
+    syncLoadStorage: state.syncLoadStorage,
+  })))
 
   useEffect(() => {
     const url = config?.subscribe.url
@@ -29,10 +34,30 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
     if (!config) return;
     let url = input
     if (!url.includes("://")) url = chrome.runtime.getURL(url);
+    console.log(url);
     fetch(url)
       .then(v => v.json())
-      .then(_ => message.success(t('tip.ok.subscribe-test')))
+      .then(() => message.success(t('tip.ok.subscribe-test')))
       .catch(e => message.error(`${t('tip.err.subscribe-test')}: ${e}`))
+  }
+
+  const saveTarget = () => {
+    if (!config) return;
+    const url = input.trim()
+    if (url === config.subscribe.url) {
+      setInput(url)
+      return
+    }
+
+    config.subscribe.url = url
+    sendRuntimeSubscribe(url).then((v: LocalStorage | void) => {
+      if (v) {
+        syncLoadStorage(v)
+        message.success(t('tip.ok.subscribe'))
+      } else {
+        message.success(t('tip.err.subscribe'))
+      }
+    })
   }
 
   return <section className={className}>
@@ -47,9 +72,7 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
           <Button
             icon={<CheckOutlined />}
             disabled={input === config?.subscribe.url}
-            onClick={() => {
-              if (config) config.subscribe.url = input;
-            }}
+            onClick={saveTarget}
           />
         </Tooltip>
       </div>
