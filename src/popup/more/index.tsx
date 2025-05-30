@@ -1,9 +1,10 @@
 import { Divider } from "antd"
-import { type MessageInstance } from "antd/es/message/interface";
 import { useTranslation } from "react-i18next";
 import PermissionView from "./permission";
 import MoreConfigView from "./config";
 import SubscribeView from "./subscribe";
+import TipIcon from "@/components/data/tip-icon";
+import Markdown from "react-markdown";
 
 export type MoreViewProps = {
 }
@@ -12,7 +13,10 @@ export const MoreView = ({ }: MoreViewProps) => {
   const [t] = useTranslation()
 
   return <section>
-    <Divider rootClassName="!mt-0 !mb-2" orientation='center'>{t('label.subscribe')}</Divider>
+    <Divider rootClassName="!mt-0 !mb-2" orientation='center'>
+      {t('label.subscribe')}
+      <TipIcon.Question className="ml-1" content={<Markdown className='[&_ul]:list-disc' children={t('desc.subscribe')} />} />
+    </Divider>
     <SubscribeView className="mb-2" />
     <Divider rootClassName="!mt-0 !mb-2" orientation='center'>{t('label.config-file')}</Divider>
     <MoreConfigView className="flex flex-wrap justify-center items-center gap-2"/>

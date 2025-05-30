@@ -145,6 +145,9 @@
       "userScripts": "Allow the extension to use the **userScripts** permission to make the extension adaptable to more sites"
     }
   },
+  "desc": {
+    "subscribe": "The extension will pull the configuration from the subscription target when it loads, the configuration content must be in json format.\n\nIt will overwrite the original configuration and merge the whitelist.\n\nSample configurations can be obtained using the configuration export feature.\n\n**Examples**\n\n- Null value\n\n- Default: `config.json`\n\n- Local: `file:///example/config.json`\n\n- Network: `http://example.com/config.json`"
+  },
   "city": {
     "SH": "Shanghai",
     "NY": "New York",

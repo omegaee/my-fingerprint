@@ -77,10 +77,13 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
         </Tooltip>
       </div>
       <div>
-        <Tooltip
-          title={t('tip.label.subscribe-test')}
-          children={<Button icon={<ApiOutlined />} onClick={testTarget} />}
-        />
+        <Tooltip title={t('tip.label.subscribe-test')} >
+          <Button 
+            icon={<ApiOutlined />}
+            disabled={input.trim() === ''}
+            onClick={testTarget}
+          />
+        </Tooltip>
       </div>
     </div>
   </section>

@@ -161,7 +161,8 @@ export const initLocalStorage = debouncedAsync(async () => {
 export const applySubscribeStorage = async () => {
   const [storage, { match }] = await getLocalStorage();
   
-  let url = storage.config.subscribe.url
+  let url = storage.config.subscribe.url.trim()
+  if (url === '') return true;
   if (!url.includes("://")) url = chrome.runtime.getURL(url);
 
   /* 拉取内容 */
