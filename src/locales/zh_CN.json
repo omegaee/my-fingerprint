@@ -8,7 +8,8 @@
     "custom": "自定义",
     "special": "特殊",
     "confirm": "确定",
-    "cancel": "取消"
+    "cancel": "取消",
+    "save": "保存"
   },
   "e": {
     "enabled": "扩展已开启",
@@ -31,7 +32,8 @@
     "config-export": "导出配置",
     "clipboard-export": "复制到剪贴板",
     "clipboard-import": "从剪贴板导入",
-    "permission": "权限"
+    "permission": "权限",
+    "subscribe": "订阅"
   },
   "type": {
     "default": "系统值",
@@ -103,11 +105,14 @@
     "label": {
       "not-support-whitelist": "当前标签页不支持",
       "no-auth-required": "无需授权",
-      "json": "Json格式"
+      "json": "Json格式",
+      "subscribe-save": "保存并订阅",
+      "subscribe-test": "订阅目标检测"
     },
     "ok": {
       "config-import": "配置导入成功",
-      "config-export": "配置导出成功"
+      "config-export": "配置导出成功",
+      "subscribe-test": "订阅测试通过"
     },
     "err": {
       "input-hostname": "请输入正确的域名",
@@ -118,7 +123,8 @@
       "config-import": "配置导入失败",
       "config-export": "配置导出失败",
       "config-unloaded": "配置未加载",
-      "import-empty": "导入配置为空"
+      "import-empty": "导入配置为空",
+      "subscribe-test": "订阅测试失败"
     },
     "if": {
       "remove-parent-domain": "是否移除对应的父域名",

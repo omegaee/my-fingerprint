@@ -132,7 +132,7 @@ function Application() {
       {
         label: moreBadge ? <Badge dot>{t('e.more')}</Badge> : t('e.more'),
         // icon: <MoreOutlined />,
-        children: <MoreView msgApi={messageApi} />,
+        children: <MoreView />,
       }
     ].map((item, index) => ({ ...item, key: String(index) }))
   }, [i18n.language, tab, hookRecords])

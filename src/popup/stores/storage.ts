@@ -11,15 +11,15 @@ type State = {
 
 type Actions = {
   loadStorage: () => Promise<void>
-  saveStorage: () => void
   importStorage: (ss: LocalStorage) => Promise<void>
+  saveConfig: () => void
   addWhitelist: (list: string | string[]) => void
   deleteWhitelist: (list: string | string[]) => void
 }
 
 export const useStorageStore = create<State & Actions>(((set, get) => {
 
-  const saveStorage = debounce(() => {
+  const saveConfig = debounce(() => {
     const config = get().storage?.config
     if (config) {
       sendRuntimeSetConfig(config)
@@ -31,7 +31,7 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
       set(target, key, value) {
         // @ts-ignore
         target[key] = value
-        saveStorage()
+        saveConfig()
         return true
       }
     });
@@ -123,8 +123,8 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     config: undefined,
     whiteList: undefined,
     loadStorage,
-    saveStorage,
     importStorage,
+    saveConfig,
     addWhitelist,
     deleteWhitelist,
   }

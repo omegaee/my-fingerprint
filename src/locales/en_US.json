@@ -8,7 +8,8 @@
     "custom": "Custom",
     "special": "Special",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "e": {
     "enabled": "Extension Enabled",
@@ -31,7 +32,8 @@
     "config-export": "Export Config",
     "clipboard-export": "Export To Clipboard",
     "clipboard-import": "Import From Clipboard",
-    "permission": "Permission"
+    "permission": "Permission",
+    "subscribe": "Subscribe"
   },
   "type": {
     "default": "Default",
@@ -103,11 +105,14 @@
     "label": {
       "not-support-whitelist": "Not Supported",
       "no-auth-required": "No Auth Required",
-      "json": "Json Format"
+      "json": "Json Format",
+      "subscribe-save": "Save and Subscribe",
+      "subscribe-test": "Subscription Target Detection"
     },
     "ok": {
       "config-import": "Import Config Success",
-      "config-export": "Export Config Success"
+      "config-export": "Export Config Success",
+      "subscribe-test": "Subscription Test Passed"
     },
     "err": {
       "input-hostname": "Please enter the correct domain name",
@@ -118,7 +123,8 @@
       "config-import": "Import Config Error",
       "config-export": "Export Config Error",
       "config-unloaded": "Config Unloaded",
-      "import-empty": "Import Config is Empty"
+      "import-empty": "Import Config is Empty",
+      "subscribe-test": "Subscription Test Failed"
     },
     "if": {
       "remove-parent-domain": "Whether to remove its parent domain",
