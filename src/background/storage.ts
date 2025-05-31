@@ -9,6 +9,7 @@ type LocalStorageWhitelist = {
   match: (v: string) => boolean
   add: (v: string) => void
   remove: (v: string) => void
+  clean: () => void
 }
 
 type LocalStorageContent = [
@@ -33,6 +34,9 @@ const genStorageContent = (storage: LocalStorage): LocalStorageContent => ({
       const index = storage.whitelist.indexOf(v)
       index !== -1 && storage.whitelist.splice(index, 1)
     },
+    clean() {
+      storage.whitelist = []
+    }
   },
   [Symbol.iterator]() {
     return Object.values(this)[Symbol.iterator]();
@@ -233,6 +237,16 @@ export const updateLocalWhitelist = async (data: { add?: string[], del?: string[
   saveLocalWhitelist(storage.whitelist)
   reRequestHeader()
   return storage.whitelist
+}
+
+/**
+ * 清理白名单
+ */
+export const cleanLocalWhitelist = async () => {
+  const [storage, { clean }] = await getLocalStorage()
+  clean()
+  saveLocalWhitelist(storage.whitelist)
+  reRequestHeader()
 }
 
 /**

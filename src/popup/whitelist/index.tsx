@@ -2,6 +2,7 @@ import { useDebounceCallback } from "@/utils/hooks"
 import { Button, Input, Popconfirm, Space, theme } from "antd"
 import { useEffect, useState } from "react"
 import {
+  DeleteOutlined,
   PlusOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
@@ -28,10 +29,11 @@ export const WhitelistView = (props: WhitelistProps) => {
   })
   const { token } = theme.useToken()
 
-  const { whitelist, addWhitelist, deleteWhitelist } = useStorageStore(useShallow((state) => ({
+  const { whitelist, addWhitelist, deleteWhitelist, cleanWhitelist } = useStorageStore(useShallow((state) => ({
     whitelist: state.whitelist,
     addWhitelist: state.addWhitelist,
     deleteWhitelist: state.deleteWhitelist,
+    cleanWhitelist: state.cleanWhitelist,
   })))
 
   useEffect(() => {
@@ -71,12 +73,27 @@ export const WhitelistView = (props: WhitelistProps) => {
     deleteWhitelist(item)
   }
 
+  const cleanItem = () => {
+    if (!whitelist) return;
+    cleanWhitelist()
+  }
+
   return <section className="h-full flex flex-col rounded" style={{
     backgroundColor: token.colorBgContainer,
   }}>
-    <Input suffix={<SearchOutlined />}
-      placeholder="example.com"
-      onInput={({ target }: any) => debounceSetFilterValue(target.value)} />
+    <Space.Compact>
+      <Input suffix={<SearchOutlined />}
+        placeholder="example.com"
+        onInput={({ target }: any) => debounceSetFilterValue(target.value)} />
+      <Popconfirm title={t('tip.if.clean-whitelist')}
+        placement='topLeft'
+        okText={t('g.confirm')}
+        cancelText={t('g.cancel')}
+        okType='danger'
+        onConfirm={cleanItem}
+        children={<Button icon={<DeleteOutlined />} disabled={whitelist?.length === 0} />}
+      />
+    </Space.Compact>
     <section className="overflow-y-auto no-scrollbar grow flex flex-col">
       {filteredWhitelist.map((item) => <WhitelistItem key={item} item={item} filterValue={filterValue} onDelete={deleteItem} />)}
     </section>

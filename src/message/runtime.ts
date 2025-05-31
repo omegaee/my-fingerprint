@@ -28,10 +28,11 @@ export type MRuntimeRequest = {
   },
   [MRuntimeType.UpdateWhitelist]: {
     type: MRuntimeType.UpdateWhitelist,
-    data: {
+    data?: {
       add?: string[],
       del?: string[],
     }
+    clean?: boolean
   },
   [MRuntimeType.ChangeScriptWhitelist]: {
     type: MRuntimeType.ChangeScriptWhitelist,
@@ -104,6 +105,16 @@ export const sendRuntimeUpdateWhiteList = (data: MRuntimeRequest[MRuntimeType.Up
   return sendMessage<MRuntimeType.UpdateWhitelist>({
     type: MRuntimeType.UpdateWhitelist,
     data,
+  })
+}
+
+/**
+ * 清理白名单
+ */
+export const sendRuntimeCleanWhiteList = () => {
+  return sendMessage<MRuntimeType.UpdateWhitelist>({
+    type: MRuntimeType.UpdateWhitelist,
+    clean: true,
   })
 }
 

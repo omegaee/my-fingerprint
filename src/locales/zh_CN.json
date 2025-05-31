@@ -132,7 +132,8 @@
       "remove-parent-domain": "是否移除对应的父域名",
       "remove-child-domain": "是否移对应的除子域名",
       "remove-permission": "是否关闭对应的权限",
-      "config-import": "是否覆盖当前配置"
+      "config-import": "是否覆盖当前配置",
+      "clean-whitelist": "是否清空当前白名单"
     }
   },
   "perm": {

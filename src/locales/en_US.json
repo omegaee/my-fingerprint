@@ -132,7 +132,8 @@
       "remove-parent-domain": "Whether to remove its parent domain",
       "remove-child-domain": "Whether to remove its child domain",
       "remove-permission": "Whether to remove its permissions",
-      "config-import": "Whether to overwrite the current config"
+      "config-import": "Whether to overwrite the current config",
+      "clean-whitelist": "Whether to clean the current whitelist"
     }
   },
   "perm": {

@@ -1,4 +1,4 @@
-import { applySubscribeStorage, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
+import { applySubscribeStorage, cleanLocalWhitelist, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
 import { type MRuntimeRequest, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
@@ -69,8 +69,9 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       break
     }
     case MRuntimeType.UpdateWhitelist: {
-      updateLocalWhitelist(msg.data)
-      reRegisterScript()
+      const fun = () => reRegisterScript()
+      if (msg.clean) cleanLocalWhitelist().then(fun);
+      if (msg.data) updateLocalWhitelist(msg.data).then(fun);
       break
     }
     case MRuntimeType.GetNewVersion: {

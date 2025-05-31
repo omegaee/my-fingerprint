@@ -1,4 +1,4 @@
-import { sendRuntimeSetConfig, sendRuntimeUpdateWhiteList } from "@/message/runtime"
+import { sendRuntimeCleanWhiteList, sendRuntimeSetConfig, sendRuntimeUpdateWhiteList } from "@/message/runtime"
 import { deepProxy, selectChildDomains, tryUrl } from "@/utils/base"
 import { debounce, debouncedAsync } from "@/utils/timer"
 import { create } from "zustand"
@@ -16,6 +16,7 @@ type Actions = {
   saveConfig: () => void
   addWhitelist: (list: string | string[]) => void
   deleteWhitelist: (list: string | string[]) => void
+  cleanWhitelist: () => void
 }
 
 export const useStorageStore = create<State & Actions>(((set, get) => {
@@ -122,6 +123,14 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     })
   }
 
+  const cleanWhitelist = () => {
+    const storage = get().storage
+    if (!storage) return;
+    storage.whitelist = []
+    set({ whitelist: storage.whitelist })
+    sendRuntimeCleanWhiteList()
+  }
+
   return {
     storage: undefined,
     config: undefined,
@@ -132,5 +141,6 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     saveConfig,
     addWhitelist,
     deleteWhitelist,
+    cleanWhitelist,
   }
 }))
