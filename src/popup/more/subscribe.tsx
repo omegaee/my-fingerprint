@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useStorageStore } from "../stores/storage"
 import { App, Button, Input, Tooltip } from "antd"
-import { ApiOutlined, CheckOutlined, ReloadOutlined } from '@ant-design/icons';
+import { ApiOutlined, CheckOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import { sendRuntimeSubscribe } from "@/message/runtime";
 import { useShallow } from "zustand/shallow";
@@ -54,7 +54,7 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
         syncLoadStorage(v)
         message.success(t('tip.ok.subscribe'))
       } else {
-        message.success(t('tip.err.subscribe'))
+        message.error(t('tip.err.subscribe'))
       }
     })
   }

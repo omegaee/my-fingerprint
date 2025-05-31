@@ -168,7 +168,7 @@ export const applySubscribeStorage = async () => {
   /* 拉取内容 */
   const data = await fetch(url)
     .then(data => data.json() as DeepPartial<LocalStorage>)
-    .catch(_ => console.warn('Pull config failed'))
+    .catch(e => console.warn('Pull config failed: ' + e))
 
   if (!data) return false;
   /* 加载配置 */
