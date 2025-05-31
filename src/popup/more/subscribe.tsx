@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useStorageStore } from "../stores/storage"
 import { App, Button, Input, Tooltip } from "antd"
-import { ApiOutlined, CheckOutlined } from '@ant-design/icons';
+import { ApiOutlined, CheckOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import { sendRuntimeSubscribe } from "@/message/runtime";
 import { useShallow } from "zustand/shallow";
@@ -13,6 +13,7 @@ type SubscribeViewProps = {
 export const SubscribeView = ({ className }: SubscribeViewProps) => {
   const [t] = useTranslation()
   const [input, setInput] = useState<string>('')
+  const [saveable, setSaveable] = useState(true)
   const { message } = App.useApp()
 
   const { config, syncLoadStorage } = useStorageStore(useShallow((state) => ({
@@ -41,15 +42,13 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
       .catch(e => message.error(`${t('tip.err.subscribe-test')}: ${e}`))
   }
 
-  const saveTarget = () => {
+  const subscribeTarget = () => {
     if (!config) return;
-    const url = input.trim()
-    if (url === config.subscribe.url) {
-      setInput(url)
-      return
+    let url: string | undefined = undefined
+    if (config.subscribe.url !== input.trim()) {
+      url = input.trim()
+      config.subscribe.url = url
     }
-
-    config.subscribe.url = url
     sendRuntimeSubscribe(url).then((v: LocalStorage | void) => {
       if (v) {
         syncLoadStorage(v)
@@ -69,16 +68,16 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
       />
       <div>
         <Tooltip title={t('tip.label.subscribe-save')}>
-          <Button
-            icon={<CheckOutlined />}
-            disabled={input === config?.subscribe.url}
-            onClick={saveTarget}
-          />
+          <Button icon={<CheckOutlined />} disabled={!saveable} onClick={() => {
+            setTimeout(() => setSaveable(true), 1000);
+            setSaveable(false);
+            subscribeTarget()
+          }} />
         </Tooltip>
       </div>
       <div>
         <Tooltip title={t('tip.label.subscribe-test')} >
-          <Button 
+          <Button
             icon={<ApiOutlined />}
             disabled={input.trim() === ''}
             onClick={testTarget}

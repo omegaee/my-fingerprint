@@ -42,7 +42,7 @@ export type MRuntimeRequest = {
   },
   [MRuntimeType.Subscribe]: {
     type: MRuntimeType.Subscribe,
-    url: string
+    url?: string
   },
 }
 
@@ -119,7 +119,7 @@ export const sendRuntimeGetNewVersion = () => {
 /**
  * 订阅内容
  */
-export const sendRuntimeSubscribe = (url: string) => {
+export const sendRuntimeSubscribe = (url?: string) => {
   return sendMessage<MRuntimeType.Subscribe>({
     type: MRuntimeType.Subscribe,
     url,

@@ -81,7 +81,7 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
     }
     case MRuntimeType.Subscribe: {
       const fun = async () => {
-        await updateLocalConfig({ subscribe: { url: msg.url } });
+        if (msg.url != null) await updateLocalConfig({ subscribe: { url: msg.url.trim() } });
         if (await applySubscribeStorage()) {
           const [storage] = await getLocalStorage()
           sendResponse(storage)
