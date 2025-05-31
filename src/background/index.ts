@@ -1,4 +1,4 @@
-import { getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
+import { applySubscribeStorage, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, isRegScript, reRegisterScript } from './script';
 import { type MRuntimeRequest, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
@@ -77,6 +77,19 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       getNewVersion().then((version) => {
         sendResponse(version)
       })
+      return true
+    }
+    case MRuntimeType.Subscribe: {
+      const fun = async () => {
+        if (msg.url != null) await updateLocalConfig({ subscribe: { url: msg.url.trim() } });
+        if (await applySubscribeStorage()) {
+          const [storage] = await getLocalStorage()
+          sendResponse(storage)
+        } else {
+          sendResponse(undefined)
+        }
+      }
+      fun()
       return true
     }
   }

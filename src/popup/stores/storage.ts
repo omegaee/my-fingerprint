@@ -10,16 +10,17 @@ type State = {
 }
 
 type Actions = {
+  syncLoadStorage: (storage: LocalStorage) => void
   loadStorage: () => Promise<void>
-  saveStorage: () => void
   importStorage: (ss: LocalStorage) => Promise<void>
+  saveConfig: () => void
   addWhitelist: (list: string | string[]) => void
   deleteWhitelist: (list: string | string[]) => void
 }
 
 export const useStorageStore = create<State & Actions>(((set, get) => {
 
-  const saveStorage = debounce(() => {
+  const saveConfig = debounce(() => {
     const config = get().storage?.config
     if (config) {
       sendRuntimeSetConfig(config)
@@ -31,19 +32,22 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
       set(target, key, value) {
         // @ts-ignore
         target[key] = value
-        saveStorage()
+        saveConfig()
         return true
       }
     });
   }
 
-  const loadStorage = debouncedAsync(async () => {
-    const storage = await chrome.storage.local.get() as LocalStorage
+  const syncLoadStorage = (storage: LocalStorage) => {
     set({
       storage,
       config: proxyConfig(storage.config),
       whitelist: storage.whitelist,
     })
+  }
+
+  const loadStorage = debouncedAsync(async () => {
+    syncLoadStorage(await chrome.storage.local.get() as LocalStorage)
   })
 
   const importStorage = async (ss: Partial<LocalStorage>) => {
@@ -122,9 +126,10 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     storage: undefined,
     config: undefined,
     whiteList: undefined,
+    syncLoadStorage,
     loadStorage,
-    saveStorage,
     importStorage,
+    saveConfig,
     addWhitelist,
     deleteWhitelist,
   }

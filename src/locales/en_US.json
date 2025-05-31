@@ -8,7 +8,8 @@
     "custom": "Custom",
     "special": "Special",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "e": {
     "enabled": "Extension Enabled",
@@ -31,7 +32,8 @@
     "config-export": "Export Config",
     "clipboard-export": "Export To Clipboard",
     "clipboard-import": "Import From Clipboard",
-    "permission": "Permission"
+    "permission": "Permission",
+    "subscribe": "Subscribe"
   },
   "type": {
     "default": "Default",
@@ -103,11 +105,15 @@
     "label": {
       "not-support-whitelist": "Not Supported",
       "no-auth-required": "No Auth Required",
-      "json": "Json Format"
+      "json": "Json Format",
+      "subscribe-save": "Save and Subscribe",
+      "subscribe-test": "Subscription Target Detection"
     },
     "ok": {
       "config-import": "Import Config Success",
-      "config-export": "Export Config Success"
+      "config-export": "Export Config Success",
+      "subscribe-test": "Subscription Test Passed",
+      "subscribe": "Subscription Success"
     },
     "err": {
       "input-hostname": "Please enter the correct domain name",
@@ -118,7 +124,9 @@
       "config-import": "Import Config Error",
       "config-export": "Export Config Error",
       "config-unloaded": "Config Unloaded",
-      "import-empty": "Import Config is Empty"
+      "import-empty": "Import Config is Empty",
+      "subscribe-test": "Subscription Test Failed",
+      "subscribe": "Subscription Failed"
     },
     "if": {
       "remove-parent-domain": "Whether to remove its parent domain",
@@ -136,6 +144,9 @@
     "desc": {
       "userScripts": "Allow the extension to use the **userScripts** permission to make the extension adaptable to more sites"
     }
+  },
+  "desc": {
+    "subscribe": "**Usage**\n\n- The extension will pull the configuration from the subscription target when it loads, the configuration content must be in json format.\n\n- It will overwrite the original configuration and merge the whitelist.\n\n- Sample configurations can be obtained using the configuration export feature.\n\n**Examples**\n\n- Null value\n\n- Default: `config.json`\n\n- Local: `file:///example/config.json`\n\n- Network: `http://example.com/config.json`"
   },
   "city": {
     "SH": "Shanghai",

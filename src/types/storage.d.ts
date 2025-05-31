@@ -22,6 +22,10 @@ type LocalStorageConfig = {
   input: {
     globalSeed: string
   }
+  // 订阅
+  subscribe: {
+    url: string
+  }
   // 其他
   language: string
 }
