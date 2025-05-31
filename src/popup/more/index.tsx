@@ -13,16 +13,16 @@ export const MoreView = ({ }: MoreViewProps) => {
   const [t] = useTranslation()
 
   return <section>
-    <Divider rootClassName="!mt-0 !mb-2" orientation='center'>
-      {t('label.subscribe')}
-      <TipIcon.Question className="ml-1" content={<Markdown className='[&_ul]:list-disc' children={t('desc.subscribe')} />} />
-    </Divider>
-    <SubscribeView className="mb-2" />
-    <Divider rootClassName="!mt-0 !mb-2" orientation='center'>{t('label.config-file')}</Divider>
+    <Divider rootClassName="!mt-0 !mb-3" orientation='center'>{t('label.config-file')}</Divider>
     <MoreConfigView className="flex flex-wrap justify-center items-center gap-2"/>
-    <Divider rootClassName="!my-2" orientation='center'>{t('label.permission')}</Divider>
+    <Divider rootClassName="!my-3" orientation='center'>
+      {t('label.subscribe')}
+      <TipIcon.Question className="ml-1" content={<Markdown className='max-h-[220px] overflow-auto [&_ul]:list-disc [&_ul]:ml-3' children={t('desc.subscribe')} />} />
+    </Divider>
+    <SubscribeView />
+    <Divider rootClassName="!my-3" orientation='center'>{t('label.permission')}</Divider>
     <PermissionView className="flex flex-wrap justify-center items-center gap-2" />
-    <Divider rootClassName="!my-3" />
+    <Divider rootClassName="!mt-3 !mb-0" />
   </section>
 }
 
