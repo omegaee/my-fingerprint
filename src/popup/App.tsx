@@ -189,7 +189,8 @@ function Application() {
 
       <Divider style={{ margin: '8px 0 0 0' }} />
 
-      <Tabs className="h-[450px] grow" type="line" size='small' centered
+      <Tabs className="h-[450px] grow [&_.ant-tabs-tabpane]:animate-fadeIn" 
+        type="line" size='small' centered
         items={tabItems}
         tabBarStyle={{ marginBottom: '8px' }} />
 
