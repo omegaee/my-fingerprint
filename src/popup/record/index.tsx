@@ -36,7 +36,7 @@ export const FHookRecord = function ({ records }: FHookRecordProps) {
         </div>)}
       <div className='h-[--arrow-h]'></div>
     </div>
-    <div className="h-[--arrow-h] absolute bottom-0 left-0 right-0 flex justify-center items-end bg-gradient-to-b from-transparent to-70% to-[--ant-color-bg-base]">
+    <div className="h-[--arrow-h] absolute bottom-0 left-0 right-0 flex justify-center items-end bg-gradient-to-b from-transparent to-70% to-[--ant-color-bg-layout]">
       {isBottom ?
         <MinusOutlined className='text-xs' /> :
         <DownOutlined className='animate-pulse text-xs' />}
