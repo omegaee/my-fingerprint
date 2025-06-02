@@ -26,7 +26,7 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     if (config) {
       sendRuntimeSetConfig(config)
     }
-  }, 300)
+  }, 200)
 
   const proxyConfig = (config: LocalStorageConfig) => {
     return deepProxy(config, {
