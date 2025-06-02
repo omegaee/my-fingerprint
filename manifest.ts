@@ -44,7 +44,7 @@ const VALUES = {
 
 export const chromeManifest: ManifestV3Export = {
   ...baseManifest,
-  minimum_chrome_version: '120',
+  minimum_chrome_version: '102',
   permissions: [
     ...VALUES.permissions,
     ...VALUES.optional_permissions,
