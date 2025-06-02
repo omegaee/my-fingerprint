@@ -1,0 +1,68 @@
+{
+  "config": {
+    "fp": {
+      "navigator": {
+        "hardwareConcurrency": {
+          "type": 0
+        },
+        "language": {
+          "type": 0
+        },
+        "languages": {
+          "type": 0
+        },
+        "uaVersion": {
+          "type": 3
+        }
+      },
+      "normal": {
+        "glRenderer": {
+          "type": 0
+        },
+        "glVendor": {
+          "type": 0
+        }
+      },
+      "other": {
+        "audio": {
+          "type": 0
+        },
+        "canvas": {
+          "type": 3
+        },
+        "font": {
+          "type": 0
+        },
+        "timezone": {
+          "type": 0
+        },
+        "webgl": {
+          "type": 3
+        },
+        "webgpu": {
+          "type": 0
+        },
+        "webrtc": {
+          "type": 0
+        }
+      },
+      "screen": {
+        "colorDepth": {
+          "type": 0
+        },
+        "height": {
+          "type": 0
+        },
+        "pixelDepth": {
+          "type": 0
+        },
+        "width": {
+          "type": 0
+        }
+      }
+    }
+  },
+  "whitelist": [
+    "example.com"
+  ]
+}

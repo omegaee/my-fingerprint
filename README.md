@@ -43,7 +43,8 @@
 #### Chrome & Edge
 
 ***前置：***
-- 浏览器版本需求 `Chrome 120+` `Edge 120+`
+- 浏览器版本需求 `Chrome 102+` `Edge 102+`
+- 推荐 `Chrome 120+` `Edge 120+`
 
 ***安装：***
 1. 下载扩展最新版本的`.zip` -- [扩展下载](https://github.com/omegaee/my-fingerprint/releases/latest)
@@ -78,9 +79,9 @@
 <img src='./images/zh/ui.png' width='360px' />
 
 #### 配置模块
-- **普通指纹配置**
-- **特殊指纹配置**
-- **其他配置**
+- 普通指纹配置
+- 特殊指纹配置
+- 其他配置
   - [x] 语言 - 扩展界面使用语言
   - [x] 全局种子 - 作用于`根据全局种子随机值`选项
   - [x] 网络请求钩子 - 根据配置内容修改网络请求头
@@ -92,6 +93,25 @@
 #### 白名单模块
 - 可对以白名单列表进行编辑
 - 支持子域名匹配
+  - `example.com` 匹配 `*.example.com`, `*.*.example.com`
+
+#### 更多
+- 配置文件的导入导出
+- 权限
+- 订阅
+
+#### 订阅
+- 扩展加载时会从订阅目标上拉取配置，配置内容必须是json格式。
+- 会覆盖原配置并合并白名单。
+- 配置样本: 导出的配置或[template.json](./example/config/template.json)
+
+**例子**
+- 空值（关闭订阅）
+- 默认: `config.json`
+  - 默认为扩展所在目录
+- 本地: `file:///example/config.json`
+  - 需要开启扩展的`允许访问文件网址`
+- 网络: `http://example.com/config.json`
 
 
 ## 测试目标

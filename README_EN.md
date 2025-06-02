@@ -42,7 +42,8 @@
 #### Chrome & Edge
 
 ***Frontend:***
-- Browser version required `Chrome 120+` `Edge 120+`.
+- Browser version required `Chrome 102+` `Edge 102+`.
+- Recommend `Chrome 120+` `Edge 120+`.
 
 ***Installation:***
 1. Download the latest version of the Extension `.zip` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
@@ -76,21 +77,38 @@
 
 <img src='./images/en/ui.png' width='360px' />
 
-### Configuration Module
-- **Normal Fingerprint Config**
-- **Special Fingerprint Config**
-- **Other Config**
+#### Configuration Module
+- Normal Fingerprint Config
+- Special Fingerprint Config
+- Other Config
   - [x] Language - Languages used by browser extensions
   - [x] Global Seed - Global Seed, Acts on `Random by Global Seed` Options
   - [x] Web Request Hooks - Making changes to web request headers
   - [x] Iframe Hooks - Injection into Iframe
 
-### Record Module
+#### Record Module
 - Shows how many times the current tab has been accessed for various fingerprints
 
-### Whitelist Module
+#### Whitelist Module
 - The whitelist list can be edited
 - Support for sub-domain matching
+  - `example.com` matches `*.example.com`, `*.*.example.com`
+
+#### More
+- Configuration file import and export
+- Permission
+- Subscribe
+
+#### Subscribe
+- The extension will pull the configuration from the subscription target when it loads, the configuration content must be in json format.
+- It will overwrite the original configuration and merge the whitelist.
+- Configuration sample: Exported configuration or [template.json](./example/config/template.json)
+
+**Examples**
+- Blank value
+- Default: `config.json`
+- Local: `file:///example/config.json`
+- Network: `http://example.com/config.json`
 
 
 ## Test Target
