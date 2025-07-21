@@ -636,6 +636,46 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
+  'ClientRects': {
+    condition: ({ conf }) => true,
+    onEnable: ({ win, hooks, random }) => {
+      {
+        const desc = Object.getOwnPropertyDescriptors(win.DOMRect.prototype)
+        const hookProp = (key: keyof DOMRect) => {
+          const getter: (() => any) | undefined = desc[key]?.get
+          if (!getter) return;
+          Object.defineProperty(win.DOMRect.prototype, key, {
+            get() {
+              const res = getter.call(this)
+              return res + (Math.random() * 1e-8)
+            }
+          })
+        }
+        hookProp('x')
+        hookProp('y')
+        hookProp('width')
+        hookProp('height')
+      }
+      {
+        const desc = Object.getOwnPropertyDescriptors(win.DOMRectReadOnly.prototype)
+        const hookProp = (key: keyof DOMRectReadOnly) => {
+          const getter: (() => any) | undefined = desc[key]?.get
+          if (!getter) return;
+          Object.defineProperty(win.DOMRectReadOnly.prototype, key, {
+            get() {
+              const res = getter.call(this)
+              return res + (Math.random() * 1e-6)
+            }
+          })
+        }
+        hookProp('top')
+        hookProp('bottom')
+        hookProp('left')
+        hookProp('right')
+      }
+    }
+  },
+
   '.ownProperties': {
     onEnable: ({ win, symbol, hooks }) => {
       {
