@@ -637,7 +637,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   'domRect': {
-    condition: ({ conf }) => true,
+    condition: ({ conf }) => conf.fp.other.domRect.type !== HookType.default,
     onEnable: ({ win, conf, random }) => {
       {
         const desc = Object.getOwnPropertyDescriptors(win.DOMRect.prototype)
