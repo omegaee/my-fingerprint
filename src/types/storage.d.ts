@@ -55,6 +55,7 @@ type HookFingerprint = {
     webrtc: DefaultHookMode | DisableHookMode
     font: DefaultHookMode | RandomHookMode
     webgpu: DefaultHookMode | RandomHookMode
+    domRect: DefaultHookMode | RandomHookMode
   }
 }
 

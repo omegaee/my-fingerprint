@@ -636,9 +636,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'ClientRects': {
+  'domRect': {
     condition: ({ conf }) => true,
-    onEnable: ({ win, hooks, random }) => {
+    onEnable: ({ win, conf, random }) => {
       {
         const desc = Object.getOwnPropertyDescriptors(win.DOMRect.prototype)
         const hookProp = (key: keyof DOMRect) => {
@@ -646,8 +646,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           if (!getter) return;
           Object.defineProperty(win.DOMRect.prototype, key, {
             get() {
+              const value: number | null = random('other.domRect', conf.fp.other.canvas, 0, 1e-6, -1e-6)
               const res = getter.call(this)
-              return res + (Math.random() * 1e-8)
+              if (value == null) return res;
+              return res + value
             }
           })
         }
@@ -658,20 +660,19 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       }
       {
         const desc = Object.getOwnPropertyDescriptors(win.DOMRectReadOnly.prototype)
-        const hookProp = (key: keyof DOMRectReadOnly) => {
+        const hookProp = (key: keyof DOMRectReadOnly, toResult: (rect: DOMRectReadOnly) => any) => {
           const getter: (() => any) | undefined = desc[key]?.get
           if (!getter) return;
           Object.defineProperty(win.DOMRectReadOnly.prototype, key, {
             get() {
-              const res = getter.call(this)
-              return res + (Math.random() * 1e-6)
+              return toResult(this)
             }
           })
         }
-        hookProp('top')
-        hookProp('bottom')
-        hookProp('left')
-        hookProp('right')
+        hookProp('top', rect => rect.y)
+        hookProp('left', rect => rect.x)
+        hookProp('bottom', rect => rect.y + rect.height)
+        hookProp('right', rect => rect.x + rect.width)
       }
     }
   },

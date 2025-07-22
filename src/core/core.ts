@@ -60,6 +60,7 @@ const randomFuncMap = {
   'other.webgl': randomWebglNoise,
   'other.font': randomFontNoise,
   'other.webgpu': undefined,
+  'other.domRect': undefined,
 }
 
 /**
