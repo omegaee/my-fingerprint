@@ -646,7 +646,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           if (!getter) return;
           Object.defineProperty(win.DOMRect.prototype, key, {
             get() {
-              const value: number | null = random('other.domRect', conf.fp.other.canvas, 0, 1e-6, -1e-6)
+              const value: number | null = random('other.domRect', conf.fp.other.domRect, 0, 1e-6, -1e-6)
               const res = getter.call(this)
               if (value == null) return res;
               return res + value
