@@ -72,6 +72,14 @@ export const SpecialFpConfigGroup = memo(() => {
       defaultValue={fp.other.webgpu.type}
       onChange={(type) => fp.other.webgpu.type = type as any}
     />
+
+    <SelectFpConfigItem
+      title={t('item.title.domRect')}
+      desc={t('item.desc.domRect')}
+      options={BASE_TYPES}
+      defaultValue={fp.other.domRect.type}
+      onChange={(type) => fp.other.domRect.type = type as any}
+    />
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
