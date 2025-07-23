@@ -82,6 +82,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
           webrtc: { type: HookType.default },
           font: { type: HookType.default },
           webgpu: { type: HookType.default },
+          domRect: { type: HookType.default },
         },
       },
       action: {

@@ -636,6 +636,47 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
+  'domRect': {
+    condition: ({ conf }) => conf.fp.other.domRect.type !== HookType.default,
+    onEnable: ({ win, conf, random }) => {
+      {
+        const desc = Object.getOwnPropertyDescriptors(win.DOMRect.prototype)
+        const hookProp = (key: keyof DOMRect) => {
+          const getter: (() => any) | undefined = desc[key]?.get
+          if (!getter) return;
+          Object.defineProperty(win.DOMRect.prototype, key, {
+            get() {
+              const value: number | null = random('other.domRect', conf.fp.other.domRect, 0, 1e-6, -1e-6)
+              const res = getter.call(this)
+              if (value == null) return res;
+              return res + value
+            }
+          })
+        }
+        hookProp('x')
+        hookProp('y')
+        hookProp('width')
+        hookProp('height')
+      }
+      {
+        const desc = Object.getOwnPropertyDescriptors(win.DOMRectReadOnly.prototype)
+        const hookProp = (key: keyof DOMRectReadOnly, toResult: (rect: DOMRectReadOnly) => any) => {
+          const getter: (() => any) | undefined = desc[key]?.get
+          if (!getter) return;
+          Object.defineProperty(win.DOMRectReadOnly.prototype, key, {
+            get() {
+              return toResult(this)
+            }
+          })
+        }
+        hookProp('top', rect => rect.y)
+        hookProp('left', rect => rect.x)
+        hookProp('bottom', rect => rect.y + rect.height)
+        hookProp('right', rect => rect.x + rect.width)
+      }
+    }
+  },
+
   '.ownProperties': {
     onEnable: ({ win, symbol, hooks }) => {
       {

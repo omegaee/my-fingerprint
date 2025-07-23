@@ -64,6 +64,7 @@
       "font": "Font Fingerprint",
       "webgpu": "WebGPU Fingerprint",
       "glDriver": "Graphics Driver",
+      "domRect": "DOMRect Fingerprint",
 
       "e-language": "Language",
       "seed": "Global Seed",
@@ -84,6 +85,7 @@
       "font": "Font Fingerprint",
       "webgpu": "WebGPU Fingerprint",
       "glDriver": "Graphics Driver Vendor\n\nGraphics Driver Renderer",
+      "domRect": "DOMRect Fingerprint",
 
       "e-language": "Language",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
