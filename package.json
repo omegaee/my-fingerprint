@@ -18,7 +18,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@crxjs/vite-plugin": "^2.0.0-beta.30",
+    "@crxjs/vite-plugin": "^2.0.3",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
