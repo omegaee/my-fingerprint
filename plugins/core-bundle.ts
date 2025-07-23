@@ -33,9 +33,14 @@ async function bundle({ inputFilePath, outputFilePath, functionName, params }: C
   const bundle = await rollup({
     input: inputFilePath,
     plugins: [
-      typescript(),
       resolve(),
       commonjs(),
+      typescript({
+        compilerOptions: {
+          isolatedModules: false,
+          preserveConstEnums: false,
+        },
+      }),
     ],
   });
   const { output } = await bundle.generate({
