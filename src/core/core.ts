@@ -149,6 +149,78 @@ export class FingerprintHandler {
     }
   }
 
+  private toProxyHandler<T extends object>(handler: ProxyHandler<T>): ProxyHandler<T> {
+    return {
+      ...handler,
+      get: (target: any, prop: any, receiver: any) => {
+        if (prop === this.symbol.raw) return target;
+        if (prop === 'caller' || prop === 'arguments') return target[prop];
+        const getter = handler.get ?? Reflect.get
+        return getter(target, prop, receiver)
+      }
+    }
+  }
+
+  public useProxy<
+    T extends object,
+    K extends keyof T,
+    H extends ProxyHandler<Extract<T[K], object>>,
+  >(
+    target: T,
+    key: K | K[],
+    handler: H | ((key: K) => H | void),
+  ) {
+    if (Array.isArray(key)) {
+      /* multi */
+      for (const _k of key) {
+        const _handler = typeof handler === 'function' ? handler(_k) : handler;
+        if (_handler) {
+          const proxy = new Proxy(target[_k] as any, this.toProxyHandler(_handler));
+          target[_k] = proxy as T[K];
+          this.registry.add(proxy);
+        }
+      }
+    } else {
+      /* one */
+      const _handler = typeof handler === 'function' ? handler(key) : handler;
+      if (_handler) {
+        const proxy = new Proxy(target[key] as any, this.toProxyHandler(_handler));
+        target[key] = proxy as T[K];
+        this.registry.add(proxy);
+      }
+    }
+  }
+
+  public useDefine<
+    T extends object,
+    K extends keyof T,
+    A extends (PropertyDescriptor & ThisType<any>),
+  >(
+    target: T,
+    key: K | K[],
+    attributes: A | ((key: K, desc: PropertyDescriptor) => A | void)
+  ) {
+    if (Array.isArray(key)) {
+      /* multi */
+      for (const _k of key) {
+        const desc = Object.getOwnPropertyDescriptor(target, _k);
+        if (!desc) continue;
+        const attr = typeof attributes === 'function' ? attributes(_k, desc) : attributes;
+        if (attr) {
+          Object.defineProperty(target, _k, attr);
+        }
+      }
+    } else {
+      /* one */
+      const desc = Object.getOwnPropertyDescriptor(target, key);
+      if (!desc) return;
+      const attr = typeof attributes === 'function' ? attributes(key, desc) : attributes;
+      if (attr) {
+        Object.defineProperty(target, key, attr);
+      }
+    }
+  }
+
   public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
     if (!win) throw new Error('win is required');
     if (win === window.top) {

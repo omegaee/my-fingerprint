@@ -33,8 +33,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'iframe script hook': {
     condition: ({ conf }) => conf.action.hookBlankIframe,
-    onEnable: ({ win, hooks, registry, hookIframe }) => {
-      const handler = hooks.useBaseHandler({
+    onEnable: ({ win, hookIframe, useProxy }) => {
+
+      useProxy(win.Node.prototype, [
+        'appendChild', 'insertBefore', 'replaceChild'
+      ], {
         apply(target: any, thisArg: Object, args: any) {
           const res = Reflect.apply(target, thisArg, args)
           const node = args[0]
@@ -43,16 +46,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return res
         }
-      })
-      win.Node.prototype.appendChild = hooks.newProxy(win.Node.prototype.appendChild, handler)
-      win.Node.prototype.insertBefore = hooks.newProxy(win.Node.prototype.insertBefore, handler)
-      win.Node.prototype.replaceChild = hooks.newProxy(win.Node.prototype.replaceChild, handler)
+      });
+
     },
   },
 
   'navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator),
-    onEnable: ({ win, conf, info, symbol, getSeed, getValue }) => {
+    onEnable: ({ win, conf, info, symbol, getSeed, getValue, useDefine }) => {
       const desc = Object.getOwnPropertyDescriptors(win.Navigator.prototype)
       if (!desc) return;
 
