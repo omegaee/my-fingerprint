@@ -435,39 +435,34 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       const _mediaDevices = Object.getOwnPropertyDescriptor(win.Navigator.prototype, "mediaDevices")?.get
       _mediaDevices && Object.defineProperty(win.navigator, "mediaDevices", {
         get() { return null }
-      })
-      // @ts-ignore
-      if (win.Navigator.prototype.getUserMedia) win.Navigator.prototype.getUserMedia = undefined;
-      // @ts-ignore
-      if (win.Navigator.prototype.mozGetUserMedia) win.Navigator.prototype.mozGetUserMedia = undefined;
-      // @ts-ignore
-      if (win.Navigator.prototype.webkitGetUserMedia) win.Navigator.prototype.webkitGetUserMedia = undefined;
-      // @ts-ignore
-      if (win.RTCDataChannel) win.RTCDataChannel = undefined;
-      // @ts-ignore
-      if (win.RTCIceCandidate) win.RTCIceCandidate = undefined;
-      // @ts-ignore
-      if (win.RTCConfiguration) win.RTCConfiguration = undefined;
-      // @ts-ignore
-      if (win.MediaStreamTrack) win.MediaStreamTrack = undefined;
-      // @ts-ignore
-      if (win.RTCPeerConnection) win.RTCPeerConnection = undefined;
-      // @ts-ignore
-      if (win.RTCSessionDescription) win.RTCSessionDescription = undefined;
-      // @ts-ignore
-      if (win.RTCDataChannel) win.RTCDataChannel = undefined;
-      // @ts-ignore
-      if (win.mozMediaStreamTrack) win.mozMediaStreamTrack = undefined;
-      // @ts-ignore
-      if (win.mozRTCPeerConnection) win.mozRTCPeerConnection = undefined;
-      // @ts-ignore
-      if (win.mozRTCSessionDescription) win.mozRTCSessionDescription = undefined;
-      // @ts-ignore
-      if (win.webkitMediaStreamTrack) win.webkitMediaStreamTrack = undefined;
-      // @ts-ignore
-      if (win.webkitRTCPeerConnection) win.webkitRTCPeerConnection = undefined;
-      // @ts-ignore
-      if (win.webkitRTCSessionDescription) win.webkitRTCSessionDescription = undefined;
+      });
+
+      [
+        'getUserMedia',
+        'mozGetUserMedia',
+        'webkitGetUserMedia'
+      ].forEach((key) => {
+        // @ts-ignore
+        if (win.Navigator.prototype[key]) win.Navigator.prototype[key] = undefined;
+      });
+
+      [
+        'RTCDataChannel',
+        'RTCIceCandidate',
+        'RTCConfiguration',
+        'MediaStreamTrack',
+        'RTCPeerConnection',
+        'RTCSessionDescription',
+        'mozMediaStreamTrack',
+        'mozRTCPeerConnection',
+        'mozRTCSessionDescription',
+        'webkitMediaStreamTrack',
+        'webkitRTCPeerConnection',
+        'webkitRTCSessionDescription',
+      ].forEach((key) => {
+        // @ts-ignore
+        if (win[key]) win[key] = undefined;
+      });
     },
   },
 
