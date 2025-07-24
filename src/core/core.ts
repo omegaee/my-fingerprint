@@ -227,6 +227,23 @@ export class FingerprintHandler {
     }
   }
 
+  public useGetterProxy = <
+    T extends object,
+    K extends keyof T,
+    H extends ProxyHandler<() => any>,
+  >(
+    target: T,
+    key: K | K[],
+    handler: H | ((key: K, getter: () => any) => H)
+  ) => {
+    this.useDefine(target, key, (_k, desc) => {
+      const getter = desc.get
+      return getter && {
+        get: this.newProxy(getter, typeof handler === 'function' ? handler(_k, getter) : handler)
+      }
+    })
+  }
+
   public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
     if (!win) throw new Error('win is required');
     if (win === window.top) {

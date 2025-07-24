@@ -53,7 +53,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator),
-    onEnable: ({ win, conf, info, symbol, getSeed, getValue, useDefine }) => {
+    onEnable: ({ win, conf, info, symbol, getSeed, getValue }) => {
       const desc = Object.getOwnPropertyDescriptors(win.Navigator.prototype)
       if (!desc) return;
 
@@ -455,40 +455,33 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'font': {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, getValueDebounce, useDefine }) => {
-
-      useDefine(win.HTMLElement.prototype, 'offsetHeight', (_, desc) => {
-        const getter = desc.get
-        return getter && {
-          get() {
-            const height = getter.call(this);
-            try {
-              const mark = this.style.fontFamily ?? 'h' + height;
-              const noise: number = getValueDebounce('other.font', conf.fp.other.font, mark)
-              return height + noise;
-            } catch (_) {
-              return height;
-            }
+    onEnable: ({ win, conf, hooks, getValueDebounce, useGetterProxy }) => {
+      /* offsetHeight */
+      useGetterProxy(win.HTMLElement.prototype, 'offsetHeight', (_, getter) => ({
+        apply(target, thisArg: HTMLElement, args: any) {
+          try {
+            const height = getter.call(thisArg);
+            const mark = thisArg.style.fontFamily ?? 'h' + height;
+            const noise: number = getValueDebounce('other.font', conf.fp.other.font, mark)
+            return height + noise;
+          } catch (_) {
+            return getter.call(thisArg);
           }
         }
-      })
-
-      useDefine(win.HTMLElement.prototype, 'offsetWidth', (_, desc) => {
-        const getter = desc.get
-        return getter && {
-          get() {
-            const width = getter.call(this);
-            try {
-              const mark = this.style.fontFamily ?? 'w' + width;
-              const noise: number = getValueDebounce('other.font', conf.fp.other.font, mark)
-              return width + noise;
-            } catch (_) {
-              return width;
-            }
+      }))
+      /* offsetWidth */
+      useGetterProxy(win.HTMLElement.prototype, 'offsetWidth', (_, getter) => ({
+        apply(target, thisArg: HTMLElement, args: any) {
+          try {
+            const width = getter.call(thisArg);
+            const mark = thisArg.style.fontFamily ?? 'w' + width;
+            const noise: number = getValueDebounce('other.font', conf.fp.other.font, mark)
+            return width + noise;
+          } catch (_) {
+            return getter.call(thisArg);
           }
         }
-      })
-
+      }))
     },
   },
 
@@ -610,31 +603,25 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'domRect': {
     condition: ({ conf }) => conf.fp.other.domRect.type !== HookType.default,
-    onEnable: ({ win, conf, random, useDefine }) => {
-      useDefine(win.DOMRect.prototype, [
+    onEnable: ({ win, conf, random, useGetterProxy }) => {
+      useGetterProxy(win.DOMRect.prototype, [
         'x', 'y', 'width', 'height'
-      ], (_, desc) => {
-        const getter = desc.get
-        return getter && {
-          get() {
-            const value: number | null = random('other.domRect', conf.fp.other.domRect, 0, 1e-6, -1e-6)
-            const res = getter.call(this)
-            if (value == null) return res;
-            return res + value
-          }
+      ], (_, getter) => ({
+        apply(target, thisArg: DOMRect, args: any) {
+          const value: number | null = random('other.domRect', conf.fp.other.domRect, 0, 1e-6, -1e-6)
+          const res = getter.call(thisArg)
+          if (value == null) return res;
+          return res + value
         }
-      })
+      }))
 
       {
         const hook = (key: keyof DOMRectReadOnly, toResult: (rect: DOMRectReadOnly) => number) => {
-          useDefine(win.DOMRectReadOnly.prototype, key, (_, desc) => {
-            const getter = desc.get
-            return getter && {
-              get() {
-                return toResult(this)
-              }
+          useGetterProxy(win.DOMRectReadOnly.prototype, key, () => ({
+            apply(target, thisArg: DOMRectReadOnly, args: any) {
+              return toResult(thisArg)
             }
-          })
+          }))
         }
         hook('top', rect => rect.y)
         hook('left', rect => rect.x)
