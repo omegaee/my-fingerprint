@@ -248,6 +248,13 @@ export class FingerprintHandler {
     }
   }
 
+  /**
+   * 代理getter属性描述符
+   * @param target 目标对象 | [获取描述符对象, 写入对象]
+   * @param key 属性名
+   * @param attributes 属性描述符
+   * @returns void
+   */
   public useGetterProxy = <
     T extends object,
     K extends keyof T,

@@ -198,32 +198,26 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default ||
       conf.fp.normal.glVendor.type !== HookType.default ||
       conf.fp.normal.glRenderer.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, getValue, random }) => {
+    onEnable: ({ win, conf, getValue, random, useProxy }) => {
       const isHookWebgl = conf.fp.other.webgl.type !== HookType.default
       const isHookInfo = conf.fp.normal.glVendor.type !== HookType.default || conf.fp.normal.glRenderer.type !== HookType.default
 
       /* Image */
       if (isHookWebgl) {
-        const _readPixels = win.WebGLRenderingContext.prototype.readPixels
-        const _readPixels2 = win.WebGL2RenderingContext.prototype.readPixels
-
-        const handler = hooks.useBaseHandler({
+        const handler = {
           apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
             const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
             value && drawNoiseToWebgl(thisArg, value)
             return target.apply(thisArg, args as any);
           }
-        })
-        win.WebGLRenderingContext.prototype.readPixels = hooks.newProxy(_readPixels, handler)
-        win.WebGL2RenderingContext.prototype.readPixels = hooks.newProxy(_readPixels2, handler)
+        }
+        useProxy(win.WebGLRenderingContext.prototype, 'readPixels', handler)
+        useProxy(win.WebGL2RenderingContext.prototype, 'readPixels', handler)
       }
 
       /* Report: Supported Extensions */
       if (isHookWebgl) {
-        const _getSupportedExtensions = win.WebGLRenderingContext.prototype.getSupportedExtensions
-        const _getSupportedExtensions2 = win.WebGL2RenderingContext.prototype.getSupportedExtensions
-
-        const handler = hooks.useBaseHandler({
+        const handler = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const res = target.apply(thisArg, args)
             if (res) {
@@ -232,17 +226,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
             return res;
           }
-        })
-        win.WebGLRenderingContext.prototype.getSupportedExtensions = hooks.newProxy(_getSupportedExtensions, handler)
-        win.WebGL2RenderingContext.prototype.getSupportedExtensions = hooks.newProxy(_getSupportedExtensions2, handler)
+        }
+        useProxy(win.WebGLRenderingContext.prototype, 'getSupportedExtensions', handler)
+        useProxy(win.WebGL2RenderingContext.prototype, 'getSupportedExtensions', handler)
       }
 
       /* Report: Parameter */
       if (isHookInfo) {
-        const _getParameter = win.WebGLRenderingContext.prototype.getParameter
-        const _getParameter2 = win.WebGL2RenderingContext.prototype.getParameter
-
-        const handler = hooks.useBaseHandler({
+        const handler = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
             if (ex) {
@@ -256,9 +247,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
             return target.apply(thisArg, args);
           }
-        })
-        win.WebGLRenderingContext.prototype.getParameter = hooks.newProxy(_getParameter, handler)
-        win.WebGL2RenderingContext.prototype.getParameter = hooks.newProxy(_getParameter2, handler)
+        }
+        useProxy(win.WebGLRenderingContext.prototype, 'getParameter', handler)
+        useProxy(win.WebGL2RenderingContext.prototype, 'getParameter', handler)
       }
     },
   },
@@ -267,9 +258,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) =>
       conf.fp.other.canvas.type !== HookType.default ||
       conf.fp.other.webgl.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, rawObjects, getValue }) => {
-      const _toDataURL = win.HTMLCanvasElement.prototype.toDataURL
-      win.HTMLCanvasElement.prototype.toDataURL = hooks.newBaseProxy(_toDataURL, {
+    onEnable: ({ win, conf, rawObjects, getValue, useProxy }) => {
+
+      useProxy(win.HTMLCanvasElement.prototype, 'toDataURL', {
         apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
           /* 2d */
           if (conf.fp.other.canvas.type !== HookType.default) {
@@ -294,6 +285,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           return target.apply(thisArg, args);
         }
       })
+      
     },
   },
 
@@ -319,7 +311,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'timezone': {
     condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, getValueDebounce, useProxy }) => {
+    onEnable: ({ win, conf, getValueDebounce, useProxy }) => {
       const _DateTimeFormat = win.Intl.DateTimeFormat;
 
       type TimeParts = Partial<Record<keyof Intl.DateTimeFormatPartTypesRegistry, string>>
@@ -373,7 +365,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
       /* getTimezoneOffset & toString */
       {
-        const createHandler = (handle: (thisArg: Date, tz: TimeZoneInfo) => string | number | null) => hooks.useBaseHandler({
+        const createHandler = (handle: (thisArg: Date, tz: TimeZoneInfo) => string | number | null) => ({
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toString>) => {
             const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
             if (tz === null) return target.apply(thisArg, args);
@@ -417,10 +409,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'webrtc': {
     condition: ({ conf }) => conf.fp.other.webrtc.type !== HookType.default,
-    onEnable: ({ win }) => {
-      // mediaDevices
-      const _mediaDevices = Object.getOwnPropertyDescriptor(win.Navigator.prototype, "mediaDevices")?.get
-      _mediaDevices && Object.defineProperty(win.navigator, "mediaDevices", {
+    onEnable: ({ win, useDefine }) => {
+
+      useDefine([win.Navigator.prototype, win.navigator], 'mediaDevices', {
         get() { return null }
       });
 
@@ -455,7 +446,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'font': {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, getValueDebounce, useGetterProxy }) => {
+    onEnable: ({ win, conf, getValueDebounce, useGetterProxy }) => {
       /* offsetHeight */
       useGetterProxy(win.HTMLElement.prototype, 'offsetHeight', (_, getter) => ({
         apply(target, thisArg: HTMLElement, args: any) {
