@@ -197,32 +197,53 @@ export class FingerprintHandler {
     }
   }
 
+  /**
+   * 定义属性描述符
+   * @param target 目标对象 | [获取描述符对象, 写入对象]
+   * @param key 属性名
+   * @param attributes 属性描述符
+   * @returns void
+   */
   public useDefine = <
     T extends object,
     K extends keyof T,
     A extends (PropertyDescriptor & ThisType<any>),
+    W = any,
   >(
-    target: T,
+    target: T | [T, W],
     key: K | K[],
     attributes: A | ((key: K, desc: PropertyDescriptor) => A | void)
   ) => {
+    /* 处理target */
+    let _read: T
+    let _write: W | T
+    if (Array.isArray(target)) {
+      if (!target.length) return;
+      _read = target[0]
+      _write = target[1] ?? _read
+    } else {
+      _read = target
+      _write = target
+    }
+
+    /* 定义属性 */
     if (Array.isArray(key)) {
       /* multi */
       for (const _k of key) {
-        const desc = Object.getOwnPropertyDescriptor(target, _k);
+        const desc = Object.getOwnPropertyDescriptor(_read, _k);
         if (!desc) continue;
         const attr = typeof attributes === 'function' ? attributes(_k, desc) : attributes;
         if (attr) {
-          Object.defineProperty(target, _k, attr);
+          Object.defineProperty(_write, _k, attr);
         }
       }
     } else {
       /* one */
-      const desc = Object.getOwnPropertyDescriptor(target, key);
+      const desc = Object.getOwnPropertyDescriptor(_read, key);
       if (!desc) return;
       const attr = typeof attributes === 'function' ? attributes(key, desc) : attributes;
       if (attr) {
-        Object.defineProperty(target, key, attr);
+        Object.defineProperty(_write, key, attr);
       }
     }
   }
@@ -231,8 +252,9 @@ export class FingerprintHandler {
     T extends object,
     K extends keyof T,
     H extends ProxyHandler<() => any>,
+    W = any,
   >(
-    target: T,
+    target: T | [T, W],
     key: K | K[],
     handler: H | ((key: K, getter: () => any) => H)
   ) => {
