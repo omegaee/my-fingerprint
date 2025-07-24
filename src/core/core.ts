@@ -161,6 +161,12 @@ export class FingerprintHandler {
     }
   }
 
+  public newProxy = <T extends object>(target: T, handler: ProxyHandler<T>): T => {
+    const proxy = new Proxy(target, this.toProxyHandler(handler));
+    this.registry.add(proxy);
+    return proxy;
+  }
+
   public useProxy = <
     T extends object,
     K extends keyof T,

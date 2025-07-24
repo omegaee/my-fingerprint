@@ -299,9 +299,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'audio': {
     condition: ({ conf }) => conf.fp.other.audio.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, random }) => {
-      const _createDynamicsCompressor = win.OfflineAudioContext.prototype.createDynamicsCompressor
-      win.OfflineAudioContext.prototype.createDynamicsCompressor = hooks.newBaseProxy(_createDynamicsCompressor, {
+    onEnable: ({ win, conf, random, useProxy }) => {
+
+      useProxy(win.OfflineAudioContext.prototype, 'createDynamicsCompressor', {
         apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
           const value: number | null = random('other.audio', conf.fp.other.audio)
           if (value === null) return target.apply(thisArg, args)
@@ -313,14 +313,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           return compressor
         }
       })
+
     },
   },
 
   'timezone': {
     condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, getValueDebounce }) => {
+    onEnable: ({ win, conf, hooks, getValueDebounce, useProxy }) => {
       const _DateTimeFormat = win.Intl.DateTimeFormat;
-      const _Date = win.Date;
 
       type TimeParts = Partial<Record<keyof Intl.DateTimeFormatPartTypesRegistry, string>>
       const getStandardDateTimeParts = (date: Date, timezone?: string): TimeParts | null => {
@@ -349,35 +349,31 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       }
 
       /* DateTimeFormat */
-      {
-        win.Intl.DateTimeFormat = hooks.newBaseProxy(_DateTimeFormat, {
-          construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
-            const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
-            args[0] = args[0] ?? currTimeZone.locale
-            args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
-            return new target(...args)
-          },
-          apply: (target, thisArg: Intl.DateTimeFormat, args: Parameters<typeof Intl.DateTimeFormat>) => {
-            const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
-            args[0] = args[0] ?? currTimeZone.locale
-            args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
-            return target.apply(thisArg, args)
-          },
-        })
-      }
+      useProxy(win.Intl, 'DateTimeFormat', {
+        construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
+          const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
+          args[0] = args[0] ?? currTimeZone.locale
+          args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
+          return new target(...args)
+        },
+        apply: (target, thisArg: Intl.DateTimeFormat, args: Parameters<typeof Intl.DateTimeFormat>) => {
+          const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
+          args[0] = args[0] ?? currTimeZone.locale
+          args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
+          return target.apply(thisArg, args)
+        },
+      })
 
       /* Date */
-      {
-        win.Date = hooks.newBaseProxy(_Date, {
-          apply: (target, thisArg: Date, args: Parameters<typeof Date>) => {
-            return new target(...args).toString()
-          }
-        })
-      }
+      useProxy(win, 'Date', {
+        apply: (target, thisArg: Date, args: Parameters<typeof Date>) => {
+          return new target(...args).toString()
+        }
+      })
 
       /* getTimezoneOffset & toString */
       {
-        const useHook = (handle: (thisArg: Date, tz: TimeZoneInfo) => string | number | null) => hooks.useBaseHandler({
+        const createHandler = (handle: (thisArg: Date, tz: TimeZoneInfo) => string | number | null) => hooks.useBaseHandler({
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toString>) => {
             const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
             if (tz === null) return target.apply(thisArg, args);
@@ -385,47 +381,37 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return result === null ? target.apply(thisArg, args) : result
           }
         })
-        win.Date.prototype.getTimezoneOffset = hooks.newProxy(
-          win.Date.prototype.getTimezoneOffset,
-          useHook((_, tz) => {
-            return tz.offset * -60
-          }))
-        win.Date.prototype.toString = hooks.newProxy(
-          win.Date.prototype.toString,
-          useHook((thisArg, tz) => {
-            const ps = getStandardDateTimeParts(thisArg, tz.zone)
-            return ps === null ? null : `${ps.weekday} ${ps.month} ${ps.day} ${ps.year} ${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
-          }))
-        win.Date.prototype.toDateString = hooks.newProxy(
-          win.Date.prototype.toDateString,
-          useHook((thisArg, tz) => {
-            const ps = getStandardDateTimeParts(thisArg, tz.zone)
-            return ps === null ? null : `${ps.weekday} ${ps.month} ${ps.day} ${ps.year}`
-          }))
-        win.Date.prototype.toTimeString = hooks.newProxy(
-          win.Date.prototype.toTimeString,
-          useHook((thisArg, tz) => {
-            const ps = getStandardDateTimeParts(thisArg, tz.zone)
-            return ps === null ? null : `${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
-          }))
+        useProxy(win.Date.prototype, 'getTimezoneOffset', createHandler((_, tz) => {
+          return tz.offset * -60
+        }))
+        useProxy(win.Date.prototype, 'toString', createHandler((thisArg, tz) => {
+          const ps = getStandardDateTimeParts(thisArg, tz.zone)
+          return ps === null ? null : `${ps.weekday} ${ps.month} ${ps.day} ${ps.year} ${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
+        }))
+        useProxy(win.Date.prototype, 'toDateString', createHandler((thisArg, tz) => {
+          const ps = getStandardDateTimeParts(thisArg, tz.zone)
+          return ps === null ? null : `${ps.weekday} ${ps.month} ${ps.day} ${ps.year}`
+        }))
+        useProxy(win.Date.prototype, 'toTimeString', createHandler((thisArg, tz) => {
+          const ps = getStandardDateTimeParts(thisArg, tz.zone)
+          return ps === null ? null : `${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
+        }))
       }
 
       /* toLocaleString */
-      {
-        const handler = hooks.useBaseHandler({
-          apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
-            const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
-            if (tz) {
-              args[0] = args[0] ?? tz.locale
-              args[1] = Object.assign({ timeZone: tz.zone }, args[1]);
-            }
-            return target.apply(thisArg, args);
+      useProxy(win.Date.prototype, [
+        'toLocaleString', 'toLocaleDateString', 'toLocaleTimeString'
+      ], {
+        apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
+          const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
+          if (tz) {
+            args[0] = args[0] ?? tz.locale
+            args[1] = Object.assign({ timeZone: tz.zone }, args[1]);
           }
-        })
-        win.Date.prototype.toLocaleString = hooks.newProxy(win.Date.prototype.toLocaleString, handler)
-        win.Date.prototype.toLocaleDateString = hooks.newProxy(win.Date.prototype.toLocaleDateString, handler)
-        win.Date.prototype.toLocaleTimeString = hooks.newProxy(win.Date.prototype.toLocaleTimeString, handler)
-      }
+          return target.apply(thisArg, args);
+        }
+      })
+
     },
   },
 
@@ -469,165 +455,155 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'font': {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, getValueDebounce }) => {
-      const _offsetHeight = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetHeight")?.get
-      _offsetHeight && Object.defineProperty(win.HTMLElement.prototype, "offsetHeight", {
-        get: hooks.newBaseProxy(_offsetHeight, {
-          apply(target, thisArg: HTMLElement, args: any) {
+    onEnable: ({ win, conf, hooks, getValueDebounce, useDefine }) => {
+
+      useDefine(win.HTMLElement.prototype, 'offsetHeight', (_, desc) => {
+        const getter = desc.get
+        return getter && {
+          get() {
+            const height = getter.call(this);
             try {
-              const height = _offsetHeight.call(thisArg);
-              const mark = thisArg.style.fontFamily ?? 'h' + height;
+              const mark = this.style.fontFamily ?? 'h' + height;
               const noise: number = getValueDebounce('other.font', conf.fp.other.font, mark)
               return height + noise;
             } catch (_) {
-              return _offsetHeight.call(thisArg);
+              return height;
             }
           }
-        })
-      });
+        }
+      })
 
-      const _offsetWidth = Object.getOwnPropertyDescriptor(win.HTMLElement.prototype, "offsetWidth")?.get
-      _offsetWidth && Object.defineProperty(win.HTMLElement.prototype, "offsetWidth", {
-        get: hooks.newBaseProxy(_offsetWidth, {
-          apply(target, thisArg: HTMLElement, args: any) {
+      useDefine(win.HTMLElement.prototype, 'offsetWidth', (_, desc) => {
+        const getter = desc.get
+        return getter && {
+          get() {
+            const width = getter.call(this);
             try {
-              const width = _offsetWidth.call(thisArg);
-              const mark = thisArg.style.fontFamily ?? 'w' + width;
+              const mark = this.style.fontFamily ?? 'w' + width;
               const noise: number = getValueDebounce('other.font', conf.fp.other.font, mark)
               return width + noise;
             } catch (_) {
-              return _offsetWidth.call(thisArg);
+              return width;
             }
           }
-        })
-      });
+        }
+      })
+
     },
   },
 
   'webgpu': {
     condition: ({ conf }) => conf.fp.other.webgpu.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, randomDebounce }) => {
+    onEnable: ({ win, conf, randomDebounce, useDefine, useProxy, newProxy }) => {
       /*** GPUAdapter ***/
       // @ts-ignore
       if (win.GPUAdapter) {
-        try {
-          const genNoise = (raw: any, offset: number) => {
-            const rn = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset, 1, 64)!
-            return raw ? raw - Math.floor(rn) : raw;
-          }
-          // @ts-ignore
-          const _GPUAdapter = Object.getOwnPropertyDescriptor(win.GPUAdapter.prototype, "limits")?.get;
-          // @ts-ignore
-          _GPUAdapter && Object.defineProperty(win.GPUAdapter.prototype, "limits", {
-            get: hooks.newBaseProxy(_GPUAdapter, {
-              apply(target: any, self, args) {
-                const result = target.apply(self, args);
-                // const _limits = _GPUAdapter.call(self);
-                return hooks.newBaseProxy(result, {
-                  get(target, prop) {
-                    const value = target[prop];
-                    switch (prop) {
-                      case "maxBufferSize": return genNoise(value, 0);
-                      case "maxStorageBufferBindingSize": return genNoise(value, 1);
-                    }
-                    return typeof value === "function" ? value.bind(target) : value;
+        const genNoise = (raw: any, offset: number) => {
+          const rn = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset, 1, 64)!
+          return raw ? raw - Math.floor(rn) : raw;
+        }
+        // @ts-ignore
+        useDefine(win.GPUAdapter.prototype, 'limits', (_, desc) => {
+          const getter = desc.get
+          return getter && {
+            get() {
+              const limits = getter.call(this);
+              return newProxy(limits, {
+                get(target, prop) {
+                  const value = target[prop];
+                  switch (prop) {
+                    case "maxBufferSize": return genNoise(value, 0);
+                    case "maxStorageBufferBindingSize": return genNoise(value, 1);
                   }
-                });
-              }
-            })
-          });
-        } catch (e) { }
+                  return typeof value === "function" ? value.bind(target) : value;
+                }
+              })
+            }
+          }
+        })
       }
 
       /*** GPUDevice ***/
       // @ts-ignore
       if (win.GPUDevice) {
-        try {
-          const genNoise = (raw: any, offset: number) => {
-            const rn = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset, 1, 64)!
-            return raw ? raw - Math.floor(rn) : raw;
-          }
-          // @ts-ignore
-          const _GPUDevice = Object.getOwnPropertyDescriptor(win.GPUDevice.prototype, "limits")?.get;
-          // @ts-ignore
-          _GPUDevice && Object.defineProperty(win.GPUDevice.prototype, "limits", {
-            get: hooks.newBaseProxy(_GPUDevice, {
-              apply(target: any, self, args) {
-                const result = target.apply(self, args);
-                // const _limits = _GPUDevice.call(self);
-                return hooks.newBaseProxy(result, {
-                  get(target, prop) {
-                    const value = target[prop];
-                    switch (prop) {
-                      case "maxBufferSize": return genNoise(value, 0);
-                      case "maxStorageBufferBindingSize": return genNoise(value, 1);
-                    }
-                    return typeof value === "function" ? value.bind(target) : value;
+        const genNoise = (raw: any, offset: number) => {
+          const rn = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset, 1, 64)!
+          return raw ? raw - Math.floor(rn) : raw;
+        }
+        // @ts-ignore
+        useDefine(win.GPUDevice.prototype, 'limits', (_, desc) => {
+          const getter = desc.get
+          return getter && {
+            get() {
+              const limits = getter.call(this);
+              return newProxy(limits, {
+                get(target, prop) {
+                  const value = target[prop];
+                  switch (prop) {
+                    case "maxBufferSize": return genNoise(value, 0);
+                    case "maxStorageBufferBindingSize": return genNoise(value, 1);
                   }
-                });
-              }
-            })
-          });
-        } catch (e) { }
+                  return typeof value === "function" ? value.bind(target) : value;
+                }
+              })
+            }
+          }
+        })
       }
 
       /*** GPUCommandEncoder ***/
       // @ts-ignore
       if (win.GPUCommandEncoder?.prototype?.beginRenderPass) {
-        try {
-          // @ts-ignore
-          win.GPUCommandEncoder.prototype.beginRenderPass = hooks.newBaseProxy(win.GPUCommandEncoder.prototype.beginRenderPass, {
-            apply(target, self, args) {
-              if (args?.[0]?.colorAttachments?.[0]?.clearValue) {
-                try {
-                  const _clearValue = args[0].colorAttachments[0].clearValue
-                  let offset = 0
-                  for (let key in _clearValue) {
-                    let value = _clearValue[key]
-                    const noise: number = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, 0.01, 0.001)!
-                    value += value * noise * -1
-                    _clearValue[key] = Math.abs(value)
-                  }
-                  args[0].colorAttachments[0].clearValue = _clearValue;
-                } catch (e) { }
-              }
-              return target.apply(self, args);
+        // @ts-ignore
+        useProxy(win.GPUCommandEncoder.prototype, 'beginRenderPass', {
+          apply(target, self, args) {
+            if (args?.[0]?.colorAttachments?.[0]?.clearValue) {
+              try {
+                const _clearValue = args[0].colorAttachments[0].clearValue
+                let offset = 0
+                for (let key in _clearValue) {
+                  let value = _clearValue[key]
+                  const noise: number = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, 0.01, 0.001)!
+                  value += value * noise * -1
+                  _clearValue[key] = Math.abs(value)
+                }
+                args[0].colorAttachments[0].clearValue = _clearValue;
+              } catch (e) { }
             }
-          })
-        } catch (e) { }
+            return target.apply(self, args);
+          }
+        })
       }
 
       /*** GPUQueue ***/
       // @ts-ignore
       if (win.GPUQueue?.prototype?.writeBuffer) {
-        try {
-          // @ts-ignore
-          win.GPUQueue.prototype.writeBuffer = hooks.newBaseProxy(win.GPUQueue.prototype.writeBuffer, {
-            apply(target, self, args) {
-              const _data = args?.[2]
-              if (_data && _data instanceof Float32Array) {
-                try {
-                  const count = Math.ceil(_data.length * 0.05)
-                  let offset = 0
-                  const selected = Array(_data.length)
-                    .map((_, i) => i)
-                    .sort(() => randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, 1, -1)!)
-                    .slice(0, count);
+        // @ts-ignore
+        useProxy(win.GPUQueue.prototype, 'writeBuffer', {
+          apply(target, self, args) {
+            const _data = args?.[2]
+            if (_data && _data instanceof Float32Array) {
+              try {
+                const count = Math.ceil(_data.length * 0.05)
+                let offset = 0
+                const selected = Array(_data.length)
+                  .map((_, i) => i)
+                  .sort(() => randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, 1, -1)!)
+                  .slice(0, count);
 
-                  offset = 0
-                  for (let i = 0; i < selected.length; i++) {
-                    const index = selected[i];
-                    let value = _data[index];
-                    const noise: number = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, +0.0001, -0.0001)!
-                    _data[index] += noise * value;
-                  }
-                  // args[2] = _data;
-                } catch (e) { }
-              }
-              return target.apply(self, args);
+                offset = 0
+                for (let i = 0; i < selected.length; i++) {
+                  const index = selected[i];
+                  let value = _data[index];
+                  const noise: number = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset++, +0.0001, -0.0001)!
+                  _data[index] += noise * value;
+                }
+                // args[2] = _data;
+              } catch (e) { }
             }
-          })
-        } catch (e) { }
+            return target.apply(self, args);
+          }
+        })
       }
     },
   },
