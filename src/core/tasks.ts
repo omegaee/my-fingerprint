@@ -610,50 +610,45 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'domRect': {
     condition: ({ conf }) => conf.fp.other.domRect.type !== HookType.default,
-    onEnable: ({ win, conf, random }) => {
+    onEnable: ({ win, conf, random, useDefine }) => {
+      useDefine(win.DOMRect.prototype, [
+        'x', 'y', 'width', 'height'
+      ], (_, desc) => {
+        const getter = desc.get
+        return getter && {
+          get() {
+            const value: number | null = random('other.domRect', conf.fp.other.domRect, 0, 1e-6, -1e-6)
+            const res = getter.call(this)
+            if (value == null) return res;
+            return res + value
+          }
+        }
+      })
+
       {
-        const desc = Object.getOwnPropertyDescriptors(win.DOMRect.prototype)
-        const hookProp = (key: keyof DOMRect) => {
-          const getter: (() => any) | undefined = desc[key]?.get
-          if (!getter) return;
-          Object.defineProperty(win.DOMRect.prototype, key, {
-            get() {
-              const value: number | null = random('other.domRect', conf.fp.other.domRect, 0, 1e-6, -1e-6)
-              const res = getter.call(this)
-              if (value == null) return res;
-              return res + value
+        const hook = (key: keyof DOMRectReadOnly, toResult: (rect: DOMRectReadOnly) => number) => {
+          useDefine(win.DOMRectReadOnly.prototype, key, (_, desc) => {
+            const getter = desc.get
+            return getter && {
+              get() {
+                return toResult(this)
+              }
             }
           })
         }
-        hookProp('x')
-        hookProp('y')
-        hookProp('width')
-        hookProp('height')
-      }
-      {
-        const desc = Object.getOwnPropertyDescriptors(win.DOMRectReadOnly.prototype)
-        const hookProp = (key: keyof DOMRectReadOnly, toResult: (rect: DOMRectReadOnly) => any) => {
-          const getter: (() => any) | undefined = desc[key]?.get
-          if (!getter) return;
-          Object.defineProperty(win.DOMRectReadOnly.prototype, key, {
-            get() {
-              return toResult(this)
-            }
-          })
-        }
-        hookProp('top', rect => rect.y)
-        hookProp('left', rect => rect.x)
-        hookProp('bottom', rect => rect.y + rect.height)
-        hookProp('right', rect => rect.x + rect.width)
+        hook('top', rect => rect.y)
+        hook('left', rect => rect.x)
+        hook('bottom', rect => rect.y + rect.height)
+        hook('right', rect => rect.x + rect.width)
       }
     }
   },
 
   '.ownProperties': {
-    onEnable: ({ win, symbol, hooks }) => {
+    onEnable: ({ win, symbol, useProxy }) => {
       {
         /* multi */
-        const useHandler = (type: keyof HookOwnProperties) => hooks.useBaseHandler({
+        const makeHandler = (type: keyof HookOwnProperties) => ({
           apply(target: any, self: any, args: any[]) {
             const src = args[0]
             if (src != null && typeof src === 'object') {
@@ -663,14 +658,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             return target.apply(self, args as any)
           }
         })
-        win.Object.getOwnPropertyNames = hooks.newProxy(win.Object.getOwnPropertyNames, useHandler('names'))
-        win.Object.getOwnPropertySymbols = hooks.newProxy(win.Object.getOwnPropertySymbols, useHandler('symbols'))
-        win.Object.getOwnPropertyDescriptors = hooks.newProxy(win.Object.getOwnPropertyDescriptors, useHandler('descriptors'))
-        win.Reflect.ownKeys = hooks.newProxy(win.Reflect.ownKeys, useHandler('keys'))
+        useProxy(win.Object, 'getOwnPropertyNames', makeHandler('names'))
+        useProxy(win.Object, 'getOwnPropertySymbols', makeHandler('symbols'))
+        useProxy(win.Object, 'getOwnPropertyDescriptors', makeHandler('descriptors'))
+        useProxy(win.Reflect, 'ownKeys', makeHandler('keys'))
       }
       {
         /* one */
-        const handler = hooks.useBaseHandler({
+        const handler = {
           apply(target: any, self: any, args: any[]) {
             const src = args[0]
             if (src != null && typeof src === 'object') {
@@ -679,16 +674,16 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             }
             return target.apply(self, args as any)
           }
-        })
-        win.Object.getOwnPropertyDescriptor = hooks.newProxy(win.Object.getOwnPropertyDescriptor, handler)
-        win.Reflect.getOwnPropertyDescriptor = hooks.newProxy(win.Reflect.getOwnPropertyDescriptor, handler)
+        }
+        useProxy(win.Object, 'getOwnPropertyDescriptor', handler)
+        useProxy(win.Reflect, 'getOwnPropertyDescriptor', handler)
       }
     }
   },
 
   '.prototypeOf': {
-    onEnable: ({ win, symbol, registry, hooks }) => {
-      const handler = hooks.useBaseHandler({
+    onEnable: ({ win, symbol, registry, useProxy }) => {
+      const handler = {
         apply(target: any, self: any, args: any[]) {
           const src = args[0]
           const dst = args[1]
@@ -698,15 +693,15 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           }
           return Reflect.apply(target, self, args);
         }
-      })
-      win.Object.setPrototypeOf = hooks.newProxy(win.Object.setPrototypeOf, handler)
-      win.Reflect.setPrototypeOf = hooks.newProxy(win.Reflect.setPrototypeOf, handler)
+      }
+      useProxy(win.Object, 'setPrototypeOf', handler)
+      useProxy(win.Reflect, 'setPrototypeOf', handler)
     }
   },
 
   '.toString': {
-    onEnable: ({ win, symbol, registry, hooks }) => {
-      win.Function.prototype.toString = hooks.newBaseProxy(win.Function.prototype.toString, {
+    onEnable: ({ win, symbol, registry, useProxy }) => {
+      useProxy(win.Function.prototype, 'toString', {
         apply(target: any, self: any, args: any[]) {
           if (self != null && registry.has(self)) {
             const raw = self[symbol.raw]
@@ -719,8 +714,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
   },
 
   '.create': {
-    onEnable: ({ win, symbol, registry, hooks }) => {
-      win.Object.create = hooks.newBaseProxy(win.Object.create, {
+    onEnable: ({ win, symbol, registry, useProxy }) => {
+      useProxy(win.Object, 'create', {
         apply(target: any, self: any, args: any[]) {
           const src = args[0]
           if (src != null && registry.has(src)) {
