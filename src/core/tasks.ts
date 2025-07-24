@@ -53,120 +53,87 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator),
-    onEnable: ({ win, conf, info, symbol, getSeed, getValue }) => {
-      const desc = Object.getOwnPropertyDescriptors(win.Navigator.prototype)
-      if (!desc) return;
-
+    onEnable: ({ win, conf, info, symbol, getSeed, getValue, useGetterProxy }) => {
       // @ts-ignore
       win.navigator[symbol.own] = getOwnProperties(win.navigator)
 
-      const _userAgent = desc.userAgent?.get
-      const _appVersion = desc.appVersion?.get
-      if (_userAgent && _appVersion) {
-        /* ua */
-        Object.defineProperty(win.navigator, "userAgent", {
-          get() {
-            if (info.browser === 'firefox') return _userAgent.call(this);
+      const _userAgent = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'userAgent')?.get
+      const _appVersion = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'appVersion')?.get
+      /* ua & appVersion */
+      if (info.browser !== 'firefox' && _userAgent && _appVersion) {
+        useGetterProxy([win.Navigator.prototype, win.navigator], [
+          'userAgent', 'appVersion'
+        ], (key, getter) => ({
+          apply(target, thisArg: Screen, args: any) {
             const seed = getSeed(conf.fp.navigator.uaVersion.type)
             if (seed !== null) {
-              recordHook('userAgent')
+              recordHook(key)
               return genRandomVersionUserAgent(seed, {
-                userAgent: _userAgent.call(this),
-                appVersion: _appVersion.call(this)
-              })
+                userAgent: _userAgent.call(thisArg),
+                appVersion: _appVersion.call(thisArg)
+              }, key === 'appVersion');
             }
-            return _userAgent.call(this)
+            return getter.call(thisArg)
           }
-        })
-        /* appVersion */
-        Object.defineProperty(win.navigator, "appVersion", {
-          get() {
-            if (info.browser === 'firefox') return _appVersion.call(this);
-            const seed = getSeed(conf.fp.navigator.uaVersion.type)
-            if (seed !== null) {
-              recordHook('appVersion')
-              return genRandomVersionUserAgent(seed, {
-                userAgent: _userAgent.call(this),
-                appVersion: _appVersion.call(this)
-              }, true)
-            }
-            return _appVersion.call(this)
-          }
-        })
+        }))
       }
 
       /* userAgentData */
-      const _userAgentData = desc.userAgentData?.get
-      _userAgentData && Object.defineProperty(win.navigator, "userAgentData", {
-        get: new Proxy(_userAgentData, {
-          apply: (target, thisArg, args: any) => {
-            if (info.browser === 'firefox') return _userAgentData.call(thisArg);
+      if (info.browser !== 'firefox') {
+        // @ts-ignore
+        useGetterProxy([win.Navigator.prototype, win.navigator], 'userAgentData', (_, getter) => ({
+          apply(target, thisArg: Screen, args: any) {
+            const result = getter.call(thisArg)
             const seed = getSeed(conf.fp.navigator.uaVersion.type)
             if (seed !== null) {
               recordHook('userAgent')
-              return proxyUserAgentData(seed, target.apply(thisArg, args))
+              return proxyUserAgentData(seed, result);
             }
-            return _userAgentData.call(thisArg)
+            return result;
           }
-        })
-      })
-
-      /* Simple hook */
-      const hookProp = (key: keyof Navigator) => {
-        const getter: (() => any) | undefined = desc[key]?.get
-        if (!getter) return;
-        Object.defineProperty(win.navigator, key, {
-          get() {
-            const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
-            const _key: any = 'navigator.' + key
-            const value = getValue(_key, mode)
-            if (value !== null) return value;
-            return getter.call(this)
-          }
-        })
+        }))
       }
-      hookProp('language')
-      hookProp('languages')
-      hookProp('hardwareConcurrency')
+
+      /* other */
+      useGetterProxy([win.Navigator.prototype, win.navigator], [
+        'language', 'languages', 'hardwareConcurrency'
+      ], (key, getter) => ({
+        apply(target, thisArg: Screen, args: any) {
+          const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
+          const _key: any = 'navigator.' + key
+          const value = getValue(_key, mode)
+          if (value !== null) return value;
+          return getter.call(thisArg)
+        }
+      }))
     },
   },
 
   'screen': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.screen),
-    onEnable: ({ win, conf, getValue }) => {
-      const desc = Object.getOwnPropertyDescriptors(win.Screen.prototype)
-      if (!desc) return;
-
+    onEnable: ({ win, conf, getValue, useGetterProxy }) => {
       // @ts-ignore
       win.screen[symbol.own] = getOwnProperties(win.screen)
 
-      /* Simple hook */
-      const hookProp = (key: keyof Screen) => {
-        const getter: (() => any) | undefined = desc[key]?.get
-        if (!getter) return;
-        Object.defineProperty(win.screen, key, {
-          get() {
-            const mode: HookMode | undefined = (conf.fp.screen as any)[key]
-            const _key: any = 'screen.' + key
-            const value = getValue(_key, mode)
-            if (value !== null) return value;
-            return getter.call(this)
-          }
-        })
-      }
-      hookProp('width')
-      hookProp('height')
-      hookProp('colorDepth')
-      hookProp('pixelDepth')
+      useGetterProxy([win.Screen.prototype, win.screen], [
+        'width', 'height', 'colorDepth', 'pixelDepth'
+      ], (key, getter) => ({
+        apply(target, thisArg: Screen, args: any) {
+          const mode: HookMode | undefined = (conf.fp.screen as any)[key]
+          const _key: any = 'screen.' + key
+          const value = getValue(_key, mode)
+          if (value !== null) return value;
+          return getter.call(thisArg)
+        }
+      }));
     },
   },
 
   'canvas': {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
-    onEnable: ({ win, conf, hooks, rawObjects, getValue }) => {
+    onEnable: ({ win, conf, rawObjects, getValue, useProxy }) => {
       /* getContext */
-      const _getContext = win.HTMLCanvasElement.prototype.getContext
-      win.HTMLCanvasElement.prototype.getContext = hooks.newBaseProxy(_getContext, {
+      useProxy(win.HTMLCanvasElement.prototype, 'getContext', {
         apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
           if (args[0] === '2d') {
             const option = args[1] ?? {};
@@ -178,14 +145,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       })
 
       /* getImageData */
-      const _getImageData = win.CanvasRenderingContext2D.prototype.getImageData
-      rawObjects.getImageData = _getImageData
-      win.CanvasRenderingContext2D.prototype.getImageData = hooks.newBaseProxy(_getImageData, {
+      rawObjects.getImageData = win.CanvasRenderingContext2D.prototype.getImageData
+      useProxy(win.CanvasRenderingContext2D.prototype, 'getImageData', {
         apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
           const value: number[] = getValue('other.canvas', conf.fp.other.canvas)
           if (value !== null) {
             return drawNoise(
-              _getImageData!, value,
+              rawObjects.getImageData!, value,
               thisArg, ...args)
           }
           return target.apply(thisArg, args);
@@ -285,7 +251,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           return target.apply(thisArg, args);
         }
       })
-      
+
     },
   },
 
