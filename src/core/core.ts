@@ -149,7 +149,7 @@ export class FingerprintHandler {
     }
   }
 
-  private toProxyHandler<T extends object>(handler: ProxyHandler<T>): ProxyHandler<T> {
+  private toProxyHandler = <T extends object>(handler: ProxyHandler<T>): ProxyHandler<T> => {
     return {
       ...handler,
       get: (target: any, prop: any, receiver: any) => {
@@ -161,7 +161,7 @@ export class FingerprintHandler {
     }
   }
 
-  public useProxy<
+  public useProxy = <
     T extends object,
     K extends keyof T,
     H extends ProxyHandler<Extract<T[K], object>>,
@@ -169,7 +169,7 @@ export class FingerprintHandler {
     target: T,
     key: K | K[],
     handler: H | ((key: K) => H | void),
-  ) {
+  ) => {
     if (Array.isArray(key)) {
       /* multi */
       for (const _k of key) {
@@ -191,7 +191,7 @@ export class FingerprintHandler {
     }
   }
 
-  public useDefine<
+  public useDefine = <
     T extends object,
     K extends keyof T,
     A extends (PropertyDescriptor & ThisType<any>),
@@ -199,7 +199,7 @@ export class FingerprintHandler {
     target: T,
     key: K | K[],
     attributes: A | ((key: K, desc: PropertyDescriptor) => A | void)
-  ) {
+  ) => {
     if (Array.isArray(key)) {
       /* multi */
       for (const _k of key) {
