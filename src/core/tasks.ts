@@ -2,6 +2,7 @@ import { HookType } from '@/types/enum'
 import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { HookTask, recordHook } from "./core";
 import { drawNoise, drawNoiseToWebgl, getOwnProperties, notify, proxyUserAgentData } from './utils';
+import { seededEl, shuffleArray } from '@/utils/base';
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
@@ -55,7 +56,9 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator),
-    onEnable: ({ win, conf, info, symbol, getSeed, getValue, useGetterProxy }) => {
+    onEnable: ({ win, conf, info, symbol, getSeed, useHookMode, useGetterProxy }) => {
+      const fpOptions = conf.fp.navigator
+
       // @ts-ignore
       win.navigator[symbol.own] = getOwnProperties(win.navigator)
 
@@ -67,7 +70,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           'userAgent', 'appVersion'
         ], (key, getter) => ({
           apply(target, thisArg: Screen, args: any) {
-            const seed = getSeed(conf.fp.navigator.uaVersion.type)
+            const seed = getSeed(fpOptions.uaVersion.type)
             if (seed !== null) {
               recordHook(key)
               notify('weak.userAgent')
@@ -87,9 +90,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         useGetterProxy([win.Navigator.prototype, win.navigator], 'userAgentData', (_, getter) => ({
           apply(target, thisArg: Screen, args: any) {
             const result = getter.call(thisArg)
-            const seed = getSeed(conf.fp.navigator.uaVersion.type)
+            const seed = getSeed(fpOptions.uaVersion.type)
             if (seed !== null) {
-              recordHook('userAgent')
               notify('weak.userAgent')
               return proxyUserAgentData(seed, result);
             }
@@ -98,40 +100,74 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         }))
       }
 
+      const _languages = win.navigator.languages
+      const _hConcurrency = [8, 12, 16]
+
       /* other */
-      useGetterProxy([win.Navigator.prototype, win.navigator], [
-        'language', 'languages', 'hardwareConcurrency'
-      ], (key, getter) => ({
-        apply(target, thisArg: Screen, args: any) {
-          notify('weak.' + key)
-          const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
-          const _key: any = 'navigator.' + key
-          const value = getValue(_key, mode)
-          if (value !== null) return value;
-          return getter.call(thisArg)
-        }
-      }))
+      const tasks: { [key in keyof Navigator]?: SeededFn } = {
+        'language': (seed) => seededEl(_languages, seed),
+        'languages': (seed) => shuffleArray(_languages, seed),
+        'hardwareConcurrency': (seed) => seededEl(_hConcurrency, seed),
+      }
+      useGetterProxy([win.Navigator.prototype, win.navigator],
+        Object.keys(tasks) as (keyof Navigator)[],
+        (key, getter) => ({
+          apply(target, thisArg: Screen, args: any) {
+            notify('weak.' + key)
+            const mode: HookMode | undefined = (fpOptions as any)[key]
+            if (mode) {
+              const { seed, value } = useHookMode(mode)
+              if (value != null) return value;
+              const task = tasks[key]
+              if (seed != null && task) return task(seed);
+            }
+            return getter.call(thisArg)
+          }
+        }))
     },
   },
 
   'screen': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.screen),
-    onEnable: ({ win, conf, getValue, useGetterProxy }) => {
+    onEnable: ({ win, conf, useHookMode, useGetterProxy }) => {
+      const fpOptions = conf.fp.screen
+
       // @ts-ignore
       win.screen[symbol.own] = getOwnProperties(win.screen)
 
-      useGetterProxy([win.Screen.prototype, win.screen], [
-        'width', 'height', 'colorDepth', 'pixelDepth'
-      ], (key, getter) => ({
-        apply(target, thisArg: Screen, args: any) {
-          notify('weak.' + key)
-          const mode: HookMode | undefined = (conf.fp.screen as any)[key]
-          const _key: any = 'screen.' + key
-          const value = getValue(_key, mode)
-          if (value !== null) return value;
-          return getter.call(thisArg)
-        }
-      }));
+      const _width = win.screen.width
+      const _height = win.screen.height
+      const _colorDepth = [24, 32]
+      const _pixelDepth = [24, 32]
+
+      const tasks: { [key in keyof Screen]?: SeededFn } = {
+        'width': (seed) => {
+          const offset = (seed % 100) - 50
+          return _width + offset
+        },
+        'height': (seed) => {
+          const offset = (seed % 100) - 50
+          const w = _width + offset
+          return Math.round((w * _height) / _width)
+        },
+        'colorDepth': (seed) => seededEl(_colorDepth, seed),
+        'pixelDepth': (seed) => seededEl(_pixelDepth, seed),
+      }
+      useGetterProxy([win.Screen.prototype, win.screen],
+        Object.keys(tasks) as (keyof Screen)[],
+        (key, getter) => ({
+          apply(target, thisArg: Screen, args: any) {
+            notify('weak.' + key)
+            const mode: HookMode | undefined = (fpOptions as any)[key]
+            if (mode) {
+              const { seed, value } = useHookMode(mode)
+              if (value != null) return value;
+              const task = tasks[key]
+              if (seed != null && task) return task(seed);
+            }
+            return getter.call(thisArg)
+          }
+        }));
     },
   },
 

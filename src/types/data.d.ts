@@ -40,3 +40,5 @@ type HighEntropyValuesAttr = NavigatorUADataAttr & {
   fullVersionList?: Brand[]
   uaFullVersion?: string
 }
+
+type SeededFn<T = any> = (seed: number) => T

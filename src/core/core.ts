@@ -273,6 +273,23 @@ export class FingerprintHandler {
     })
   }
 
+  public useHookMode = (mode?: HookMode) => {
+    switch (mode?.type) {
+      case HookType.value:
+        return { value: mode.value }
+      case HookType.page:
+        return { seed: this.seed.page }
+      case HookType.domain:
+        return { seed: this.seed.domain }
+      case HookType.browser:
+        return { seed: this.seed.browser }
+      case HookType.global:
+        return { seed: this.seed.global }
+      default:
+        return {}
+    }
+  }
+
   public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
     if (!win) throw new Error('win is required');
     if (win === window.top) {
