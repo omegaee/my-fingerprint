@@ -1,7 +1,7 @@
 import { HookType } from '@/types/enum'
 import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { HookTask, recordHook } from "./core";
-import { drawNoise, drawNoiseToWebgl, getOwnProperties, proxyUserAgentData } from './utils';
+import { drawNoise, drawNoiseToWebgl, getOwnProperties, notify, proxyUserAgentData } from './utils';
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
@@ -14,6 +14,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
             if (node.nodeName === 'IFRAME') {
+              notify('other.iframe')
               hookIframe(node as HTMLIFrameElement)
             }
           }
@@ -42,6 +43,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           const res = Reflect.apply(target, thisArg, args)
           const node = args[0]
           if (node?.tagName === 'IFRAME') {
+            notify('other.iframe')
             hookIframe(node as HTMLIFrameElement)
           }
           return res
@@ -68,6 +70,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             const seed = getSeed(conf.fp.navigator.uaVersion.type)
             if (seed !== null) {
               recordHook(key)
+              notify('weak.userAgent')
               return genRandomVersionUserAgent(seed, {
                 userAgent: _userAgent.call(thisArg),
                 appVersion: _appVersion.call(thisArg)
@@ -87,6 +90,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             const seed = getSeed(conf.fp.navigator.uaVersion.type)
             if (seed !== null) {
               recordHook('userAgent')
+              notify('weak.userAgent')
               return proxyUserAgentData(seed, result);
             }
             return result;
@@ -99,6 +103,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         'language', 'languages', 'hardwareConcurrency'
       ], (key, getter) => ({
         apply(target, thisArg: Screen, args: any) {
+          notify('weak.' + key)
           const mode: HookMode | undefined = (conf.fp.navigator as any)[key]
           const _key: any = 'navigator.' + key
           const value = getValue(_key, mode)
@@ -119,6 +124,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         'width', 'height', 'colorDepth', 'pixelDepth'
       ], (key, getter) => ({
         apply(target, thisArg: Screen, args: any) {
+          notify('weak.' + key)
           const mode: HookMode | undefined = (conf.fp.screen as any)[key]
           const _key: any = 'screen.' + key
           const value = getValue(_key, mode)
@@ -148,6 +154,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       rawObjects.getImageData = win.CanvasRenderingContext2D.prototype.getImageData
       useProxy(win.CanvasRenderingContext2D.prototype, 'getImageData', {
         apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
+          notify('strong.canvas')
           const value: number[] = getValue('other.canvas', conf.fp.other.canvas)
           if (value !== null) {
             return drawNoise(
@@ -172,6 +179,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (isHookWebgl) {
         const handler = {
           apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
+            notify('strong.webgl')
             const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
             value && drawNoiseToWebgl(thisArg, value)
             return target.apply(thisArg, args as any);
@@ -185,6 +193,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       if (isHookWebgl) {
         const handler = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
+            notify('strong.webgl')
             const res = target.apply(thisArg, args)
             if (res) {
               const value = random('other.webgl', conf.fp.other.webgl)
@@ -204,9 +213,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
             if (ex) {
               if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
+                notify('weak.glVendor')
                 const value: string | null = getValue('normal.glVendor', conf.fp.normal.glVendor)
                 if (value) return value;
               } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
+                notify('weak.glRenderer')
                 const value: string | null = getValue('normal.glRenderer', conf.fp.normal.glRenderer)
                 if (value) return value;
               }
@@ -232,6 +243,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           if (conf.fp.other.canvas.type !== HookType.default) {
             const ctx = thisArg.getContext('2d');
             if (ctx) {
+              notify('strong.canvas')
               const value: number[] = getValue('other.canvas', conf.fp.other.canvas)
               value && rawObjects.getImageData && drawNoise(
                 rawObjects.getImageData, value,
@@ -243,6 +255,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           if (conf.fp.other.webgl.type !== HookType.default) {
             const gl = thisArg.getContext('webgl') ?? thisArg.getContext('webgl2')
             if (gl) {
+              notify('strong.webgl')
               const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
               value && drawNoiseToWebgl(gl as any, value)
               return target.apply(thisArg, args);
@@ -261,6 +274,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
       useProxy(win.OfflineAudioContext.prototype, 'createDynamicsCompressor', {
         apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
+          notify('strong.audio')
           const value: number | null = random('other.audio', conf.fp.other.audio)
           if (value === null) return target.apply(thisArg, args)
           const compressor = target.apply(thisArg, args)
@@ -309,12 +323,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       /* DateTimeFormat */
       useProxy(win.Intl, 'DateTimeFormat', {
         construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
+          notify('weak.timezone')
           const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
           args[0] = args[0] ?? currTimeZone.locale
           args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
           return new target(...args)
         },
         apply: (target, thisArg: Intl.DateTimeFormat, args: Parameters<typeof Intl.DateTimeFormat>) => {
+          notify('weak.timezone')
           const currTimeZone: TimeZoneInfo = getValueDebounce('other.timezone', conf.fp.other.timezone)
           args[0] = args[0] ?? currTimeZone.locale
           args[1] = Object.assign({ timeZone: currTimeZone.zone }, args[1]);
@@ -333,6 +349,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       {
         const createHandler = (handle: (thisArg: Date, tz: TimeZoneInfo) => string | number | null) => ({
           apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toString>) => {
+            notify('weak.timezone')
             const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
             if (tz === null) return target.apply(thisArg, args);
             const result = handle(thisArg, tz)
@@ -361,6 +378,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         'toLocaleString', 'toLocaleDateString', 'toLocaleTimeString'
       ], {
         apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
+          notify('weak.timezone')
           const tz: TimeZoneInfo | null = getValueDebounce('other.timezone', conf.fp.other.timezone)
           if (tz) {
             args[0] = args[0] ?? tz.locale
@@ -416,6 +434,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       /* offsetHeight */
       useGetterProxy(win.HTMLElement.prototype, 'offsetHeight', (_, getter) => ({
         apply(target, thisArg: HTMLElement, args: any) {
+          notify('strong.font')
           try {
             const height = getter.call(thisArg);
             const mark = thisArg.style.fontFamily ?? 'h' + height;
@@ -429,6 +448,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       /* offsetWidth */
       useGetterProxy(win.HTMLElement.prototype, 'offsetWidth', (_, getter) => ({
         apply(target, thisArg: HTMLElement, args: any) {
+          notify('strong.font')
           try {
             const width = getter.call(thisArg);
             const mark = thisArg.style.fontFamily ?? 'w' + width;
@@ -449,6 +469,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       // @ts-ignore
       if (win.GPUAdapter) {
         const genNoise = (raw: any, offset: number) => {
+          notify('strong.webgpu')
           const rn = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset, 1, 64)!
           return raw ? raw - Math.floor(rn) : raw;
         }
@@ -477,6 +498,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       // @ts-ignore
       if (win.GPUDevice) {
         const genNoise = (raw: any, offset: number) => {
+          notify('strong.webgpu')
           const rn = randomDebounce('other.webgpu', conf.fp.other.webgpu, offset, 1, 64)!
           return raw ? raw - Math.floor(rn) : raw;
         }
@@ -507,6 +529,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         // @ts-ignore
         useProxy(win.GPUCommandEncoder.prototype, 'beginRenderPass', {
           apply(target, self, args) {
+            notify('strong.webgpu')
             if (args?.[0]?.colorAttachments?.[0]?.clearValue) {
               try {
                 const _clearValue = args[0].colorAttachments[0].clearValue
@@ -531,6 +554,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         // @ts-ignore
         useProxy(win.GPUQueue.prototype, 'writeBuffer', {
           apply(target, self, args) {
+            notify('strong.webgpu')
             const _data = args?.[2]
             if (_data && _data instanceof Float32Array) {
               try {
@@ -565,6 +589,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
         'x', 'y', 'width', 'height'
       ], (_, getter) => ({
         apply(target, thisArg: DOMRect, args: any) {
+          notify('strong.domRect')
           const value: number | null = random('other.domRect', conf.fp.other.domRect, 0, 1e-6, -1e-6)
           const res = getter.call(thisArg)
           if (value == null) return res;

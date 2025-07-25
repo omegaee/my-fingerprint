@@ -1,5 +1,29 @@
 import { subversionRandom } from "@/utils/base";
 import { brandRandom } from "@/utils/equipment";
+import { debounce } from "@/utils/timer";
+
+// 
+// --- notification ---
+// 
+const notifyPool = new Map<string, number>()
+
+export const notify = (key: string) => {
+  const count = notifyPool.get(key) ?? 0
+  notifyPool.set(key, count + 1)
+  notifyContent()
+}
+
+const notifyContent = debounce(() => {
+  // sendContentMessage(window.top ?? window, {
+  //   type: MContentType.SetHookRecords,
+  //   data: Object.fromEntries(hookRecords),
+  // }, '*')
+})
+
+
+// 
+// --- other ---
+// 
 
 type U8Array = Uint8ClampedArray | Uint8Array;
 
