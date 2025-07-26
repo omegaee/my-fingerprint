@@ -2,7 +2,8 @@ import { HookType } from '@/types/enum'
 import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { HookTask, recordHook } from "./core";
 import { drawNoise, drawNoiseToWebgl, getOwnProperties, notify, proxyUserAgentData } from './utils';
-import { seededEl, shuffleArray } from '@/utils/base';
+import { seededEl, seededRandom, shuffleArray } from '@/utils/base';
+import { randomCanvasNoise, randomWebglNoise } from '@/utils/data';
 
 const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
@@ -56,7 +57,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'navigator': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator),
-    onEnable: ({ win, conf, info, symbol, getSeed, useHookMode, useGetterProxy }) => {
+    onEnable: ({ win, conf, info, symbol, isDefault, useSeed, useHookMode, useGetterProxy }) => {
       const fpOptions = conf.fp.navigator
 
       // @ts-ignore
@@ -65,45 +66,41 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       const _userAgent = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'userAgent')?.get
       const _appVersion = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'appVersion')?.get
       /* ua & appVersion */
-      if (info.browser !== 'firefox' && _userAgent && _appVersion) {
-        useGetterProxy([win.Navigator.prototype, win.navigator], [
-          'userAgent', 'appVersion'
-        ], (key, getter) => ({
-          apply(target, thisArg: Screen, args: any) {
-            const seed = getSeed(fpOptions.uaVersion.type)
-            if (seed !== null) {
-              recordHook(key)
-              notify('weak.userAgent')
+      {
+        const seed = useSeed(fpOptions.uaVersion)
+        if (seed != null && info.browser !== 'firefox' && _userAgent && _appVersion) {
+          useGetterProxy([win.Navigator.prototype, win.navigator], [
+            'userAgent', 'appVersion'
+          ], (key, getter) => ({
+            apply(target, thisArg: Screen, args: any) {
+              notify('weak.' + key)
               return genRandomVersionUserAgent(seed, {
                 userAgent: _userAgent.call(thisArg),
                 appVersion: _appVersion.call(thisArg)
               }, key === 'appVersion');
             }
-            return getter.call(thisArg)
-          }
-        }))
+          }))
+        }
       }
 
       /* userAgentData */
-      if (info.browser !== 'firefox') {
-        // @ts-ignore
-        useGetterProxy([win.Navigator.prototype, win.navigator], 'userAgentData', (_, getter) => ({
-          apply(target, thisArg: Screen, args: any) {
-            const result = getter.call(thisArg)
-            const seed = getSeed(fpOptions.uaVersion.type)
-            if (seed !== null) {
-              notify('weak.userAgent')
+      {
+        const seed = useSeed(fpOptions.uaVersion)
+        if (seed != null && info.browser !== 'firefox') {
+          // @ts-ignore
+          useGetterProxy([win.Navigator.prototype, win.navigator], 'userAgentData', (_, getter) => ({
+            apply(target, thisArg: Screen, args: any) {
+              notify('weak.userAgentData')
+              const result = getter.call(thisArg)
               return proxyUserAgentData(seed, result);
             }
-            return result;
-          }
-        }))
+          }))
+        }
       }
 
+      /* other */
       const _languages = win.navigator.languages
       const _hConcurrency = [8, 12, 16]
-
-      /* other */
       const tasks: { [key in keyof Navigator]?: SeededFn } = {
         'language': (seed) => seededEl(_languages, seed),
         'languages': (seed) => shuffleArray(_languages, seed),
@@ -111,25 +108,26 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       }
       useGetterProxy([win.Navigator.prototype, win.navigator],
         Object.keys(tasks) as (keyof Navigator)[],
-        (key, getter) => ({
-          apply(target, thisArg: Screen, args: any) {
-            notify('weak.' + key)
-            const mode: HookMode | undefined = (fpOptions as any)[key]
-            if (mode) {
-              const { seed, value } = useHookMode(mode)
+        (key, getter) => {
+          const mode: HookMode | undefined = (fpOptions as any)[key]
+          if (isDefault(mode)) return;
+          const { seed, value } = useHookMode(mode)
+          return {
+            apply(target, thisArg: Screen, args: any) {
+              notify('weak.' + key)
               if (value != null) return value;
               const task = tasks[key]
               if (seed != null && task) return task(seed);
+              return getter.call(thisArg)
             }
-            return getter.call(thisArg)
           }
-        }))
+        })
     },
   },
 
   'screen': {
     condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.screen),
-    onEnable: ({ win, conf, useHookMode, useGetterProxy }) => {
+    onEnable: ({ win, conf, isDefault, useHookMode, useGetterProxy }) => {
       const fpOptions = conf.fp.screen
 
       // @ts-ignore
@@ -155,25 +153,26 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       }
       useGetterProxy([win.Screen.prototype, win.screen],
         Object.keys(tasks) as (keyof Screen)[],
-        (key, getter) => ({
-          apply(target, thisArg: Screen, args: any) {
-            notify('weak.' + key)
-            const mode: HookMode | undefined = (fpOptions as any)[key]
-            if (mode) {
-              const { seed, value } = useHookMode(mode)
+        (key, getter) => {
+          const mode: HookMode | undefined = (fpOptions as any)[key]
+          if (isDefault(mode)) return;
+          const { seed, value } = useHookMode(mode)
+          return {
+            apply(target, thisArg: Screen, args: any) {
+              notify('weak.' + key)
               if (value != null) return value;
               const task = tasks[key]
               if (seed != null && task) return task(seed);
+              return getter.call(thisArg)
             }
-            return getter.call(thisArg)
           }
-        }));
+        });
     },
   },
 
   'canvas': {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, getValue, useProxy }) => {
+    onEnable: ({ win, conf, rawObjects, useSeed, useProxy }) => {
       /* getContext */
       useProxy(win.HTMLCanvasElement.prototype, 'getContext', {
         apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
@@ -187,19 +186,21 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       })
 
       /* getImageData */
-      rawObjects.getImageData = win.CanvasRenderingContext2D.prototype.getImageData
-      useProxy(win.CanvasRenderingContext2D.prototype, 'getImageData', {
-        apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
-          notify('strong.canvas')
-          const value: number[] = getValue('other.canvas', conf.fp.other.canvas)
-          if (value !== null) {
-            return drawNoise(
-              rawObjects.getImageData!, value,
-              thisArg, ...args)
-          }
-          return target.apply(thisArg, args);
+      {
+        rawObjects.getImageData = win.CanvasRenderingContext2D.prototype.getImageData
+        const seed = useSeed(conf.fp.other.canvas)
+        if (seed != null) {
+          const noise = randomCanvasNoise(seed)
+          useProxy(win.CanvasRenderingContext2D.prototype, 'getImageData', {
+            apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
+              notify('strong.canvas')
+              return drawNoise(
+                rawObjects.getImageData!, noise,
+                thisArg, ...args);
+            }
+          })
         }
-      })
+      }
     },
   },
 
@@ -207,62 +208,67 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default ||
       conf.fp.normal.glVendor.type !== HookType.default ||
       conf.fp.normal.glRenderer.type !== HookType.default,
-    onEnable: ({ win, conf, getValue, random, useProxy }) => {
-      const isHookWebgl = conf.fp.other.webgl.type !== HookType.default
+    onEnable: ({ win, conf, isDefault, useSeed, useRandom, useHookMode, useProxy }) => {
+      const isHookWebgl = !isDefault(conf.fp.other.webgl)
       const isHookInfo = conf.fp.normal.glVendor.type !== HookType.default || conf.fp.normal.glRenderer.type !== HookType.default
 
       /* Image */
       if (isHookWebgl) {
-        const handler = {
-          apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
-            notify('strong.webgl')
-            const value: [number, number] = getValue('other.webgl', conf.fp.other.webgl)
-            value && drawNoiseToWebgl(thisArg, value)
-            return target.apply(thisArg, args as any);
+        const seed = useSeed(conf.fp.other.webgl)
+        if (seed != null) {
+          const noise = randomWebglNoise(seed)
+          const handler = {
+            apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
+              notify('strong.webgl')
+              drawNoiseToWebgl(thisArg, noise)
+              return target.apply(thisArg, args as any);
+            }
           }
+          useProxy(win.WebGLRenderingContext.prototype, 'readPixels', handler)
+          useProxy(win.WebGL2RenderingContext.prototype, 'readPixels', handler)
         }
-        useProxy(win.WebGLRenderingContext.prototype, 'readPixels', handler)
-        useProxy(win.WebGL2RenderingContext.prototype, 'readPixels', handler)
       }
 
       /* Report: Supported Extensions */
       if (isHookWebgl) {
-        const handler = {
-          apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
-            notify('strong.webgl')
-            const res = target.apply(thisArg, args)
-            if (res) {
-              const value = random('other.webgl', conf.fp.other.webgl)
-              value && res.push?.('EXT_' + value)
+        const noise = useRandom(conf.fp.other.webgl)
+        if (noise != null) {
+          const handler = {
+            apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
+              notify('strong.webgl')
+              const res = target.apply(thisArg, args);
+              res?.push?.('EXT_' + noise);
+              return res;
             }
-            return res;
           }
+          useProxy(win.WebGLRenderingContext.prototype, 'getSupportedExtensions', handler)
+          useProxy(win.WebGL2RenderingContext.prototype, 'getSupportedExtensions', handler)
         }
-        useProxy(win.WebGLRenderingContext.prototype, 'getSupportedExtensions', handler)
-        useProxy(win.WebGL2RenderingContext.prototype, 'getSupportedExtensions', handler)
       }
 
       /* Report: Parameter */
       if (isHookInfo) {
-        const handler = {
-          apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
-            const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
-            if (ex) {
-              if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
-                notify('weak.glVendor')
-                const value: string | null = getValue('normal.glVendor', conf.fp.normal.glVendor)
-                if (value) return value;
-              } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
-                notify('weak.glRenderer')
-                const value: string | null = getValue('normal.glRenderer', conf.fp.normal.glRenderer)
-                if (value) return value;
+        const _vendor = useHookMode(conf.fp.normal.glVendor).value
+        const _renderer = useHookMode(conf.fp.normal.glRenderer).value
+        if (_vendor || _renderer) {
+          const handler = {
+            apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
+              const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
+              if (ex) {
+                if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
+                  notify('weak.glVendor')
+                  if (_vendor) return _vendor;
+                } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
+                  notify('weak.glRenderer')
+                  if (_renderer) return _renderer;
+                }
               }
+              return target.apply(thisArg, args);
             }
-            return target.apply(thisArg, args);
           }
+          useProxy(win.WebGLRenderingContext.prototype, 'getParameter', handler)
+          useProxy(win.WebGL2RenderingContext.prototype, 'getParameter', handler)
         }
-        useProxy(win.WebGLRenderingContext.prototype, 'getParameter', handler)
-        useProxy(win.WebGL2RenderingContext.prototype, 'getParameter', handler)
       }
     },
   },

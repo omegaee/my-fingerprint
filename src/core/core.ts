@@ -252,7 +252,7 @@ export class FingerprintHandler {
    * 代理getter属性描述符
    * @param target 目标对象 | [获取描述符对象, 写入对象]
    * @param key 属性名
-   * @param attributes 属性描述符
+   * @param attributes 属性描述符代理 | ((key, getter) => 属性描述符代理 | 不进行代理)
    * @returns void
    */
   public useGetterProxy = <
@@ -263,30 +263,67 @@ export class FingerprintHandler {
   >(
     target: T | [T, W],
     key: K | K[],
-    handler: H | ((key: K, getter: () => any) => H)
+    handler: H | ((key: K, getter: () => any) => H | void)
   ) => {
     this.useDefine(target, key, (_k, desc) => {
       const getter = desc.get
-      return getter && {
-        get: this.newProxy(getter, typeof handler === 'function' ? handler(_k, getter) : handler)
+      if (!getter) return;
+      const _handler = typeof handler === 'function' ? handler(_k, getter) : handler
+      if (!_handler) return;
+      return {
+        get: this.newProxy(getter, _handler)
       }
     })
   }
 
-  public useHookMode = (mode?: HookMode) => {
+  /**
+   * 获取指定项的种子
+   */
+  public useSeed = (mode?: HookMode) => {
     switch (mode?.type) {
-      case HookType.value:
-        return { value: mode.value }
       case HookType.page:
-        return { seed: this.seed.page }
+        return this.seed.page
       case HookType.domain:
-        return { seed: this.seed.domain }
+        return this.seed.domain
       case HookType.browser:
-        return { seed: this.seed.browser }
+        return this.seed.browser
       case HookType.global:
-        return { seed: this.seed.global }
+        return this.seed.global
       default:
-        return {}
+        return null
+    }
+  }
+
+  /**
+   * 获取指定项的种子或自定义值
+   */
+  public useHookMode = (mode?: HookMode) => {
+    if (mode?.type === HookType.value) {
+      return { value: mode.value }
+    } else {
+      const seed = this.useSeed(mode)
+      return seed == null ? {} : { seed }
+    }
+  }
+
+  /**
+   * 根据指定项种子生成随机数
+   */
+  public useRandom = (mode?: HookMode, max?: number, min?: number, offset: number = 0) => {
+    const seed = this.useSeed(mode)
+    return seed == null ? null : seededRandom(seed + (offset * 10), max, min)
+  }
+
+  /**
+   * 所有参数是否是默认模式
+   * @returns 
+   */
+  public isDefault = (mode?: HookMode | HookMode[]) => {
+    if (!mode) return true
+    if (Array.isArray(mode)) {
+      return mode.every(m => m.type === HookType.default)
+    } else {
+      return mode.type === HookType.default
     }
   }
 
