@@ -297,21 +297,19 @@ export class FingerprintHandler {
   /**
    * 获取指定项的种子或自定义值
    */
-  public useHookMode = (mode?: HookMode) => {
-    if (mode?.type === HookType.value) {
-      return { value: mode.value }
-    } else {
-      const seed = this.useSeed(mode)
-      return seed == null ? {} : { seed }
+  public useHookMode = <V>(mode?: HookMode<V>): {
+    seed?: number
+    value?: V
+  } => {
+    switch (mode?.type) {
+      case HookType.default:
+        return {};
+      case HookType.value:
+        return { value: mode.value };
+      default:
+        const seed = this.useSeed(mode)
+        return seed == null ? {} : { seed };
     }
-  }
-
-  /**
-   * 根据指定项种子生成随机数
-   */
-  public useRandom = (mode?: HookMode, max?: number, min?: number, offset: number = 0) => {
-    const seed = this.useSeed(mode)
-    return seed == null ? null : seededRandom(seed + (offset * 10), max, min)
   }
 
   /**
