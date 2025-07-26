@@ -11,10 +11,6 @@ export type HookTask = {
   onEnable?: (fh: FingerprintHandler) => void
 }
 
-export interface RawHookObject {
-  getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
-}
-
 // export const WIN_KEY = Symbol('__my_fingerprint__')
 export const WIN_KEY = 'my_fingerprint'
 
@@ -55,10 +51,7 @@ export class FingerprintHandler {
   public win: Window & typeof globalThis
   public info: WindowStorage
   public seed: SeedInfo
-
   public conf: LocalStorageConfig
-
-  public rawObjects: Partial<RawHookObject> = {}
 
   /// hook存储
   public registry = new WeakSet<object>()
@@ -79,6 +72,16 @@ export class FingerprintHandler {
         return getter(target, prop, receiver)
       }
     }
+  }
+
+  /**
+   * 获取原始值
+   * @param target 目标
+   */
+  public useRaw = <T>(target: T): T => {
+    if (target == null) return target;
+    const raw = (target as any)[this.symbol.raw]
+    return raw ?? target;
   }
 
   public newProxy = <T extends object>(target: T, handler: ProxyHandler<T>): T => {

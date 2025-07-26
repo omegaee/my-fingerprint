@@ -172,7 +172,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
   'canvas': {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, useSeed, useProxy }) => {
+    onEnable: ({ win, conf, useSeed, useProxy }) => {
       /* getContext */
       useProxy(win.HTMLCanvasElement.prototype, 'getContext', {
         apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
@@ -187,16 +187,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
       /* getImageData */
       {
-        rawObjects.getImageData = win.CanvasRenderingContext2D.prototype.getImageData
         const seed = useSeed(conf.fp.other.canvas)
         if (seed != null) {
           const noise = randomCanvasNoise(seed)
           useProxy(win.CanvasRenderingContext2D.prototype, 'getImageData', {
             apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
               notify('strong.canvas')
-              return drawNoise(
-                rawObjects.getImageData!, noise,
-                thisArg, ...args);
+              return drawNoise(target, noise, thisArg, ...args);
             }
           })
         }
@@ -278,7 +275,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     condition: ({ conf }) =>
       conf.fp.other.canvas.type !== HookType.default ||
       conf.fp.other.webgl.type !== HookType.default,
-    onEnable: ({ win, conf, rawObjects, useSeed, useProxy }) => {
+    onEnable: ({ win, conf, useSeed, useProxy, useRaw }) => {
 
       const seedCanvas = useSeed(conf.fp.other.canvas)
       const seedWebgl = useSeed(conf.fp.other.webgl)
@@ -292,9 +289,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
             const ctx = thisArg.getContext('2d');
             if (ctx) {
               notify('strong.canvas')
-              rawObjects.getImageData && drawNoise(
-                rawObjects.getImageData, noiseCanvas,
-                ctx, 0, 0, thisArg.width, thisArg.height)
+              drawNoise(
+                useRaw(win.CanvasRenderingContext2D.prototype.getImageData),
+                noiseCanvas, ctx,
+                0, 0, thisArg.width, thisArg.height
+              )
               return target.apply(thisArg, args);
             }
           }
