@@ -1,10 +1,5 @@
 import { HookType } from '@/types/enum'
-import {
-  randomCanvasNoise,
-  randomFontNoise,
-  randomWebglNoise,
-} from "../utils/data";
-import { shuffleArray, seededEl, seededRandom } from "@/utils/base";
+import { seededRandom } from "@/utils/base";
 import { debounce, debounceByFirstArg } from "../utils/timer";
 import { MContentType, sendContentMessage } from "@/message/content";
 import { genRandomSeed } from "../utils/base";
@@ -22,60 +17,6 @@ export interface RawHookObject {
 
 // export const WIN_KEY = Symbol('__my_fingerprint__')
 export const WIN_KEY = 'my_fingerprint'
-
-const RAW = {
-  languages: navigator.languages,
-  width: screen.width,
-  height: screen.height,
-}
-
-const RANDOM = {
-  // chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-  hardwareConcurrencys: [8, 12, 16],
-  colorDepths: [16, 24, 32],
-  pixelDepths: [16, 24, 32],
-}
-
-/**
- * Random Value
- */
-// type RandomFuncMap = Record<FuncKey, RandomFunc>
-const randomFuncMap = {
-  'navigator.language': (seed: number) => seededEl(RAW.languages, seed),
-  'navigator.languages': (seed: number) => shuffleArray(RAW.languages, seed),
-  'navigator.hardwareConcurrency': (seed: number) => seededEl(RANDOM.hardwareConcurrencys, seed),
-  'screen.height': (seed: number) => {
-    const offset = (seed % 100) - 50
-    const width = RAW.width + offset
-    return Math.round((width * RAW.height) / RAW.width)
-  },
-  'screen.width': (seed: number) => {
-    const offset = (seed % 100) - 50
-    return RAW.width + offset
-  },
-  'screen.colorDepth': (seed: number) => seededEl(RANDOM.colorDepths, seed),
-  'screen.pixelDepth': (seed: number) => seededEl(RANDOM.pixelDepths, seed),
-  'other.canvas': randomCanvasNoise,
-  'other.audio': undefined,
-  'other.webgl': randomWebglNoise,
-  'other.font': randomFontNoise,
-  'other.webgpu': undefined,
-  'other.domRect': undefined,
-}
-
-/**
- * Custom Value
- */
-// type ValueFuncMap = Record<FuncKey, ValueFunc>
-const valueFuncMap = {
-  'other.timezone': undefined,
-  'normal.glVendor': undefined,
-  'normal.glRenderer': undefined,
-}
-
-type RandomFunc = (seed: number, args?: any) => any
-type ValueFunc = (value: any, args?: any) => any
-type FuncKey = keyof typeof randomFuncMap | keyof typeof valueFuncMap
 
 // record缓存
 const hookRecords: Map<string, number> = new Map()
@@ -126,27 +67,6 @@ export class FingerprintHandler {
   public symbol = {
     own: Symbol('OwnProperty'),
     raw: Symbol('RawValue'),
-  }
-
-  /// hook工具
-  public hooks = {
-    useBaseHandler: <T extends Object = any>(handler: ProxyHandler<T>): ProxyHandler<T> => ({
-      ...handler,
-      get: (target: any, prop: any, receiver: any) => {
-        if (prop === this.symbol.raw) return target;
-        if (prop === 'caller' || prop === 'arguments') return target[prop];
-        const getter = handler.get ?? Reflect.get
-        return getter(target, prop, receiver)
-      }
-    }),
-    newProxy: <T extends object>(target: T, handler: ProxyHandler<T>): T => {
-      const proxy = new Proxy(target, handler)
-      this.registry.add(proxy)
-      return proxy
-    },
-    newBaseProxy: <T extends object>(target: T, handler: ProxyHandler<T>): T => {
-      return this.hooks.newProxy(target, this.hooks.useBaseHandler(handler))
-    }
   }
 
   private toProxyHandler = <T extends object>(handler: ProxyHandler<T>): ProxyHandler<T> => {
@@ -396,75 +316,6 @@ export class FingerprintHandler {
       if (value!.type !== HookType.default) return false
     }
     return true
-  }
-
-  /**
-   * 获取value对应的的seed
-   */
-  public getSeed = (type?: HookType): number | null => {
-    switch (type) {
-      case HookType.page:
-        return this.seed.page
-      case HookType.domain:
-        return this.seed.domain
-      case HookType.browser:
-        return this.seed.browser
-      case HookType.global:
-        return this.seed.global
-      case HookType.default:
-      default:
-        return null
-    }
-  }
-
-  private _getValue = (key: FuncKey, mode: HookMode, args?: any): any | null => {
-    switch (mode.type) {
-      case HookType.default: {
-        return null
-      }
-      case HookType.value: {
-        const func: ValueFunc | undefined = (valueFuncMap as any)[key];
-        return func ? func(mode.value, args) : mode.value;
-      }
-      case HookType.browser:
-      case HookType.domain:
-      case HookType.global:
-      case HookType.page: {
-        const func: RandomFunc | undefined = (randomFuncMap as any)[key];
-        if (func) {
-          const seed = this.getSeed(mode.type)
-          if (seed !== null) return func(seed, args);
-        }
-        return null
-      }
-      default: {
-        return null
-      }
-    }
-  }
-
-  public getValue = (key: FuncKey, mode?: HookMode, args?: any): any | null => {
-    if (!mode) return null;
-    recordHook(key)
-    return this._getValue(key, mode, args)
-  }
-
-  public getValueDebounce = (key: FuncKey, mode?: HookMode, args?: any): any | null => {
-    if (!mode) return null;
-    recordHookDebounce(key)
-    return this._getValue(key, mode, args)
-  }
-
-  public random = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
-    recordHook(key)
-    const seed = this.getSeed(mode?.type)
-    return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
-  }
-
-  public randomDebounce = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
-    recordHookDebounce(key)
-    const seed = this.getSeed(mode?.type)
-    return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
   }
 
 }
