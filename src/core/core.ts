@@ -1,44 +1,17 @@
 import { HookType } from '@/types/enum'
 import { seededRandom } from "@/utils/base";
-import { debounce, debounceByFirstArg } from "../utils/timer";
-import { MContentType, sendContentMessage } from "@/message/content";
 import { genRandomSeed } from "../utils/base";
-import hookTasks from "./tasks";
+import { hookTasks } from "./tasks";
 
 export type HookTask = {
-  name: string
-  condition?: (fh: FingerprintHandler) => boolean | undefined
-  onEnable?: (fh: FingerprintHandler) => void
+  // 条件，为空则默认为true
+  condition?: (ctx: FingerprintHandler) => boolean | undefined
+  // 钩子函数
+  onEnable?: (ctx: FingerprintHandler) => void
 }
 
 // export const WIN_KEY = Symbol('__my_fingerprint__')
 export const WIN_KEY = 'my_fingerprint'
-
-// record缓存
-const hookRecords: Map<string, number> = new Map()
-
-/**
- * 发送record消息
- */
-export const sendRecordMessage = debounce(() => {
-  sendContentMessage(window.top ?? window, {
-    type: MContentType.SetHookRecords,
-    data: Object.fromEntries(hookRecords),
-  }, '*')
-})
-
-/**
- * 记录并发送消息
- */
-export const recordHook = function (key: string) {
-  const parts = key.split('.')
-  key = parts[parts.length - 1]
-  const oldValue = hookRecords.get(key) ?? 0
-  hookRecords.set(key, oldValue + 1)
-  sendRecordMessage()
-}
-
-export const recordHookDebounce = debounceByFirstArg(recordHook, 200)
 
 type SeedInfo = {
   page: number
@@ -237,7 +210,7 @@ export class FingerprintHandler {
 
   /**
    * 所有参数是否是默认模式
-   * @returns 
+   * @example !isDefault([...]) // 至少一个元素是非默认值
    */
   public isDefault = (mode?: HookMode | HookMode[]) => {
     if (!mode) return true
@@ -307,18 +280,6 @@ export class FingerprintHandler {
     try {
       new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
     } catch (_) { }
-  }
-
-  /**
-   * 是否所有字段的type都是default
-   * ops为空则返回true
-   */
-  public isAllDefault(ops?: Record<string, HookMode>) {
-    if (!ops) return true
-    for (const value of Object.values(ops)) {
-      if (value!.type !== HookType.default) return false
-    }
-    return true
   }
 
 }

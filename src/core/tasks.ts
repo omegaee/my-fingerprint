@@ -5,9 +5,12 @@ import { drawNoise, drawNoiseToWebgl, getOwnProperties, notify, proxyUserAgentDa
 import { seededEl, seededRandom, shuffleArray } from '@/utils/base';
 import { randomCanvasNoise, randomFontNoise, randomWebglNoise } from '@/utils/data';
 
-const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
-
-  'iframe html hook': {
+export const hookTasks: HookTask[] = [
+  /**
+   * iframe html hook
+   * 静态iframe注入
+   */
+  {
     condition: ({ conf }) => conf.action.hookBlankIframe,
     onEnable: ({ win, hookIframe }) => {
       // 监听DOM初始化
@@ -34,7 +37,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'iframe script hook': {
+  /**
+   * iframe script hook
+   * 动态iframe注入
+   */
+  {
     condition: ({ conf }) => conf.action.hookBlankIframe,
     onEnable: ({ win, hookIframe, useProxy }) => {
 
@@ -55,10 +62,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'navigator': {
-    condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.navigator),
+  /**
+   * Navigator
+   */
+  {
+    condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.navigator)),
     onEnable: ({ win, conf, info, symbol, isDefault, useSeed, useHookMode, useGetterProxy }) => {
-      const fpOptions = conf.fp.navigator
+      const fps = conf.fp.navigator
 
       // @ts-ignore
       win.navigator[symbol.own] = getOwnProperties(win.navigator)
@@ -67,7 +77,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       const _appVersion = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'appVersion')?.get
       /* ua & appVersion */
       {
-        const seed = useSeed(fpOptions.uaVersion)
+        const seed = useSeed(fps.uaVersion)
         if (seed != null && info.browser !== 'firefox' && _userAgent && _appVersion) {
           useGetterProxy([win.Navigator.prototype, win.navigator], [
             'userAgent', 'appVersion'
@@ -85,7 +95,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
 
       /* userAgentData */
       {
-        const seed = useSeed(fpOptions.uaVersion)
+        const seed = useSeed(fps.uaVersion)
         if (seed != null && info.browser !== 'firefox') {
           // @ts-ignore
           useGetterProxy([win.Navigator.prototype, win.navigator], 'userAgentData', (_, getter) => ({
@@ -109,7 +119,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       useGetterProxy([win.Navigator.prototype, win.navigator],
         Object.keys(tasks) as (keyof Navigator)[],
         (key, getter) => {
-          const mode: HookMode | undefined = (fpOptions as any)[key]
+          const mode: HookMode | undefined = (fps as any)[key]
           if (isDefault(mode)) return;
           const { seed, value } = useHookMode(mode)
           return {
@@ -125,10 +135,13 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'screen': {
-    condition: ({ conf, isAllDefault }) => !isAllDefault(conf.fp.screen),
+  /**
+   * Screen
+   */
+  {
+    condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.screen)),
     onEnable: ({ win, conf, isDefault, useHookMode, useGetterProxy }) => {
-      const fpOptions = conf.fp.screen
+      const fps = conf.fp.screen
 
       // @ts-ignore
       win.screen[symbol.own] = getOwnProperties(win.screen)
@@ -154,7 +167,7 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       useGetterProxy([win.Screen.prototype, win.screen],
         Object.keys(tasks) as (keyof Screen)[],
         (key, getter) => {
-          const mode: HookMode | undefined = (fpOptions as any)[key]
+          const mode: HookMode | undefined = (fps as any)[key]
           if (isDefault(mode)) return;
           const { seed, value } = useHookMode(mode)
           return {
@@ -170,7 +183,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'canvas': {
+  /**
+   * Canvas
+   */
+  {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useProxy }) => {
       /* getContext */
@@ -201,16 +217,14 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'webgl': {
-    condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default ||
-      conf.fp.normal.glVendor.type !== HookType.default ||
-      conf.fp.normal.glRenderer.type !== HookType.default,
-    onEnable: ({ win, conf, isDefault, useSeed, useHookMode, useProxy }) => {
-      const isHookWebgl = !isDefault(conf.fp.other.webgl)
-      const isHookInfo = conf.fp.normal.glVendor.type !== HookType.default || conf.fp.normal.glRenderer.type !== HookType.default
-
+  /**
+   * Webgl
+   */
+  {
+    condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default,
+    onEnable: ({ win, conf, useSeed, useProxy }) => {
       /* Image */
-      if (isHookWebgl) {
+      {
         const seed = useSeed(conf.fp.other.webgl)
         if (seed != null) {
           const noise = randomWebglNoise(seed)
@@ -225,9 +239,8 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           useProxy(win.WebGL2RenderingContext.prototype, 'readPixels', handler)
         }
       }
-
       /* Report: Supported Extensions */
-      if (isHookWebgl) {
+      {
         const seed = useSeed(conf.fp.other.webgl)
         if (seed != null) {
           const noise = seededRandom(seed, 1, 0)
@@ -243,38 +256,47 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
           useProxy(win.WebGL2RenderingContext.prototype, 'getSupportedExtensions', handler)
         }
       }
-
-      /* Report: Parameter */
-      if (isHookInfo) {
-        const _vendor = useHookMode(conf.fp.normal.glVendor).value
-        const _renderer = useHookMode(conf.fp.normal.glRenderer).value
-        if (_vendor || _renderer) {
-          const handler = {
-            apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
-              const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
-              if (ex) {
-                if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
-                  notify('weak.glVendor')
-                  if (_vendor) return _vendor;
-                } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
-                  notify('weak.glRenderer')
-                  if (_renderer) return _renderer;
-                }
-              }
-              return target.apply(thisArg, args);
-            }
-          }
-          useProxy(win.WebGLRenderingContext.prototype, 'getParameter', handler)
-          useProxy(win.WebGL2RenderingContext.prototype, 'getParameter', handler)
-        }
-      }
     },
   },
 
-  'toDataURL': {
-    condition: ({ conf }) =>
-      conf.fp.other.canvas.type !== HookType.default ||
-      conf.fp.other.webgl.type !== HookType.default,
+  /**
+   * Webgl参数信息
+   */
+  {
+    condition: ({ conf, isDefault }) => !isDefault([conf.fp.normal.glVendor, conf.fp.normal.glRenderer]),
+    onEnable: ({ win, conf, useHookMode, useProxy }) => {
+      const fps = conf.fp.normal
+
+      /* Report: Parameter */
+      const _vendor = useHookMode(fps.glVendor).value
+      const _renderer = useHookMode(fps.glRenderer).value
+      if (_vendor || _renderer) {
+        const handler = {
+          apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
+            const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
+            if (ex) {
+              if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
+                notify('weak.glVendor')
+                if (_vendor) return _vendor;
+              } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
+                notify('weak.glRenderer')
+                if (_renderer) return _renderer;
+              }
+            }
+            return target.apply(thisArg, args);
+          }
+        }
+        useProxy(win.WebGLRenderingContext.prototype, 'getParameter', handler)
+        useProxy(win.WebGL2RenderingContext.prototype, 'getParameter', handler)
+      }
+    }
+  },
+
+  /**
+   * toDataURL
+   */
+  {
+    condition: ({ conf, isDefault }) => !isDefault([conf.fp.other.canvas, conf.fp.other.webgl]),
     onEnable: ({ win, conf, useSeed, useProxy, useRaw }) => {
 
       const seedCanvas = useSeed(conf.fp.other.canvas)
@@ -313,30 +335,37 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'audio': {
+  /**
+   * Audio
+   * 音频指纹
+   */
+  {
     condition: ({ conf }) => conf.fp.other.audio.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useProxy }) => {
-
       const seed = useSeed(conf.fp.other.audio)
-      if (seed != null) {
-        const noise = seededRandom(seed, 1, 0)
-        useProxy(win.OfflineAudioContext.prototype, 'createDynamicsCompressor', {
-          apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
-            notify('strong.audio')
-            const compressor = target.apply(thisArg, args)
-            const gain = thisArg.createGain()
-            gain.gain.value = noise * 0.001
-            compressor.connect(gain)
-            gain.connect(thisArg.destination)
-            return compressor
-          }
-        })
-      }
+      if (seed == null) return;
+
+      const noise = seededRandom(seed, 1, 0)
+      useProxy(win.OfflineAudioContext.prototype, 'createDynamicsCompressor', {
+        apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
+          notify('strong.audio')
+          const compressor = target.apply(thisArg, args)
+          const gain = thisArg.createGain()
+          gain.gain.value = noise * 0.001
+          compressor.connect(gain)
+          gain.connect(thisArg.destination)
+          return compressor
+        }
+      });
 
     },
   },
 
-  'timezone': {
+  /**
+   * Timezone
+   * 时区
+   */
+  {
     condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
     onEnable: ({ win, conf, useHookMode, useProxy }) => {
       const tzValue = useHookMode(conf.fp.other.timezone).value
@@ -440,7 +469,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'webrtc': {
+  /**
+   * Webrtc
+   */
+  {
     condition: ({ conf }) => conf.fp.other.webrtc.type !== HookType.default,
     onEnable: ({ win, useDefine }) => {
 
@@ -477,7 +509,11 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'font': {
+  /**
+   * Font
+   * 字体指纹
+   */
+  {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useGetterProxy }) => {
       const seed = useSeed(conf.fp.other.font)
@@ -496,7 +532,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'webgpu': {
+  /**
+   * Webgpu
+   */
+  {
     condition: ({ conf }) => conf.fp.other.webgpu.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useDefine, useProxy, newProxy }) => {
       const seed = useSeed(conf.fp.other.webgpu)
@@ -594,7 +633,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     },
   },
 
-  'domRect': {
+  /**
+   * DomRect
+   */
+  {
     condition: ({ conf }) => conf.fp.other.domRect.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useGetterProxy }) => {
       const seed = useSeed(conf.fp.other.domRect)
@@ -627,7 +669,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
-  '.ownProperties': {
+  /**
+   * .ownProperties
+   */
+  {
     onEnable: ({ win, symbol, useProxy }) => {
       {
         /* multi */
@@ -664,7 +709,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
-  '.prototypeOf': {
+  /**
+   * .prototypeOf
+   */
+  {
     onEnable: ({ win, symbol, registry, useProxy }) => {
       const handler = {
         apply(target: any, self: any, args: any[]) {
@@ -682,7 +730,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
-  '.toString': {
+  /**
+   * .toString
+   */
+  {
     onEnable: ({ win, symbol, registry, useProxy }) => {
       useProxy(win.Function.prototype, 'toString', {
         apply(target: any, self: any, args: any[]) {
@@ -696,7 +747,10 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
     }
   },
 
-  '.create': {
+  /**
+   * .create
+   */
+  {
     onEnable: ({ win, symbol, registry, useProxy }) => {
       useProxy(win.Object, 'create', {
         apply(target: any, self: any, args: any[]) {
@@ -710,7 +764,4 @@ const hookTaskMap: Record<string, Omit<HookTask, 'name'>> = {
       })
     }
   }
-}
-
-export const hookTasks = Object.entries(hookTaskMap).map(([name, task]): HookTask => ({ ...task, name }))
-export default hookTasks
+];
