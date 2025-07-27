@@ -1,12 +1,14 @@
-import { Card, Tree, type TreeDataNode } from 'antd';
+import { Tree, type TreeDataNode } from 'antd';
 import { useEffect, useState } from 'react';
 import { FpNoticeItem } from './item';
+import { useTranslation } from 'react-i18next';
 
 type FpNoticePanelProps = {
   notice?: Record<string, number>
 }
 
 export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
+  const [t] = useTranslation()
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [treeData, setTreeData] = useState<TreeDataNode[]>([]);
 
@@ -98,13 +100,15 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
       <Card size='small' className='grow'>{totalCount('weak.')}</Card>
       <Card size='small' className='grow'>{totalCount('other.')}</Card>
     </div> */}
-    <Tree.DirectoryTree
-      className='grow overflow-auto no-scrollbar'
-      showIcon={false}
-      blockNode
-      treeData={treeData}
-      expandedKeys={expandedKeys}
-      onExpand={setExpandedKeys as any}
-    />
+    {treeData.length === 0 ?
+      <div className='grow flex justify-center items-center'>{t('tip.label.no-fp-notice')}</div> :
+      <Tree.DirectoryTree
+        className='grow overflow-auto no-scrollbar'
+        showIcon={false}
+        blockNode
+        treeData={treeData}
+        expandedKeys={expandedKeys}
+        onExpand={setExpandedKeys as any}
+      />}
   </div>
 }

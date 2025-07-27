@@ -11,16 +11,16 @@ type FpNoticeItemProps = {
 }
 
 export const FpNoticeItem = ({ title, count, isRoot }: FpNoticeItemProps) => {
-  const [t] = useTranslation()
+  const [t, i18n] = useTranslation()
 
   const label = useMemo(() => {
     if (isRoot && RootKeys.includes(title)) {
-      return t('notice.fp.' + title)
+      return t('label.fp-notice.' + title)
     }
     return title
-  }, [isRoot, title])
+  }, [isRoot, title, i18n.language])
 
-  return <div className="flex justify-between items-center">
+  return <div className="flex justify-between items-center font-bold">
     <div>{label}</div>
     <Tag bordered={false}>x{count}</Tag>
   </div>
