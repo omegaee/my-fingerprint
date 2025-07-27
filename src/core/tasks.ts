@@ -1,9 +1,17 @@
 import { HookType } from '@/types/enum'
-import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { type HookTask } from "./core";
-import { drawNoise, drawNoiseToWebgl, getOwnProperties, notify, proxyUserAgentData } from './utils';
+import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { seededEl, seededRandom, shuffleArray } from '@/utils/base';
-import { randomCanvasNoise, randomFontNoise, randomWebglNoise } from '@/utils/data';
+import {
+  notify,
+  drawNoise,
+  drawNoiseToWebgl,
+  getOwnProperties,
+  proxyUserAgentData,
+  randomCanvasNoise,
+  randomFontNoise,
+  randomWebglNoise,
+} from './utils';
 
 export const hookTasks: HookTask[] = [
   /**
