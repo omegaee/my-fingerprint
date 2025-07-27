@@ -10,7 +10,8 @@ export const enum MContentType {
 export type MContentRequest = {
   [MContentType.SetHookRecords]: {
     type: MContentType.SetHookRecords,
-    data: Partial<Record<string, number>>,
+    data: Record<string, number>,
+    total: Record<string, number>,
   }
   [MContentType.GetHookInfo]: {
     type: MContentType.GetHookInfo,

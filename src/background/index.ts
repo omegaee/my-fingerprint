@@ -7,6 +7,8 @@ import { reRequestHeader } from "./request";
 
 const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
 
+const noticePool = new Map<number, Record<string, number>>();
+
 let newVersion: string | undefined
 
 /**
@@ -56,14 +58,22 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       return msg.result
     }
     case MRuntimeType.GetNotice: {
-      sendResponse(hookRecords.get(msg.tabId));
+      sendResponse(noticePool.get(msg.tabId));
       break
     }
     case MRuntimeType.SetHookRecords: {
+      // const tabId = sender.tab?.id
+      // if (tabId === undefined) return
+      // hookRecords.set(tabId, msg.data)
+      // const [text, color] = getBadgeContent(msg.data)
+      // chrome.action.setBadgeText({ tabId, text });
+      // chrome.action.setBadgeBackgroundColor({ tabId, color });
+      // break
+
       const tabId = sender.tab?.id
-      if (tabId === undefined) return
-      hookRecords.set(tabId, msg.data)
-      const [text, color] = getBadgeContent(msg.data)
+      if (tabId == null) return;
+      noticePool.set(tabId, msg.data)
+      const { text, color } = getBadgeContent(msg.total)
       chrome.action.setBadgeText({ tabId, text });
       chrome.action.setBadgeBackgroundColor({ tabId, color });
       break

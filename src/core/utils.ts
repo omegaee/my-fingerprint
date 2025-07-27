@@ -1,3 +1,4 @@
+import { MContentType, sendContentMessage } from "@/message/content";
 import { hashNumberFromString, seededRandom, subversionRandom } from "@/utils/base";
 import { brandRandom } from "@/utils/equipment";
 import { debounce } from "@/utils/timer";
@@ -5,19 +6,30 @@ import { debounce } from "@/utils/timer";
 // 
 // --- notification ---
 // 
-const notifyPool = new Map<string, number>()
+const noticePool = new Map<string, number>()
+const noticeTotal = {
+  weak: 0,
+  strong: 0,
+  other: 0,
+}
 
 export const notify = (key: string) => {
-  const count = notifyPool.get(key) ?? 0
-  notifyPool.set(key, count + 1)
+  const count = noticePool.get(key) ?? 0
+  noticePool.set(key, count + 1)
+
+  if (key.startsWith('weak.')) noticeTotal.weak++;
+  else if (key.startsWith('strong.')) noticeTotal.strong++;
+  else noticeTotal.other++;
+
   notifyContent()
 }
 
 const notifyContent = debounce(() => {
-  // sendContentMessage(window.top ?? window, {
-  //   type: MContentType.SetHookRecords,
-  //   data: Object.fromEntries(hookRecords),
-  // }, '*')
+  sendContentMessage(window.top ?? window, {
+    type: MContentType.SetHookRecords,
+    data: Object.fromEntries(noticePool),
+    total: noticeTotal,
+  }, '*')
 })
 
 // // record缓存

@@ -24,7 +24,8 @@ export type MRuntimeRequest = {
   },
   [MRuntimeType.SetHookRecords]: {
     type: MRuntimeType.SetHookRecords,
-    data: Partial<Record<string, number>>,
+    data: Record<string, number>,
+    total: Record<string, number>,
   },
   [MRuntimeType.UpdateWhitelist]: {
     type: MRuntimeType.UpdateWhitelist,
@@ -52,7 +53,7 @@ export type MRuntimeRequest = {
 ///
 export type MRuntimeResponse = {
   [MRuntimeType.SetConfig]: LocalStorageConfig | undefined,
-  [MRuntimeType.GetNotice]: Partial<Record<string, number>> | undefined,
+  [MRuntimeType.GetNotice]: Record<string, number> | undefined,
   [MRuntimeType.GetNewVersion]: string | undefined,
   [MRuntimeType.Subscribe]: LocalStorage | undefined
 } & {
@@ -91,10 +92,11 @@ export const sendRuntimeGetNotice = (tabId: number, host: string) => {
 /**
  * 设置hook记录
  */
-export const sendRuntimeSetHookRecords = (hookRecords: Partial<Record<HookFingerprintKey, number>>) => {
+export const sendRuntimeSetHookRecords = (data: Record<string, number>, total: Record<string, number>) => {
   return sendMessage<MRuntimeType.SetHookRecords>({
     type: MRuntimeType.SetHookRecords,
-    data: hookRecords,
+    data,
+    total,
   })
 }
 
