@@ -33,7 +33,12 @@
     "clipboard-export": "Export To Clipboard",
     "clipboard-import": "Import From Clipboard",
     "permission": "Permission",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "fp-notice": {
+      "weak": "Weak",
+      "strong": "Strong",
+      "other": "Other"
+    }
   },
   "type": {
     "default": "Default",
@@ -65,7 +70,6 @@
       "webgpu": "WebGPU Fingerprint",
       "glDriver": "Graphics Driver",
       "domRect": "DOMRect Fingerprint",
-
       "e-language": "Language",
       "seed": "Global Seed",
       "hook-net-request": "Net Request Hooks",
@@ -86,7 +90,6 @@
       "webgpu": "WebGPU Fingerprint",
       "glDriver": "Graphics Driver Vendor\n\nGraphics Driver Renderer",
       "domRect": "DOMRect Fingerprint",
-
       "e-language": "Language",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
       "hook-net-request": "When turned on, it affects all network requests",
@@ -109,7 +112,8 @@
       "no-auth-required": "No Auth Required",
       "json": "Json Format",
       "subscribe-save": "Save and Subscribe",
-      "subscribe-test": "Subscription Target Detection"
+      "subscribe-test": "Subscription Target Detection",
+      "no-fp-notice": "No records found"
     },
     "ok": {
       "config-import": "Import Config Success",

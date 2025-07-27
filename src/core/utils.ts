@@ -1,5 +1,99 @@
-import { subversionRandom } from "@/utils/base";
+import { MContentType, sendContentMessage } from "@/message/content";
+import { hashNumberFromString, seededRandom, subversionRandom } from "@/utils/base";
 import { brandRandom } from "@/utils/equipment";
+import { debounce } from "@/utils/timer";
+
+// 
+// --- notification ---
+// 
+const noticePool = new Map<string, number>()
+const noticeTotal = {
+  weak: 0,
+  strong: 0,
+  other: 0,
+}
+
+export const notify = (key: string) => {
+  const count = noticePool.get(key) ?? 0
+  noticePool.set(key, count + 1)
+
+  if (key.startsWith('weak.')) noticeTotal.weak++;
+  else if (key.startsWith('strong.')) noticeTotal.strong++;
+  else noticeTotal.other++;
+
+  notifyContent()
+}
+
+const notifyContent = debounce(() => {
+  sendContentMessage(window.top ?? window, {
+    type: MContentType.SetHookRecords,
+    data: Object.fromEntries(noticePool),
+    total: noticeTotal,
+  }, '*')
+})
+
+// // record缓存
+// const hookRecords: Map<string, number> = new Map()
+
+// /**
+//  * 发送record消息
+//  */
+// export const sendRecordMessage = debounce(() => {
+//   sendContentMessage(window.top ?? window, {
+//     type: MContentType.SetHookRecords,
+//     data: Object.fromEntries(hookRecords),
+//   }, '*')
+// })
+
+// /**
+//  * 记录并发送消息
+//  */
+// export const recordHook = function (key: string) {
+//   const parts = key.split('.')
+//   key = parts[parts.length - 1]
+//   const oldValue = hookRecords.get(key) ?? 0
+//   hookRecords.set(key, oldValue + 1)
+//   sendRecordMessage()
+// }
+
+// export const recordHookDebounce = debounceByFirstArg(recordHook, 200)
+
+
+// 
+// --- random ---
+// 
+
+/**
+ * 随机canvas噪音
+ */
+export const randomCanvasNoise = (seed: number) => {
+  const noise: number[] = []
+  for (let i = 0; i < 10; i++) {
+    noise.push(Math.floor(seededRandom(seed++, 255, 0)))
+  }
+  return noise
+}
+
+/**
+ * 获取[x, y]，区间[-1, 1]
+ */
+export const randomWebglNoise = (seed: number): [number, number] => {
+  return [seededRandom(seed, 1, -1), seededRandom(seed + 1, 1, -1)]
+}
+
+/**
+ * 获取随机字体噪音
+ */
+export const randomFontNoise = (seed: number, mark: string): number => {
+  const random = seededRandom((seed + hashNumberFromString(mark)) % Number.MAX_SAFE_INTEGER, 3, 0)
+  if ((random * 10) % 1 < 0.9) return 0;
+  return Math.floor(random) - 1;
+}
+
+
+// 
+// --- other ---
+// 
 
 type U8Array = Uint8ClampedArray | Uint8Array;
 
@@ -28,11 +122,12 @@ export const drawNoise = (
   let noiseIndex = 0;
   let isChanged = false
 
-  const center = new Uint8ClampedArray(4)
-  const up = new Uint8ClampedArray(4)
-  const down = new Uint8ClampedArray(4)
-  const left = new Uint8ClampedArray(4)
-  const right = new Uint8ClampedArray(4)
+  const Arr = Uint8ClampedArray;
+  const center = new Arr(4)
+  const up = new Arr(4)
+  const down = new Arr(4)
+  const left = new Arr(4)
+  const right = new Arr(4)
 
   const pixelData = imageData.data
 

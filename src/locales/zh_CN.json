@@ -33,7 +33,12 @@
     "clipboard-export": "复制到剪贴板",
     "clipboard-import": "从剪贴板导入",
     "permission": "权限",
-    "subscribe": "订阅"
+    "subscribe": "订阅",
+    "fp-notice": {
+      "weak": "弱指纹",
+      "strong": "强指纹",
+      "other": "其他"
+    }
   },
   "type": {
     "default": "系统值",
@@ -65,7 +70,6 @@
       "webgpu": "WebGPU指纹",
       "glDriver": "图形驱动",
       "domRect": "DOMRect指纹",
-
       "e-language": "语言",
       "seed": "全局种子",
       "hook-net-request": "网络请求钩子",
@@ -86,7 +90,6 @@
       "webgpu": "WebGPU指纹",
       "glDriver": "图形驱动供应商\n\n图形驱动渲染器",
       "domRect": "DOMRect指纹",
-
       "e-language": "语言",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",
       "hook-net-request": "开启后，会影响所有网络请求",
@@ -109,7 +112,8 @@
       "no-auth-required": "无需授权",
       "json": "Json格式",
       "subscribe-save": "保存并订阅",
-      "subscribe-test": "订阅目标检测"
+      "subscribe-test": "订阅目标检测",
+      "no-fp-notice": "暂无记录"
     },
     "ok": {
       "config-import": "配置导入成功",

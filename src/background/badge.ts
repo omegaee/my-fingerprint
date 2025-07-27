@@ -10,18 +10,20 @@ const BADGE_COLOR = {
  * 获取Badge内容
  * @returns [文本, 颜色]
  */
-export const getBadgeContent = (records: Partial<Record<HookFingerprintKey, number>>): [string, string] => {
-  let baseNum = 0
-  let specialNum = 0
-  for (const [key, num] of Object.entries(records)) {
-    if (SPECIAL_KEYS.includes(key as any)) {
-      specialNum += num
-    } else {
-      baseNum += num
-    }
+export const getBadgeContent = (noticeTotal: Record<'weak' | 'strong' | (string & {}), number>): {
+  text: string
+  color: string
+} => {
+  const weak = noticeTotal['weak'] ?? 0
+  const strong = noticeTotal['strong'] ?? 0
+  return {
+    text: getShowNumber(strong > 0 ? strong : weak),
+    color: strong > 0 ? BADGE_COLOR.high : BADGE_COLOR.low,
   }
-  const showNum = specialNum || baseNum
-  return [showNum >= 100 ? '99+' : String(showNum), specialNum ? BADGE_COLOR.high : BADGE_COLOR.low]
+}
+
+const getShowNumber = (num: number) => {
+  return num >= 100 ? '99+' : String(num)
 }
 
 /**

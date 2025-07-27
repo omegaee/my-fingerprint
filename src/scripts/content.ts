@@ -1,4 +1,4 @@
-import { unwrapContentMessage, MContentType, MContentRequest } from '@/message/content';
+import { unwrapContentMessage, MContentType } from '@/message/content';
 import { sendRuntimeSetHookRecords } from '@/message/runtime';
 
 /**
@@ -8,7 +8,7 @@ window.addEventListener('message', (ev) => {
   const msg = unwrapContentMessage(ev)
   switch (msg?.type) {
     case MContentType.SetHookRecords: {
-      sendRuntimeSetHookRecords(msg.data)
+      sendRuntimeSetHookRecords(msg.data, msg.total)
       break
     }
   }
