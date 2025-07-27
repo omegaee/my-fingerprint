@@ -8,7 +8,7 @@ import {
   CloseOutlined,
 } from '@ant-design/icons';
 
-import FHookRecord from "./record"
+import { FpNoticePanel } from "./record"
 import FConfig from "./config"
 import WhitelistView from "./whitelist"
 
@@ -23,7 +23,7 @@ function Application() {
   const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
   const [hostname, setHostname] = useState<string>()
-  const [hookRecords, setHookRecords] = useState<Partial<Record<string, number>>>()
+  const [fpNotice, setFpNotice] = useState<Record<string, number>>()
   const [whitelistMode, setWhitelistMode] = useState<'none' | 'self' | 'sub'>('none')
   const [hasNewVersion, setHasNewVersion] = useState(false)
   const [moreBadge, setMoreBadge] = useState(false)
@@ -61,7 +61,7 @@ function Application() {
       if (_url && (_url.protocol === 'http:' || _url.protocol === 'https:')) {
         /* 允许白名单 */
         setHostname(_url.hostname)
-        sendRuntimeGetNotice(tab.id, _url.hostname).then((data) => setHookRecords(data))
+        sendRuntimeGetNotice(tab.id, _url.hostname).then((data) => setFpNotice(data))
       }
     })
     sendRuntimeGetNewVersion().then((version) => {
@@ -117,7 +117,7 @@ function Application() {
       {
         label: t('e.record'),
         // icon: <AlertOutlined />,
-        children: <FHookRecord records={hookRecords} />,
+        children: <FpNoticePanel notice={fpNotice} />,
       },
       {
         label: t('e.config'),
@@ -135,7 +135,7 @@ function Application() {
         children: <MoreView />,
       }
     ].map((item, index) => ({ ...item, key: String(index) }))
-  }, [i18n.language, tab, hookRecords])
+  }, [i18n.language, tab, fpNotice])
 
   return (
     <Layout className="overflow-y-auto no-scrollbar p-2 w-72 flex flex-col">
@@ -189,7 +189,7 @@ function Application() {
 
       <Divider style={{ margin: '8px 0 0 0' }} />
 
-      <Tabs className="h-[450px] grow [&_.ant-tabs-tabpane]:animate-fadeIn" 
+      <Tabs className="h-[450px] grow [&_.ant-tabs-tabpane]:animate-fadeIn"
         type="line" size='small' centered
         items={tabItems}
         tabBarStyle={{ marginBottom: '8px' }} />
