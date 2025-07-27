@@ -1,107 +1,17 @@
 import { HookType } from '@/types/enum'
-import {
-  randomCanvasNoise,
-  randomFontNoise,
-  randomWebglNoise,
-} from "../utils/data";
-import { shuffleArray, seededEl, seededRandom } from "@/utils/base";
-import { debounce, debounceByFirstArg } from "../utils/timer";
-import { MContentType, sendContentMessage } from "@/message/content";
+import { seededRandom } from "@/utils/base";
 import { genRandomSeed } from "../utils/base";
-import hookTasks from "./tasks";
+import { hookTasks } from "./tasks";
 
 export type HookTask = {
-  name: string
-  condition?: (fh: FingerprintHandler) => boolean | undefined
-  onEnable?: (fh: FingerprintHandler) => void
-}
-
-export interface RawHookObject {
-  getImageData: typeof CanvasRenderingContext2D.prototype.getImageData
+  // 条件，为空则默认为true
+  condition?: (ctx: FingerprintHandler) => boolean | undefined
+  // 钩子函数
+  onEnable?: (ctx: FingerprintHandler) => void
 }
 
 // export const WIN_KEY = Symbol('__my_fingerprint__')
 export const WIN_KEY = 'my_fingerprint'
-
-const RAW = {
-  languages: navigator.languages,
-  width: screen.width,
-  height: screen.height,
-}
-
-const RANDOM = {
-  // chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-  hardwareConcurrencys: [8, 12, 16],
-  colorDepths: [16, 24, 32],
-  pixelDepths: [16, 24, 32],
-}
-
-/**
- * Random Value
- */
-// type RandomFuncMap = Record<FuncKey, RandomFunc>
-const randomFuncMap = {
-  'navigator.language': (seed: number) => seededEl(RAW.languages, seed),
-  'navigator.languages': (seed: number) => shuffleArray(RAW.languages, seed),
-  'navigator.hardwareConcurrency': (seed: number) => seededEl(RANDOM.hardwareConcurrencys, seed),
-  'screen.height': (seed: number) => {
-    const offset = (seed % 100) - 50
-    const width = RAW.width + offset
-    return Math.round((width * RAW.height) / RAW.width)
-  },
-  'screen.width': (seed: number) => {
-    const offset = (seed % 100) - 50
-    return RAW.width + offset
-  },
-  'screen.colorDepth': (seed: number) => seededEl(RANDOM.colorDepths, seed),
-  'screen.pixelDepth': (seed: number) => seededEl(RANDOM.pixelDepths, seed),
-  'other.canvas': randomCanvasNoise,
-  'other.audio': undefined,
-  'other.webgl': randomWebglNoise,
-  'other.font': randomFontNoise,
-  'other.webgpu': undefined,
-  'other.domRect': undefined,
-}
-
-/**
- * Custom Value
- */
-// type ValueFuncMap = Record<FuncKey, ValueFunc>
-const valueFuncMap = {
-  'other.timezone': undefined,
-  'normal.glVendor': undefined,
-  'normal.glRenderer': undefined,
-}
-
-type RandomFunc = (seed: number, args?: any) => any
-type ValueFunc = (value: any, args?: any) => any
-type FuncKey = keyof typeof randomFuncMap | keyof typeof valueFuncMap
-
-// record缓存
-const hookRecords: Map<string, number> = new Map()
-
-/**
- * 发送record消息
- */
-export const sendRecordMessage = debounce(() => {
-  sendContentMessage(window.top ?? window, {
-    type: MContentType.SetHookRecords,
-    data: Object.fromEntries(hookRecords),
-  }, '*')
-})
-
-/**
- * 记录并发送消息
- */
-export const recordHook = function (key: string) {
-  const parts = key.split('.')
-  key = parts[parts.length - 1]
-  const oldValue = hookRecords.get(key) ?? 0
-  hookRecords.set(key, oldValue + 1)
-  sendRecordMessage()
-}
-
-export const recordHookDebounce = debounceByFirstArg(recordHook, 200)
 
 type SeedInfo = {
   page: number
@@ -114,10 +24,7 @@ export class FingerprintHandler {
   public win: Window & typeof globalThis
   public info: WindowStorage
   public seed: SeedInfo
-
   public conf: LocalStorageConfig
-
-  public rawObjects: Partial<RawHookObject> = {}
 
   /// hook存储
   public registry = new WeakSet<object>()
@@ -128,9 +35,8 @@ export class FingerprintHandler {
     raw: Symbol('RawValue'),
   }
 
-  /// hook工具
-  public hooks = {
-    useBaseHandler: <T extends Object = any>(handler: ProxyHandler<T>): ProxyHandler<T> => ({
+  private toProxyHandler = <T extends object>(handler: ProxyHandler<T>): ProxyHandler<T> => {
+    return {
       ...handler,
       get: (target: any, prop: any, receiver: any) => {
         if (prop === this.symbol.raw) return target;
@@ -138,14 +44,180 @@ export class FingerprintHandler {
         const getter = handler.get ?? Reflect.get
         return getter(target, prop, receiver)
       }
-    }),
-    newProxy: <T extends object>(target: T, handler: ProxyHandler<T>): T => {
-      const proxy = new Proxy(target, handler)
-      this.registry.add(proxy)
-      return proxy
-    },
-    newBaseProxy: <T extends object>(target: T, handler: ProxyHandler<T>): T => {
-      return this.hooks.newProxy(target, this.hooks.useBaseHandler(handler))
+    }
+  }
+
+  /**
+   * 获取原始值
+   * @param target 目标
+   */
+  public useRaw = <T>(target: T): T => {
+    if (target == null) return target;
+    const raw = (target as any)[this.symbol.raw]
+    return raw ?? target;
+  }
+
+  public newProxy = <T extends object>(target: T, handler: ProxyHandler<T>): T => {
+    const proxy = new Proxy(target, this.toProxyHandler(handler));
+    this.registry.add(proxy);
+    return proxy;
+  }
+
+  public useProxy = <
+    T extends object,
+    K extends keyof T,
+    H extends ProxyHandler<Extract<T[K], object>>,
+  >(
+    target: T,
+    key: K | K[],
+    handler: H | ((key: K) => H | void),
+  ) => {
+    if (Array.isArray(key)) {
+      /* multi */
+      for (const _k of key) {
+        const _handler = typeof handler === 'function' ? handler(_k) : handler;
+        if (_handler) {
+          const proxy = new Proxy(target[_k] as any, this.toProxyHandler(_handler));
+          target[_k] = proxy as T[K];
+          this.registry.add(proxy);
+        }
+      }
+    } else {
+      /* one */
+      const _handler = typeof handler === 'function' ? handler(key) : handler;
+      if (_handler) {
+        const proxy = new Proxy(target[key] as any, this.toProxyHandler(_handler));
+        target[key] = proxy as T[K];
+        this.registry.add(proxy);
+      }
+    }
+  }
+
+  /**
+   * 定义属性描述符
+   * @param target 目标对象 | [获取描述符对象, 写入对象]
+   * @param key 属性名
+   * @param attributes 属性描述符
+   * @returns void
+   */
+  public useDefine = <
+    T extends object,
+    K extends keyof T,
+    A extends (PropertyDescriptor & ThisType<any>),
+    W = any,
+  >(
+    target: T | [T, W],
+    key: K | K[],
+    attributes: A | ((key: K, desc: PropertyDescriptor) => A | void)
+  ) => {
+    /* 处理target */
+    let _read: T
+    let _write: W | T
+    if (Array.isArray(target)) {
+      if (!target.length) return;
+      _read = target[0]
+      _write = target[1] ?? _read
+    } else {
+      _read = target
+      _write = target
+    }
+
+    /* 定义属性 */
+    if (Array.isArray(key)) {
+      /* multi */
+      for (const _k of key) {
+        const desc = Object.getOwnPropertyDescriptor(_read, _k);
+        if (!desc) continue;
+        const attr = typeof attributes === 'function' ? attributes(_k, desc) : attributes;
+        if (attr) {
+          Object.defineProperty(_write, _k, attr);
+        }
+      }
+    } else {
+      /* one */
+      const desc = Object.getOwnPropertyDescriptor(_read, key);
+      if (!desc) return;
+      const attr = typeof attributes === 'function' ? attributes(key, desc) : attributes;
+      if (attr) {
+        Object.defineProperty(_write, key, attr);
+      }
+    }
+  }
+
+  /**
+   * 代理getter属性描述符
+   * @param target 目标对象 | [获取描述符对象, 写入对象]
+   * @param key 属性名
+   * @param attributes 属性描述符代理 | ((key, getter) => 属性描述符代理 | 不进行代理)
+   * @returns void
+   */
+  public useGetterProxy = <
+    T extends object,
+    K extends keyof T,
+    H extends ProxyHandler<() => any>,
+    W = any,
+  >(
+    target: T | [T, W],
+    key: K | K[],
+    handler: H | ((key: K, getter: () => any) => H | void)
+  ) => {
+    this.useDefine(target, key, (_k, desc) => {
+      const getter = desc.get
+      if (!getter) return;
+      const _handler = typeof handler === 'function' ? handler(_k, getter) : handler
+      if (!_handler) return;
+      return {
+        get: this.newProxy(getter, _handler)
+      }
+    })
+  }
+
+  /**
+   * 获取指定项的种子
+   */
+  public useSeed = (mode?: HookMode) => {
+    switch (mode?.type) {
+      case HookType.page:
+        return this.seed.page
+      case HookType.domain:
+        return this.seed.domain
+      case HookType.browser:
+        return this.seed.browser
+      case HookType.global:
+        return this.seed.global
+      default:
+        return null
+    }
+  }
+
+  /**
+   * 获取指定项的种子或自定义值
+   */
+  public useHookMode = <V>(mode?: HookMode<V>): {
+    seed?: number
+    value?: V
+  } => {
+    switch (mode?.type) {
+      case HookType.default:
+        return {};
+      case HookType.value:
+        return { value: mode.value };
+      default:
+        const seed = this.useSeed(mode)
+        return seed == null ? {} : { seed };
+    }
+  }
+
+  /**
+   * 所有参数是否是默认模式
+   * @example !isDefault([...]) // 至少一个元素是非默认值
+   */
+  public isDefault = (mode?: HookMode | HookMode[]) => {
+    if (!mode) return true
+    if (Array.isArray(mode)) {
+      return mode.every(m => m.type === HookType.default)
+    } else {
+      return mode.type === HookType.default
     }
   }
 
@@ -208,87 +280,6 @@ export class FingerprintHandler {
     try {
       new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
     } catch (_) { }
-  }
-
-  /**
-   * 是否所有字段的type都是default
-   * ops为空则返回true
-   */
-  public isAllDefault(ops?: Record<string, HookMode>) {
-    if (!ops) return true
-    for (const value of Object.values(ops)) {
-      if (value!.type !== HookType.default) return false
-    }
-    return true
-  }
-
-  /**
-   * 获取value对应的的seed
-   */
-  public getSeed = (type?: HookType): number | null => {
-    switch (type) {
-      case HookType.page:
-        return this.seed.page
-      case HookType.domain:
-        return this.seed.domain
-      case HookType.browser:
-        return this.seed.browser
-      case HookType.global:
-        return this.seed.global
-      case HookType.default:
-      default:
-        return null
-    }
-  }
-
-  private _getValue = (key: FuncKey, mode: HookMode, args?: any): any | null => {
-    switch (mode.type) {
-      case HookType.default: {
-        return null
-      }
-      case HookType.value: {
-        const func: ValueFunc | undefined = (valueFuncMap as any)[key];
-        return func ? func(mode.value, args) : mode.value;
-      }
-      case HookType.browser:
-      case HookType.domain:
-      case HookType.global:
-      case HookType.page: {
-        const func: RandomFunc | undefined = (randomFuncMap as any)[key];
-        if (func) {
-          const seed = this.getSeed(mode.type)
-          if (seed !== null) return func(seed, args);
-        }
-        return null
-      }
-      default: {
-        return null
-      }
-    }
-  }
-
-  public getValue = (key: FuncKey, mode?: HookMode, args?: any): any | null => {
-    if (!mode) return null;
-    recordHook(key)
-    return this._getValue(key, mode, args)
-  }
-
-  public getValueDebounce = (key: FuncKey, mode?: HookMode, args?: any): any | null => {
-    if (!mode) return null;
-    recordHookDebounce(key)
-    return this._getValue(key, mode, args)
-  }
-
-  public random = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
-    recordHook(key)
-    const seed = this.getSeed(mode?.type)
-    return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
-  }
-
-  public randomDebounce = (key: FuncKey, mode?: HookMode, offset: number = 0, max: number = 1, min: number = 0) => {
-    recordHookDebounce(key)
-    const seed = this.getSeed(mode?.type)
-    return seed === null ? null : seededRandom(seed + (offset * 10), max, min)
   }
 
 }
