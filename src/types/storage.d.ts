@@ -27,7 +27,10 @@ type LocalStorageConfig = {
     url: string
   }
   // 其他
-  language: string
+  prefs: {
+    language: string
+    theme: 'system' | 'light' | 'dark'
+  }
 }
 
 type HookFingerprint = {

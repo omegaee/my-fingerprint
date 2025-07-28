@@ -95,7 +95,10 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       subscribe: {
         url: 'config.json'
       },
-      language: navigator.language,
+      prefs: {
+        language: navigator.language,
+        theme: 'system',
+      },
     },
     whitelist: []
   }
@@ -165,7 +168,7 @@ export const initLocalStorage = debouncedAsync(async () => {
  */
 export const applySubscribeStorage = async () => {
   const [storage, { match }] = await getLocalStorage();
-  
+
   let url = storage.config.subscribe.url.trim()
   if (url === '') return true;
   if (!url.includes("://")) url = chrome.runtime.getURL(url);

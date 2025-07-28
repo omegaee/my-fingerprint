@@ -28,11 +28,11 @@ export const UiConfigGroup = memo(() => {
 
   const language = useMemo(() => {
     const values = LANG_OPTIONS.map((item) => item.value)
-    if (!config?.language) return 'zh-CN'
-    if (values.includes(config.language)) {
-      return config.language
+    if (!config?.prefs?.language) return 'zh-CN'
+    if (values.includes(config.prefs.language)) {
+      return config.prefs.language
     } else {
-      const prefix = config.language.split(':')[0]
+      const prefix = config.prefs.language.split(':')[0]
       return values.find((item) => item.split(':')[0] === prefix) ?? 'zh-CN'
     }
   }, [config])
@@ -44,7 +44,7 @@ export const UiConfigGroup = memo(() => {
       options={LANG_OPTIONS}
       defaultValue={language}
       onChange={(value) => {
-        config.language = value
+        config.prefs.language = value
         i18n.changeLanguage(value)
       }}
     />
