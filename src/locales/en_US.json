@@ -30,6 +30,12 @@
     "config-file": "Config File",
     "config-import": "Import Config",
     "config-export": "Export Config",
+    "config": {
+      "strong": "Strong Fingerprint",
+      "weak": "Weak Fingerprint",
+      "script": "Script Config",
+      "ui": "UI Config"
+    },
     "clipboard-export": "Export To Clipboard",
     "clipboard-import": "Import From Clipboard",
     "permission": "Permission",

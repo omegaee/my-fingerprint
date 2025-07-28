@@ -2,7 +2,6 @@ import { useStorageStore } from "@/popup/stores/storage"
 import { useTranslation } from "react-i18next"
 import { HookType } from '@/types/enum'
 import SelectFpConfigItem from "../item/fp/select"
-import TimeZoneConfigItem from "../item/special/timezone"
 import { memo } from "react"
 import { Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
@@ -10,10 +9,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 const BASE_TYPES: HookMode['type'][] = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const SWITCH_TYPES: HookMode['type'][] = [HookType.default, HookType.disabled]
 
-// export type SpecialFpConfigGroupProps = {
-// }
-
-export const SpecialFpConfigGroup = memo(() => {
+export const StrongFpConfigGroup = memo(() => {
   const [t] = useTranslation()
 
   const config = useStorageStore((state) => {
@@ -23,8 +19,6 @@ export const SpecialFpConfigGroup = memo(() => {
   const fp = config?.fp
 
   return fp ? <>
-    <TimeZoneConfigItem />
-
     <SelectFpConfigItem
       title={t('item.title.canvas')}
       desc={t('item.desc.canvas')}
@@ -83,4 +77,4 @@ export const SpecialFpConfigGroup = memo(() => {
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
-export default SpecialFpConfigGroup
+export default StrongFpConfigGroup

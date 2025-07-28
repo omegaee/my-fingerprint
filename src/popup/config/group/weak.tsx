@@ -1,12 +1,13 @@
 import { memo, useMemo } from "react"
 import { useStorageStore } from "@/popup/stores/storage"
 import { HookType } from '@/types/enum'
-import { InputLine } from "../../config/form/input"
+import { InputLine } from "../form/input"
 import { useTranslation } from "react-i18next"
 import SelectFpConfigItem from "../item/fp/select"
 import { Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
 import { getBrowser } from "@/utils/equipment"
+import TimeZoneConfigItem from "../item/special/timezone"
 
 type DeprecatedType = {
   option: HookType,
@@ -16,10 +17,7 @@ type DeprecatedType = {
 const BASE_TYPES = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const SYSTEM_TYPES = [HookType.default]
 
-// export type NormalFpConfigGroupProps = {
-// }
-
-export const NormalFpConfigGroup = memo(() => {
+export const WeakFpConfigGroup = memo(() => {
   const [t, i18n] = useTranslation()
 
   const netDeprecatedTypes = useMemo<DeprecatedType[]>(() => [
@@ -63,6 +61,8 @@ export const NormalFpConfigGroup = memo(() => {
       onChange={(type) => fp.navigator.uaVersion.type = type as any}
     />}
 
+    <TimeZoneConfigItem />
+
     <SelectFpConfigItem
       title={t('item.title.languages')}
       desc={t('item.desc.languages')}
@@ -84,15 +84,24 @@ export const NormalFpConfigGroup = memo(() => {
     />
 
     <SelectFpConfigItem
-      title={t('item.title.hardwareConcurrency')}
-      desc={t('item.desc.hardwareConcurrency')}
-      options={BASE_TYPES}
-      defaultValue={fp.navigator.hardwareConcurrency.type}
-      onChange={(type) => fp.navigator.hardwareConcurrency.type = type as any}
-      custom={<InputLine label="value"
-        defaultValue={navigator.hardwareConcurrency}
-        initialValue={(fp.navigator.hardwareConcurrency as ValueHookMode).value}
-        onDebouncedInput={(value) => (fp.navigator.hardwareConcurrency as ValueHookMode).value = value} />}
+      title={t('item.title.glDriver')}
+      desc={t('item.desc.glDriver')}
+      options={SYSTEM_TYPES}
+      defaultValue={fp.normal.glRenderer.type}
+      onChange={(type) => {
+        fp.normal.glVendor.type = type as any;
+        fp.normal.glRenderer.type = type as any;
+      }}
+      custom={<>
+        <InputLine label={t('item.label.glVendor')}
+          defaultValue={glInfo.vendor}
+          initialValue={(fp.normal.glVendor as ValueHookMode).value}
+          onDebouncedInput={(value) => (fp.normal.glVendor as ValueHookMode).value = value} />
+        <InputLine label={t('item.label.glRenderer')}
+          defaultValue={glInfo.renderer}
+          initialValue={(fp.normal.glRenderer as ValueHookMode).value}
+          onDebouncedInput={(value) => (fp.normal.glRenderer as ValueHookMode).value = value} />
+      </>}
     />
 
     <SelectFpConfigItem
@@ -138,26 +147,18 @@ export const NormalFpConfigGroup = memo(() => {
     />
 
     <SelectFpConfigItem
-      title={t('item.title.glDriver')}
-      desc={t('item.desc.glDriver')}
-      options={SYSTEM_TYPES}
-      defaultValue={fp.normal.glRenderer.type}
-      onChange={(type) => {
-        fp.normal.glVendor.type = type as any;
-        fp.normal.glRenderer.type = type as any;
-      }}
-      custom={<>
-        <InputLine label={t('item.label.glVendor')}
-          defaultValue={glInfo.vendor}
-          initialValue={(fp.normal.glVendor as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.normal.glVendor as ValueHookMode).value = value} />
-        <InputLine label={t('item.label.glRenderer')}
-          defaultValue={glInfo.renderer}
-          initialValue={(fp.normal.glRenderer as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.normal.glRenderer as ValueHookMode).value = value} />
-      </>}
+      title={t('item.title.hardwareConcurrency')}
+      desc={t('item.desc.hardwareConcurrency')}
+      options={BASE_TYPES}
+      defaultValue={fp.navigator.hardwareConcurrency.type}
+      onChange={(type) => fp.navigator.hardwareConcurrency.type = type as any}
+      custom={<InputLine label="value"
+        defaultValue={navigator.hardwareConcurrency}
+        initialValue={(fp.navigator.hardwareConcurrency as ValueHookMode).value}
+        onDebouncedInput={(value) => (fp.navigator.hardwareConcurrency as ValueHookMode).value = value} />}
     />
+
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
-export default NormalFpConfigGroup
+export default WeakFpConfigGroup
