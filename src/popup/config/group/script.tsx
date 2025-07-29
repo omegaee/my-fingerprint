@@ -37,7 +37,7 @@ export const ScriptConfigGroup = memo(() => {
       title={t('item.title.inject.mode')}
       checkedChildren={t('item.title.inject.fast')}
       unCheckedChildren={t('item.title.inject.compat')}
-      action={<TipIcon.Question content={<Markdown>{t('item.desc.fast-inject')}</Markdown>} />}
+      action={<TipIcon.Question content={<Markdown>{t('item.desc.inject-mode')}</Markdown>} />}
       currentValue={config.action.fastInject}
       onChange={(checked) => config.action.fastInject = checked}
     />

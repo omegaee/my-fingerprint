@@ -103,7 +103,7 @@
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
-      "fast-inject": "Fast Inject"
+      "inject-mode": "Fast Inject"
     },
     "theme": {
       "system": "System",
