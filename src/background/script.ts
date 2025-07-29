@@ -7,10 +7,18 @@ import { coreInject } from "@/core/output";
 const REG_ID = 'core'
 let mScriptCode: string | undefined = undefined
 
-export const isRegScript = () => chrome.userScripts ? true : false
+/**
+ * 是否使用快速注入模式
+ */
+export const isFastInject = (storage: LocalStorage) => {
+  return storage.config.action.fastInject && chrome.scripting;
+}
 
+/**
+ * 注入脚本（兼容模式）
+ */
 export const injectScript = async (tabId: number, storage: LocalStorage) => {
-  if (isRegScript() || !storage.config.enable) return;
+  if (!storage.config.enable || isFastInject(storage)) return;
   /* 注入脚本 */
   await chrome.scripting.executeScript({
     target: {
@@ -33,12 +41,11 @@ const getRegScriptCode = (storage: LocalStorage) => {
 }
 
 /**
- * 注册脚本
+ * 注册脚本（快速注入模式）
  */
 export const reRegisterScript = async () => {
-  if (!isRegScript()) return;
-
   const [storage] = await getLocalStorage()
+  if (!isFastInject(storage)) return;
 
   if (storage.config.enable) {
     const scripts: chrome.userScripts.RegisteredUserScript[] = [{

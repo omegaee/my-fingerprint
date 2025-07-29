@@ -1,6 +1,6 @@
 import { applySubscribeStorage, cleanLocalWhitelist, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
-import { injectScript, isRegScript, reRegisterScript } from './script';
+import { injectScript, reRegisterScript } from './script';
 import { type MRuntimeRequest, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
 import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
@@ -62,14 +62,6 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       break
     }
     case MRuntimeType.SetHookRecords: {
-      // const tabId = sender.tab?.id
-      // if (tabId === undefined) return
-      // hookRecords.set(tabId, msg.data)
-      // const [text, color] = getBadgeContent(msg.data)
-      // chrome.action.setBadgeText({ tabId, text });
-      // chrome.action.setBadgeBackgroundColor({ tabId, color });
-      // break
-
       const tabId = sender.tab?.id
       if (tabId == null) return;
       noticePool.set(tabId, msg.data)
@@ -113,9 +105,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
     const [storage, { match }] = await getLocalStorage()
 
-    if (!isRegScript()) {
-      injectScript(tabId, storage)
-    }
+    // 兼容模式注入，内部判断是否需要注入
+    injectScript(tabId, storage)
 
     const _url = tab.url ? tryUrl(tab.url) : undefined
     if (!_url?.hostname) return;
