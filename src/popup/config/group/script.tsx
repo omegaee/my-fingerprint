@@ -7,6 +7,22 @@ import Markdown from "react-markdown"
 import { hashNumberFromString } from "@/utils/base"
 import { Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
+import { getBrowserInfo, checkPermission } from "@/utils/browser"
+
+const isSupportFastInject = async () => {
+  const { name, version } = getBrowserInfo()
+  const status = await checkPermission('userScripts')
+
+  if (status === 'ns') return 'tip.inject-mode.unsupported';
+  if (status === 'off') return 'tip.inject-mode.unauthorized';
+
+  if (name === 'firefox') {
+  } else if (name === 'edge') {
+  } else if (name === 'chrome') {
+  }
+
+  return false;
+}
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
