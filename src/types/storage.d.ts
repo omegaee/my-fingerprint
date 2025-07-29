@@ -15,7 +15,6 @@ type LocalStorageConfig = {
   fp: HookFingerprint
   // 操作
   action: {
-    hookNetRequest: boolean
   }
   // 输入
   input: {

@@ -2,6 +2,7 @@ import { genRandomVersionUserAgent, genRandomVersionUserAgentData, getBrowser } 
 import { getLocalStorage } from "./storage"
 import { shuffleArray } from "@/utils/base"
 import { HookType } from '@/types/enum'
+import { isDefaultMode } from "@/utils/storage"
 
 type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
 type RuleSignal = {
@@ -20,6 +21,15 @@ const MEMORY = {
   lang: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   exIds: undefined as Set<number> | undefined,
   whitelistSet: undefined as Set<string> | undefined,
+}
+
+const isHookNetRequest = (storage: LocalStorage) => {
+  const fp = storage.config.fp
+  return !isDefaultMode([
+    fp.navigator.uaVersion,
+    fp.navigator.language,
+    fp.navigator.languages,
+  ])
 }
 
 /**
@@ -179,7 +189,7 @@ const removeRules = async () => {
 export const reRequestHeader = async (excludeTabIds?: number | number[], passTabIds?: number | number[]) => {
   const [storage] = await getLocalStorage()
 
-  if (!storage.config.enable || !storage.config.action.hookNetRequest) {
+  if (!storage.config.enable || !isHookNetRequest(storage)) {
     return await removeRules()
   }
 

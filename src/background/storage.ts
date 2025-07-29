@@ -86,7 +86,6 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         },
       },
       action: {
-        hookNetRequest: true,
       },
       input: {
         globalSeed: String(sGlobal),

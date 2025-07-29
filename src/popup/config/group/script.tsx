@@ -32,12 +32,12 @@ export const ScriptConfigGroup = memo(() => {
       }}
     />
 
-    <ConfigItem.Switch
+    {/* <ConfigItem.Switch
       title={t('item.title.hook-net-request')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.hook-net-request')}</Markdown>} />}
       currentValue={config.action.hookNetRequest}
       onChange={(checked) => config.action.hookNetRequest = checked}
-    />
+    /> */}
 
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
