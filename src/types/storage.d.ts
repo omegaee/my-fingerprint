@@ -15,6 +15,7 @@ type LocalStorageConfig = {
   fp: HookFingerprint
   // 操作
   action: {
+    fastInject: boolean
   }
   // 输入
   input: {

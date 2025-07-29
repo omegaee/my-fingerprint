@@ -86,6 +86,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         },
       },
       action: {
+        fastInject: true,
       },
       input: {
         globalSeed: String(sGlobal),

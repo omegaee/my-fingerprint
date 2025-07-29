@@ -32,12 +32,15 @@ export const ScriptConfigGroup = memo(() => {
       }}
     />
 
-    {/* <ConfigItem.Switch
-      title={t('item.title.hook-net-request')}
-      action={<TipIcon.Question content={<Markdown>{t('item.desc.hook-net-request')}</Markdown>} />}
-      currentValue={config.action.hookNetRequest}
-      onChange={(checked) => config.action.hookNetRequest = checked}
-    /> */}
+    <ConfigItem.Switch
+      className="[&_.ant-switch-inner>span]:font-bold"
+      title={t('item.title.inject.mode')}
+      checkedChildren={t('item.title.inject.fast')}
+      unCheckedChildren={t('item.title.inject.compat')}
+      action={<TipIcon.Question content={<Markdown>{t('item.desc.fast-inject')}</Markdown>} />}
+      currentValue={config.action.fastInject}
+      onChange={(checked) => config.action.fastInject = checked}
+    />
 
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })

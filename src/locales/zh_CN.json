@@ -76,7 +76,11 @@
       "e-language": "语言",
       "theme": "主题",
       "seed": "全局种子",
-      "hook-net-request": "网络请求钩子"
+      "inject": {
+        "mode": "注入模式",
+        "fast": "快速模式",
+        "compat": "兼容模式"
+      }
     },
     "desc": {
       "uaVersion": "UserAgent版本号信息\n\n仅修改**FullVersion**中不为**0**的子版本号段，如**userAgentData**和**请求头**中的版本信息。\n\n由于**chrome**隐藏了**ua**中的子版本信息，因此，这也许并不会改变**userAgent**的版本信息。\n\n不会修改**AppleWebKit**和**Safari**版本号，它们是固定的。",
@@ -96,7 +100,7 @@
       "e-language": "语言",
       "theme": "主题",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",
-      "hook-net-request": "开启后，会影响所有网络请求"
+      "fast-inject": "开启后，会使用更快速的脚本注入方式，需要浏览器支持；关闭则为兼容模式"
     },
     "theme": {
       "system": "跟随系统",

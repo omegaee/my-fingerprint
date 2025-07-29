@@ -1,3 +1,5 @@
+import { HookType } from '@/types/enum'
+
 /**
  * 所有参数是否是默认模式
  * @example !isDefault([...]) // 至少一个元素是非默认值
