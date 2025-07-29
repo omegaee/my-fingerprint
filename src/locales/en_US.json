@@ -77,6 +77,7 @@
       "glDriver": "Graphics Driver",
       "domRect": "DOMRect Fingerprint",
       "e-language": "Language",
+      "theme": "Theme",
       "seed": "Global Seed",
       "hook-net-request": "Net Request Hooks",
       "hook-iframe": "Iframe Hooks"
@@ -97,9 +98,15 @@
       "glDriver": "Graphics Driver Vendor\n\nGraphics Driver Renderer",
       "domRect": "DOMRect Fingerprint",
       "e-language": "Language",
+      "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
       "hook-net-request": "When turned on, it affects all network requests",
       "hook-iframe": "When turned on, Can proxy **All Iframe** content"
+    },
+    "theme": {
+      "system": "System",
+      "dark": "Dark",
+      "light": "Light"
     },
     "warn": {
       "unsupported-net-hook": "Unsupported Net Request Hooks"

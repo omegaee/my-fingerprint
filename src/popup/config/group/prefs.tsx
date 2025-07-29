@@ -6,6 +6,7 @@ import Markdown from "react-markdown";
 import { memo, useMemo } from "react";
 import { Spin } from "antd";
 import { LoadingOutlined } from '@ant-design/icons'
+import { usePrefsStore } from "@/popup/stores/prefs";
 
 const LANG_OPTIONS = [
   {
@@ -18,13 +19,15 @@ const LANG_OPTIONS = [
   }
 ]
 
-export const UiConfigGroup = memo(() => {
+export const PrefsConfigGroup = memo(() => {
   const [t, i18n] = useTranslation()
 
   const config = useStorageStore((state) => {
     state.config ?? state.loadStorage()
     return state.config
   })
+
+  const prefs = usePrefsStore()
 
   const language = useMemo(() => {
     const values = LANG_OPTIONS.map((item) => item.value)
@@ -37,6 +40,19 @@ export const UiConfigGroup = memo(() => {
     }
   }, [config])
 
+  const themeOptions = useMemo(() => [
+    {
+      label: t('item.theme.system'),
+      value: 'system'
+    }, {
+      label: t('item.theme.light'),
+      value: 'light'
+    }, {
+      label: t('item.theme.dark'),
+      value: 'dark'
+    }
+  ], [i18n.language])
+
   return config ? <>
     <ConfigItem.Select
       title={t('item.title.e-language')}
@@ -48,7 +64,18 @@ export const UiConfigGroup = memo(() => {
         i18n.changeLanguage(value)
       }}
     />
+
+    <ConfigItem.Select
+      title={t('item.title.theme')}
+      action={<TipIcon.Question content={<Markdown>{t('item.desc.theme')}</Markdown>} />}
+      options={themeOptions}
+      defaultValue={config.prefs.theme}
+      onChange={(value) => {
+        config.prefs.theme = value
+        prefs.setTheme(value)
+      }}
+    />
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
-export default UiConfigGroup
+export default PrefsConfigGroup

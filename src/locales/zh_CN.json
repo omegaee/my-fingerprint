@@ -74,6 +74,7 @@
       "glDriver": "图形驱动",
       "domRect": "DOMRect指纹",
       "e-language": "语言",
+      "theme": "主题",
       "seed": "全局种子",
       "hook-net-request": "网络请求钩子",
       "hook-iframe": "Iframe钩子"
@@ -94,9 +95,15 @@
       "glDriver": "图形驱动供应商\n\n图形驱动渲染器",
       "domRect": "DOMRect指纹",
       "e-language": "语言",
+      "theme": "主题",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",
       "hook-net-request": "开启后，会影响所有网络请求",
       "hook-iframe": "开启后，能代理**所有Iframe**的内容"
+    },
+    "theme": {
+      "system": "跟随系统",
+      "dark": "暗色",
+      "light": "浅色"
     },
     "warn": {
       "unsupported-net-hook": "不支持网络请求钩子"

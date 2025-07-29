@@ -3,12 +3,15 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import WeakFpConfigGroup from "./group/weak"
 import StrongFpConfigGroup from "./group/strong"
-import UiConfigGroup from "./group/ui"
+import PrefsConfigGroup from "./group/prefs"
 import ScriptConfigGroup from "./group/script"
+import { usePrefsStore } from "../stores/prefs"
 
 export const FConfig = () => {
   const [t, i18n] = useTranslation()
   const { token } = theme.useToken();
+
+  const prefs = usePrefsStore()
 
   const items = useMemo<CollapseProps['items']>(() => {
     const style: React.CSSProperties = {
@@ -36,11 +39,11 @@ export const FConfig = () => {
       },
       {
         label: <Typography.Text className="font-bold">{t('label.config.ui')}</Typography.Text>,
-        children: <UiConfigGroup />,
+        children: <PrefsConfigGroup />,
         style,
       },
     ].map((item, key) => ({ ...item, key }))
-  }, [i18n.language])
+  }, [i18n.language, prefs.theme])
 
   return <Collapse className="h-full" size='small'
     style={{
