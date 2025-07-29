@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Application from './App'
 import './index.css'
@@ -8,6 +8,10 @@ import { usePrefsStore } from './stores/prefs'
 
 function MainApp() {
   const prefs = usePrefsStore()
+
+  useEffect(() => {
+    prefs.initLanguage()
+  }, [])
 
   return <ConfigProvider theme={prefs.getThemeConfig()}>
     <App>

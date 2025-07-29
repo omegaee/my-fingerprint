@@ -1,3 +1,4 @@
+import i18n from "@/locales"
 import { theme, type ThemeConfig } from "antd"
 import { create } from "zustand"
 import { persist, createJSONStorage } from 'zustand/middleware'
@@ -6,16 +7,20 @@ type Theme = LocalStorageConfig['prefs']['theme']
 
 type State = {
   theme: Theme
+  language: string
 }
 
 type Actions = {
-  use: (theme?: Theme) => void
   setTheme: (theme: Theme) => void
   getThemeConfig: () => ThemeConfig
+
+  initLanguage: () => void
+  setLanguage: (language: string) => void
 }
 
 export const usePrefsStore = create<State & Actions>()(
   persist((set, get) => {
+
     const darkTheme: ThemeConfig = {
       cssVar: true,
       token: {
@@ -47,11 +52,8 @@ export const usePrefsStore = create<State & Actions>()(
 
     return {
       theme: 'system',
+      language: navigator.language,
 
-      use: (theme) => {
-        if (!theme) return;
-        set({ theme })
-      },
       setTheme: (theme: Theme) => set({ theme }),
       getThemeConfig: () => {
         switch (get().theme) {
@@ -62,6 +64,22 @@ export const usePrefsStore = create<State & Actions>()(
           default:
             return isDarkTheme() ? darkTheme : lightTheme
         }
+      },
+
+      initLanguage: () => {
+        if (get().language?.startsWith('zh')) {
+          i18n.changeLanguage('zh-CN')
+        } else {
+          i18n.changeLanguage('en-US')
+        }
+      },
+      setLanguage: (language: string) => {
+        if (language?.startsWith('zh')) {
+          i18n.changeLanguage('zh-CN')
+        } else {
+          i18n.changeLanguage('en-US')
+        }
+        set({ language })
       }
     }
   }, {
@@ -70,6 +88,7 @@ export const usePrefsStore = create<State & Actions>()(
     storage: createJSONStorage(() => localStorage),
     partialize: (s) => ({
       theme: s.theme,
+      language: s.language
     }) as any
   })
 )

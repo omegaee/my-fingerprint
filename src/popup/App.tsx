@@ -1,4 +1,4 @@
-import { Badge, Button, Divider, Layout, Popconfirm, Tabs, type TabsProps, Typography, message, theme } from "antd"
+import { Badge, Button, Divider, Layout, Popconfirm, Tabs, type TabsProps, Typography, message } from "antd"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -82,7 +82,6 @@ function Application() {
   useEffect(() => {
     if (!config) return
     setEnabled(config.enable)
-    i18n.changeLanguage(config.prefs.language)
   }, [config])
 
   const switchEnable = () => {

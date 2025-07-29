@@ -30,13 +30,11 @@ export const PrefsConfigGroup = memo(() => {
   const prefs = usePrefsStore()
 
   const language = useMemo(() => {
-    const values = LANG_OPTIONS.map((item) => item.value)
-    if (!config?.prefs?.language) return 'zh-CN'
-    if (values.includes(config.prefs.language)) {
-      return config.prefs.language
+    const lang = config?.prefs?.language
+    if (lang?.startsWith('zh')) {
+      return 'zh-CN';
     } else {
-      const prefix = config.prefs.language.split(':')[0]
-      return values.find((item) => item.split(':')[0] === prefix) ?? 'zh-CN'
+      return 'en-US';
     }
   }, [config])
 
@@ -61,7 +59,7 @@ export const PrefsConfigGroup = memo(() => {
       defaultValue={language}
       onChange={(value) => {
         config.prefs.language = value
-        i18n.changeLanguage(value)
+        prefs.setLanguage(value)
       }}
     />
 
