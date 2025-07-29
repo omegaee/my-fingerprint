@@ -86,7 +86,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         },
       },
       action: {
-        fastInject: true,
+        fastInject: chrome.userScripts ? true : false,
       },
       input: {
         globalSeed: String(sGlobal),

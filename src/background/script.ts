@@ -11,7 +11,7 @@ let mScriptCode: string | undefined = undefined
  * 是否使用快速注入模式
  */
 export const isFastInject = (storage: LocalStorage) => {
-  return storage.config.action.fastInject && chrome.scripting;
+  return storage.config.action.fastInject && chrome.userScripts;
 }
 
 /**
