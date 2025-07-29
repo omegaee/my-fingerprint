@@ -34,7 +34,7 @@
       "strong": "Strong Fingerprint",
       "weak": "Weak Fingerprint",
       "script": "Script Config",
-      "ui": "UI Config"
+      "prefs": "Preferences"
     },
     "clipboard-export": "Export To Clipboard",
     "clipboard-import": "Import From Clipboard",

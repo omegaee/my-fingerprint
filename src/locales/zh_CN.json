@@ -31,7 +31,7 @@
       "strong": "强指纹",
       "weak": "弱指纹",
       "script": "脚本配置",
-      "ui": "界面配置"
+      "prefs": "个性化配置"
     },
     "clipboard-export": "复制到剪贴板",
     "clipboard-import": "从剪贴板导入",

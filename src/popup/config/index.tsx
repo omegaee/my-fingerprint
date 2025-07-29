@@ -38,7 +38,7 @@ export const FConfig = () => {
         style,
       },
       {
-        label: <Typography.Text className="font-bold">{t('label.config.ui')}</Typography.Text>,
+        label: <Typography.Text className="font-bold">{t('label.config.prefs')}</Typography.Text>,
         children: <PrefsConfigGroup />,
         style,
       },
