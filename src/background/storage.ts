@@ -87,7 +87,6 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       },
       action: {
         hookNetRequest: true,
-        hookBlankIframe: true,
       },
       input: {
         globalSeed: String(sGlobal),

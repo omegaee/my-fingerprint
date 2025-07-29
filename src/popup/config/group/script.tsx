@@ -39,12 +39,6 @@ export const ScriptConfigGroup = memo(() => {
       onChange={(checked) => config.action.hookNetRequest = checked}
     />
 
-    <ConfigItem.Switch
-      title={t('item.title.hook-iframe')}
-      action={<TipIcon.Question content={<Markdown>{t('item.desc.hook-iframe')}</Markdown>} />}
-      currentValue={config.action.hookBlankIframe}
-      onChange={(checked) => config.action.hookBlankIframe = checked}
-    />
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 

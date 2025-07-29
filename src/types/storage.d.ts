@@ -16,7 +16,6 @@ type LocalStorageConfig = {
   // 操作
   action: {
     hookNetRequest: boolean
-    hookBlankIframe: boolean
   }
   // 输入
   input: {

@@ -19,7 +19,6 @@ export const hookTasks: HookTask[] = [
    * 静态iframe注入
    */
   {
-    condition: ({ conf }) => conf.action.hookBlankIframe,
     onEnable: ({ win, hookIframe }) => {
       // 监听DOM初始化
       const observer = new MutationObserver((mutations) => {
@@ -50,7 +49,6 @@ export const hookTasks: HookTask[] = [
    * 动态iframe注入
    */
   {
-    condition: ({ conf }) => conf.action.hookBlankIframe,
     onEnable: ({ win, hookIframe, useProxy }) => {
 
       useProxy(win.Node.prototype, [

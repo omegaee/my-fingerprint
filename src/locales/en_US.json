@@ -79,8 +79,7 @@
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed",
-      "hook-net-request": "Net Request Hooks",
-      "hook-iframe": "Iframe Hooks"
+      "hook-net-request": "Net Request Hooks"
     },
     "desc": {
       "uaVersion": "UserAgent version number information\n\nModify only subversion segments in **FullVersion** that are not **0**, such as version information in **userAgentData** and **Request Headers**.\n\nSince **chrome** hides the subversion information in **ua**, this probably doesn't change the version information of **userAgent**.\n\nDoes not modify **AppleWebKit** and **Safari** version numbers, they are fixed.",
@@ -100,8 +99,7 @@
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
-      "hook-net-request": "When turned on, it affects all network requests",
-      "hook-iframe": "When turned on, Can proxy **All Iframe** content"
+      "hook-net-request": "When turned on, it affects all network requests"
     },
     "theme": {
       "system": "System",
