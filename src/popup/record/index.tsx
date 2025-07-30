@@ -90,7 +90,7 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
       weak,
       other,
       ...Object.values(rest),
-    ])
+    ].filter(v => !!v))
     setExpandedKeys(Object.keys(rootNodes))
   }, [notice])
 
