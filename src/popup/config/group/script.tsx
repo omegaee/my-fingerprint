@@ -7,7 +7,7 @@ import { genRandomSeed, hashNumberFromString } from "@/utils/base"
 import { App, Button, Input, Spin, Switch, Tooltip } from "antd"
 import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
 import { sendRuntimeCheckApi } from "@/message/runtime"
-import { checkPermission, getBrowserInfo, requestPermission } from "@/utils/browser"
+import { requestPermission } from "@/utils/browser"
 import { ConfigItemX, ConfigItemY } from "../item"
 
 export const ScriptConfigGroup = memo(() => {
@@ -56,14 +56,6 @@ export const ScriptConfigGroup = memo(() => {
     if (!config) return;
     /* 尝试启用 */
     if (checked === true) {
-      const { name } = getBrowserInfo()
-      if (name === 'firefox') {
-        const res = await checkPermission('scripting')
-        if (res === 'off') {
-          await requestPermission('scripting')
-          return;
-        }
-      }
       if (await sendRuntimeCheckApi('userScripts') !== true) {
         message.warning(t('tip.err.ns-fast-inject'))
         return;
@@ -108,7 +100,10 @@ export const ScriptConfigGroup = memo(() => {
         checkedChildren={t('item.title.inject.fast')}
         unCheckedChildren={t('item.title.inject.compat')}
         value={fastInject}
-        onChange={onSetFastInject}
+        onChange={async (v) => {
+          await requestPermission('userScripts')
+          onSetFastInject(v)
+        }}
       />
     </ConfigItemX>
 
