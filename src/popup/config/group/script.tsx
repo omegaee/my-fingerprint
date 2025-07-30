@@ -1,19 +1,19 @@
 import { useStorageStore } from "@/popup/stores/storage"
 import { memo, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import ConfigItem from "../item/base"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
 import { hashNumberFromString } from "@/utils/base"
-import { App, Spin, Switch } from "antd"
+import { App, Input, Spin, Switch } from "antd"
 import { LoadingOutlined, WarningOutlined } from '@ant-design/icons'
 import { sendRuntimeCheckApi } from "@/message/runtime"
 import { checkPermission, getBrowserInfo, requestPermission } from "@/utils/browser"
-import { ConfigItemX } from "../item"
+import { ConfigItemX, ConfigItemY } from "../item"
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
   const [fastInject, setFastInject] = useState(false)
+  const [globalSeed, setGlobalSeed] = useState('')
 
   const { message } = App.useApp()
 
@@ -24,16 +24,33 @@ export const ScriptConfigGroup = memo(() => {
 
   useEffect(() => {
     if (!config) return;
+    setGlobalSeed(config.input.globalSeed)
     setFastInject(config.action.fastInject)
   }, [config])
 
-  const changeFastInjectCofnig = async (checked: boolean) => {
+  /**
+   * set global seed
+   */
+  const onSetGlobalSeed = (value: string) => {
     if (!config) return;
+    setGlobalSeed(value)
+    config.input.globalSeed = value
+    const _value = Number(value)
+    if (isNaN(_value)) {
+      config.seed.global = hashNumberFromString(value)
+    } else {
+      config.seed.global = _value
+    }
+  }
 
-    // 尝试启用
+  /**
+   * set fast inject mode
+   */
+  const onSetFastInject = async (checked: boolean) => {
+    if (!config) return;
+    /* 尝试启用 */
     if (checked === true) {
       const { name } = getBrowserInfo()
-
       if (name === 'firefox') {
         const res = await checkPermission('scripting')
         if (res === 'off') {
@@ -41,13 +58,12 @@ export const ScriptConfigGroup = memo(() => {
           return;
         }
       }
-
       if (await sendRuntimeCheckApi('userScripts') !== true) {
         message.warning(t('tip.err.ns-fast-inject'))
         return;
       }
     }
-
+    /* set */
     setFastInject(checked)
     if (config.action.fastInject !== checked) {
       config.action.fastInject = checked
@@ -55,23 +71,18 @@ export const ScriptConfigGroup = memo(() => {
   }
 
   return config ? <>
-    <ConfigItem.Input
-      title={t('item.title.seed')}
-      action={<TipIcon.Question content={<Markdown>{t('item.desc.seed')}</Markdown>} />}
-      currentValue={config.input.globalSeed}
-      onDebouncedInput={(value) => {
-        config.input.globalSeed = value
-        const _value = Number(value)
-        if (isNaN(_value)) {
-          config.seed.global = hashNumberFromString(value)
-        } else {
-          config.seed.global = _value
-        }
-      }}
-    />
+    <ConfigItemY
+      label={t('item.title.seed')}
+      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.seed')}</Markdown>} />}
+    >
+      <Input
+        value={globalSeed}
+        onInput={({ target }: any) => onSetGlobalSeed(target.value)}
+      />
+    </ConfigItemY>
 
     <ConfigItemX
-      label="注入脚本"
+      label={t('item.title.inject.mode')}
       endContent={<>
         <TipIcon Icon={WarningOutlined} type='warning' content={<Markdown>test</Markdown>} />
         <TipIcon.Question content={<Markdown>{t('item.desc.inject-mode')}</Markdown>} />
@@ -83,7 +94,7 @@ export const ScriptConfigGroup = memo(() => {
         checkedChildren={t('item.title.inject.fast')}
         unCheckedChildren={t('item.title.inject.compat')}
         value={fastInject}
-        onChange={changeFastInjectCofnig}
+        onChange={onSetFastInject}
       />
     </ConfigItemX>
 
