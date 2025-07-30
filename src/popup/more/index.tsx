@@ -1,6 +1,5 @@
 import { Divider } from "antd"
 import { useTranslation } from "react-i18next";
-import PermissionView from "./permission";
 import MoreConfigView from "./config";
 import SubscribeView from "./subscribe";
 import TipIcon from "@/components/data/tip-icon";
