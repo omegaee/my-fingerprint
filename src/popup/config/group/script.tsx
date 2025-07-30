@@ -5,7 +5,7 @@ import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
 import { genRandomSeed, hashNumberFromString } from "@/utils/base"
 import { App, Button, Input, Spin, Switch, Tooltip } from "antd"
-import { LoadingOutlined, RedoOutlined, WarningOutlined } from '@ant-design/icons'
+import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
 import { sendRuntimeCheckApi } from "@/message/runtime"
 import { checkPermission, getBrowserInfo, requestPermission } from "@/utils/browser"
 import { ConfigItemX, ConfigItemY } from "../item"
@@ -99,8 +99,7 @@ export const ScriptConfigGroup = memo(() => {
     <ConfigItemX
       label={t('item.title.inject.mode')}
       endContent={<>
-        <TipIcon Icon={WarningOutlined} type='warning' content={<Markdown>test</Markdown>} />
-        <TipIcon.Question content={<Markdown>{t('item.desc.inject-mode')}</Markdown>} />
+        <TipIcon.Question content={<Markdown>{t('item.desc.inject-mode', { joinArrays: '\n\n' })}</Markdown>} />
       </>}
     >
       <Switch

@@ -104,7 +104,14 @@
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
-      "inject-mode": "Fast Inject"
+      "inject-mode": [
+        "Fast Inject",
+        "Prerequisites: ",
+        "- **chrome 138+**: Enable the **Allow script injection** option on the extension details page",
+        "- **chrome 120+**: Enable Developer Mode",
+        "- **edge 120+**: Enable Developer Mode",
+        "- **firefox 136+**: Allow Licensing"
+      ]
     },
     "theme": {
       "system": "System",
