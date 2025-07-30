@@ -20,8 +20,8 @@ export const MoreView = ({ }: MoreViewProps) => {
       <TipIcon.Question className="ml-1" content={<Markdown className='max-h-[220px] overflow-auto [&_ul]:list-disc [&_ul]:ml-3' children={t('desc.subscribe')} />} />
     </Divider>
     <SubscribeView />
-    <Divider rootClassName="!my-3" orientation='center'>{t('label.permission')}</Divider>
-    <PermissionView className="flex flex-wrap justify-center items-center gap-2" />
+    {/* <Divider rootClassName="!my-3" orientation='center'>{t('label.permission')}</Divider>
+    <PermissionView className="flex flex-wrap justify-center items-center gap-2" /> */}
     <Divider rootClassName="!mt-3 !mb-0" />
   </section>
 }
