@@ -5,10 +5,11 @@ import ConfigItem from "../item/base"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
 import { hashNumberFromString } from "@/utils/base"
-import { App, Spin } from "antd"
-import { LoadingOutlined } from '@ant-design/icons'
+import { App, Spin, Switch } from "antd"
+import { LoadingOutlined, WarningOutlined } from '@ant-design/icons'
 import { sendRuntimeCheckApi } from "@/message/runtime"
 import { checkPermission, getBrowserInfo, requestPermission } from "@/utils/browser"
+import { ConfigItemX } from "../item"
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
@@ -31,7 +32,7 @@ export const ScriptConfigGroup = memo(() => {
 
     // 尝试启用
     if (checked === true) {
-      const { name, version } = getBrowserInfo()
+      const { name } = getBrowserInfo()
 
       if (name === 'firefox') {
         const res = await checkPermission('scripting')
@@ -43,7 +44,6 @@ export const ScriptConfigGroup = memo(() => {
 
       if (await sendRuntimeCheckApi('userScripts') !== true) {
         message.warning(t('tip.err.ns-fast-inject'))
-        setFastInject(false)
         return;
       }
     }
@@ -70,17 +70,22 @@ export const ScriptConfigGroup = memo(() => {
       }}
     />
 
-    <ConfigItem.Switch
-      className="[&_.ant-switch-inner>span]:font-bold"
-      title={t('item.title.inject.mode')}
-      checkedChildren={t('item.title.inject.fast')}
-      unCheckedChildren={t('item.title.inject.compat')}
-      action={<TipIcon.Question content={<Markdown>{t('item.desc.inject-mode')}</Markdown>} />}
-      currentValue={fastInject}
-      onChange={(checked) => {
-        changeFastInjectCofnig(checked)
-      }}
-    />
+    <ConfigItemX
+      label="注入脚本"
+      endContent={<>
+        <TipIcon Icon={WarningOutlined} type='warning' content={<Markdown>test</Markdown>} />
+        <TipIcon.Question content={<Markdown>{t('item.desc.inject-mode')}</Markdown>} />
+      </>}
+    >
+      <Switch
+        className="[&_.ant-switch-inner>span]:font-bold"
+        title={t('item.title.inject.mode')}
+        checkedChildren={t('item.title.inject.fast')}
+        unCheckedChildren={t('item.title.inject.compat')}
+        value={fastInject}
+        onChange={changeFastInjectCofnig}
+      />
+    </ConfigItemX>
 
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
