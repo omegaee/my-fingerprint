@@ -3,10 +3,11 @@ import ConfigItem from "../item/base"
 import { useStorageStore } from "@/popup/stores/storage"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown";
-import { memo, useMemo } from "react";
-import { Spin } from "antd";
+import { memo, useEffect, useMemo, useState } from "react";
+import { Select, Spin } from "antd";
 import { LoadingOutlined } from '@ant-design/icons'
 import { usePrefsStore } from "@/popup/stores/prefs";
+import { ConfigItemY } from "../item";
 
 const LANG_OPTIONS = [
   {
@@ -29,15 +30,6 @@ export const PrefsConfigGroup = memo(() => {
 
   const prefs = usePrefsStore()
 
-  const language = useMemo(() => {
-    const lang = config?.prefs?.language
-    if (lang?.startsWith('zh')) {
-      return 'zh-CN';
-    } else {
-      return 'en-US';
-    }
-  }, [config])
-
   const themeOptions = useMemo(() => [
     {
       label: t('item.theme.system'),
@@ -52,27 +44,35 @@ export const PrefsConfigGroup = memo(() => {
   ], [i18n.language])
 
   return config ? <>
-    <ConfigItem.Select
-      title={t('item.title.e-language')}
-      action={<TipIcon.Question content={<Markdown>{t('item.desc.e-language')}</Markdown>} />}
-      options={LANG_OPTIONS}
-      defaultValue={language}
-      onChange={(value) => {
-        config.prefs.language = value
-        prefs.setLanguage(value)
-      }}
-    />
 
-    <ConfigItem.Select
-      title={t('item.title.theme')}
-      action={<TipIcon.Question content={<Markdown>{t('item.desc.theme')}</Markdown>} />}
-      options={themeOptions}
-      defaultValue={config.prefs.theme}
-      onChange={(value) => {
-        config.prefs.theme = value
-        prefs.setTheme(value)
-      }}
-    />
+    <ConfigItemY
+      label={t('item.title.e-language')}
+      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.e-language')}</Markdown>} />}
+    >
+      <Select
+        options={LANG_OPTIONS}
+        value={prefs.language}
+        onChange={(value) => {
+          config.prefs.language = value
+          prefs.setLanguage(value)
+        }}
+      />
+    </ConfigItemY>
+
+    <ConfigItemY
+      label={t('item.title.theme')}
+      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.theme')}</Markdown>} />}
+    >
+      <Select
+        options={themeOptions}
+        value={prefs.theme}
+        onChange={(value) => {
+          config.prefs.theme = value
+          prefs.setTheme(value)
+        }}
+      />
+    </ConfigItemY>
+
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 

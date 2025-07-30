@@ -21,6 +21,17 @@ type Actions = {
 export const usePrefsStore = create<State & Actions>()(
   persist((set, get) => {
 
+    /**
+     * 获取支持的语言
+     */
+    const getLanguage = (lang?: string) => {
+      if (lang?.startsWith('zh')) {
+        return 'zh-CN';
+      } else {
+        return 'en-US';
+      }
+    }
+
     const darkTheme: ThemeConfig = {
       cssVar: true,
       token: {
@@ -52,7 +63,7 @@ export const usePrefsStore = create<State & Actions>()(
 
     return {
       theme: 'system',
-      language: navigator.language,
+      language: getLanguage(navigator.language),
 
       setTheme: (theme: Theme) => set({ theme }),
       getThemeConfig: () => {
@@ -67,19 +78,12 @@ export const usePrefsStore = create<State & Actions>()(
       },
 
       initLanguage: () => {
-        if (get().language?.startsWith('zh')) {
-          i18n.changeLanguage('zh-CN')
-        } else {
-          i18n.changeLanguage('en-US')
-        }
+        i18n.changeLanguage(getLanguage(get().language))
       },
       setLanguage: (language: string) => {
-        if (language?.startsWith('zh')) {
-          i18n.changeLanguage('zh-CN')
-        } else {
-          i18n.changeLanguage('en-US')
-        }
-        set({ language })
+        const lang = getLanguage(language)
+        i18n.changeLanguage(lang)
+        set({ language: lang })
       }
     }
   }, {
