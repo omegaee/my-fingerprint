@@ -1,36 +1,58 @@
 import { useStorageStore } from "@/popup/stores/storage"
-import { memo } from "react"
+import { memo, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import ConfigItem from "../item/base"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
 import { hashNumberFromString } from "@/utils/base"
-import { Spin } from "antd"
+import { App, Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
-import { getBrowserInfo, checkPermission } from "@/utils/browser"
-
-const isSupportFastInject = async () => {
-  const { name, version } = getBrowserInfo()
-  const status = await checkPermission('userScripts')
-
-  if (status === 'ns') return 'tip.inject-mode.unsupported';
-  if (status === 'off') return 'tip.inject-mode.unauthorized';
-
-  if (name === 'firefox') {
-  } else if (name === 'edge') {
-  } else if (name === 'chrome') {
-  }
-
-  return false;
-}
+import { sendRuntimeCheckApi } from "@/message/runtime"
+import { checkPermission, getBrowserInfo, requestPermission } from "@/utils/browser"
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
+  const [fastInject, setFastInject] = useState(false)
+
+  const { message } = App.useApp()
 
   const config = useStorageStore((state) => {
     state.config ?? state.loadStorage()
     return state.config
   })
+
+  useEffect(() => {
+    if (!config) return;
+    setFastInject(config.action.fastInject)
+  }, [config])
+
+  const changeFastInjectCofnig = async (checked: boolean) => {
+    if (!config) return;
+
+    // 尝试启用
+    if (checked === true) {
+      const { name, version } = getBrowserInfo()
+
+      if (name === 'firefox') {
+        const res = await checkPermission('scripting')
+        if (res === 'off') {
+          await requestPermission('scripting')
+          return;
+        }
+      }
+
+      if (await sendRuntimeCheckApi('userScripts') !== true) {
+        message.warning(t('tip.err.ns-fast-inject'))
+        setFastInject(false)
+        return;
+      }
+    }
+
+    setFastInject(checked)
+    if (config.action.fastInject !== checked) {
+      config.action.fastInject = checked
+    }
+  }
 
   return config ? <>
     <ConfigItem.Input
@@ -54,8 +76,10 @@ export const ScriptConfigGroup = memo(() => {
       checkedChildren={t('item.title.inject.fast')}
       unCheckedChildren={t('item.title.inject.compat')}
       action={<TipIcon.Question content={<Markdown>{t('item.desc.inject-mode')}</Markdown>} />}
-      currentValue={config.action.fastInject}
-      onChange={(checked) => config.action.fastInject = checked}
+      currentValue={fastInject}
+      onChange={(checked) => {
+        changeFastInjectCofnig(checked)
+      }}
     />
 
   </> : <Spin indicator={<LoadingOutlined spin />} />

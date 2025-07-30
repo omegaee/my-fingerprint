@@ -95,6 +95,17 @@ chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender
       fun()
       return true
     }
+    case MRuntimeType.CheckApi: {
+      if (msg.api === 'userScripts') {
+        try {
+          chrome.userScripts.getScripts()
+          sendResponse(true)
+        } catch (e) {
+          sendResponse(e)
+        }
+      }
+      return false
+    }
   }
 })
 

@@ -6,6 +6,7 @@ export const enum MRuntimeType {
   ChangeScriptWhitelist = 'change-script-whitelist',
   GetNewVersion = 'get-new-version',
   Subscribe = 'subscribe',
+  CheckApi = 'check-api',
 }
 
 ///
@@ -46,6 +47,10 @@ export type MRuntimeRequest = {
     type: MRuntimeType.Subscribe,
     url?: string
   },
+  [MRuntimeType.CheckApi]: {
+    type: MRuntimeType.CheckApi,
+    api: string,
+  }
 }
 
 ///
@@ -56,6 +61,7 @@ export type MRuntimeResponse = {
   [MRuntimeType.GetNotice]: Record<string, number> | undefined,
   [MRuntimeType.GetNewVersion]: string | undefined,
   [MRuntimeType.Subscribe]: LocalStorage | undefined
+  [MRuntimeType.CheckApi]: boolean | string | undefined
 } & {
   [key in MRuntimeType]: void
 }
@@ -136,5 +142,15 @@ export const sendRuntimeSubscribe = (url?: string) => {
   return sendMessage<MRuntimeType.Subscribe>({
     type: MRuntimeType.Subscribe,
     url,
+  })
+}
+
+/**
+ * 检查API权限
+ */
+export const sendRuntimeCheckApi = (api: string) => {
+  return sendMessage<MRuntimeType.CheckApi>({
+    type: MRuntimeType.CheckApi,
+    api,
   })
 }

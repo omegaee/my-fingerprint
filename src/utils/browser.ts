@@ -28,3 +28,25 @@ export const checkPermission = async (permission: chrome.runtime.ManifestPermiss
     return 'ns'
   }
 }
+
+/**
+ * 请求权限
+ */
+export const requestPermission = async (permission: chrome.runtime.ManifestPermissions) => {
+  try {
+    return await chrome.permissions.request({ permissions: [permission] })
+  } catch (err) {
+    return false
+  }
+}
+
+/**
+ * 移除权限
+ */
+export const revokePermission = async (permission: chrome.runtime.ManifestPermissions) => {
+  try {
+    return await chrome.permissions.remove({ permissions: [permission] })
+  } catch (err) {
+    return false
+  }
+}

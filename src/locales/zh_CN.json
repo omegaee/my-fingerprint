@@ -144,7 +144,8 @@
       "config-unloaded": "配置未加载",
       "import-empty": "导入配置为空",
       "subscribe-test": "订阅测试失败",
-      "subscribe": "订阅失败"
+      "subscribe": "订阅失败",
+      "ns-fast-inject": "开启失败，请查看该配置文档描述"
     },
     "if": {
       "remove-parent-domain": "是否移除对应的父域名",

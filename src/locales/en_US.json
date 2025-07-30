@@ -147,7 +147,8 @@
       "config-unloaded": "Config Unloaded",
       "import-empty": "Import Config is Empty",
       "subscribe-test": "Subscription Test Failed",
-      "subscribe": "Subscription Failed"
+      "subscribe": "Subscription Failed",
+      "ns-fast-inject": "Failed to enable, please check the config documentation"
     },
     "if": {
       "remove-parent-domain": "Whether to remove its parent domain",
