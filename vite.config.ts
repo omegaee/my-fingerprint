@@ -33,6 +33,7 @@ export default defineConfig({
   build: {
     target: 'es2022',
     minify: isNoMinify ? false : 'esbuild',
+    sourcemap: (isFirefox && isNoMinify) ? true : undefined,
   },
   server: { port: 3000, hmr: { port: 3000 } },
 })

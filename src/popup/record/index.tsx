@@ -90,16 +90,11 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
       weak,
       other,
       ...Object.values(rest),
-    ])
+    ].filter(v => !!v))
     setExpandedKeys(Object.keys(rootNodes))
   }, [notice])
 
   return <div className='h-full flex flex-col'>
-    {/* <div className='flex gap-2 items-center mb-2'>
-      <Card size='small' className='grow'>{totalCount('strong.')}</Card>
-      <Card size='small' className='grow'>{totalCount('weak.')}</Card>
-      <Card size='small' className='grow'>{totalCount('other.')}</Card>
-    </div> */}
     {treeData.length === 0 ?
       <div className='grow flex justify-center items-center'>{t('tip.label.no-fp-notice')}</div> :
       <Tree.DirectoryTree

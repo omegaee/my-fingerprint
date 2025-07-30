@@ -29,16 +29,15 @@ export const FpNoticeItem = ({ title, count, isRoot }: FpNoticeItemProps) => {
   return isRoot ?
     <div className="py-[2px] flex justify-between items-center font-bold">
       <div>{label}</div>
-      <Tag color={KeyColors[title]}>
+      <Tag
+        className="mr-0 text-[14px]"
+        color={KeyColors[title]}>
         x {count}
       </Tag>
     </div>
     :
     <div className="flex justify-between items-center font-bold">
       <div>{label}</div>
-      <Tag bordered={false}
-        color="transparent">
-        x {count}
-      </Tag>
+      <div className="mr-2">x {count}</div>
     </div>
 }

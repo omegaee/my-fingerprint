@@ -9,7 +9,8 @@
     "special": "Special",
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "random": "Random"
   },
   "e": {
     "enabled": "Extension Enabled",
@@ -34,7 +35,7 @@
       "strong": "Strong Fingerprint",
       "weak": "Weak Fingerprint",
       "script": "Script Config",
-      "ui": "UI Config"
+      "prefs": "Preferences"
     },
     "clipboard-export": "Export To Clipboard",
     "clipboard-import": "Import From Clipboard",
@@ -77,9 +78,13 @@
       "glDriver": "Graphics Driver",
       "domRect": "DOMRect Fingerprint",
       "e-language": "Language",
+      "theme": "Theme",
       "seed": "Global Seed",
-      "hook-net-request": "Net Request Hooks",
-      "hook-iframe": "Iframe Hooks"
+      "inject": {
+        "mode": "Inject Mode",
+        "fast": "Fast Mode",
+        "compat": "Compat Mode"
+      }
     },
     "desc": {
       "uaVersion": "UserAgent version number information\n\nModify only subversion segments in **FullVersion** that are not **0**, such as version information in **userAgentData** and **Request Headers**.\n\nSince **chrome** hides the subversion information in **ua**, this probably doesn't change the version information of **userAgent**.\n\nDoes not modify **AppleWebKit** and **Safari** version numbers, they are fixed.",
@@ -97,9 +102,21 @@
       "glDriver": "Graphics Driver Vendor\n\nGraphics Driver Renderer",
       "domRect": "DOMRect Fingerprint",
       "e-language": "Language",
+      "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
-      "hook-net-request": "When turned on, it affects all network requests",
-      "hook-iframe": "When turned on, Can proxy **All Iframe** content"
+      "inject-mode": [
+        "Fast Inject",
+        "Prerequisites: ",
+        "- **chrome 138+**: Enable the **Allow script injection** option on the extension details page",
+        "- **chrome 120+**: Enable Developer Mode",
+        "- **edge 120+**: Enable Developer Mode",
+        "- **firefox 136+**: Allow Licensing"
+      ]
+    },
+    "theme": {
+      "system": "System",
+      "dark": "Dark",
+      "light": "Light"
     },
     "warn": {
       "unsupported-net-hook": "Unsupported Net Request Hooks"
@@ -138,7 +155,8 @@
       "config-unloaded": "Config Unloaded",
       "import-empty": "Import Config is Empty",
       "subscribe-test": "Subscription Test Failed",
-      "subscribe": "Subscription Failed"
+      "subscribe": "Subscription Failed",
+      "ns-fast-inject": "Failed to enable, please check the config documentation"
     },
     "if": {
       "remove-parent-domain": "Whether to remove its parent domain",
