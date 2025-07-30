@@ -1,5 +1,3 @@
-const SPECIAL_KEYS: (keyof HookFingerprint['other'])[] = ['timezone', 'canvas', 'audio', 'font', 'webgl', 'webrtc', 'webgpu']
-
 const BADGE_COLOR = {
   whitelist: '#fff',
   low: '#7FFFD4',

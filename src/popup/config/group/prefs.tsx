@@ -1,9 +1,8 @@
 import { useTranslation } from "react-i18next"
-import ConfigItem from "../item/base"
 import { useStorageStore } from "@/popup/stores/storage"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { Select, Spin } from "antd";
 import { LoadingOutlined } from '@ant-design/icons'
 import { usePrefsStore } from "@/popup/stores/prefs";
