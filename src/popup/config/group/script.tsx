@@ -3,9 +3,9 @@ import { memo, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
-import { hashNumberFromString } from "@/utils/base"
-import { App, Input, Spin, Switch } from "antd"
-import { LoadingOutlined, WarningOutlined } from '@ant-design/icons'
+import { genRandomSeed, hashNumberFromString } from "@/utils/base"
+import { App, Button, Input, Spin, Switch, Tooltip } from "antd"
+import { LoadingOutlined, RedoOutlined, WarningOutlined } from '@ant-design/icons'
 import { sendRuntimeCheckApi } from "@/message/runtime"
 import { checkPermission, getBrowserInfo, requestPermission } from "@/utils/browser"
 import { ConfigItemX, ConfigItemY } from "../item"
@@ -33,6 +33,12 @@ export const ScriptConfigGroup = memo(() => {
    */
   const onSetGlobalSeed = (value: string) => {
     if (!config) return;
+    if (value === '') {
+      setGlobalSeed('')
+      config.seed.global = 0
+      config.input.globalSeed = ''
+      return;
+    }
     setGlobalSeed(value)
     config.input.globalSeed = value
     const _value = Number(value)
@@ -75,10 +81,19 @@ export const ScriptConfigGroup = memo(() => {
       label={t('item.title.seed')}
       endContent={<TipIcon.Question content={<Markdown>{t('item.desc.seed')}</Markdown>} />}
     >
-      <Input
-        value={globalSeed}
-        onInput={({ target }: any) => onSetGlobalSeed(target.value)}
-      />
+      <div className="flex gap-1">
+        <Input
+          className="grow"
+          value={globalSeed}
+          onInput={({ target }: any) => onSetGlobalSeed(target.value)}
+        />
+        <Tooltip title={t('g.random')}>
+          <Button icon={<RedoOutlined />} onClick={() => {
+            const seed = genRandomSeed()
+            onSetGlobalSeed(seed.toString())
+          }} />
+        </Tooltip>
+      </div>
     </ConfigItemY>
 
     <ConfigItemX
