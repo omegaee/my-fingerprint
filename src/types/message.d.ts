@@ -1,9 +1,9 @@
 /**
- * send to background
+ * background事件
  */
 declare namespace BgMessage {
   /**
-   * background事件
+   * 事件
    */
   type Event = {
     type: 'config.set'
@@ -54,6 +54,9 @@ declare namespace BgMessage {
     : void;
 
   type Param<T extends Event> = T extends { [ResultField]: any } ? Omit<T, '$result'> : never
+
+  type Sender = <T extends BgMessage.Type>(message: BgMessage.ParamByType<T>)
+    => Promise<BgMessage.ResultByType<T>>
 
   type Listener = (
     msg: Param<Event>,
