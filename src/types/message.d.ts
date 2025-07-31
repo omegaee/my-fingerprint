@@ -1,5 +1,5 @@
 /**
- * background事件
+ * background消息事件
  */
 declare namespace BackgroundMessage {
   /**
@@ -63,4 +63,27 @@ declare namespace BackgroundMessage {
     sender: chrome.runtime.MessageSender,
     sendResponse: <T extends Type>(response: ResultByType<T>) => void,
   ) => boolean | void
+}
+
+/**
+ * window消息事件
+ */
+declare namespace WindowMessage {
+  /**
+   * 事件
+   */
+  type Event = {
+    type: 'notice.push'
+    data: Record<string, number>
+    total: Record<string, number>
+  } | {
+    type: 'core.get-info'
+  } | {
+    type: 'core.run'
+    data: WindowStorage
+  }
+
+  type Type = Event['type']
+
+  type Sender = (win: Window, message: Event, targetOrigin?: string) => void
 }
