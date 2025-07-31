@@ -1,7 +1,6 @@
 import { applySubscribeStorage, cleanLocalWhitelist, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
 import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
-import { type MRuntimeRequest, type MRuntimeResponseCall, MRuntimeType } from "@/message/runtime";
 import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 
@@ -48,66 +47,66 @@ chrome.runtime.onStartup.addListener(() => {
 /**
  * 消息处理
  */
-chrome.runtime.onMessage.addListener((msg: MRuntimeRequest[MRuntimeType], sender, sendResponse: MRuntimeResponseCall) => {
-  switch (msg.type) {
-    case MRuntimeType.SetConfig: {
+chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
+  switch (msg?.type) {
+    case 'config.set': {
       updateLocalConfig(msg.config).then((data) => {
         reRegisterScript()
-        if (msg.result) sendResponse(data);
+        if (msg.result) sendResponse<'config.set'>(data);
       })
-      return msg.result
+      return msg.result;
     }
-    case MRuntimeType.GetNotice: {
-      sendResponse(noticePool.get(msg.tabId));
-      break
+    case 'config.subscribe': {
+      const fun = async () => {
+        if (msg.url != null) await updateLocalConfig({ subscribe: { url: msg.url.trim() } });
+        if (await applySubscribeStorage()) {
+          const [storage] = await getLocalStorage()
+          sendResponse<'config.subscribe'>(storage)
+        } else {
+          sendResponse<'config.subscribe'>(undefined)
+        }
+      }
+      fun()
+      return true
     }
-    case MRuntimeType.SetHookRecords: {
+    case 'notice.get': {
+      sendResponse<'notice.get'>(noticePool.get(msg.tabId) ?? {});
+      return false;
+    }
+    case 'notice.push': {
       const tabId = sender.tab?.id
       if (tabId == null) return;
       noticePool.set(tabId, msg.data)
       const { text, color } = getBadgeContent(msg.total)
       chrome.action.setBadgeText({ tabId, text });
       chrome.action.setBadgeBackgroundColor({ tabId, color });
-      break
+      return false;
     }
-    case MRuntimeType.UpdateWhitelist: {
+    case 'whitelist.update': {
       const fun = () => reRegisterScript()
       if (msg.clean) cleanLocalWhitelist().then(fun);
       if (msg.data) updateLocalWhitelist(msg.data).then(fun);
-      break
+      return false;
     }
-    case MRuntimeType.GetNewVersion: {
+    case 'version.latest': {
       getNewVersion().then((version) => {
-        sendResponse(version)
+        sendResponse<'version.latest'>(version)
       })
       return true
     }
-    case MRuntimeType.Subscribe: {
-      const fun = async () => {
-        if (msg.url != null) await updateLocalConfig({ subscribe: { url: msg.url.trim() } });
-        if (await applySubscribeStorage()) {
-          const [storage] = await getLocalStorage()
-          sendResponse(storage)
-        } else {
-          sendResponse(undefined)
-        }
-      }
-      fun()
-      return true
-    }
-    case MRuntimeType.CheckApi: {
+    case 'api.check': {
       if (msg.api === 'userScripts') {
         try {
           chrome.userScripts.getScripts()
-          sendResponse(true)
+          sendResponse<'api.check'>(true)
         } catch (e) {
-          sendResponse(e)
+          sendResponse<'api.check'>(e as string)
         }
       }
       return false
     }
   }
-})
+}) as BgMessage.Listener)
 
 /**
  * 监听tab变化

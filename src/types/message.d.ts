@@ -8,11 +8,12 @@ declare namespace BgMessage {
   type Event = {
     type: 'config.set'
     config: DeepPartial<LocalStorageConfig>
-    $result: boolean
+    result?: boolean
+    $result: LocalStorageConfig
   } | {
     type: 'config.subscribe'
     url?: string
-    $result: LocalStorage
+    $result?: LocalStorage
   } | {
     type: 'notice.get'
     tabId: number
@@ -31,7 +32,7 @@ declare namespace BgMessage {
     clean?: boolean
   } | {
     type: 'version.latest'
-    $result: string
+    $result?: string
   } | {
     type: 'api.check'
     api: string
@@ -44,11 +45,19 @@ declare namespace BgMessage {
 
   type EventByType<T extends Type> = Extract<Event, { type: T }>
 
-  type Param<T extends Type> = EventByType<T> extends { [ResultField]: any }
+  type ParamByType<T extends Type> = EventByType<T> extends { [ResultField]: any }
     ? Omit<EventByType<T>, ResultField>
     : EventByType<T>
 
-  type Result<T extends Type> = ResultField extends keyof EventByType<T>
+  type ResultByType<T extends Type> = ResultField extends keyof EventByType<T>
     ? EventByType<T>[ResultField]
     : void;
+
+  type Param<T extends Event> = T extends { [ResultField]: any } ? Omit<T, '$result'> : never
+
+  type Listener = (
+    msg: Param<Event>,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: <T extends Type>(response: ResultByType<T>) => void,
+  ) => boolean | void
 }
