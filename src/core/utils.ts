@@ -1,6 +1,6 @@
-import { MContentType, sendContentMessage } from "@/message/content";
 import { hashNumberFromString, seededRandom, subversionRandom } from "@/utils/base";
 import { brandRandom } from "@/utils/equipment";
+import { sendToWindow } from "@/utils/message";
 import { debounce } from "@/utils/timer";
 
 // 
@@ -25,38 +25,12 @@ export const notify = (key: string) => {
 }
 
 const notifyContent = debounce(() => {
-  sendContentMessage(window.top ?? window, {
-    type: MContentType.SetHookRecords,
+  sendToWindow(window.top ?? window, {
+    type: 'notice.push',
     data: Object.fromEntries(noticePool),
     total: noticeTotal,
   }, '*')
 })
-
-// // record缓存
-// const hookRecords: Map<string, number> = new Map()
-
-// /**
-//  * 发送record消息
-//  */
-// export const sendRecordMessage = debounce(() => {
-//   sendContentMessage(window.top ?? window, {
-//     type: MContentType.SetHookRecords,
-//     data: Object.fromEntries(hookRecords),
-//   }, '*')
-// })
-
-// /**
-//  * 记录并发送消息
-//  */
-// export const recordHook = function (key: string) {
-//   const parts = key.split('.')
-//   key = parts[parts.length - 1]
-//   const oldValue = hookRecords.get(key) ?? 0
-//   hookRecords.set(key, oldValue + 1)
-//   sendRecordMessage()
-// }
-
-// export const recordHookDebounce = debounceByFirstArg(recordHook, 200)
 
 
 // 

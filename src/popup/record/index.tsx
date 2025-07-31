@@ -69,7 +69,7 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
 
         // 添加到树
         const pc = parentNode?.children
-        if (i !== 0 && pc && !pc.some(v => v.key === currNode.key)) {
+        if (i !== 0 && pc && !pc.some(v => v.key === currNode?.key)) {
           pc.push(currNode)
         }
         else if (i === 0 && !rootNodes[currNode.key as any]) {

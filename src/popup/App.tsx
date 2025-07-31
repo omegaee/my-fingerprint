@@ -13,10 +13,10 @@ import FConfig from "./config"
 import WhitelistView from "./whitelist"
 
 import { compareVersions, tryUrl, existParentDomain, selectParentDomains } from "@/utils/base"
-import { sendRuntimeGetNewVersion, sendRuntimeGetNotice, sendRuntimeSetConfig } from "@/message/runtime"
 import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
 import { useShallow } from "zustand/shallow";
+import { sendToBackground } from "@/utils/message";
 
 function Application() {
   const [t, i18n] = useTranslation()
@@ -61,10 +61,14 @@ function Application() {
       if (_url && (_url.protocol === 'http:' || _url.protocol === 'https:')) {
         /* 允许白名单 */
         setHostname(_url.hostname)
-        sendRuntimeGetNotice(tab.id, _url.hostname).then((data) => setFpNotice(data))
+        sendToBackground({
+          type: 'notice.get',
+          tabId: tab.id,
+          host: _url.hostname,
+        }).then((data) => setFpNotice(data))
       }
     })
-    sendRuntimeGetNewVersion().then((version) => {
+    sendToBackground({ type: 'version.latest' }).then((version) => {
       if (!version) return
       setHasNewVersion(compareVersions(manifest.version, version) === -1)
     })
@@ -86,10 +90,16 @@ function Application() {
 
   const switchEnable = () => {
     if (enabled) {
-      sendRuntimeSetConfig({ enable: false })
+      sendToBackground({
+        type: 'config.set',
+        config: { enable: false },
+      })
       setEnabled(false)
     } else {
-      sendRuntimeSetConfig({ enable: true })
+      sendToBackground({
+        type: 'config.set',
+        config: { enable: true },
+      })
       setEnabled(true)
     }
   }

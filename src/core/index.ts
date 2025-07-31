@@ -1,7 +1,7 @@
-import { MContentType, sendContentMessage, unwrapContentMessage } from "@/message/content";
 import { FingerprintHandler, WIN_KEY } from "./core";
 import { genRandomSeed, existParentDomain } from "@/utils/base";
 import { getBrowser } from "@/utils/equipment";
+import { sendToWindow } from "@/utils/message";
 
 // @ts-ignore
 const storage: LocalStorage = _local;
@@ -30,13 +30,16 @@ const storage: LocalStorage = _local;
     }
     // @ts-ignore
     window[WIN_KEY] = data;
-    window.addEventListener('message', (ev) => {
-      const msg = unwrapContentMessage(ev)
+    window.addEventListener('message', ((ev) => {
+      const msg = ev?.data?.__myfp__;
       if (!msg || !ev.source) return;
-      if (msg.type === MContentType.GetHookInfo) {
-        sendContentMessage(ev.source as any, { type: MContentType.StartHook, data }, ev.origin)
+      if (msg.type === 'core.get-info') {
+        sendToWindow(ev.source, {
+          type: 'core.run',
+          data,
+        }, ev.origin)
       }
-    })
+    }) as WindowMessage.Listener)
     hook(window, data)
     return;
   }
@@ -48,13 +51,13 @@ const storage: LocalStorage = _local;
     hook(window, data)
   } catch (_) {
     /* 跨源 */
-    window.addEventListener('message', (ev) => {
-      const msg = unwrapContentMessage(ev)
-      if (msg?.type === MContentType.StartHook) {
+    window.addEventListener('message', ((ev) => {
+      const msg = ev?.data?.__myfp__;
+      if (msg?.type === 'core.run') {
         hook(window, msg.data)
       }
-    })
-    sendContentMessage(window.top ?? window, { type: MContentType.GetHookInfo }, '*')
+    }) as WindowMessage.Listener)
+    sendToWindow(window.top ?? window, { type: 'core.get-info' }, '*')
   }
 
 })()

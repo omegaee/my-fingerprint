@@ -6,9 +6,9 @@ import Markdown from "react-markdown"
 import { genRandomSeed, hashNumberFromString } from "@/utils/base"
 import { App, Button, Input, Spin, Switch, Tooltip } from "antd"
 import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
-import { sendRuntimeCheckApi } from "@/message/runtime"
 import { requestPermission } from "@/utils/browser"
 import { ConfigItemX, ConfigItemY } from "../item"
+import { sendToBackground } from "@/utils/message"
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
@@ -56,7 +56,10 @@ export const ScriptConfigGroup = memo(() => {
     if (!config) return;
     /* 尝试启用 */
     if (checked === true) {
-      if (await sendRuntimeCheckApi('userScripts') !== true) {
+      if (await sendToBackground({
+        type: 'api.check',
+        api: 'userScripts',
+      }) !== true) {
         message.warning(t('tip.err.ns-fast-inject'))
         return;
       }
