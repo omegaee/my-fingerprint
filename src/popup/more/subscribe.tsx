@@ -3,8 +3,8 @@ import { useStorageStore } from "../stores/storage"
 import { App, Button, Input, Tooltip } from "antd"
 import { ApiOutlined, CheckOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
-import { sendRuntimeSubscribe } from "@/message/runtime";
 import { useShallow } from "zustand/shallow";
+import { sendToBackground } from "@/utils/message";
 
 type SubscribeViewProps = {
   className?: string
@@ -49,7 +49,10 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
       url = input.trim()
       config.subscribe.url = url
     }
-    sendRuntimeSubscribe(url).then((v: LocalStorage | void) => {
+    sendToBackground({
+      type: 'config.subscribe',
+      url,
+    }).then((v: LocalStorage | void) => {
       if (v) {
         syncLoadStorage(v)
         message.success(t('tip.ok.subscribe'))

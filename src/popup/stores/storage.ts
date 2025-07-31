@@ -1,5 +1,5 @@
-import { sendRuntimeCleanWhiteList, sendRuntimeSetConfig, sendRuntimeUpdateWhiteList } from "@/message/runtime"
 import { deepProxy, selectChildDomains, tryUrl } from "@/utils/base"
+import { sendToBackground } from "@/utils/message"
 import { debounce, debouncedAsync } from "@/utils/timer"
 import { create } from "zustand"
 
@@ -24,7 +24,10 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
   const saveConfig = debounce(() => {
     const config = get().storage?.config
     if (config) {
-      sendRuntimeSetConfig(config)
+      sendToBackground({
+        type: 'config.set',
+        config,
+      })
     }
   }, 200)
 
@@ -59,8 +62,12 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
 
     /* 导入配置 */
     if (ss.config) {
-      const _config = await sendRuntimeSetConfig(ss.config, true) as LocalStorageConfig | undefined
-      if (_config){
+      const _config = await sendToBackground({
+        type: 'config.set',
+        config: ss.config,
+        result: true,
+      })
+      if (_config) {
         storage.config = _config
         set({ config: proxyConfig(storage.config) })
         isImported = true
@@ -99,9 +106,12 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     }
     storage.whitelist = whitelist
     set({ whitelist: storage.whitelist })
-    sendRuntimeUpdateWhiteList({
-      add: list,
-      del,
+    sendToBackground({
+      type: 'whitelist.update',
+      data: {
+        add: list,
+        del,
+      },
     })
   }
 
@@ -118,8 +128,11 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     }
     storage.whitelist = whitelist
     set({ whitelist: storage.whitelist })
-    sendRuntimeUpdateWhiteList({
-      del: list,
+    sendToBackground({
+      type: 'whitelist.update',
+      data: {
+        del: list,
+      },
     })
   }
 
@@ -128,7 +141,10 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     if (!storage) return;
     storage.whitelist = []
     set({ whitelist: storage.whitelist })
-    sendRuntimeCleanWhiteList()
+    sendToBackground({
+      type: 'whitelist.update',
+      clean: true,
+    })
   }
 
   return {

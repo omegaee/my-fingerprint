@@ -1,5 +1,5 @@
 import { unwrapContentMessage, MContentType } from '@/message/content';
-import { sendRuntimeSetHookRecords } from '@/message/runtime';
+import { sendToBackground } from '@/utils/message';
 
 /**
  * 同页消息处理
@@ -8,7 +8,11 @@ window.addEventListener('message', (ev) => {
   const msg = unwrapContentMessage(ev)
   switch (msg?.type) {
     case MContentType.SetHookRecords: {
-      sendRuntimeSetHookRecords(msg.data, msg.total)
+      sendToBackground({
+        type: 'notice.push',
+        data: msg.data,
+        total: msg.total,
+      })
       break
     }
   }
