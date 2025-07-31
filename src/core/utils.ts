@@ -1,6 +1,6 @@
-import { MContentType, sendContentMessage } from "@/message/content";
 import { hashNumberFromString, seededRandom, subversionRandom } from "@/utils/base";
 import { brandRandom } from "@/utils/equipment";
+import { sendToWindow } from "@/utils/message";
 import { debounce } from "@/utils/timer";
 
 // 
@@ -25,8 +25,8 @@ export const notify = (key: string) => {
 }
 
 const notifyContent = debounce(() => {
-  sendContentMessage(window.top ?? window, {
-    type: MContentType.SetHookRecords,
+  sendToWindow(window.top ?? window, {
+    type: 'notice.push',
     data: Object.fromEntries(noticePool),
     total: noticeTotal,
   }, '*')

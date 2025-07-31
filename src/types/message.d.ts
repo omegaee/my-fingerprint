@@ -85,5 +85,11 @@ declare namespace WindowMessage {
 
   type Type = Event['type']
 
-  type Sender = (win: Window, message: Event, targetOrigin?: string) => void
+  type Identify = '__myfp__'
+
+  type UseIdentify<T> = { [key in Identify]: T }
+
+  type Sender = (win: MessageEventSource, message: Event, targetOrigin?: string) => void
+
+  type Listener = (event: MessageEvent<UseIdentify<Event>>) => void
 }

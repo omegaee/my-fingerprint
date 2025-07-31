@@ -1,13 +1,12 @@
-import { unwrapContentMessage, MContentType } from '@/message/content';
 import { sendToBackground } from '@/utils/message';
 
 /**
  * 同页消息处理
  */
-window.addEventListener('message', (ev) => {
-  const msg = unwrapContentMessage(ev)
+window.addEventListener('message', ((ev) => {
+  const msg = ev?.data?.__myfp__;
   switch (msg?.type) {
-    case MContentType.SetHookRecords: {
+    case 'notice.push': {
       sendToBackground({
         type: 'notice.push',
         data: msg.data,
@@ -16,7 +15,7 @@ window.addEventListener('message', (ev) => {
       break
     }
   }
-})
+}) as WindowMessage.Listener)
 
 // /**
 //  * runtime消息处理
