@@ -6,20 +6,39 @@ declare namespace BgMessage {
    * background事件
    */
   type Event = {
-    type: 'SetConfig'
+    type: 'config.set'
     config: DeepPartial<LocalStorageConfig>
-    $return: boolean
+    $result: boolean
   } | {
-    type: 'GetNotice'
+    type: 'config.subscribe'
+    url?: string
+    $result: LocalStorage
+  } | {
+    type: 'notice.get'
     tabId: number
     host: string
+    $result: Record<string, number>
   } | {
-    type: 'SetHookRecords'
+    type: 'notice.push'
     data: Record<string, number>
     total: Record<string, number>
+  } | {
+    type: 'whitelist.update'
+    data?: {
+      add?: string[]
+      del?: string[]
+    }
+    clean?: boolean
+  } | {
+    type: 'version.latest'
+    $result: string
+  } | {
+    type: 'api.check'
+    api: string
+    $result: boolean | string
   }
 
-  type ResultField = '$return'
+  type ResultField = '$result'
 
   type Type = Event['type']
 
