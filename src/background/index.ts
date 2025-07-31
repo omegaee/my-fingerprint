@@ -106,7 +106,7 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       return false
     }
   }
-}) as BgMessage.Listener)
+}) as BackgroundMessage.Listener)
 
 /**
  * 监听tab变化
