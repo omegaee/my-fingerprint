@@ -9,16 +9,16 @@ declare namespace BackgroundMessage {
     type: 'config.set'
     config: DeepPartial<LocalStorageConfig>
     result?: boolean
-    $result: LocalStorageConfig
+    $: LocalStorageConfig
   } | {
     type: 'config.subscribe'
     url?: string
-    $result?: LocalStorage
+    $?: LocalStorage
   } | {
     type: 'notice.get'
     tabId: number
     host: string
-    $result: Record<string, number>
+    $: Record<string, number>
   } | {
     type: 'notice.push'
     data: Record<string, number>
@@ -32,20 +32,20 @@ declare namespace BackgroundMessage {
     clean?: boolean
   } | {
     type: 'version.latest'
-    $result?: string
+    $?: string
   } | {
     type: 'api.check'
     api: string
-    $result: boolean | string
+    $: boolean | string
   }
 
-  type ResultField = '$result'
+  type ResultField = '$'
 
   type Type = Event['type']
 
   type EventByType<T extends Type> = Extract<Event, { type: T }>
 
-  type ParamByType<T extends Type> = EventByType<T> extends { [ResultField]: any }
+  type ParamByType<T extends Type> = EventByType<T> extends any
     ? Omit<EventByType<T>, ResultField>
     : EventByType<T>
 
@@ -53,7 +53,7 @@ declare namespace BackgroundMessage {
     ? EventByType<T>[ResultField]
     : void;
 
-  type Param<T extends Event> = T extends { [ResultField]: any } ? Omit<T, '$result'> : never
+  type Param<T extends Event> = T extends any ? Omit<T, ResultField> : never
 
   type Sender = <T extends BackgroundMessage.Type>(message: BackgroundMessage.ParamByType<T>)
     => Promise<BackgroundMessage.ResultByType<T>>
