@@ -15,14 +15,6 @@ declare namespace BackgroundMessage {
     url?: string
     $?: LocalStorage
   } | {
-    type: 'notice.get'
-    tabId: number
-    $: Record<string, number>
-  } | {
-    type: 'notice.push.fp'
-    data: Record<string, number>
-    total: Record<string, number>
-  } | {
     type: 'whitelist.update'
     data?: {
       add?: string[]
@@ -36,6 +28,10 @@ declare namespace BackgroundMessage {
     type: 'api.check'
     api: string
     $: boolean | string
+  } | {
+    type: 'badge.set'
+    text: string
+    level: 1 | 2
   }
 
   type ResultField = '$'
@@ -105,6 +101,9 @@ declare namespace TabMessage {
    */
   type Event = {
     type: 'notice.get.iframe'
+    $: Record<string, number>
+  } | {
+    type: 'notice.get.fp'
     $: Record<string, number>
   }
 

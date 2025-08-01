@@ -19,15 +19,12 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
   useEffect(() => {
     if (tab?.id == null) return;
     /* fp notice */
-    sendToBackground({
-      type: 'notice.get',
-      tabId: tab.id,
-    }).then((data) => setFpNotice(data))
+    sendToTab(tab.id, { type: 'notice.get.fp' })
+      .then((data) => setFpNotice(data))
+      .catch(() => { })
 
     /* iframe notice */
-    sendToTab(tab.id, {
-      type: 'notice.get.iframe',
-    })
+    sendToTab(tab.id, { type: 'notice.get.iframe' })
       .then((data) => setIframeNotice(data))
       .catch(() => { })
   }, [tab?.id])
