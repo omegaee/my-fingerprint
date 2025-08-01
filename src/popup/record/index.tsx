@@ -2,7 +2,7 @@ import { Tabs } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FpNoticePanel } from "./fp";
-import { sendToBackground, sendToTab } from "@/utils/message";
+import { sendToTab } from "@/utils/message";
 import TipIcon from "@/components/data/tip-icon";
 import IframeNoticePanel from "./iframe";
 
@@ -12,7 +12,6 @@ type NoticePanelProps = {
 
 export const NoticePanel = ({ tab }: NoticePanelProps) => {
   const [t] = useTranslation();
-  const [origin, setOrigin] = useState<string>()
   const [fpNotice, setFpNotice] = useState<Record<string, number>>()
   const [iframeNotice, setIframeNotice] = useState<Record<string, number>>()
 
@@ -28,12 +27,6 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
       .then((data) => setIframeNotice(data))
       .catch(() => { })
   }, [tab?.id])
-
-  useEffect(() => {
-    if (tab?.url == null) return;
-    const url = new URL(tab.url);
-    setOrigin(url.origin)
-  }, [tab?.url])
 
   return <div className='relative h-full flex flex-col'>
     <div className="absolute right-1 z-10">
