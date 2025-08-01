@@ -20,7 +20,7 @@ declare namespace BackgroundMessage {
     host: string
     $: Record<string, number>
   } | {
-    type: 'notice.push'
+    type: 'notice.push.fp'
     data: Record<string, number>
     total: Record<string, number>
   } | {
@@ -73,9 +73,12 @@ declare namespace WindowMessage {
    * 事件
    */
   type Event = {
-    type: 'notice.push'
+    type: 'notice.push.fp'
     data: Record<string, number>
     total: Record<string, number>
+  } | {
+    type: 'notice.push.iframe'
+    data: Record<string, number>
   } | {
     type: 'core.get-info'
   } | {

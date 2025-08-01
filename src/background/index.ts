@@ -73,7 +73,7 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       sendResponse<'notice.get'>(noticePool.get(msg.tabId) ?? {});
       return false;
     }
-    case 'notice.push': {
+    case 'notice.push.fp': {
       const tabId = sender.tab?.id
       if (tabId == null) return;
       noticePool.set(tabId, msg.data)

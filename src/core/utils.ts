@@ -12,7 +12,11 @@ const noticeTotal = {
   strong: 0,
   other: 0,
 }
+let iframeOriginNoticePool: Record<string, number> = {}
 
+/**
+ * 记录指纹数量
+ */
 export const notify = (key: string) => {
   const count = noticePool.get(key) ?? 0
   noticePool.set(key, count + 1)
@@ -26,12 +30,29 @@ export const notify = (key: string) => {
 
 const notifyContent = debounce(() => {
   sendToWindow(window.top ?? window, {
-    type: 'notice.push',
+    type: 'notice.push.fp',
     data: Object.fromEntries(noticePool),
     total: noticeTotal,
   }, '*')
 })
 
+/**
+ * 记录iframe数量
+ */
+export const notifyIframeOrigin = (key?: string) => {
+  if (!key || key === 'null') key = 'about:blank';
+  const count = iframeOriginNoticePool[key] ?? 0
+  iframeOriginNoticePool[key] = count + 1
+  sendIframeSrcRecord()
+}
+
+const sendIframeSrcRecord = debounce(() => {
+  sendToWindow(window.top ?? window, {
+    type: 'notice.push.iframe',
+    data: iframeOriginNoticePool,
+  }, '*')
+  iframeOriginNoticePool = {}
+})
 
 // 
 // --- random ---
