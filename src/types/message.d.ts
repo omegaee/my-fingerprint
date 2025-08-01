@@ -70,7 +70,6 @@ declare namespace WindowMessage {
   type Event = {
     type: 'notice.push.fp'
     data: Record<string, number>
-    total: Record<string, number>
   } | {
     type: 'notice.push.iframe'
     data: Record<string, number>
