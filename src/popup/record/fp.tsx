@@ -1,6 +1,6 @@
 import { Tree, type TreeDataNode } from 'antd';
 import { useEffect, useState } from 'react';
-import { FpNoticeItem } from './item';
+import { FpNoticeItem } from './fp-item';
 import { useTranslation } from 'react-i18next';
 
 type FpNoticePanelProps = {
@@ -96,7 +96,7 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
 
   return <div className='h-full flex flex-col'>
     {treeData.length === 0 ?
-      <div className='grow flex justify-center items-center'>{t('tip.label.no-fp-notice')}</div> :
+      <div className='grow flex justify-center items-center bg-[--ant-color-bg-container]'>{t('tip.label.no-fp-notice')}</div> :
       <Tree.DirectoryTree
         className='grow overflow-auto no-scrollbar'
         showIcon={false}

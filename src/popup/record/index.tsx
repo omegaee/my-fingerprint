@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { FpNoticePanel } from "./fp";
 import { sendToBackground, sendToTab } from "@/utils/message";
 import TipIcon from "@/components/data/tip-icon";
+import IframeNoticePanel from "./iframe";
 
 type NoticePanelProps = {
   tab?: chrome.tabs.Tab
@@ -11,6 +12,7 @@ type NoticePanelProps = {
 
 export const NoticePanel = ({ tab }: NoticePanelProps) => {
   const [t] = useTranslation();
+  const [origin, setOrigin] = useState<string>()
   const [fpNotice, setFpNotice] = useState<Record<string, number>>()
   const [iframeNotice, setIframeNotice] = useState<Record<string, number>>()
 
@@ -30,9 +32,15 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
       .catch(() => { })
   }, [tab?.id])
 
+  useEffect(() => {
+    if (tab?.url == null) return;
+    const url = new URL(tab.url);
+    setOrigin(url.origin)
+  }, [tab?.url])
+
   return <div className='relative h-full flex flex-col'>
-    <div className="absolute right-1">
-      <TipIcon.Question content='content' />
+    <div className="absolute right-1 z-10">
+      <TipIcon.Question placement='right' content='content' />
     </div>
     <Tabs
       className="h-full [&_.ant-tabs-tab]:!py-0.5 [&_.ant-tabs-nav]:mb-0"
@@ -47,7 +55,7 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
         {
           key: '2',
           label: t('e.iframe-record'),
-          children: <div>{Object.keys(iframeNotice ?? {}).map(v => <div key={v}>{v}</div>)}</div>,
+          children: <IframeNoticePanel notice={iframeNotice} />,
         }
       ]}
     />
