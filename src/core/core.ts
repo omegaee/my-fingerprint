@@ -253,7 +253,10 @@ export class FingerprintHandler {
 
     // this.listenMessage()
     this.hookContent()
-    notifyIframeOrigin(win.location.origin)
+    
+    if (win !== window.top) {
+      notifyIframeOrigin(win.location.origin)
+    }
   }
 
   /**
