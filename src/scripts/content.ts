@@ -27,7 +27,6 @@ window.addEventListener('message', ((ev) => {
           iframeOriginNoticePool[src] = data[src]
         }
       }
-      console.log(iframeOriginNoticePool);
       break
     }
   }
@@ -36,7 +35,11 @@ window.addEventListener('message', ((ev) => {
 /**
  * runtime消息处理
  */
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  switch (msg.type) {
+chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
+  switch (msg?.type) {
+    case 'notice.get.iframe': {
+      sendResponse<'notice.get.iframe'>(iframeOriginNoticePool)
+      return false;
+    }
   }
-})
+}) as TabMessage.Listener)
