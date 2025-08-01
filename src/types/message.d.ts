@@ -17,7 +17,6 @@ declare namespace BackgroundMessage {
   } | {
     type: 'notice.get'
     tabId: number
-    host: string
     $: Record<string, number>
   } | {
     type: 'notice.push.fp'

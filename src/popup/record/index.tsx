@@ -1,109 +1,46 @@
-import { Tree, type TreeDataNode } from 'antd';
-import { useEffect, useState } from 'react';
-import { FpNoticeItem } from './item';
-import { useTranslation } from 'react-i18next';
+import { Tabs } from "antd";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { FpNoticePanel } from "./fp";
+import { sendToBackground } from "@/utils/message";
+import TipIcon from "@/components/data/tip-icon";
 
-type FpNoticePanelProps = {
-  notice?: Record<string, number>
+type NoticePanelProps = {
+  tab?: chrome.tabs.Tab
 }
 
-export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
-  const [t] = useTranslation()
-  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
-  const [treeData, setTreeData] = useState<TreeDataNode[]>([]);
-
-  const totalCount = (prefix: string) => {
-    let count = 0;
-    for (const key in notice) {
-      if (key.startsWith(prefix)) {
-        count += notice[key]
-      }
-    }
-    return count;
-  }
+export const NoticePanel = ({ tab }: NoticePanelProps) => {
+  const [t] = useTranslation();
+  const [fpNotice, setFpNotice] = useState<Record<string, number>>()
 
   useEffect(() => {
-    if (!notice) return;
+    if (tab?.id == null) return;
+    sendToBackground({
+      type: 'notice.get',
+      tabId: tab.id,
+    }).then((data) => setFpNotice(data))
+  }, [tab?.id])
 
-    const rootNodes: Record<string, TreeDataNode> = {}
-    const nodeMap = new Map<string, TreeDataNode>()
-    const countMap = new Map<string, number>()
-
-    for (const fullPath in notice) {
-      const count = notice[fullPath]
-      const paths = fullPath.split('.')
-      let parentKey = ''
-      let parentNode: TreeDataNode | undefined;
-
-      for (let i = 0; i < paths.length; i++) {
-        const path = paths[i]
-        let currKey: string;
-        let currNode: TreeDataNode | undefined;
-
-        // 准备key
-        if (i === 0) {
-          currKey = path
-        } else {
-          currKey = `${parentKey}.${path}`;
+  return <div className='relative h-full flex flex-col'>
+    <div className="absolute right-1">
+      <TipIcon.Question content='content' />
+    </div>
+    <Tabs
+      className="h-full [&_.ant-tabs-tab]:!py-0.5 [&_.ant-tabs-nav]:mb-0"
+      type="card"
+      size='small'
+      items={[
+        {
+          key: '1',
+          label: t('e.fp-record'),
+          children: <FpNoticePanel notice={fpNotice} />,
+        },
+        {
+          key: '2',
+          label: t('e.iframe-record'),
+          children: <div></div>,
         }
-
-        // 准备node
-        currNode = nodeMap.get(currKey)
-        if (!currNode) {
-          if (i === paths.length - 1) {
-            // 叶子节点
-            currNode = {
-              key: currKey,
-              title: <FpNoticeItem title={path} count={count} isRoot={i === 0} />,
-              isLeaf: true,
-            }
-          } else {
-            // 非叶子节点
-            currNode = {
-              key: currKey,
-              title: <FpNoticeItem title={path} count={totalCount(currKey)} isRoot={i === 0} />,
-              children: [],
-            }
-          }
-        }
-
-        // 添加到树
-        const pc = parentNode?.children
-        if (i !== 0 && pc && !pc.some(v => v.key === currNode?.key)) {
-          pc.push(currNode)
-        }
-        else if (i === 0 && !rootNodes[currNode.key as any]) {
-          rootNodes[currNode.key as any] = currNode
-        }
-
-        // 准备下次遍历
-        nodeMap.set(currKey, currNode)
-        countMap.set(currKey, (countMap.get(currKey) ?? 0) + count)
-        parentKey = currKey;
-        parentNode = currNode;
-      }
-    }
-
-    const { strong, weak, other, ...rest } = rootNodes
-    setTreeData([
-      strong,
-      weak,
-      other,
-      ...Object.values(rest),
-    ].filter(v => !!v))
-    setExpandedKeys(Object.keys(rootNodes))
-  }, [notice])
-
-  return <div className='h-full flex flex-col'>
-    {treeData.length === 0 ?
-      <div className='grow flex justify-center items-center'>{t('tip.label.no-fp-notice')}</div> :
-      <Tree.DirectoryTree
-        className='grow overflow-auto no-scrollbar'
-        showIcon={false}
-        blockNode
-        treeData={treeData}
-        expandedKeys={expandedKeys}
-        onExpand={setExpandedKeys as any}
-      />}
+      ]}
+    />
   </div>
 }

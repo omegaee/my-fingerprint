@@ -8,7 +8,6 @@ import {
   CloseOutlined,
 } from '@ant-design/icons';
 
-import { FpNoticePanel } from "./record"
 import FConfig from "./config"
 import WhitelistView from "./whitelist"
 
@@ -17,13 +16,13 @@ import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
 import { useShallow } from "zustand/shallow";
 import { sendToBackground } from "@/utils/message";
+import { NoticePanel } from "./record";
 
 function Application() {
   const [t, i18n] = useTranslation()
   const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
   const [hostname, setHostname] = useState<string>()
-  const [fpNotice, setFpNotice] = useState<Record<string, number>>()
   const [whitelistMode, setWhitelistMode] = useState<'none' | 'self' | 'sub'>('none')
   const [hasNewVersion, setHasNewVersion] = useState(false)
   const [moreBadge, setMoreBadge] = useState(false)
@@ -61,11 +60,6 @@ function Application() {
       if (_url && (_url.protocol === 'http:' || _url.protocol === 'https:')) {
         /* 允许白名单 */
         setHostname(_url.hostname)
-        sendToBackground({
-          type: 'notice.get',
-          tabId: tab.id,
-          host: _url.hostname,
-        }).then((data) => setFpNotice(data))
       }
     })
     sendToBackground({ type: 'version.latest' }).then((version) => {
@@ -125,26 +119,22 @@ function Application() {
     return [
       {
         label: t('e.record'),
-        // icon: <AlertOutlined />,
-        children: <FpNoticePanel notice={fpNotice} />,
+        children: <NoticePanel tab={tab} />,
       },
       {
         label: t('e.config'),
-        // icon: <SettingOutlined />,
         children: <FConfig />,
       },
       {
         label: t('e.whitelist'),
-        // icon: <SafetyOutlined />,
         children: <WhitelistView msgApi={messageApi} />,
       },
       {
         label: moreBadge ? <Badge dot>{t('e.more')}</Badge> : t('e.more'),
-        // icon: <MoreOutlined />,
         children: <MoreView />,
       }
     ].map((item, index) => ({ ...item, key: String(index) }))
-  }, [i18n.language, tab, fpNotice])
+  }, [i18n.language, tab])
 
   return (
     <Layout className="overflow-y-auto no-scrollbar p-2 w-72 flex flex-col">

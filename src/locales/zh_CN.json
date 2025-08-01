@@ -22,7 +22,9 @@
     "record": "记录",
     "config": "配置",
     "seed": "种子",
-    "more": "更多"
+    "more": "更多",
+    "fp-record": "指纹记录",
+    "iframe-record": "内嵌框架记录"
   },
   "label": {
     "config-file": "配置文件",

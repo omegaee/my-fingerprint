@@ -21,11 +21,10 @@
     "whitelist-click-in": "Click To Whitelist",
     "record": "Record",
     "config": "Config",
-    "normal-fp": "Normal Fingerprint",
-    "special-fp": "Special Fingerprint",
-    "other-config": "Other Config",
     "seed": "Seed",
-    "more": "More"
+    "more": "More",
+    "fp-record": "Fingerprint Record",
+    "iframe-record": "Iframe Record"
   },
   "label": {
     "config-file": "Config File",
