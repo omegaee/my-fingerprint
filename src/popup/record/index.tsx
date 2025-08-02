@@ -6,14 +6,22 @@ import { sendToTab } from "@/utils/message";
 import TipIcon from "@/components/data/tip-icon";
 import IframeNoticePanel from "./iframe";
 
+const getRecordCount = (record: Record<string, number>) => {
+  let count = 0
+  for (const key of Object.keys(record)) {
+    count += record[key]
+  }
+  return count > 99 ? '99+' : String(count)
+}
+
 type NoticePanelProps = {
   tab?: chrome.tabs.Tab
 }
 
 export const NoticePanel = ({ tab }: NoticePanelProps) => {
   const [t] = useTranslation();
-  const [fpNotice, setFpNotice] = useState<Record<string, number>>()
-  const [iframeNotice, setIframeNotice] = useState<Record<string, number>>()
+  const [fpNotice, setFpNotice] = useState<Record<string, number>>({})
+  const [iframeNotice, setIframeNotice] = useState<Record<string, number>>({})
 
   useEffect(() => {
     const tabId = tab?.id
@@ -29,7 +37,7 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
         .then((data) => setIframeNotice(data))
         .catch(() => { })
     }
-    
+
     pullData()
     const timer = setInterval(pullData, 3000)
     return () => clearInterval(timer)
@@ -46,12 +54,12 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
       items={[
         {
           key: '1',
-          label: t('e.fp-record'),
+          label: `${t('e.fp-record')} (${getRecordCount(fpNotice)})`,
           children: <FpNoticePanel notice={fpNotice} />,
         },
         {
           key: '2',
-          label: t('e.iframe-record'),
+          label: `${t('e.iframe-record')} (${getRecordCount(iframeNotice)})`,
           children: <IframeNoticePanel notice={iframeNotice} />,
         }
       ]}

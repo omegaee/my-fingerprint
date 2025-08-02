@@ -23,8 +23,8 @@
     "config": "Config",
     "seed": "Seed",
     "more": "More",
-    "fp-record": "Fingerprint Record",
-    "iframe-record": "Iframe Record"
+    "fp-record": "Fingerprint",
+    "iframe-record": "Iframe"
   },
   "label": {
     "config-file": "Config File",
