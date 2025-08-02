@@ -46,7 +46,7 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
 
   return <div className='relative h-full flex flex-col'>
     <div className="absolute right-1 z-10">
-      <TipIcon.Question placement='bottomRight' content={<Markdown>{t('desc.record', { joinArrays: '\n\n' })}</Markdown>} />
+      <TipIcon.Question placement='bottomRight' content={<Markdown className='w-60'>{t('desc.record', { joinArrays: '\n\n' })}</Markdown>} />
     </div>
     <Tabs
       className="h-full [&_.ant-tabs-tab]:!py-0.5 [&_.ant-tabs-nav]:mb-0"
