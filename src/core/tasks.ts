@@ -521,7 +521,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useGetterProxy }) => {
+    onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
       const seed = useSeed(conf.fp.other.font)
       if (seed == null) return;
 
@@ -529,12 +529,30 @@ export const hookTasks: HookTask[] = [
         'offsetHeight', 'offsetWidth'
       ], (key, getter) => ({
         apply(target: () => any, thisArg: HTMLElement, args: any) {
-          notify('strong.font')
+          notify('strong.fonts')
           const result = getter.call(thisArg);
           const mark = (thisArg.style?.fontFamily ?? key) + result;
           return result + randomFontNoise(seed, mark);
         }
       }))
+
+      useProxy(win, 'FontFace', {
+        construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
+          const source = args[1]
+          if (typeof source === 'string' && source.startsWith('local(')) {
+            notify('strong.fonts')
+            const name = source.substring(source.indexOf('(') + 1, source.indexOf(')'));
+            const rand = seededRandom(name + seed, 1, 0);
+            if (rand < 0.02) {
+              args[1] = `local("${rand}")`
+            } else if (rand < 0.04) {
+              args[1] = 'local("Arial")'
+            }
+          }
+          return new target(...args)
+        },
+      })
+
     },
   },
 
