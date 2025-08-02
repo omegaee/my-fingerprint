@@ -15,15 +15,6 @@ declare namespace BackgroundMessage {
     url?: string
     $?: LocalStorage
   } | {
-    type: 'notice.get'
-    tabId: number
-    host: string
-    $: Record<string, number>
-  } | {
-    type: 'notice.push'
-    data: Record<string, number>
-    total: Record<string, number>
-  } | {
     type: 'whitelist.update'
     data?: {
       add?: string[]
@@ -37,6 +28,10 @@ declare namespace BackgroundMessage {
     type: 'api.check'
     api: string
     $: boolean | string
+  } | {
+    type: 'badge.set'
+    text: string
+    level: 1 | 2
   }
 
   type ResultField = '$'
@@ -73,9 +68,11 @@ declare namespace WindowMessage {
    * 事件
    */
   type Event = {
-    type: 'notice.push'
+    type: 'notice.push.fp'
     data: Record<string, number>
-    total: Record<string, number>
+  } | {
+    type: 'notice.push.iframe'
+    data: Record<string, number>
   } | {
     type: 'core.get-info'
   } | {
@@ -92,4 +89,45 @@ declare namespace WindowMessage {
   type Sender = (win: MessageEventSource, message: Event, targetOrigin?: string) => void
 
   type Listener = (event: MessageEvent<UseIdentify<Event>>) => void
+}
+
+/**
+ * tab消息事件
+ */
+declare namespace TabMessage {
+  /**
+   * 事件
+   */
+  type Event = {
+    type: 'notice.get.iframe'
+    $: Record<string, number>
+  } | {
+    type: 'notice.get.fp'
+    $: Record<string, number>
+  }
+
+  type ResultField = '$'
+
+  type Type = Event['type']
+
+  type EventByType<T extends Type> = Extract<Event, { type: T }>
+
+  type ParamByType<T extends Type> = EventByType<T> extends any
+    ? Omit<EventByType<T>, ResultField>
+    : never
+
+  type ResultByType<T extends Type> = ResultField extends keyof EventByType<T>
+    ? EventByType<T>[ResultField]
+    : void;
+
+  type Sender = <T extends Type>(tabId: number, message: ParamByType<T>)
+    => Promise<ResultByType<T>>
+
+  type Param<T extends Event> = T extends any ? Omit<T, ResultField> : never
+
+  type Listener = (
+    msg: Param<Event>,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: <T extends Type>(response: ResultByType<T>) => void,
+  ) => boolean | void
 }

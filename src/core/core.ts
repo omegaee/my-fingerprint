@@ -2,6 +2,7 @@ import { HookType } from '@/types/enum'
 import { seededRandom } from "@/utils/base";
 import { genRandomSeed } from "../utils/base";
 import { hookTasks } from "./tasks";
+import { notifyIframeOrigin } from './utils';
 
 export type HookTask = {
   // 条件，为空则默认为true
@@ -252,6 +253,10 @@ export class FingerprintHandler {
 
     // this.listenMessage()
     this.hookContent()
+    
+    if (win !== window.top) {
+      notifyIframeOrigin(win.location.origin)
+    }
   }
 
   /**

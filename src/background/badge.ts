@@ -5,23 +5,11 @@ const BADGE_COLOR = {
 }
 
 /**
- * 获取Badge内容
- * @returns [文本, 颜色]
+ * 设置标识
  */
-export const getBadgeContent = (noticeTotal: Record<'weak' | 'strong' | (string & {}), number>): {
-  text: string
-  color: string
-} => {
-  const weak = noticeTotal['weak'] ?? 0
-  const strong = noticeTotal['strong'] ?? 0
-  return {
-    text: getShowNumber(strong > 0 ? strong : weak),
-    color: strong > 0 ? BADGE_COLOR.high : BADGE_COLOR.low,
-  }
-}
-
-const getShowNumber = (num: number) => {
-  return num >= 100 ? '99+' : String(num)
+export const setBadgeContent = (tabId: number, text: string, level: number) => {
+  chrome.action.setBadgeText({ tabId, text });
+  chrome.action.setBadgeBackgroundColor({ tabId, color: level === 1 ? BADGE_COLOR.low : BADGE_COLOR.high });
 }
 
 /**

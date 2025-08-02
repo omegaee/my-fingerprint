@@ -21,11 +21,10 @@
     "whitelist-click-in": "Click To Whitelist",
     "record": "Record",
     "config": "Config",
-    "normal-fp": "Normal Fingerprint",
-    "special-fp": "Special Fingerprint",
-    "other-config": "Other Config",
     "seed": "Seed",
-    "more": "More"
+    "more": "More",
+    "fp-record": "Fingerprint",
+    "iframe-record": "Iframe"
   },
   "label": {
     "config-file": "Config File",
@@ -177,7 +176,13 @@
     }
   },
   "desc": {
-    "subscribe": "**Usage**\n\n- The extension will pull the configuration from the subscription target when it loads, the configuration content must be in json format.\n\n- It will overwrite the original configuration and merge the whitelist.\n\n- Sample configurations can be obtained using the configuration export feature.\n\n**Examples**\n\n- Blank value\n\n- Default: `config.json`\n\n- Local: `file:///example/config.json`\n\n- Network: `http://example.com/config.json`"
+    "subscribe": "**Usage**\n\n- The extension will pull the configuration from the subscription target when it loads, the configuration content must be in json format.\n\n- It will overwrite the original configuration and merge the whitelist.\n\n- Sample configurations can be obtained using the configuration export feature.\n\n**Examples**\n\n- Blank value\n\n- Default: `config.json`\n\n- Local: `file:///example/config.json`\n\n- Network: `http://example.com/config.json`",
+    "record": [
+      "## Fingerprint Record",
+      "Record the call of fingerprint api, some api are often used when rendering elements, so the number of records for some api will be very large",
+      "## Embedded Frame Record",
+      "Record the source address and number of iframe loaded"
+    ]
   },
   "city": {
     "SH": "Shanghai",

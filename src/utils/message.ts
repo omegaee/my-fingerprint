@@ -16,3 +16,11 @@ export const sendToWindow: WindowMessage.Sender = (win, message, origin) => {
     origin ?? location.origin as any,
   )
 }
+
+/**
+ * 发送消息给指定tab
+ * @example sendToTab(tabId, { type: 'example' })
+ */
+export const sendToTab: TabMessage.Sender = (tabId, message) => {
+  return chrome.tabs.sendMessage(tabId, message);
+}

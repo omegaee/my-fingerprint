@@ -1,12 +1,8 @@
 import { applySubscribeStorage, cleanLocalWhitelist, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
-import { getBadgeContent, removeBadge, setBadgeWhitelist } from "./badge";
+import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
-
-const hookRecords = new Map<number, Partial<Record<HookFingerprintKey, number>>>()
-
-const noticePool = new Map<number, Record<string, number>>();
 
 let newVersion: string | undefined
 
@@ -69,19 +65,6 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       fun()
       return true
     }
-    case 'notice.get': {
-      sendResponse<'notice.get'>(noticePool.get(msg.tabId) ?? {});
-      return false;
-    }
-    case 'notice.push': {
-      const tabId = sender.tab?.id
-      if (tabId == null) return;
-      noticePool.set(tabId, msg.data)
-      const { text, color } = getBadgeContent(msg.total)
-      chrome.action.setBadgeText({ tabId, text });
-      chrome.action.setBadgeBackgroundColor({ tabId, color });
-      return false;
-    }
     case 'whitelist.update': {
       const fun = () => reRegisterScript()
       if (msg.clean) cleanLocalWhitelist().then(fun);
@@ -104,6 +87,12 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
         }
       }
       return false
+    }
+    case 'badge.set': {
+      const tabId = sender.tab?.id
+      if (tabId == null) return;
+      setBadgeContent(tabId, msg.text, msg.level)
+      return false;
     }
   }
 }) as BackgroundMessage.Listener)
@@ -135,7 +124,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
  */
 chrome.tabs.onRemoved.addListener((tabId) => {
   reRequestHeader(undefined, tabId)
-  hookRecords.delete(tabId)
   removeBadge(tabId)
 })
 

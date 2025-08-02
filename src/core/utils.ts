@@ -6,32 +6,41 @@ import { debounce } from "@/utils/timer";
 // 
 // --- notification ---
 // 
-const noticePool = new Map<string, number>()
-const noticeTotal = {
-  weak: 0,
-  strong: 0,
-  other: 0,
-}
+let fpNoticePool: Record<string, number> = {}
+let iframeNoticePool: Record<string, number> = {}
 
+/**
+ * 记录指纹数量
+ */
 export const notify = (key: string) => {
-  const count = noticePool.get(key) ?? 0
-  noticePool.set(key, count + 1)
-
-  if (key.startsWith('weak.')) noticeTotal.weak++;
-  else if (key.startsWith('strong.')) noticeTotal.strong++;
-  else noticeTotal.other++;
-
-  notifyContent()
+  fpNoticePool[key] = (fpNoticePool[key] ?? 0) + 1
+  sendFpRecord()
 }
 
-const notifyContent = debounce(() => {
+const sendFpRecord = debounce(() => {
   sendToWindow(window.top ?? window, {
-    type: 'notice.push',
-    data: Object.fromEntries(noticePool),
-    total: noticeTotal,
+    type: 'notice.push.fp',
+    data: fpNoticePool,
   }, '*')
+  fpNoticePool = {}
 })
 
+/**
+ * 记录iframe数量
+ */
+export const notifyIframeOrigin = (key?: string) => {
+  if (!key || key === 'null') key = 'about:blank';
+  iframeNoticePool[key] = (iframeNoticePool[key] ?? 0) + 1
+  sendIframeRecord()
+}
+
+const sendIframeRecord = debounce(() => {
+  sendToWindow(window.top ?? window, {
+    type: 'notice.push.iframe',
+    data: iframeNoticePool,
+  }, '*')
+  iframeNoticePool = {}
+})
 
 // 
 // --- random ---
