@@ -44,6 +44,13 @@ export class FingerprintHandler {
         if (prop === 'caller' || prop === 'arguments') return target[prop];
         const getter = handler.get ?? Reflect.get
         return getter(target, prop, receiver)
+      },
+      setPrototypeOf: (target: any, proto: any) => {
+        const raw = this.useRaw(proto)
+        if (target === raw) {
+          target.__proto__ = raw
+        }
+        return Reflect.setPrototypeOf(target, proto)
       }
     }
   }
@@ -253,7 +260,7 @@ export class FingerprintHandler {
 
     // this.listenMessage()
     this.hookContent()
-    
+
     if (win !== window.top) {
       notifyIframeOrigin(win.location.origin)
     }

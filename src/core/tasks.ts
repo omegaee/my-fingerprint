@@ -733,26 +733,26 @@ export const hookTasks: HookTask[] = [
     }
   },
 
-  /**
-   * .prototypeOf
-   */
-  {
-    onEnable: ({ win, symbol, registry, useProxy }) => {
-      const handler = {
-        apply(target: any, self: any, args: any[]) {
-          const src = args[0]
-          const dst = args[1]
-          if (dst != null && registry.has(src)) {
-            const raw = dst[symbol.raw]
-            if (raw) args[1] = raw;
-          }
-          return Reflect.apply(target, self, args);
-        }
-      }
-      useProxy(win.Object, 'setPrototypeOf', handler)
-      useProxy(win.Reflect, 'setPrototypeOf', handler)
-    }
-  },
+  // /**
+  //  * .prototypeOf
+  //  */
+  // {
+  //   onEnable: ({ win, symbol, registry, useProxy }) => {
+  //     const handler = {
+  //       apply(target: any, self: any, args: any[]) {
+  //         const src = args[0]
+  //         const dst = args[1]
+  //         if (dst != null && registry.has(src)) {
+  //           const raw = dst[symbol.raw]
+  //           if (raw) args[1] = raw;
+  //         }
+  //         return Reflect.apply(target, self, args);
+  //       }
+  //     }
+  //     useProxy(win.Object, 'setPrototypeOf', handler)
+  //     useProxy(win.Reflect, 'setPrototypeOf', handler)
+  //   }
+  // },
 
   /**
    * .toString
