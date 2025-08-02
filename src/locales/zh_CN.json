@@ -176,7 +176,13 @@
     }
   },
   "desc": {
-    "subscribe": "**使用**\n\n- 扩展加载时会从订阅目标上拉取配置，配置内容必须是json格式。\n\n- 会覆盖原配置并合并白名单。\n\n- 可使用配置导出功能获取配置样本。\n\n**例子**\n\n- 空值\n\n- 默认: `config.json`\n\n- 本地: `file:///example/config.json`\n\n- 网络: `http://example.com/config.json`"
+    "subscribe": "**使用**\n\n- 扩展加载时会从订阅目标上拉取配置，配置内容必须是json格式。\n\n- 会覆盖原配置并合并白名单。\n\n- 可使用配置导出功能获取配置样本。\n\n**例子**\n\n- 空值\n\n- 默认: `config.json`\n\n- 本地: `file:///example/config.json`\n\n- 网络: `http://example.com/config.json`",
+    "record": [
+      "## 指纹记录",
+      "记录指纹api的调用，部分api在元素渲染时经常用到，因此，有些api记录数量会非常多",
+      "## 内嵌框架记录",
+      "记录加载iframe的源地址和数量"
+    ]
   },
   "city": {
     "SH": "上海",

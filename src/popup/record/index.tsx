@@ -5,6 +5,7 @@ import { FpNoticePanel } from "./fp";
 import { sendToTab } from "@/utils/message";
 import TipIcon from "@/components/data/tip-icon";
 import IframeNoticePanel from "./iframe";
+import Markdown from "react-markdown";
 
 const getRecordCount = (record: Record<string, number>) => {
   let count = 0
@@ -45,7 +46,7 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
 
   return <div className='relative h-full flex flex-col'>
     <div className="absolute right-1 z-10">
-      <TipIcon.Question placement='right' content='content' />
+      <TipIcon.Question placement='bottomRight' content={<Markdown>{t('desc.record', { joinArrays: '\n\n' })}</Markdown>} />
     </div>
     <Tabs
       className="h-full [&_.ant-tabs-tab]:!py-0.5 [&_.ant-tabs-nav]:mb-0"
