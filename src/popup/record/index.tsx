@@ -16,16 +16,23 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
   const [iframeNotice, setIframeNotice] = useState<Record<string, number>>()
 
   useEffect(() => {
-    if (tab?.id == null) return;
-    /* fp notice */
-    sendToTab(tab.id, { type: 'notice.get.fp' })
-      .then((data) => setFpNotice(data))
-      .catch(() => { })
+    const tabId = tab?.id
+    if (tabId == null) return;
 
-    /* iframe notice */
-    sendToTab(tab.id, { type: 'notice.get.iframe' })
-      .then((data) => setIframeNotice(data))
-      .catch(() => { })
+    const pullData = () => {
+      /* fp notice */
+      sendToTab(tabId, { type: 'notice.get.fp' })
+        .then((data) => setFpNotice(data))
+        .catch(() => { })
+      /* iframe notice */
+      sendToTab(tabId, { type: 'notice.get.iframe' })
+        .then((data) => setIframeNotice(data))
+        .catch(() => { })
+    }
+    
+    pullData()
+    const timer = setInterval(pullData, 3000)
+    return () => clearInterval(timer)
   }, [tab?.id])
 
   return <div className='relative h-full flex flex-col'>
