@@ -758,10 +758,10 @@ export const hookTasks: HookTask[] = [
    * .toString
    */
   {
-    onEnable: ({ win, symbol, registry, useProxy }) => {
+    onEnable: ({ win, symbol, isReg, useProxy }) => {
       useProxy(win.Function.prototype, 'toString', {
         apply(target: any, self: any, args: any[]) {
-          if (self != null && registry.has(self)) {
+          if (self != null && isReg(self)) {
             const raw = self[symbol.raw]
             if (raw) return Reflect.apply(target, raw, args);
           }
@@ -771,21 +771,21 @@ export const hookTasks: HookTask[] = [
     }
   },
 
-  /**
-   * .create
-   */
-  {
-    onEnable: ({ win, symbol, registry, useProxy }) => {
-      useProxy(win.Object, 'create', {
-        apply(target: any, self: any, args: any[]) {
-          const src = args[0]
-          if (src != null && registry.has(src)) {
-            const raw = src[symbol.raw]
-            if (raw) args[0] = raw;
-          }
-          return Reflect.apply(target, self, args);
-        }
-      })
-    }
-  }
+  // /**
+  //  * .create
+  //  */
+  // {
+  //   onEnable: ({ win, symbol, registry, useProxy }) => {
+  //     useProxy(win.Object, 'create', {
+  //       apply(target: any, self: any, args: any[]) {
+  //         const src = args[0]
+  //         if (src != null && registry.has(src)) {
+  //           const raw = src[symbol.raw]
+  //           if (raw) args[0] = raw;
+  //         }
+  //         return Reflect.apply(target, self, args);
+  //       }
+  //     })
+  //   }
+  // }
 ];

@@ -47,12 +47,20 @@ export class FingerprintHandler {
       },
       setPrototypeOf: (target: any, proto: any) => {
         const raw = this.useRaw(proto)
-        if (target === raw) {
-          target.__proto__ = raw
+        if ((this.isReg(proto) || this.isReg(proto.__proto__)) && target === raw) {
+          if (new Error().stack?.includes('Reflect.setPrototypeOf')) {
+            return Reflect.setPrototypeOf(target, raw);
+          } else {
+            return Object.setPrototypeOf(target, raw);
+          }
         }
         return Reflect.setPrototypeOf(target, proto)
       }
     }
+  }
+
+  public isReg = (target: any) => {
+    return this.registry.has(target)
   }
 
   /**
