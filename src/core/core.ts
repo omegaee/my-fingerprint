@@ -85,12 +85,21 @@ export class FingerprintHandler {
     return raw ?? target;
   }
 
+  /**
+   * 创建代理
+   */
   public newProxy = <T extends object>(target: T, handler: ProxyHandler<T>): T => {
     const proxy = new Proxy(target, this.toProxyHandler(handler));
     this.registry.add(proxy);
     return proxy;
   }
 
+  /**
+   * 创建代理
+   * @param target 目标对象
+   * @param key 属性名
+   * @param handler 处理对象 | (key) => 处理对象
+   */
   public useProxy = <
     T extends object,
     K extends keyof T,
