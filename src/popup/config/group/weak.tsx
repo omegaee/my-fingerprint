@@ -4,10 +4,15 @@ import { HookType } from '@/types/enum'
 import { InputLine } from "../form/input"
 import { useTranslation } from "react-i18next"
 import SelectFpConfigItem from "../item/fp/select"
-import { Spin } from "antd"
+import { Input, Select, Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
-import { getBrowser } from "@/utils/equipment"
 import TimeZoneConfigItem from "../item/special/timezone"
+import { useHookMode } from "@/utils/hooks"
+import { ConfigItemY } from "../item"
+import { useHookTypeOptions } from "@/utils/hooks/options"
+import TipIcon from "@/components/data/tip-icon"
+import Markdown from "react-markdown"
+import { getBrowserInfo } from "@/utils/browser"
 
 type DeprecatedType = {
   option: HookType,
@@ -16,6 +21,10 @@ type DeprecatedType = {
 
 const BASE_TYPES = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const SYSTEM_TYPES = [HookType.default]
+
+const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
+const baseValueTypes = [...baseTypes, HookType.value]
+const jsTypes = [HookType.default, HookType.browser, HookType.global]
 
 export const WeakFpConfigGroup = memo(() => {
   const [t, i18n] = useTranslation()
@@ -37,7 +46,11 @@ export const WeakFpConfigGroup = memo(() => {
   })
   const fp = config?.fp
 
-  const browserType = useMemo(() => getBrowser(navigator.userAgent), [])
+  const baseOptions = useHookTypeOptions(baseTypes)
+  const baseValueOptions = useHookTypeOptions(baseValueTypes)
+  const jsOptions = useHookTypeOptions(jsTypes)
+
+  const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
 
   const glInfo = useMemo(() => {
     const cvs = document.createElement('canvas')
@@ -52,36 +65,44 @@ export const WeakFpConfigGroup = memo(() => {
   }, [])
 
   return fp ? <>
-    {browserType === 'chrome' && <SelectFpConfigItem
-      title={t('item.title.uaVersion')}
-      desc={t('item.desc.uaVersion')}
-      options={BASE_TYPES}
-      deprecatedOptions={netDeprecatedTypes}
-      defaultValue={fp.navigator.uaVersion.type}
-      onChange={(type) => fp.navigator.uaVersion.type = type as any}
-    />}
-
     <TimeZoneConfigItem />
 
-    <SelectFpConfigItem
-      title={t('item.title.languages')}
-      desc={t('item.desc.languages')}
-      options={BASE_TYPES}
-      deprecatedOptions={netDeprecatedTypes}
-      defaultValue={fp.navigator.languages.type}
-      onChange={(type) => {
-        fp.navigator.language.type = type as any;
-        fp.navigator.languages.type = type as any;
-      }}
-      custom={<InputLine label="value"
-        defaultValue={navigator.languages.join(',')}
-        initialValue={(fp.navigator.languages as ValueHookMode<string[]>).value?.join(',')}
-        onDebouncedInput={(value) => {
-          const parts = [...new Set(value.split(",").filter((v) => !!v.trim()))];
-          (fp.navigator.languages as ValueHookMode<string[]>).value = parts;
-          (fp.navigator.language as ValueHookMode<string>).value = parts[0];
-        }} />}
-    />
+    {browserInfo.name !== 'firefox' && <ConfigItemY
+      label={t('item.title.uaVersion')}
+      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.uaVersion')}</Markdown>} />}
+    >
+      <HookModeItem mode={fp?.navigator.uaVersion}>{(mode) => <>
+        <Select<HookType>
+          options={jsOptions}
+          value={mode.type}
+          onChange={mode.setType}
+        />
+      </>}</HookModeItem>
+    </ConfigItemY>}
+
+    <ConfigItemY
+      label={t('item.title.languages')}
+      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.languages')}</Markdown>} />}
+    >
+      <HookModeItem
+        mode={fp.navigator.languages}
+        parser={{
+          ser: v => v?.join?.(',') ?? '',
+          deser: v => v.split(',').map(v => v.trim()).filter((v) => !!v),
+          defaultValue: navigator.languages
+        }}
+      >{(mode) => <>
+        <Select
+          options={baseValueOptions}
+          value={mode.type}
+          onChange={mode.setType}
+        />
+        {mode.type === HookType.value && <Input
+          value={mode.stringValue}
+          onChange={({ target }) => mode.setStringValue(target.value)}
+        />}
+      </>}</HookModeItem>
+    </ConfigItemY>
 
     <SelectFpConfigItem
       title={t('item.title.glDriver')}
@@ -160,5 +181,14 @@ export const WeakFpConfigGroup = memo(() => {
 
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
+
+const HookModeItem = <T,>({ mode, parser, children }: {
+  mode?: HookMode<T>
+  parser?: Parameters<typeof useHookMode<T>>[1]
+  children: (mode: ReturnType<typeof useHookMode<T>>) => React.ReactNode
+}) => {
+  const hm = useHookMode<T>(mode, parser)
+  return <>{children(hm)}</>
+}
 
 export default WeakFpConfigGroup
