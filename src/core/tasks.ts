@@ -733,26 +733,40 @@ export const hookTasks: HookTask[] = [
     }
   },
 
-  // /**
-  //  * .prototypeOf
-  //  */
-  // {
-  //   onEnable: ({ win, symbol, registry, useProxy }) => {
-  //     const handler = {
-  //       apply(target: any, self: any, args: any[]) {
-  //         const src = args[0]
-  //         const dst = args[1]
-  //         if (dst != null && registry.has(src)) {
-  //           const raw = dst[symbol.raw]
-  //           if (raw) args[1] = raw;
-  //         }
-  //         return Reflect.apply(target, self, args);
-  //       }
-  //     }
-  //     useProxy(win.Object, 'setPrototypeOf', handler)
-  //     useProxy(win.Reflect, 'setPrototypeOf', handler)
-  //   }
-  // },
+  /**
+   * .prototypeOf
+   */
+  {
+    onEnable: ({ win, symbol, isHasRaw, useProxy }) => {
+      // const handler = {
+      //   apply(target: any, self: any, args: any[]) {
+      //     const src = args[0]
+      //     const dst = args[1]
+      //     if (dst != null && registry.has(src)) {
+      //       const raw = dst[symbol.raw]
+      //       if (raw) args[1] = raw;
+      //     }
+      //     return Reflect.apply(target, self, args);
+      //   }
+      // }
+      // useProxy(win.Object, 'setPrototypeOf', handler)
+      // useProxy(win.Reflect, 'setPrototypeOf', handler)
+
+      useProxy(win.Reflect, 'setPrototypeOf', {
+        apply(target: any, self: any, args: any[]) {
+          const src = args[0]
+          const dst = args[1]
+          if (isHasRaw(src) && dst != null) {
+            dst[symbol.reflect] = true
+            const res = Reflect.apply(target, self, args);
+            delete dst[symbol.reflect]
+            return res;
+          }
+          return Reflect.apply(target, self, args);
+        }
+      })
+    }
+  },
 
   /**
    * .toString

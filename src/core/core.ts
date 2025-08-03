@@ -34,6 +34,7 @@ export class FingerprintHandler {
   public symbol = {
     own: Symbol('OwnProperty'),
     raw: Symbol('RawValue'),
+    reflect: Symbol('Reflect'),
   }
 
   private toProxyHandler = <T extends object>(handler: ProxyHandler<T>): ProxyHandler<T> => {
@@ -47,20 +48,31 @@ export class FingerprintHandler {
       },
       setPrototypeOf: (target: any, proto: any) => {
         const raw = this.useRaw(proto)
-        if ((this.isReg(proto) || this.isReg(proto.__proto__)) && target === raw) {
-          if (new Error().stack?.includes('Reflect.setPrototypeOf')) {
+        if (target === raw && (this.isReg(proto) || this.isReg(proto.__proto__))) {
+          if (proto[this.symbol.reflect]) {
             return Reflect.setPrototypeOf(target, raw);
           } else {
             return Object.setPrototypeOf(target, raw);
           }
         }
         return Reflect.setPrototypeOf(target, proto)
-      }
+      },
     }
   }
 
+  /**
+   * 判断对象是否注册代理
+   */
   public isReg = (target: any) => {
     return this.registry.has(target)
+  }
+
+  /**
+   * 判断对象以及上游是否注册代理
+   */
+  public isHasRaw = (target: any) => {
+    if (target == null) return false;
+    return target[this.symbol.raw] != null
   }
 
   /**
