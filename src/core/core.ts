@@ -34,6 +34,7 @@ export class FingerprintHandler {
   public symbol = {
     own: Symbol('OwnProperty'),
     raw: Symbol('RawValue'),
+    reflect: Symbol('Reflect'),
   }
 
   private toProxyHandler = <T extends object>(handler: ProxyHandler<T>): ProxyHandler<T> => {
@@ -44,8 +45,34 @@ export class FingerprintHandler {
         if (prop === 'caller' || prop === 'arguments') return target[prop];
         const getter = handler.get ?? Reflect.get
         return getter(target, prop, receiver)
-      }
+      },
+      setPrototypeOf: (target: any, proto: any) => {
+        const raw = this.useRaw(proto)
+        if (target === raw && (this.isReg(proto) || this.isReg(proto.__proto__))) {
+          if (proto[this.symbol.reflect]) {
+            return Reflect.setPrototypeOf(target, raw);
+          } else {
+            return Object.setPrototypeOf(target, raw);
+          }
+        }
+        return Reflect.setPrototypeOf(target, proto)
+      },
     }
+  }
+
+  /**
+   * 判断对象是否注册代理
+   */
+  public isReg = (target: any) => {
+    return this.registry.has(target)
+  }
+
+  /**
+   * 判断对象以及上游是否注册代理
+   */
+  public isHasRaw = (target: any) => {
+    if (target == null) return false;
+    return target[this.symbol.raw] != null
   }
 
   /**
@@ -58,12 +85,21 @@ export class FingerprintHandler {
     return raw ?? target;
   }
 
+  /**
+   * 创建代理
+   */
   public newProxy = <T extends object>(target: T, handler: ProxyHandler<T>): T => {
     const proxy = new Proxy(target, this.toProxyHandler(handler));
     this.registry.add(proxy);
     return proxy;
   }
 
+  /**
+   * 创建代理
+   * @param target 目标对象
+   * @param key 属性名
+   * @param handler 处理对象 | (key) => 处理对象
+   */
   public useProxy = <
     T extends object,
     K extends keyof T,
@@ -253,7 +289,7 @@ export class FingerprintHandler {
 
     // this.listenMessage()
     this.hookContent()
-    
+
     if (win !== window.top) {
       notifyIframeOrigin(win.location.origin)
     }
