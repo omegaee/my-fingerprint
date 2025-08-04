@@ -1,3 +1,6 @@
+import { useHookMode, useHookTypeOptions } from "@/utils/hooks"
+import { Select, type SelectProps } from "antd"
+
 type ConfigItemXProps = {
   children: React.ReactNode
   label?: React.ReactNode
@@ -40,4 +43,29 @@ export const ConfigItemY = ({ children, label, startContent, endContent, bottomC
     {children}
     {bottomContent}
   </div>
+}
+
+/**
+ * @param types 选择器可选类型
+ * @param isMakeSelect 是否生成选择器
+ */
+type HookModeItemProps<V, I,> = {
+  mode?: HookMode<V>
+  parser?: Parameters<typeof useHookMode<V, I>>[1]
+  types?: HookType[]
+  isMakeSelect?: boolean
+  children?: (mode: ReturnType<typeof useHookMode<V, I>>, options: SelectProps['options']) => React.ReactNode
+}
+
+export const HookModeItem = <V, I,>({ mode, parser, types, isMakeSelect, children }: HookModeItemProps<V, I>) => {
+  const hookMode = useHookMode<V, I>(mode, parser)
+  const options = useHookTypeOptions(types ?? [])
+  return <>
+    {isMakeSelect && <Select<HookType>
+      options={options}
+      value={hookMode.type}
+      onChange={hookMode.setType}
+    />}
+    {children?.(hookMode, options)}
+  </>
 }
