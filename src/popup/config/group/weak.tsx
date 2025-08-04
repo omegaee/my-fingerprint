@@ -4,7 +4,7 @@ import { HookType } from '@/types/enum'
 import { InputLine } from "../form/input"
 import { useTranslation } from "react-i18next"
 import SelectFpConfigItem from "../item/fp/select"
-import { Input, Select, Spin } from "antd"
+import { Form, Input, Select, Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
 import TimeZoneConfigItem from "../item/special/timezone"
 import { useHookMode } from "@/utils/hooks"
@@ -25,6 +25,7 @@ const SYSTEM_TYPES = [HookType.default]
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const baseValueTypes = [...baseTypes, HookType.value]
 const jsTypes = [HookType.default, HookType.browser, HookType.global]
+const valueTypes = [HookType.default, HookType.value]
 
 export const WeakFpConfigGroup = memo(() => {
   const [t, i18n] = useTranslation()
@@ -49,10 +50,11 @@ export const WeakFpConfigGroup = memo(() => {
   const baseOptions = useHookTypeOptions(baseTypes)
   const baseValueOptions = useHookTypeOptions(baseValueTypes)
   const jsOptions = useHookTypeOptions(jsTypes)
+  const valueOptions = useHookTypeOptions(valueTypes)
 
   const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
 
-  const glInfo = useMemo(() => {
+  const gpuInfo = useMemo<GpuInfo>(() => {
     const cvs = document.createElement('canvas')
     const gl = cvs.getContext("webgl2") ?? cvs.getContext("webgl")
     if (!gl) return {};
@@ -84,12 +86,14 @@ export const WeakFpConfigGroup = memo(() => {
       label={t('item.title.languages')}
       endContent={<TipIcon.Question content={<Markdown>{t('item.desc.languages')}</Markdown>} />}
     >
-      <HookModeItem
+      <HookModeItem<string[], string>
         mode={fp.navigator.languages}
         parser={{
-          ser: v => v?.join?.(',') ?? '',
-          deser: v => v.split(',').map(v => v.trim()).filter((v) => !!v),
-          defaultValue: navigator.languages
+          toInput: (v) => v?.join?.(',') ?? navigator.languages.join(','),
+          toValue: (v) => {
+            const res = v.split(',').map(v => v.trim()).filter((v) => !!v)
+            return res.length ? res : navigator.languages as string[]
+          },
         }}
       >{(mode) => <>
         <Select
@@ -97,33 +101,51 @@ export const WeakFpConfigGroup = memo(() => {
           value={mode.type}
           onChange={mode.setType}
         />
-        {mode.type === HookType.value && <Input
-          value={mode.stringValue}
-          onChange={({ target }) => mode.setStringValue(target.value)}
-        />}
+        {mode.type === HookType.value && <>
+          <Input
+            value={mode.input}
+            onChange={({ target }) => mode.setInput(target.value)}
+          />
+        </>}
       </>}</HookModeItem>
     </ConfigItemY>
 
-    <SelectFpConfigItem
-      title={t('item.title.glDriver')}
-      desc={t('item.desc.glDriver')}
-      options={SYSTEM_TYPES}
-      defaultValue={fp.normal.glRenderer.type}
-      onChange={(type) => {
-        fp.normal.glVendor.type = type as any;
-        fp.normal.glRenderer.type = type as any;
-      }}
-      custom={<>
-        <InputLine label={t('item.label.glVendor')}
-          defaultValue={glInfo.vendor}
-          initialValue={(fp.normal.glVendor as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.normal.glVendor as ValueHookMode).value = value} />
-        <InputLine label={t('item.label.glRenderer')}
-          defaultValue={glInfo.renderer}
-          initialValue={(fp.normal.glRenderer as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.normal.glRenderer as ValueHookMode).value = value} />
-      </>}
-    />
+    <ConfigItemY
+      label={t('item.title.glDriver')}
+      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.glDriver')}</Markdown>} />}
+    >
+      <HookModeItem<GpuInfo, GpuInfo>
+        mode={fp.normal.gpuInfo}
+        parser={{
+          toInput: (v) => v ?? gpuInfo,
+          toValue: (v) => {
+            if (!v.vendor?.trim()) v.vendor = gpuInfo.vendor;
+            if (!v.renderer?.trim()) v.renderer = gpuInfo.renderer;
+            return v
+          },
+        }}
+      >{(mode) => <>
+        <Select
+          options={valueOptions}
+          value={mode.type}
+          onChange={mode.setType}
+        />
+        {mode.type === HookType.value && <>
+          <Form.Item className="mb-0" label={t('item.label.glVendor')}>
+            <Input
+              value={mode.input.vendor}
+              onChange={({ target }) => mode.setInput({ ...mode.input, vendor: target.value })}
+            />
+          </Form.Item>
+          <Form.Item className="mb-0" label={t('item.label.glRenderer')}>
+            <Input
+              value={mode.input.renderer}
+              onChange={({ target }) => mode.setInput({ ...mode.input, renderer: target.value })}
+            />
+          </Form.Item>
+        </>}
+      </>}</HookModeItem>
+    </ConfigItemY>
 
     <SelectFpConfigItem
       title={t('item.title.size')}
@@ -182,12 +204,14 @@ export const WeakFpConfigGroup = memo(() => {
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
-const HookModeItem = <T,>({ mode, parser, children }: {
-  mode?: HookMode<T>
-  parser?: Parameters<typeof useHookMode<T>>[1]
-  children: (mode: ReturnType<typeof useHookMode<T>>) => React.ReactNode
+const HookModeItem = <V, I,>({ mode, parser, children }: {
+  mode?: HookMode<V>
+  parser?: Parameters<typeof useHookMode<V, I>>[1]
+  children: (mode: ReturnType<typeof useHookMode<V, I>>) => React.ReactNode
 }) => {
-  const hm = useHookMode<T>(mode, parser)
+  const hm = useHookMode<V, I>(mode, parser)
+  console.log('zzzzzz');
+
   return <>{children(hm)}</>
 }
 

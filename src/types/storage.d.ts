@@ -46,6 +46,7 @@ type HookFingerprint = {
     pixelDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
   }
   normal: {
+    gpuInfo: DefaultHookMode | ValueHookMode<GpuInfo>
     glVendor: DefaultHookMode | ValueHookMode<string>
     glRenderer: DefaultHookMode | ValueHookMode<string>
   }

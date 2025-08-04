@@ -71,6 +71,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
           pixelDepth: { type: HookType.default },
         },
         normal: {
+          gpuInfo: { type: HookType.default },
           glVendor: { type: HookType.default },
           glRenderer: { type: HookType.default },
         },
