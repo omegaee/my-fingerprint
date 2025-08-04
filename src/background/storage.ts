@@ -65,6 +65,8 @@ export const genDefaultLocalStorage = (): LocalStorage => {
           hardwareConcurrency: { type: HookType.default },
         },
         screen: {
+          size: { type: HookType.default },
+          depth: { type: HookType.default },
           height: { type: HookType.default },
           width: { type: HookType.default },
           colorDepth: { type: HookType.default },
