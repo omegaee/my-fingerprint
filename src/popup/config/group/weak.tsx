@@ -4,7 +4,7 @@ import { HookType } from '@/types/enum'
 import { useTranslation } from "react-i18next"
 import { Form, Input, Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
-import TimeZoneConfigItem from "../item/special/timezone"
+import TimeZoneConfigItem from "../special/timezone"
 import { ConfigItemY, HookModeContent } from "../item"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"

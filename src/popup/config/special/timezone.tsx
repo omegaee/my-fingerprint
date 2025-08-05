@@ -6,7 +6,7 @@ import { useMemo } from "react"
 import { HookType } from '@/types/enum'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Form, Input, InputNumber, Select, Spin } from "antd"
-import { ConfigItemY, HookModeContent } from "../../item"
+import { ConfigItemY, HookModeContent } from "../item"
 
 const TIMEZONE_LIST: Required<TimeZoneInfo>[] = [
   {
