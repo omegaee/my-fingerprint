@@ -58,7 +58,7 @@ export const WeakFpConfigGroup = memo(() => {
     {/* languages */}
     <HookModeContent
       mode={fp.navigator.languages}
-      types={baseValueTypes}
+      types={valueTypes}
       parser={{
         toInput: (v) => v?.join?.(',') ?? '',
         toValue: (v) => {
