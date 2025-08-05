@@ -44,10 +44,9 @@ export const WeakFpConfigGroup = memo(() => {
     {/* uaVersion */}
     {browserInfo.name !== 'firefox' &&
       <HookModeContent
-        isMakeSelect
         mode={fp?.navigator.uaVersion}
         types={jsTypes}
-      >{(mode, { select }) =>
+      >{(_, { select }) =>
         <ConfigItemY
           label={t('item.title.uaVersion')}
           endContent={<TipIcon.Question content={<Markdown>{t('item.desc.uaVersion')}</Markdown>} />}
@@ -58,7 +57,6 @@ export const WeakFpConfigGroup = memo(() => {
 
     {/* languages */}
     <HookModeContent
-      isMakeSelect
       mode={fp.navigator.languages}
       types={baseValueTypes}
       parser={{
@@ -86,7 +84,6 @@ export const WeakFpConfigGroup = memo(() => {
 
     {/* gpuInfo */}
     <HookModeContent
-      isMakeSelect
       mode={fp.normal.gpuInfo}
       types={valueTypes}
       parser={{
@@ -122,7 +119,6 @@ export const WeakFpConfigGroup = memo(() => {
 
     {/* screen size */}
     <HookModeContent
-      isMakeSelect
       mode={fp.screen.size}
       types={valueTypes}
       parser={{
@@ -164,7 +160,6 @@ export const WeakFpConfigGroup = memo(() => {
 
     {/* screen colorDepth */}
     <HookModeContent
-      isMakeSelect
       mode={fp.screen.depth}
       types={valueTypes}
       parser={{
@@ -206,7 +201,6 @@ export const WeakFpConfigGroup = memo(() => {
 
     {/* navigator hardwareConcurrency */}
     <HookModeContent
-      isMakeSelect
       mode={fp.navigator.hardwareConcurrency}
       types={valueTypes}
       parser={{
