@@ -115,29 +115,30 @@ export const hookTasks: HookTask[] = [
       }
 
       /* other */
-      const _languages = win.navigator.languages
-      const _hConcurrency = [8, 12, 16]
-      const tasks: { [key in keyof Navigator]?: SeededFn } = {
-        'language': (seed) => seededEl(_languages, seed),
-        'languages': (seed) => shuffleArray(_languages, seed),
-        'hardwareConcurrency': (seed) => seededEl(_hConcurrency, seed),
-      }
-      useGetterProxy([win.Navigator.prototype, win.navigator],
-        Object.keys(tasks) as (keyof Navigator)[],
-        (key, getter) => {
-          const mode: HookMode | undefined = (fps as any)[key]
-          if (isDefault(mode)) return;
-          const { seed, value } = useHookMode(mode)
-          return {
-            apply(target, thisArg: Screen, args: any) {
-              notify('weak.' + key)
-              if (value != null) return value;
-              const task = tasks[key]
-              if (seed != null && task) return task(seed);
-              return getter.call(thisArg)
-            }
+      useGetterProxy([win.Navigator.prototype, win.navigator], [
+        'languages', 'hardwareConcurrency',
+      ], (key, getter) => {
+        const value: any = useHookMode(fps[key] as any).value
+        if (value == null) return;
+        return {
+          apply(target, thisArg: Screen, args: any) {
+            notify('weak.' + key)
+            // return getter.call(thisArg)
+            return value;
+          }
+        }
+      })
+
+      {
+        const value = useHookMode(fps.languages).value?.[0]
+        value != null && useGetterProxy([win.Navigator.prototype, win.navigator], 'language', {
+          apply(target, thisArg: Screen, args: any) {
+            notify('weak.languages')
+            // return getter.call(thisArg)
+            return value;
           }
         })
+      }
     },
   },
 

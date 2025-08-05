@@ -27,7 +27,6 @@ const isHookNetRequest = (storage: LocalStorage) => {
   const fp = storage.config.fp
   return !isDefaultMode([
     fp.navigator.uaVersion,
-    fp.navigator.language,
     fp.navigator.languages,
   ])
 }
