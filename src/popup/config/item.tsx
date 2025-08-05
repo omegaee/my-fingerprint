@@ -63,7 +63,7 @@ type HookModeItemProps<V, I,> = {
   ) => React.ReactNode
 }
 
-export const HookModeContent = <V, I,>({ mode, parser, types, isMakeSelect, children }: HookModeItemProps<V, I>) => {
+export const HookModeContent = <V, I,>({ mode, parser, types, isMakeSelect = true, children }: HookModeItemProps<V, I>) => {
   const hookMode = useHookMode<V, I>(mode, parser)
   const options = useHookTypeOptions(types ?? [])
 
