@@ -255,24 +255,23 @@ export const hookTasks: HookTask[] = [
    * Webgl参数信息
    */
   {
-    condition: ({ conf, isDefault }) => !isDefault([conf.fp.normal.glVendor, conf.fp.normal.glRenderer]),
+    condition: ({ conf, isDefault }) => !isDefault(conf.fp.normal.gpuInfo),
     onEnable: ({ win, conf, useHookMode, useProxy }) => {
       const fps = conf.fp.normal
 
       /* Report: Parameter */
-      const _vendor = useHookMode(fps.glVendor).value
-      const _renderer = useHookMode(fps.glRenderer).value
-      if (_vendor || _renderer) {
+      const info = useHookMode(fps.gpuInfo).value
+      if (info) {
         const handler = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
             if (ex) {
               if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
-                notify('weak.glVendor')
-                if (_vendor) return _vendor;
+                notify('weak.gpuInfo')
+                if (info.vendor) return info.vendor;
               } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
-                notify('weak.glRenderer')
-                if (_renderer) return _renderer;
+                notify('weak.gpuInfo')
+                if (info.renderer) return info.renderer;
               }
             }
             return target.apply(thisArg, args);

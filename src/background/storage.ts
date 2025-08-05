@@ -69,8 +69,6 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         },
         normal: {
           gpuInfo: { type: HookType.default },
-          glVendor: { type: HookType.default },
-          glRenderer: { type: HookType.default },
         },
         other: {
           timezone: { type: HookType.default },

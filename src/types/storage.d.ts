@@ -44,8 +44,6 @@ type HookFingerprint = {
   }
   normal: {
     gpuInfo: DefaultHookMode | ValueHookMode<GpuInfo>
-    glVendor: DefaultHookMode | ValueHookMode<string>
-    glRenderer: DefaultHookMode | ValueHookMode<string>
   }
   other: {
     timezone: DefaultHookMode | ValueHookMode<TimeZoneInfo>
