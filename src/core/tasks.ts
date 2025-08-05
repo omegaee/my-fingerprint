@@ -73,7 +73,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.navigator)),
-    onEnable: ({ win, conf, info, symbol, isDefault, useSeed, useHookMode, useGetterProxy }) => {
+    onEnable: ({ win, conf, info, symbol, useSeed, useHookMode, useGetterProxy }) => {
       const fps = conf.fp.navigator
 
       // @ts-ignore
@@ -123,7 +123,6 @@ export const hookTasks: HookTask[] = [
         return {
           apply(target, thisArg: Screen, args: any) {
             notify('weak.' + key)
-            // return getter.call(thisArg)
             return value;
           }
         }
@@ -134,7 +133,6 @@ export const hookTasks: HookTask[] = [
         value != null && useGetterProxy([win.Navigator.prototype, win.navigator], 'language', {
           apply(target, thisArg: Screen, args: any) {
             notify('weak.languages')
-            // return getter.call(thisArg)
             return value;
           }
         })
@@ -147,46 +145,33 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.screen)),
-    onEnable: ({ win, conf, isDefault, useHookMode, useGetterProxy }) => {
+    onEnable: ({ win, conf, useHookMode, useGetterProxy }) => {
       const fps = conf.fp.screen
 
       // @ts-ignore
       win.screen[symbol.own] = getOwnProperties(win.screen)
 
-      const _width = win.screen.width
-      const _height = win.screen.height
-      const _colorDepth = [24, 32]
-      const _pixelDepth = [24, 32]
-
-      const tasks: { [key in keyof Screen]?: SeededFn } = {
-        'width': (seed) => {
-          const offset = (seed % 100) - 50
-          return _width + offset
-        },
-        'height': (seed) => {
-          const offset = (seed % 100) - 50
-          const w = _width + offset
-          return Math.round((w * _height) / _width)
-        },
-        'colorDepth': (seed) => seededEl(_colorDepth, seed),
-        'pixelDepth': (seed) => seededEl(_pixelDepth, seed),
+      const size = useHookMode(fps.size).value
+      const depth = useHookMode(fps.depth).value
+      const tasks: { [key in keyof Screen]?: number } = {
+        'width': size?.width,
+        'height': size?.height,
+        'colorDepth': depth?.color,
+        'pixelDepth': depth?.pixel,
       }
       useGetterProxy([win.Screen.prototype, win.screen],
         Object.keys(tasks) as (keyof Screen)[],
         (key, getter) => {
-          const mode: HookMode | undefined = (fps as any)[key]
-          if (isDefault(mode)) return;
-          const { seed, value } = useHookMode(mode)
+          const value = tasks[key]
+          if (value == null) return;
           return {
             apply(target, thisArg: Screen, args: any) {
               notify('weak.' + key)
-              if (value != null) return value;
-              const task = tasks[key]
-              if (seed != null && task) return task(seed);
-              return getter.call(thisArg)
+              return value;
             }
           }
         });
+
     },
   },
 
