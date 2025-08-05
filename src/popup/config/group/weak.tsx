@@ -104,13 +104,13 @@ export const WeakFpConfigGroup = memo(() => {
       >
         {select}
         {mode.isValue && <>
-          <Form.Item className="mb-0" label={t('item.label.glVendor')}>
+          <Form.Item label={t('item.label.glVendor')}>
             <Input
               value={mode.input.vendor}
               onChange={({ target }) => mode.setInput({ ...mode.input, vendor: target.value })}
             />
           </Form.Item>
-          <Form.Item className="mb-0" label={t('item.label.glRenderer')}>
+          <Form.Item label={t('item.label.glRenderer')}>
             <Input
               value={mode.input.renderer}
               onChange={({ target }) => mode.setInput({ ...mode.input, renderer: target.value })}
@@ -140,7 +140,7 @@ export const WeakFpConfigGroup = memo(() => {
       >
         {select}
         {mode.isValue && <>
-          <Form.Item className="mb-0" label='width'>
+          <Form.Item label='width'>
             <Input
               value={mode.input.width}
               onChange={({ target }) => mode.setInput({
@@ -149,7 +149,7 @@ export const WeakFpConfigGroup = memo(() => {
               })}
             />
           </Form.Item>
-          <Form.Item className="mb-0" label='height'>
+          <Form.Item label='height'>
             <Input
               value={mode.input.height}
               onChange={({ target }) => mode.setInput({
@@ -182,7 +182,7 @@ export const WeakFpConfigGroup = memo(() => {
       >
         {select}
         {mode.isValue && <>
-          <Form.Item className="mb-0" label='colorDepth'>
+          <Form.Item label='colorDepth'>
             <Input
               value={mode.input.color}
               onChange={({ target }) => mode.setInput({
@@ -191,7 +191,7 @@ export const WeakFpConfigGroup = memo(() => {
               })}
             />
           </Form.Item>
-          <Form.Item className="mb-0" label='pixelDepth'>
+          <Form.Item label='pixelDepth'>
             <Input
               value={mode.input.pixel}
               onChange={({ target }) => mode.setInput({
@@ -220,13 +220,11 @@ export const WeakFpConfigGroup = memo(() => {
       >
         {select}
         {mode.isValue && <>
-          <Form.Item className="mb-0" label='value'>
-            <Input
-              placeholder={String(navigator.hardwareConcurrency)}
-              value={mode.input}
-              onChange={({ target }) => mode.setInput(target.value)}
-            />
-          </Form.Item>
+          <Input
+            placeholder={String(navigator.hardwareConcurrency)}
+            value={mode.input}
+            onChange={({ target }) => mode.setInput(target.value)}
+          />
         </>}
       </ConfigItemY>}
     </HookModeContent>
