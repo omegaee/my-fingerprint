@@ -66,10 +66,6 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         screen: {
           size: { type: HookType.default },
           depth: { type: HookType.default },
-          height: { type: HookType.default },
-          width: { type: HookType.default },
-          colorDepth: { type: HookType.default },
-          pixelDepth: { type: HookType.default },
         },
         normal: {
           gpuInfo: { type: HookType.default },

@@ -41,10 +41,6 @@ type HookFingerprint = {
   screen: {
     size: DefaultHookMode | RandomHookMode | ValueHookMode<ScreenSize>
     depth: DefaultHookMode | RandomHookMode | ValueHookMode<ScreenDepth>
-    height: DefaultHookMode | RandomHookMode | ValueHookMode<number>
-    width: DefaultHookMode | RandomHookMode | ValueHookMode<number>
-    colorDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
-    pixelDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
   }
   normal: {
     gpuInfo: DefaultHookMode | ValueHookMode<GpuInfo>
