@@ -169,7 +169,7 @@ function Application() {
               className="font-mono font-bold"
               style={{ width: '100%' }}
               onClick={whitelistMode !== 'sub' ? switchWhitelist : undefined} >
-              {whitelistMode !== 'none' ? <CheckOutlined /> : <CloseOutlined />} {hostname ?? t('tip.label.not-support-whitelist')}
+              {hostname ?? t('tip.label.not-support-whitelist')}
             </Button>
           </Popconfirm>
           <Typography.Text className="text-[13px]">{whitelistMode !== 'none' ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
