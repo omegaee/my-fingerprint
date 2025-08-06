@@ -9,6 +9,7 @@ import { ConfigItemY, HookModeContent } from "../item"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
 import { getBrowserInfo } from "@/utils/browser"
+import { selectStatusDotStyles as dotStyles } from "../styles"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const baseValueTypes = [...baseTypes, HookType.value]
@@ -46,9 +47,11 @@ export const WeakFpConfigGroup = memo(() => {
       <HookModeContent
         mode={fp?.navigator.uaVersion}
         types={jsTypes}
-      >{(_, { select }) =>
+        selectClassName={dotStyles.base}
+      >{(mode, { select }) =>
         <ConfigItemY
           label={t('item.title.uaVersion')}
+          className={mode.isDefault ? '' : dotStyles.success}
           endContent={<TipIcon.Question content={<Markdown>{t('item.desc.uaVersion')}</Markdown>} />}
         >
           {select}
@@ -66,9 +69,11 @@ export const WeakFpConfigGroup = memo(() => {
           return res.length ? res : navigator.languages as string[]
         },
       }}
+      selectClassName={dotStyles.base}
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.languages')}
+        className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.languages')}</Markdown>} />}
       >
         {select}
@@ -94,9 +99,11 @@ export const WeakFpConfigGroup = memo(() => {
           return v;
         },
       }}
+      selectClassName={dotStyles.base}
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.glDriver')}
+        className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.glDriver')}</Markdown>} />}
       >
         {select}
@@ -129,9 +136,11 @@ export const WeakFpConfigGroup = memo(() => {
           return v;
         },
       }}
+      selectClassName={dotStyles.base}
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.size')}
+        className={mode.isDefault ? '' : dotStyles.error}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.size')}</Markdown>} />}
       >
         {select}
@@ -170,9 +179,11 @@ export const WeakFpConfigGroup = memo(() => {
           return v;
         },
       }}
+      selectClassName={dotStyles.base}
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.depth')}
+        className={mode.isDefault ? '' : dotStyles.error}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.depth')}</Markdown>} />}
       >
         {select}
@@ -207,9 +218,11 @@ export const WeakFpConfigGroup = memo(() => {
         toInput: v => String(v ?? navigator.hardwareConcurrency),
         toValue: (v) => isNaN(parseInt(v)) ? navigator.hardwareConcurrency : parseInt(v),
       }}
+      selectClassName={dotStyles.base}
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.hardwareConcurrency')}
+        className={mode.isDefault ? '' : dotStyles.error}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.hardwareConcurrency')}</Markdown>} />}
       >
         {select}

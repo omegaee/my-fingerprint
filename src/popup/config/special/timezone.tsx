@@ -7,6 +7,7 @@ import { HookType } from '@/types/enum'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Form, Input, InputNumber, Select, Spin } from "antd"
 import { ConfigItemY, HookModeContent } from "../item"
+import { selectStatusDotStyles as dotStyles } from "../styles"
 
 const TIMEZONE_LIST: Required<TimeZoneInfo>[] = [
   {
@@ -230,9 +231,11 @@ export const TimeZoneConfigItem = () => {
     >{(mode) =>
       <ConfigItemY
         label={t('item.title.timezone')}
+        className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.timezone')}</Markdown>} />}
       >
         <Select<OptionType>
+          className={dotStyles.base}
           options={options}
           value={mode.input.text || mode.type}
           onChange={(v) => {

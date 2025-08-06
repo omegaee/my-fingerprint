@@ -26,11 +26,11 @@ type ConfigItemYProps = {
   label?: React.ReactNode
   startContent?: React.ReactNode
   endContent?: React.ReactNode
-  bottomContent?: React.ReactNode
+  className?: string
 }
 
-export const ConfigItemY = ({ children, label, startContent, endContent, bottomContent }: ConfigItemYProps) => {
-  return <div className="mb-1 last:mb-0 flex flex-col gap-2 p-1 rounded hover:bg-[--ant-color-primary-bg-hover] duration-200 [&_.ant-form-item]:mb-0 [&_.ant-form-item-label]:p-0">
+export const ConfigItemY = ({ children, label, startContent, endContent, className }: ConfigItemYProps) => {
+  return <div className={"mb-1 last:mb-0 flex flex-col gap-2 p-1 rounded hover:bg-[--ant-color-primary-bg-hover] duration-200 [&_.ant-form-item]:mb-0 [&_.ant-form-item-label]:p-0 " + (className ?? "")}>
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
         {label}
@@ -41,7 +41,6 @@ export const ConfigItemY = ({ children, label, startContent, endContent, bottomC
       </div>}
     </div>
     {children}
-    {bottomContent}
   </div>
 }
 
@@ -54,6 +53,7 @@ type HookModeItemProps<V, I,> = {
   parser?: Parameters<typeof useHookMode<V, I>>[1]
   types?: HookType[]
   isMakeSelect?: boolean
+  selectClassName?: string
   children: (
     mode: ReturnType<typeof useHookMode<V, I>>,
     params: {
@@ -63,11 +63,12 @@ type HookModeItemProps<V, I,> = {
   ) => React.ReactNode
 }
 
-export const HookModeContent = <V, I,>({ mode, parser, types, isMakeSelect = true, children }: HookModeItemProps<V, I>) => {
+export const HookModeContent = <V, I,>({ mode, parser, types, isMakeSelect = true, selectClassName, children }: HookModeItemProps<V, I>) => {
   const hookMode = useHookMode<V, I>(mode, parser)
   const options = useHookTypeOptions(types ?? [])
 
   const select = isMakeSelect && <Select<HookType>
+    className={selectClassName}
     options={options}
     value={hookMode.type}
     onChange={hookMode.setType}

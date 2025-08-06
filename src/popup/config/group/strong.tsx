@@ -7,6 +7,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 import { ConfigItemY, HookModeContent } from "../item"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
+import { selectStatusDotStyles as dotStyles } from "../styles"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const disabledTypes = [HookType.default, HookType.disabled]
@@ -25,9 +26,11 @@ export const StrongFpConfigGroup = memo(() => {
     <HookModeContent
       mode={fp.other.canvas}
       types={baseTypes}
-    >{(_, { select }) =>
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.canvas')}
+        className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.canvas')}</Markdown>} />}
       >
         {select}
@@ -37,9 +40,11 @@ export const StrongFpConfigGroup = memo(() => {
     <HookModeContent
       mode={fp.other.audio}
       types={baseTypes}
-    >{(_, { select }) =>
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.audio')}
+        className={mode.isDefault ? '' : dotStyles.warning}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.audio')}</Markdown>} />}
       >
         {select}
@@ -49,9 +54,11 @@ export const StrongFpConfigGroup = memo(() => {
     <HookModeContent
       mode={fp.other.font}
       types={baseTypes}
-    >{(_, { select }) =>
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.font')}
+        className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.font')}</Markdown>} />}
       >
         {select}
@@ -61,9 +68,11 @@ export const StrongFpConfigGroup = memo(() => {
     <HookModeContent
       mode={fp.other.webgl}
       types={baseTypes}
-    >{(_, { select }) =>
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.webgl')}
+        className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.webgl')}</Markdown>} />}
       >
         {select}
@@ -73,9 +82,11 @@ export const StrongFpConfigGroup = memo(() => {
     <HookModeContent
       mode={fp.other.webrtc}
       types={disabledTypes}
-    >{(_, { select }) =>
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.webrtc')}
+        className={mode.isDefault ? '' : dotStyles.warning}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.webrtc')}</Markdown>} />}
       >
         {select}
@@ -85,9 +96,11 @@ export const StrongFpConfigGroup = memo(() => {
     <HookModeContent
       mode={fp.other.webgpu}
       types={baseTypes}
-    >{(_, { select }) =>
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.webgpu')}
+        className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.webgpu')}</Markdown>} />}
       >
         {select}
@@ -97,9 +110,11 @@ export const StrongFpConfigGroup = memo(() => {
     <HookModeContent
       mode={fp.other.domRect}
       types={baseTypes}
-    >{(_, { select }) =>
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.domRect')}
+        className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.domRect')}</Markdown>} />}
       >
         {select}
