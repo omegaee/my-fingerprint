@@ -10,6 +10,7 @@ import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
 import { getBrowserInfo } from "@/utils/browser"
 import { selectStatusDotStyles as dotStyles } from "../styles"
+import { useShallow } from "zustand/shallow"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const baseValueTypes = [...baseTypes, HookType.value]
@@ -19,11 +20,11 @@ const valueTypes = [HookType.default, HookType.value]
 export const WeakFpConfigGroup = memo(() => {
   const [t] = useTranslation()
 
-  const config = useStorageStore((state) => {
-    state.config ?? state.loadStorage()
-    return state.config
-  })
-  const fp = config?.fp
+  const storage = useStorageStore(useShallow((s) => ({
+    config: s.config,
+    version: s.version,
+  })))
+  const fp = storage.config?.fp
 
   const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
 
@@ -39,7 +40,7 @@ export const WeakFpConfigGroup = memo(() => {
     }
   }, [])
 
-  return fp ? <>
+  return fp ? <div key={storage.version}>
     <TimeZoneConfigItem />
 
     {/* uaVersion */}
@@ -236,7 +237,7 @@ export const WeakFpConfigGroup = memo(() => {
       </ConfigItemY>}
     </HookModeContent>
 
-  </> : <Spin indicator={<LoadingOutlined spin />} />
+  </div> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
 export default WeakFpConfigGroup

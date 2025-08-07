@@ -9,6 +9,7 @@ import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
 import { requestPermission } from "@/utils/browser"
 import { ConfigItemX, ConfigItemY } from "../item"
 import { sendToBackground } from "@/utils/message"
+import { useShallow } from "zustand/shallow"
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
@@ -17,10 +18,10 @@ export const ScriptConfigGroup = memo(() => {
 
   const { message } = App.useApp()
 
-  const config = useStorageStore((state) => {
-    state.config ?? state.loadStorage()
-    return state.config
-  })
+  const { config, version } = useStorageStore(useShallow((s) => ({
+    config: s.config,
+    version: s.version,
+  })))
 
   useEffect(() => {
     if (!config) return;
@@ -71,7 +72,7 @@ export const ScriptConfigGroup = memo(() => {
     }
   }
 
-  return config ? <>
+  return config ? <div key={version}>
     <ConfigItemY
       label={t('item.title.seed')}
       endContent={<TipIcon.Question content={<Markdown>{t('item.desc.seed')}</Markdown>} />}
@@ -110,7 +111,7 @@ export const ScriptConfigGroup = memo(() => {
       />
     </ConfigItemX>
 
-  </> : <Spin indicator={<LoadingOutlined spin />} />
+  </div> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
 export default ScriptConfigGroup

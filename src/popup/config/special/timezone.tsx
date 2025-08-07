@@ -178,10 +178,7 @@ const currentTz = getCurrentTimeZoneInfo()
 export const TimeZoneConfigItem = () => {
   const [t, i18n] = useTranslation()
 
-  const config = useStorageStore((state) => {
-    state.config ?? state.loadStorage()
-    return state.config
-  })
+  const config = useStorageStore((state) => state.config)
   const fp = config?.fp
 
   const options = useMemo(() => {

@@ -7,6 +7,7 @@ type State = {
   storage?: LocalStorage
   config?: LocalStorageConfig  // Proxy
   whitelist?: string[]
+  version: number
 }
 
 type Actions = {
@@ -47,6 +48,7 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
       storage,
       config: proxyConfig(storage.config),
       whitelist: storage.whitelist,
+      version: get().version + 1,
     })
   }
 
@@ -54,14 +56,19 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     syncLoadStorage(await chrome.storage.local.get() as LocalStorage)
   })
 
-  const importStorage = async (ss: Partial<LocalStorage>) => {
-    const storage = get().storage
+  const importStorage = async (ss: DeepPartial<LocalStorage>) => {
+    const state = get()
+    const storage = state.storage
     if (!storage) throw 'tip.err.config-unloaded';
 
     let isImported = false;
 
     /* 导入配置 */
     if (ss.config) {
+      // 排除一些不支持导入的配置
+      delete ss.config.prefs;
+      delete ss.config.action?.fastInject;
+      // 导入
       const _config = await sendToBackground({
         type: 'config.set',
         config: ss.config,
@@ -69,7 +76,10 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
       })
       if (_config) {
         storage.config = _config
-        set({ config: proxyConfig(storage.config) })
+        set({
+          config: proxyConfig(storage.config),
+          version: state.version + 1,
+        })
         isImported = true
       }
     }
@@ -150,7 +160,9 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
   return {
     storage: undefined,
     config: undefined,
-    whiteList: undefined,
+    whitelist: undefined,
+    version: 0,
+
     syncLoadStorage,
     loadStorage,
     importStorage,

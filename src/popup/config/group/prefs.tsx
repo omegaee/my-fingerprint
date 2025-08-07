@@ -7,6 +7,7 @@ import { Select, Spin } from "antd";
 import { LoadingOutlined } from '@ant-design/icons'
 import { usePrefsStore } from "@/popup/stores/prefs";
 import { ConfigItemY } from "../item";
+import { useShallow } from "zustand/shallow";
 
 const LANG_OPTIONS = [
   {
@@ -22,10 +23,10 @@ const LANG_OPTIONS = [
 export const PrefsConfigGroup = memo(() => {
   const [t, i18n] = useTranslation()
 
-  const config = useStorageStore((state) => {
-    state.config ?? state.loadStorage()
-    return state.config
-  })
+  const { config, version } = useStorageStore(useShallow((s) => ({
+    config: s.config,
+    version: s.version,
+  })))
 
   const prefs = usePrefsStore()
 
@@ -42,7 +43,7 @@ export const PrefsConfigGroup = memo(() => {
     }
   ], [i18n.language])
 
-  return config ? <>
+  return config ? <div key={version}>
 
     <ConfigItemY
       label={t('item.title.e-language')}
@@ -72,7 +73,7 @@ export const PrefsConfigGroup = memo(() => {
       />
     </ConfigItemY>
 
-  </> : <Spin indicator={<LoadingOutlined spin />} />
+  </div> : <Spin indicator={<LoadingOutlined spin />} />
 })
 
 export default PrefsConfigGroup

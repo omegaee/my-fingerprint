@@ -176,6 +176,10 @@ export const applySubscribeStorage = async () => {
   if (!data) return false;
   /* 加载配置 */
   if (data.config && Object.keys(data.config).length) {
+    // 移除不支持的配置
+    delete data.config.prefs;
+    delete data.config.action?.fastInject;
+    // 更新配置
     await updateLocalConfig(data.config)
   }
   /* 加载白名单 */
