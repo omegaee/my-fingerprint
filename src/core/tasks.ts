@@ -74,10 +74,9 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.navigator)),
     onEnable: ({ win, conf, info, symbol, useSeed, useHookMode, useGetterProxy }) => {
-      const fps = conf.fp.navigator
+      const fps = conf.fp.navigator;
 
-      // @ts-ignore
-      win.navigator[symbol.own] = getOwnProperties(win.navigator)
+      (win.navigator as any)[symbol.own] = getOwnProperties(win.navigator);
 
       const _userAgent = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'userAgent')?.get
       const _appVersion = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'appVersion')?.get
@@ -145,11 +144,10 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.screen)),
-    onEnable: ({ win, conf, useHookMode, useGetterProxy }) => {
-      const fps = conf.fp.screen
+    onEnable: ({ win, conf, symbol, useHookMode, useGetterProxy }) => {
+      const fps = conf.fp.screen;
 
-      // @ts-ignore
-      win.screen[symbol.own] = getOwnProperties(win.screen)
+      (win.screen as any)[symbol.own] = getOwnProperties(win.screen);
 
       const size = useHookMode(fps.size).value
       const depth = useHookMode(fps.depth).value
