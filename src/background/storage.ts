@@ -59,7 +59,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       },
       fp: {
         navigator: {
-          uaVersion: { type: HookType.browser },
+          uaVersion: { type: HookType.default },
           languages: { type: HookType.default },
           hardwareConcurrency: { type: HookType.default },
         },
