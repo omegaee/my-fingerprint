@@ -68,11 +68,11 @@
       "size": "屏幕尺寸",
       "depth": "屏幕色彩深度",
       "timezone": "时区",
-      "canvas": "Canvas画布指纹",
-      "audio": "音频指纹",
+      "canvas": "Canvas指纹",
+      "audio": "Audio指纹",
       "webgl": "WebGL指纹",
-      "webrtc": "WebRTC",
-      "font": "字体指纹",
+      "webrtc": "WebRTC拦截",
+      "fonts": "Fonts指纹",
       "webgpu": "WebGPU指纹",
       "glDriver": "图形驱动",
       "domRect": "DOMRect指纹",
@@ -92,14 +92,17 @@
       "size": "屏幕尺寸\n\n**screen.width**\n\n**screen.height**",
       "depth": "屏幕颜色深度\n\n**screen.colorDepth**\n\n**screen.pixelDepth**",
       "timezone": "浏览器时区",
-      "canvas": "Canvas画布指纹",
-      "audio": "音频指纹",
-      "webgl": "WebGL指纹",
-      "webrtc": "WebRTC",
-      "font": "字体指纹",
-      "webgpu": "WebGPU指纹",
       "glDriver": "图形驱动供应商\n\n图形驱动渲染器",
-      "domRect": "DOMRect指纹",
+      "canvas": "Canvas画布指纹，通过绘图行为差异获取设备特征。",
+      "audio": "Audio音频指纹，通过音频信号处理获取设备特征。",
+      "webgl": "WebGL指纹，通过图形渲染差异获取设备特征。",
+      "webrtc": [
+        "阻止网站通过 WebRTC 获取真实 IP 地址（尤其在使用代理时）。开启后可防止 IP 泄露。",
+        "禁用后，可能会导致某些网站异常行为或无法正常工作。"
+      ],
+      "fonts": "Fonts字体指纹，通过检测字体支持情况获取设备特征。",
+      "webgpu": "WebGPU指纹，通过设备图形处理参数差异获取设备特征。",
+      "domRect": "DOMRect指纹，通过测量元素位置和尺寸差异获取设备特征。",
       "e-language": "语言",
       "theme": "主题",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",
@@ -178,11 +181,15 @@
   "desc": {
     "subscribe": "**使用**\n\n- 扩展加载时会从订阅目标上拉取配置，配置内容必须是json格式。\n\n- 会覆盖原配置并合并白名单。\n\n- 可使用配置导出功能获取配置样本。\n\n**例子**\n\n- 空值\n\n- 默认: `config.json`\n\n- 本地: `file:///example/config.json`\n\n- 网络: `http://example.com/config.json`",
     "record": [
-      "## 指纹记录",
+      "**指纹记录**",
       "记录指纹api的调用，部分api在元素渲染时经常用到，因此，有些api记录数量会非常多",
-      "## 内嵌框架记录",
+      "**内嵌框架记录**",
       "记录加载iframe的源地址和数量"
     ]
+  },
+  "tag": {
+    "deprecated": "弃用",
+    "unstable": "不稳定"
   },
   "city": {
     "SH": "上海",

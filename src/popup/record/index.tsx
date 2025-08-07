@@ -1,4 +1,4 @@
-import { Tabs } from "antd";
+import { Tabs, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FpNoticePanel } from "./fp";

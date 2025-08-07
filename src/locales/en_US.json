@@ -72,7 +72,7 @@
       "audio": "Audio Fingerprint",
       "webgl": "WebGL Fingerprint",
       "webrtc": "WebRTC",
-      "font": "Font Fingerprint",
+      "fonts": "Fonts Fingerprint",
       "webgpu": "WebGPU Fingerprint",
       "glDriver": "Graphics Driver",
       "domRect": "DOMRect Fingerprint",
@@ -92,14 +92,17 @@
       "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
       "depth": "Screen Color Depth\n\n**screen.colorDepth**\n\n**screen.pixelDepth**",
       "timezone": "Browser Timezone",
-      "canvas": "Canvas Fingerprint",
-      "audio": "Audio Fingerprint",
-      "webgl": "WebGL Fingerprint",
-      "webrtc": "WebRTC",
-      "font": "Font Fingerprint",
-      "webgpu": "WebGPU Fingerprint",
       "glDriver": "Graphics Driver Vendor\n\nGraphics Driver Renderer",
-      "domRect": "DOMRect Fingerprint",
+      "canvas": "Canvas fingerprinting detects device traits by analyzing subtle differences in how graphics are drawn.",
+      "audio": "Audio fingerprinting identifies your device through unique patterns in audio signal processing.",
+      "webgl": "WebGL fingerprinting captures device characteristics based on variations in 3D rendering behavior.",
+      "webrtc": [
+        "Block websites from accessing your real IP address via WebRTC—especially useful when using a proxy. Helps prevent IP leaks.",
+        "Disabling this may cause certain websites to malfunction or behave unexpectedly."
+      ],
+      "fonts": "Font fingerprinting reveals device details by checking which fonts are supported and how they’re rendered.",
+      "webgpu": "WebGPU fingerprinting extracts device information by analyzing differences in GPU processing capabilities.",
+      "domRect": "DOMRect fingerprinting gathers device data by measuring variations in element positioning and dimensions.",
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
@@ -178,11 +181,15 @@
   "desc": {
     "subscribe": "**Usage**\n\n- The extension will pull the configuration from the subscription target when it loads, the configuration content must be in json format.\n\n- It will overwrite the original configuration and merge the whitelist.\n\n- Sample configurations can be obtained using the configuration export feature.\n\n**Examples**\n\n- Blank value\n\n- Default: `config.json`\n\n- Local: `file:///example/config.json`\n\n- Network: `http://example.com/config.json`",
     "record": [
-      "## Fingerprint Record",
+      "**Fingerprint Record**",
       "Record the call of fingerprint api, some api are often used when rendering elements, so the number of records for some api will be very large",
-      "## Embedded Frame Record",
+      "**Embedded Frame Record**",
       "Record the source address and number of iframe loaded"
     ]
+  },
+  "tag": {
+    "deprecated": "Deprecated",
+    "unstable": "Unstable"
   },
   "city": {
     "SH": "Shanghai",

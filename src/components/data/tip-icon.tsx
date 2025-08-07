@@ -10,7 +10,7 @@ export type TipIconProps = {
 } & PopoverProps
 
 export const TipIcon = ({ icon, className, style, ...props }: TipIconProps) => {
-  return <Popover {...props}>
+  return <Popover rootClassName="[&_.ant-popover-inner]:p-2" {...props}>
     <div className={'size-[22px] flex justify-center items-center rounded duration-300 bg-[--ant-color-bg-text-hover] hover:bg-[--ant-color-bg-text-active] text-[--ant-color-text-secondary] hover:text-[--ant-color-text] ' + (className ?? '')} style={style}>{icon}</div>
   </Popover>
 }

@@ -4,3 +4,8 @@ export const selectStatusDotStyles = {
   error: "[&_.ant-select]:after:bg-[--ant-color-error-border-hover] [&_.ant-select]:hover:after:bg-[--ant-color-error-text-hover]",
   warning: "[&_.ant-select]:after:bg-[--ant-color-warning-border-hover] [&_.ant-select]:hover:after:bg-[--ant-color-warning-text-hover]",
 }
+
+export const tagColors = {
+  unstable: 'orange',
+  deprecated: 'red',
+}
