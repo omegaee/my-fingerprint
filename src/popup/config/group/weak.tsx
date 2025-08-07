@@ -5,9 +5,8 @@ import { useTranslation } from "react-i18next"
 import { Form, Input, Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
 import TimeZoneConfigItem from "../special/timezone"
-import { ConfigItemY, HookModeContent } from "../item"
+import { ConfigDesc, ConfigItemY, HookModeContent } from "../item"
 import TipIcon from "@/components/data/tip-icon"
-import Markdown from "react-markdown"
 import { getBrowserInfo } from "@/utils/browser"
 import { selectStatusDotStyles as dotStyles } from "../styles"
 import { useShallow } from "zustand/shallow"
@@ -16,6 +15,9 @@ const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.d
 const baseValueTypes = [...baseTypes, HookType.value]
 const jsTypes = [HookType.default, HookType.browser, HookType.global]
 const valueTypes = [HookType.default, HookType.value]
+
+const deprecatedTag = ['deprecated']
+const unstableTag = ['unstable']
 
 export const WeakFpConfigGroup = memo(() => {
   const [t] = useTranslation()
@@ -53,7 +55,7 @@ export const WeakFpConfigGroup = memo(() => {
         <ConfigItemY
           label={t('item.title.uaVersion')}
           className={mode.isDefault ? '' : dotStyles.success}
-          endContent={<TipIcon.Question content={<Markdown>{t('item.desc.uaVersion')}</Markdown>} />}
+          endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.uaVersion', { joinArrays: '\n\n' })} />} />}
         >
           {select}
         </ConfigItemY>}
@@ -75,7 +77,7 @@ export const WeakFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.languages')}
         className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.languages')}</Markdown>} />}
+        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.languages', { joinArrays: '\n\n' })} />} />}
       >
         {select}
         {mode.isValue && <>
@@ -103,9 +105,9 @@ export const WeakFpConfigGroup = memo(() => {
       selectClassName={dotStyles.base}
     >{(mode, { select }) =>
       <ConfigItemY
-        label={t('item.title.glDriver')}
+        label={t('item.title.gpuInfo')}
         className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.glDriver')}</Markdown>} />}
+        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.gpuInfo')} />} />}
       >
         {select}
         {mode.isValue && <>
@@ -142,7 +144,7 @@ export const WeakFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.size')}
         className={mode.isDefault ? '' : dotStyles.error}
-        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.size')}</Markdown>} />}
+        endContent={<TipIcon.Question content={<ConfigDesc tags={deprecatedTag} desc={t('item.desc.size')} />} />}
       >
         {select}
         {mode.isValue && <>
@@ -185,7 +187,7 @@ export const WeakFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.depth')}
         className={mode.isDefault ? '' : dotStyles.error}
-        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.depth')}</Markdown>} />}
+        endContent={<TipIcon.Question content={<ConfigDesc tags={deprecatedTag} desc={t('item.desc.depth')} />} />}
       >
         {select}
         {mode.isValue && <>
@@ -224,7 +226,7 @@ export const WeakFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.hardwareConcurrency')}
         className={mode.isDefault ? '' : dotStyles.error}
-        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.hardwareConcurrency')}</Markdown>} />}
+        endContent={<TipIcon.Question content={<ConfigDesc tags={deprecatedTag} desc={t('item.desc.hardwareConcurrency')} />} />}
       >
         {select}
         {mode.isValue && <>

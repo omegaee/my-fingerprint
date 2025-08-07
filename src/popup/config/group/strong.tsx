@@ -33,8 +33,7 @@ export const StrongFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.canvas')}
         className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.canvas')} />
-        } />}
+        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.canvas')} />} />}
       >
         {select}
       </ConfigItemY>}

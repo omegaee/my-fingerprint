@@ -71,10 +71,10 @@
       "canvas": "Canvas Fingerprint",
       "audio": "Audio Fingerprint",
       "webgl": "WebGL Fingerprint",
-      "webrtc": "WebRTC",
+      "webrtc": "WebRTC Block",
       "fonts": "Fonts Fingerprint",
       "webgpu": "WebGPU Fingerprint",
-      "glDriver": "Graphics Driver",
+      "gpuInfo": "Graphics Driver",
       "domRect": "DOMRect Fingerprint",
       "e-language": "Language",
       "theme": "Theme",
@@ -86,13 +86,20 @@
       }
     },
     "desc": {
-      "uaVersion": "UserAgent version number information\n\nModify only subversion segments in **FullVersion** that are not **0**, such as version information in **userAgentData** and **Request Headers**.\n\nSince **chrome** hides the subversion information in **ua**, this probably doesn't change the version information of **userAgent**.\n\nDoes not modify **AppleWebKit** and **Safari** version numbers, they are fixed.",
-      "languages": "Browser Language\n\n**navigator.languages**\n\n**navigator.language**\n\nMultiple values are separated by commas",
-      "hardwareConcurrency": "Number of logical processors\n\n**navigator.hardwareConcurrency**",
-      "size": "Screen Size\n\n**screen.width**\n\n**screen.height**",
-      "depth": "Screen Color Depth\n\n**screen.colorDepth**\n\n**screen.pixelDepth**",
-      "timezone": "Browser Timezone",
-      "glDriver": "Graphics Driver Vendor\n\nGraphics Driver Renderer",
+      "uaVersion": [
+        "UserAgent version info: only modifies the sub-version segments of `userAgent` and `userAgentData`.",
+        "Modern browsers use simplified and safer userAgent strings that reveal minimal information.",
+        "Some APIs are tied to specific userAgent versions, so changes may be detectable."
+      ],
+      "languages": [
+        "Browser language settings.",
+        "Custom: separate multiple values with commas, e.g. `en-US,en,zh-CN,zh`. The first value is treated as the preferred language."
+      ],
+      "hardwareConcurrency": "Number of logical processors.",
+      "size": "Screen Size.",
+      "depth": "Screen Color Depth.",
+      "timezone": "Browser Timezone. [More Timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+      "gpuInfo": "GPU graphics driver information.",
       "canvas": "Canvas fingerprinting detects device traits by analyzing subtle differences in how graphics are drawn.",
       "audio": "Audio fingerprinting identifies your device through unique patterns in audio signal processing.",
       "webgl": "WebGL fingerprinting captures device characteristics based on variations in 3D rendering behavior.",
