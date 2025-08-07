@@ -42,3 +42,18 @@ type HighEntropyValuesAttr = NavigatorUADataAttr & {
 }
 
 type SeededFn<T = any> = (seed: number) => T
+
+type GpuInfo = {
+  vendor?: string
+  renderer?: string
+}
+
+type ScreenSize = {
+  width?: number
+  height?: number
+}
+
+type ScreenDepth = {
+  color?: number
+  pixel?: number
+}

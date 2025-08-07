@@ -13,10 +13,12 @@ export const MoreView = ({ }: MoreViewProps) => {
 
   return <section>
     <Divider rootClassName="!mt-0 !mb-3" orientation='center'>{t('label.config-file')}</Divider>
-    <MoreConfigView className="flex flex-wrap justify-center items-center gap-2"/>
+    <MoreConfigView className="flex flex-wrap justify-center items-center gap-2" />
     <Divider rootClassName="!my-3" orientation='center'>
-      {t('label.subscribe')}
-      <TipIcon.Question className="ml-1" content={<Markdown className='max-h-[220px] overflow-auto [&_ul]:list-disc [&_ul]:ml-3' children={t('desc.subscribe')} />} />
+      <div className="flex justify-center items-center gap-2">
+        {t('label.subscribe')}
+        <TipIcon.Question content={<Markdown className='max-h-[220px] overflow-auto [&_ul]:list-disc [&_ul]:ml-3' children={t('desc.subscribe')} />} />
+      </div>
     </Divider>
     <SubscribeView />
     {/* <Divider rootClassName="!my-3" orientation='center'>{t('label.permission')}</Divider>

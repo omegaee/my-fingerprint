@@ -35,19 +35,15 @@ type LocalStorageConfig = {
 type HookFingerprint = {
   navigator: {
     uaVersion: DefaultHookMode | RandomHookMode
-    language: DefaultHookMode | RandomHookMode | ValueHookMode<string>
     languages: DefaultHookMode | RandomHookMode | ValueHookMode<string[]>
     hardwareConcurrency: DefaultHookMode | RandomHookMode | ValueHookMode<number>
   }
   screen: {
-    height: DefaultHookMode | RandomHookMode | ValueHookMode<number>
-    width: DefaultHookMode | RandomHookMode | ValueHookMode<number>
-    colorDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
-    pixelDepth: DefaultHookMode | RandomHookMode | ValueHookMode<number>
+    size: DefaultHookMode | RandomHookMode | ValueHookMode<ScreenSize>
+    depth: DefaultHookMode | RandomHookMode | ValueHookMode<ScreenDepth>
   }
   normal: {
-    glVendor: DefaultHookMode | ValueHookMode<string>
-    glRenderer: DefaultHookMode | ValueHookMode<string>
+    gpuInfo: DefaultHookMode | ValueHookMode<GpuInfo>
   }
   other: {
     timezone: DefaultHookMode | ValueHookMode<TimeZoneInfo>

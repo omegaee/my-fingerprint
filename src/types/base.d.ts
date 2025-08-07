@@ -38,4 +38,8 @@ type DisableHookMode = {
   type: HookType.disabled
 }
 
-type HookMode<T=any> = DefaultHookMode | RandomHookMode | ValueHookMode<T> | DisableHookMode
+type EnableHookMode = {
+  type: HookType.enabled
+}
+
+type HookMode<T=any> = DefaultHookMode | RandomHookMode | ValueHookMode<T> | DisableHookMode | EnableHookMode

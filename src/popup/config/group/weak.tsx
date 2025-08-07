@@ -1,35 +1,23 @@
 import { memo, useMemo } from "react"
 import { useStorageStore } from "@/popup/stores/storage"
 import { HookType } from '@/types/enum'
-import { InputLine } from "../form/input"
 import { useTranslation } from "react-i18next"
-import SelectFpConfigItem from "../item/fp/select"
-import { Spin } from "antd"
+import { Form, Input, Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
-import { getBrowser } from "@/utils/equipment"
-import TimeZoneConfigItem from "../item/special/timezone"
+import TimeZoneConfigItem from "../special/timezone"
+import { ConfigItemY, HookModeContent } from "../item"
+import TipIcon from "@/components/data/tip-icon"
+import Markdown from "react-markdown"
+import { getBrowserInfo } from "@/utils/browser"
+import { selectStatusDotStyles as dotStyles } from "../styles"
 
-type DeprecatedType = {
-  option: HookType,
-  reason: string
-}
-
-const BASE_TYPES = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
-const SYSTEM_TYPES = [HookType.default]
+const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
+const baseValueTypes = [...baseTypes, HookType.value]
+const jsTypes = [HookType.default, HookType.browser, HookType.global]
+const valueTypes = [HookType.default, HookType.value]
 
 export const WeakFpConfigGroup = memo(() => {
-  const [t, i18n] = useTranslation()
-
-  const netDeprecatedTypes = useMemo<DeprecatedType[]>(() => [
-    {
-      option: HookType.page,
-      reason: t('item.warn.unsupported-net-hook'),
-    },
-    {
-      option: HookType.domain,
-      reason: t('item.warn.unsupported-net-hook'),
-    },
-  ], [i18n.language])
+  const [t] = useTranslation()
 
   const config = useStorageStore((state) => {
     state.config ?? state.loadStorage()
@@ -37,9 +25,9 @@ export const WeakFpConfigGroup = memo(() => {
   })
   const fp = config?.fp
 
-  const browserType = useMemo(() => getBrowser(navigator.userAgent), [])
+  const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
 
-  const glInfo = useMemo(() => {
+  const gpuInfo = useMemo<GpuInfo>(() => {
     const cvs = document.createElement('canvas')
     const gl = cvs.getContext("webgl2") ?? cvs.getContext("webgl")
     if (!gl) return {};
@@ -52,111 +40,201 @@ export const WeakFpConfigGroup = memo(() => {
   }, [])
 
   return fp ? <>
-    {browserType === 'chrome' && <SelectFpConfigItem
-      title={t('item.title.uaVersion')}
-      desc={t('item.desc.uaVersion')}
-      options={BASE_TYPES}
-      deprecatedOptions={netDeprecatedTypes}
-      defaultValue={fp.navigator.uaVersion.type}
-      onChange={(type) => fp.navigator.uaVersion.type = type as any}
-    />}
-
     <TimeZoneConfigItem />
 
-    <SelectFpConfigItem
-      title={t('item.title.languages')}
-      desc={t('item.desc.languages')}
-      options={BASE_TYPES}
-      deprecatedOptions={netDeprecatedTypes}
-      defaultValue={fp.navigator.languages.type}
-      onChange={(type) => {
-        fp.navigator.language.type = type as any;
-        fp.navigator.languages.type = type as any;
-      }}
-      custom={<InputLine label="value"
-        defaultValue={navigator.languages.join(',')}
-        initialValue={(fp.navigator.languages as ValueHookMode<string[]>).value?.join(',')}
-        onDebouncedInput={(value) => {
-          const parts = [...new Set(value.split(",").filter((v) => !!v.trim()))];
-          (fp.navigator.languages as ValueHookMode<string[]>).value = parts;
-          (fp.navigator.language as ValueHookMode<string>).value = parts[0];
-        }} />}
-    />
+    {/* uaVersion */}
+    {browserInfo.name !== 'firefox' &&
+      <HookModeContent
+        mode={fp?.navigator.uaVersion}
+        types={jsTypes}
+        selectClassName={dotStyles.base}
+      >{(mode, { select }) =>
+        <ConfigItemY
+          label={t('item.title.uaVersion')}
+          className={mode.isDefault ? '' : dotStyles.success}
+          endContent={<TipIcon.Question content={<Markdown>{t('item.desc.uaVersion')}</Markdown>} />}
+        >
+          {select}
+        </ConfigItemY>}
+      </HookModeContent>}
 
-    <SelectFpConfigItem
-      title={t('item.title.glDriver')}
-      desc={t('item.desc.glDriver')}
-      options={SYSTEM_TYPES}
-      defaultValue={fp.normal.glRenderer.type}
-      onChange={(type) => {
-        fp.normal.glVendor.type = type as any;
-        fp.normal.glRenderer.type = type as any;
+    {/* languages */}
+    <HookModeContent
+      mode={fp.navigator.languages}
+      types={valueTypes}
+      parser={{
+        toInput: (v) => v?.join?.(',') ?? '',
+        toValue: (v) => {
+          const res = v.split(',').map(v => v.trim()).filter((v) => !!v)
+          return res.length ? res : navigator.languages as string[]
+        },
       }}
-      custom={<>
-        <InputLine label={t('item.label.glVendor')}
-          defaultValue={glInfo.vendor}
-          initialValue={(fp.normal.glVendor as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.normal.glVendor as ValueHookMode).value = value} />
-        <InputLine label={t('item.label.glRenderer')}
-          defaultValue={glInfo.renderer}
-          initialValue={(fp.normal.glRenderer as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.normal.glRenderer as ValueHookMode).value = value} />
-      </>}
-    />
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
+      <ConfigItemY
+        label={t('item.title.languages')}
+        className={mode.isDefault ? '' : dotStyles.success}
+        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.languages')}</Markdown>} />}
+      >
+        {select}
+        {mode.isValue && <>
+          <Input
+            placeholder={navigator.languages.join(',')}
+            value={mode.input}
+            onChange={({ target }) => mode.setInput(target.value)}
+          />
+        </>}
+      </ConfigItemY>}
+    </HookModeContent>
 
-    <SelectFpConfigItem
-      title={t('item.title.size')}
-      desc={t('item.desc.size')}
-      options={BASE_TYPES}
-      defaultValue={fp.screen.width.type}
-      onChange={(type) => {
-        fp.screen.width.type = type as any;
-        fp.screen.height.type = type as any;
+    {/* gpuInfo */}
+    <HookModeContent
+      mode={fp.normal.gpuInfo}
+      types={valueTypes}
+      parser={{
+        toInput: (v) => v ?? gpuInfo,
+        toValue: (v) => {
+          if (!v.vendor?.trim()) v.vendor = gpuInfo.vendor;
+          if (!v.renderer?.trim()) v.renderer = gpuInfo.renderer;
+          return v;
+        },
       }}
-      custom={<>
-        <InputLine label="width"
-          defaultValue={screen.width}
-          initialValue={(fp.screen.width as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.screen.width as ValueHookMode).value = value} />
-        <InputLine label="height"
-          defaultValue={screen.height}
-          initialValue={(fp.screen.height as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.screen.height as ValueHookMode).value = value} />
-      </>}
-    />
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
+      <ConfigItemY
+        label={t('item.title.glDriver')}
+        className={mode.isDefault ? '' : dotStyles.success}
+        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.glDriver')}</Markdown>} />}
+      >
+        {select}
+        {mode.isValue && <>
+          <Form.Item label={t('item.label.glVendor')}>
+            <Input
+              value={mode.input.vendor}
+              onChange={({ target }) => mode.setInput({ ...mode.input, vendor: target.value })}
+            />
+          </Form.Item>
+          <Form.Item label={t('item.label.glRenderer')}>
+            <Input
+              value={mode.input.renderer}
+              onChange={({ target }) => mode.setInput({ ...mode.input, renderer: target.value })}
+            />
+          </Form.Item>
+        </>}
+      </ConfigItemY>}
+    </HookModeContent>
 
-    <SelectFpConfigItem
-      title={t('item.title.depth')}
-      desc={t('item.desc.depth')}
-      options={BASE_TYPES}
-      defaultValue={fp.screen.colorDepth.type}
-      onChange={(type) => {
-        fp.screen.colorDepth.type = type as any;
-        fp.screen.pixelDepth.type = type as any;
+    {/* screen size */}
+    <HookModeContent
+      mode={fp.screen.size}
+      types={valueTypes}
+      parser={{
+        toInput: v => v ?? { width: screen.width, height: screen.height },
+        toValue(v) {
+          v.width ??= screen.width;
+          v.height ??= screen.height;
+          return v;
+        },
       }}
-      custom={<>
-        <InputLine label="colorDepth"
-          defaultValue={screen.colorDepth}
-          initialValue={(fp.screen.colorDepth as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.screen.colorDepth as ValueHookMode).value = value} />
-        <InputLine label="pixelDepth"
-          defaultValue={screen.pixelDepth}
-          initialValue={(fp.screen.pixelDepth as ValueHookMode).value}
-          onDebouncedInput={(value) => (fp.screen.pixelDepth as ValueHookMode).value = value} />
-      </>}
-    />
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
+      <ConfigItemY
+        label={t('item.title.size')}
+        className={mode.isDefault ? '' : dotStyles.error}
+        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.size')}</Markdown>} />}
+      >
+        {select}
+        {mode.isValue && <>
+          <Form.Item label='width'>
+            <Input
+              value={mode.input.width}
+              onChange={({ target }) => mode.setInput({
+                ...mode.input,
+                width: target.value ? parseInt(target.value) : undefined,
+              })}
+            />
+          </Form.Item>
+          <Form.Item label='height'>
+            <Input
+              value={mode.input.height}
+              onChange={({ target }) => mode.setInput({
+                ...mode.input,
+                height: target.value ? parseInt(target.value) : undefined,
+              })}
+            />
+          </Form.Item>
+        </>}
+      </ConfigItemY>}
+    </HookModeContent>
 
-    <SelectFpConfigItem
-      title={t('item.title.hardwareConcurrency')}
-      desc={t('item.desc.hardwareConcurrency')}
-      options={BASE_TYPES}
-      defaultValue={fp.navigator.hardwareConcurrency.type}
-      onChange={(type) => fp.navigator.hardwareConcurrency.type = type as any}
-      custom={<InputLine label="value"
-        defaultValue={navigator.hardwareConcurrency}
-        initialValue={(fp.navigator.hardwareConcurrency as ValueHookMode).value}
-        onDebouncedInput={(value) => (fp.navigator.hardwareConcurrency as ValueHookMode).value = value} />}
-    />
+    {/* screen colorDepth */}
+    <HookModeContent
+      mode={fp.screen.depth}
+      types={valueTypes}
+      parser={{
+        toInput: v => v ?? { color: screen.colorDepth, pixel: screen.pixelDepth },
+        toValue(v) {
+          v.color ??= screen.colorDepth;
+          v.pixel ??= screen.pixelDepth;
+          return v;
+        },
+      }}
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
+      <ConfigItemY
+        label={t('item.title.depth')}
+        className={mode.isDefault ? '' : dotStyles.error}
+        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.depth')}</Markdown>} />}
+      >
+        {select}
+        {mode.isValue && <>
+          <Form.Item label='colorDepth'>
+            <Input
+              value={mode.input.color}
+              onChange={({ target }) => mode.setInput({
+                ...mode.input,
+                color: target.value ? parseInt(target.value) : undefined,
+              })}
+            />
+          </Form.Item>
+          <Form.Item label='pixelDepth'>
+            <Input
+              value={mode.input.pixel}
+              onChange={({ target }) => mode.setInput({
+                ...mode.input,
+                pixel: target.value ? parseInt(target.value) : undefined,
+              })}
+            />
+          </Form.Item>
+        </>}
+      </ConfigItemY>}
+    </HookModeContent>
+
+    {/* navigator hardwareConcurrency */}
+    <HookModeContent
+      mode={fp.navigator.hardwareConcurrency}
+      types={valueTypes}
+      parser={{
+        toInput: v => String(v ?? navigator.hardwareConcurrency),
+        toValue: (v) => isNaN(parseInt(v)) ? navigator.hardwareConcurrency : parseInt(v),
+      }}
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
+      <ConfigItemY
+        label={t('item.title.hardwareConcurrency')}
+        className={mode.isDefault ? '' : dotStyles.error}
+        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.hardwareConcurrency')}</Markdown>} />}
+      >
+        {select}
+        {mode.isValue && <>
+          <Input
+            placeholder={String(navigator.hardwareConcurrency)}
+            value={mode.input}
+            onChange={({ target }) => mode.setInput(target.value)}
+          />
+        </>}
+      </ConfigItemY>}
+    </HookModeContent>
 
   </> : <Spin indicator={<LoadingOutlined spin />} />
 })

@@ -73,7 +73,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.navigator)),
-    onEnable: ({ win, conf, info, symbol, isDefault, useSeed, useHookMode, useGetterProxy }) => {
+    onEnable: ({ win, conf, info, symbol, useSeed, useHookMode, useGetterProxy }) => {
       const fps = conf.fp.navigator
 
       // @ts-ignore
@@ -115,29 +115,28 @@ export const hookTasks: HookTask[] = [
       }
 
       /* other */
-      const _languages = win.navigator.languages
-      const _hConcurrency = [8, 12, 16]
-      const tasks: { [key in keyof Navigator]?: SeededFn } = {
-        'language': (seed) => seededEl(_languages, seed),
-        'languages': (seed) => shuffleArray(_languages, seed),
-        'hardwareConcurrency': (seed) => seededEl(_hConcurrency, seed),
-      }
-      useGetterProxy([win.Navigator.prototype, win.navigator],
-        Object.keys(tasks) as (keyof Navigator)[],
-        (key, getter) => {
-          const mode: HookMode | undefined = (fps as any)[key]
-          if (isDefault(mode)) return;
-          const { seed, value } = useHookMode(mode)
-          return {
-            apply(target, thisArg: Screen, args: any) {
-              notify('weak.' + key)
-              if (value != null) return value;
-              const task = tasks[key]
-              if (seed != null && task) return task(seed);
-              return getter.call(thisArg)
-            }
+      useGetterProxy([win.Navigator.prototype, win.navigator], [
+        'languages', 'hardwareConcurrency',
+      ], (key, getter) => {
+        const value: any = useHookMode(fps[key] as any).value
+        if (value == null) return;
+        return {
+          apply(target, thisArg: Screen, args: any) {
+            notify('weak.' + key)
+            return value;
+          }
+        }
+      })
+
+      {
+        const value = useHookMode(fps.languages).value?.[0]
+        value != null && useGetterProxy([win.Navigator.prototype, win.navigator], 'language', {
+          apply(target, thisArg: Screen, args: any) {
+            notify('weak.languages')
+            return value;
           }
         })
+      }
     },
   },
 
@@ -146,46 +145,33 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.screen)),
-    onEnable: ({ win, conf, isDefault, useHookMode, useGetterProxy }) => {
+    onEnable: ({ win, conf, useHookMode, useGetterProxy }) => {
       const fps = conf.fp.screen
 
       // @ts-ignore
       win.screen[symbol.own] = getOwnProperties(win.screen)
 
-      const _width = win.screen.width
-      const _height = win.screen.height
-      const _colorDepth = [24, 32]
-      const _pixelDepth = [24, 32]
-
-      const tasks: { [key in keyof Screen]?: SeededFn } = {
-        'width': (seed) => {
-          const offset = (seed % 100) - 50
-          return _width + offset
-        },
-        'height': (seed) => {
-          const offset = (seed % 100) - 50
-          const w = _width + offset
-          return Math.round((w * _height) / _width)
-        },
-        'colorDepth': (seed) => seededEl(_colorDepth, seed),
-        'pixelDepth': (seed) => seededEl(_pixelDepth, seed),
+      const size = useHookMode(fps.size).value
+      const depth = useHookMode(fps.depth).value
+      const tasks: { [key in keyof Screen]?: number } = {
+        'width': size?.width,
+        'height': size?.height,
+        'colorDepth': depth?.color,
+        'pixelDepth': depth?.pixel,
       }
       useGetterProxy([win.Screen.prototype, win.screen],
         Object.keys(tasks) as (keyof Screen)[],
         (key, getter) => {
-          const mode: HookMode | undefined = (fps as any)[key]
-          if (isDefault(mode)) return;
-          const { seed, value } = useHookMode(mode)
+          const value = tasks[key]
+          if (value == null) return;
           return {
             apply(target, thisArg: Screen, args: any) {
               notify('weak.' + key)
-              if (value != null) return value;
-              const task = tasks[key]
-              if (seed != null && task) return task(seed);
-              return getter.call(thisArg)
+              return value;
             }
           }
         });
+
     },
   },
 
@@ -269,24 +255,23 @@ export const hookTasks: HookTask[] = [
    * Webgl参数信息
    */
   {
-    condition: ({ conf, isDefault }) => !isDefault([conf.fp.normal.glVendor, conf.fp.normal.glRenderer]),
+    condition: ({ conf, isDefault }) => !isDefault(conf.fp.normal.gpuInfo),
     onEnable: ({ win, conf, useHookMode, useProxy }) => {
       const fps = conf.fp.normal
 
       /* Report: Parameter */
-      const _vendor = useHookMode(fps.glVendor).value
-      const _renderer = useHookMode(fps.glRenderer).value
-      if (_vendor || _renderer) {
+      const info = useHookMode(fps.gpuInfo).value
+      if (info) {
         const handler = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
             const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
             if (ex) {
               if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
-                notify('weak.glVendor')
-                if (_vendor) return _vendor;
+                notify('weak.gpuInfo')
+                if (info.vendor) return info.vendor;
               } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
-                notify('weak.glRenderer')
-                if (_renderer) return _renderer;
+                notify('weak.gpuInfo')
+                if (info.renderer) return info.renderer;
               }
             }
             return target.apply(thisArg, args);

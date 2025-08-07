@@ -46,25 +46,26 @@ export const shuffleArray = <T>(array: Readonly<T[]>, seed: number): T[] => {
  * @returns v1大于v2，返回1；v1小于v2，返回-1；v1等于v2，返回0
  */
 export const compareVersions = function (v1: string, v2: string): -1 | 0 | 1 {
-  const v1parts = v1.split('.').map(Number);
-  const v2parts = v2.split('.').map(Number);
+  const parse = (v: string) => {
+    const [main, pre = ''] = v.split('-');
+    const parts = main.split('.').map(n => parseInt(n, 10));
+    return { parts, pre };
+  };
 
-  for (let i = 0; i < v1parts.length; ++i) {
-    if (v2parts.length === i) {
-      return 1;
-    }
-    if (v1parts[i] === v2parts[i]) {
-      continue;
-    }
-    if (v1parts[i] > v2parts[i]) {
-      return 1;
-    }
-    return -1;
+  const { parts: p1, pre: pre1 } = parse(v1);
+  const { parts: p2, pre: pre2 } = parse(v2);
+  const maxLen = Math.max(p1.length, p2.length);
+
+  for (let i = 0; i < maxLen; i++) {
+    const a = p1[i] ?? 0;
+    const b = p2[i] ?? 0;
+    if (a > b) return 1;
+    if (a < b) return -1;
   }
 
-  if (v1parts.length !== v2parts.length) {
-    return -1;
-  }
+  if (pre1 && !pre2) return -1; // 预发布版本 < 正式版本
+  if (!pre1 && pre2) return 1;
+  if (pre1 && pre2) return pre1.localeCompare(pre2) as -1 | 0 | 1;
 
   return 0;
 }

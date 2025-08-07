@@ -60,19 +60,15 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       fp: {
         navigator: {
           uaVersion: { type: HookType.browser },
-          language: { type: HookType.default },
           languages: { type: HookType.default },
           hardwareConcurrency: { type: HookType.default },
         },
         screen: {
-          height: { type: HookType.default },
-          width: { type: HookType.default },
-          colorDepth: { type: HookType.default },
-          pixelDepth: { type: HookType.default },
+          size: { type: HookType.default },
+          depth: { type: HookType.default },
         },
         normal: {
-          glVendor: { type: HookType.default },
-          glRenderer: { type: HookType.default },
+          gpuInfo: { type: HookType.default },
         },
         other: {
           timezone: { type: HookType.default },
