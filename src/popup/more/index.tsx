@@ -4,6 +4,7 @@ import MoreConfigView from "./config";
 import SubscribeView from "./subscribe";
 import TipIcon from "@/components/data/tip-icon";
 import Markdown from "react-markdown";
+import { Md } from "@/components/data/markdown";
 
 export type MoreViewProps = {
 }
@@ -17,12 +18,10 @@ export const MoreView = ({ }: MoreViewProps) => {
     <Divider rootClassName="!my-3" orientation='center'>
       <div className="flex justify-center items-center gap-2">
         {t('label.subscribe')}
-        <TipIcon.Question content={<Markdown className='max-h-[220px] overflow-auto [&_ul]:list-disc [&_ul]:ml-3' children={t('desc.subscribe')} />} />
+        <TipIcon.Question content={<Md>{t('desc.subscribe', { joinArrays: '\n\n' })}</Md>} />
       </div>
     </Divider>
     <SubscribeView />
-    {/* <Divider rootClassName="!my-3" orientation='center'>{t('label.permission')}</Divider>
-    <PermissionView className="flex flex-wrap justify-center items-center gap-2" /> */}
     <Divider rootClassName="!mt-3 !mb-0" />
   </section>
 }

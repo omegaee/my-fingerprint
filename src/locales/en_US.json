@@ -114,12 +114,12 @@
       "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
       "inject-mode": [
-        "Fast Inject",
+        "Enable for faster script injection (requires browser support); disable to use compatibility mode.",
         "Prerequisites: ",
-        "- **chrome 138+**: Enable the **Allow script injection** option on the extension details page",
-        "- **chrome 120+**: Enable Developer Mode",
-        "- **edge 120+**: Enable Developer Mode",
-        "- **firefox 136+**: Allow Licensing"
+        "`chrome 138+` Enable the **Allow script injection** option on the extension details page",
+        "`chrome 120+` Enable Developer Mode",
+        "`edge 120+` Enable Developer Mode",
+        "`firefox 136+` Allow Permission"
       ]
     },
     "theme": {
@@ -186,7 +186,13 @@
     }
   },
   "desc": {
-    "subscribe": "**Usage**\n\n- The extension will pull the configuration from the subscription target when it loads, the configuration content must be in json format.\n\n- It will overwrite the original configuration and merge the whitelist.\n\n- Sample configurations can be obtained using the configuration export feature.\n\n**Examples**\n\n- Blank value\n\n- Default: `config.json`\n\n- Local: `file:///example/config.json`\n\n- Network: `http://example.com/config.json`",
+    "subscribe": [
+      "When the extension loads, it will fetch configuration from the subscription target. It will overwrite the original settings and merge the whitelist. The configuration must be in JSON format. Refer to README.md for more details.",
+      "Empty value - ` `",
+      "Default - `config.json`",
+      "Local - `file:///example/config.json`",
+      "Remote - `http://example.com/config.json`"
+    ],
     "record": [
       "**Fingerprint Record**",
       "Record the call of fingerprint api, some api are often used when rendering elements, so the number of records for some api will be very large",

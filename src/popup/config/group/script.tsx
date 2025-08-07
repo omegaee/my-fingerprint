@@ -2,7 +2,6 @@ import { useStorageStore } from "@/popup/stores/storage"
 import { memo, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import TipIcon from "@/components/data/tip-icon"
-import Markdown from "react-markdown"
 import { genRandomSeed, hashNumberFromString } from "@/utils/base"
 import { App, Button, Input, Spin, Switch, Tooltip } from "antd"
 import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
@@ -10,6 +9,7 @@ import { requestPermission } from "@/utils/browser"
 import { ConfigItemX, ConfigItemY } from "../item"
 import { sendToBackground } from "@/utils/message"
 import { useShallow } from "zustand/shallow"
+import { Md } from "@/components/data/markdown"
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
@@ -75,7 +75,7 @@ export const ScriptConfigGroup = memo(() => {
   return config ? <div key={version}>
     <ConfigItemY
       label={t('item.title.seed')}
-      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.seed')}</Markdown>} />}
+      endContent={<TipIcon.Question content={<Md>{t('item.desc.seed')}</Md>} />}
     >
       <div className="flex gap-1">
         <Input
@@ -95,7 +95,7 @@ export const ScriptConfigGroup = memo(() => {
     <ConfigItemX
       label={t('item.title.inject.mode')}
       endContent={<>
-        <TipIcon.Question content={<Markdown>{t('item.desc.inject-mode', { joinArrays: '\n\n' })}</Markdown>} />
+        <TipIcon.Question content={<Md>{t('item.desc.inject-mode', { joinArrays: '\n\n' })}</Md>} />
       </>}
     >
       <Switch

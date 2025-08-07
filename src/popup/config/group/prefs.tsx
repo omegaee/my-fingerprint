@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next"
 import { useStorageStore } from "@/popup/stores/storage"
 import TipIcon from "@/components/data/tip-icon"
-import Markdown from "react-markdown";
 import { memo, useMemo } from "react";
 import { Select, Spin } from "antd";
 import { LoadingOutlined } from '@ant-design/icons'
 import { usePrefsStore } from "@/popup/stores/prefs";
 import { ConfigItemY } from "../item";
 import { useShallow } from "zustand/shallow";
+import { Md } from "@/components/data/markdown";
 
 const LANG_OPTIONS = [
   {
@@ -47,7 +47,7 @@ export const PrefsConfigGroup = memo(() => {
 
     <ConfigItemY
       label={t('item.title.e-language')}
-      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.e-language')}</Markdown>} />}
+      endContent={<TipIcon.Question content={<Md>{t('item.desc.e-language')}</Md>} />}
     >
       <Select
         options={LANG_OPTIONS}
@@ -61,7 +61,7 @@ export const PrefsConfigGroup = memo(() => {
 
     <ConfigItemY
       label={t('item.title.theme')}
-      endContent={<TipIcon.Question content={<Markdown>{t('item.desc.theme')}</Markdown>} />}
+      endContent={<TipIcon.Question content={<Md>{t('item.desc.theme')}</Md>} />}
     >
       <Select
         options={themeOptions}
