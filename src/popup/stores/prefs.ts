@@ -18,6 +18,21 @@ type Actions = {
   setLanguage: (language: string) => void
 }
 
+/**
+ * 获取当前系统是否黑暗模式
+ */
+const isDarkTheme = () => {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+}
+
+const getThemeName = (theme: string) => {
+  if (theme === 'system') {
+    return isDarkTheme() ? 'dark' : 'light'
+  } else {
+    return theme
+  }
+}
+
 export const usePrefsStore = create<State & Actions>()(
   persist((set, get) => {
 
@@ -54,18 +69,22 @@ export const usePrefsStore = create<State & Actions>()(
       },
     }
 
-    /**
-     * 获取当前系统是否黑暗模式
-     */
-    const isDarkTheme = () => {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-    }
-
     return {
       theme: 'system',
       language: getLanguage(navigator.language),
 
-      setTheme: (theme: Theme) => set({ theme }),
+      getThemeName: (theme?: string) => {
+        const t = theme ?? get().theme;
+        if (t === 'system') {
+          return isDarkTheme() ? 'dark' : 'light'
+        } else {
+          return t
+        }
+      },
+      setTheme: (theme: Theme) => {
+        set({ theme })
+        document.documentElement.setAttribute('data-theme', getThemeName(theme))
+      },
       getThemeConfig: () => {
         switch (get().theme) {
           case 'dark':
@@ -93,6 +112,10 @@ export const usePrefsStore = create<State & Actions>()(
     partialize: (s) => ({
       theme: s.theme,
       language: s.language
-    }) as any
+    }) as any,
+    onRehydrateStorage: () => (state) => {
+      if (!state) return;
+      document.documentElement.setAttribute('data-theme', getThemeName(state.theme));
+    }
   })
 )

@@ -25,7 +25,6 @@ function Application() {
   const [hostname, setHostname] = useState<string>()
   const [whitelistMode, setWhitelistMode] = useState<'none' | 'self' | 'sub'>('none')
   const [hasNewVersion, setHasNewVersion] = useState(false)
-  const [moreBadge, setMoreBadge] = useState(false)
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -40,16 +39,6 @@ function Application() {
       deleteWhitelist: state.deleteWhitelist,
     }
   }))
-
-  useEffect(() => {
-    const opts = chrome.runtime.getManifest().optional_permissions
-    if (!opts?.length) return;
-    chrome.permissions.contains({ permissions: opts })
-      .then((res) => {
-        setMoreBadge(!res)
-      })
-      .catch(() => { })
-  }, [])
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
@@ -130,7 +119,7 @@ function Application() {
         children: <WhitelistView msgApi={messageApi} />,
       },
       {
-        label: moreBadge ? <Badge dot>{t('e.more')}</Badge> : t('e.more'),
+        label: t('e.more'),
         children: <MoreView />,
       }
     ].map((item, index) => ({ ...item, key: String(index) }))

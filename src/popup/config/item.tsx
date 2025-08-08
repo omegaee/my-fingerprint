@@ -1,5 +1,8 @@
+import { Md } from "@/components/data/markdown"
 import { useHookMode, useHookTypeOptions } from "@/utils/hooks"
-import { Select, type SelectProps } from "antd"
+import { Divider, Select, Tag, type SelectProps } from "antd"
+import { tagColors } from "./styles"
+import { useTranslation } from "react-i18next"
 
 type ConfigItemXProps = {
   children: React.ReactNode
@@ -42,6 +45,30 @@ export const ConfigItemY = ({ children, label, startContent, endContent, classNa
     </div>
     {children}
   </div>
+}
+
+/**
+ * 配置描述
+ */
+export const ConfigDesc = ({ desc, tags }: {
+  tags?: string[]
+  desc: string
+}) => {
+  const [t] = useTranslation()
+  return <>
+    {tags?.length && <>
+      <div className="flex items-center justify-center gap-2">
+        {tags.map(tag => <Tag key={tag}
+          className="mr-0"
+          bordered={false}
+          color={(tagColors as any)[tag]}>
+          {t('tag.' + tag)}
+        </Tag>)}
+      </div>
+      <Divider rootClassName="my-1" />
+    </>}
+    <Md>{desc}</Md>
+  </>
 }
 
 /**

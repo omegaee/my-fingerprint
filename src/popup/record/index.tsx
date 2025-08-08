@@ -1,11 +1,11 @@
-import { Tabs } from "antd";
+import { Tabs, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FpNoticePanel } from "./fp";
 import { sendToTab } from "@/utils/message";
 import TipIcon from "@/components/data/tip-icon";
 import IframeNoticePanel from "./iframe";
-import Markdown from "react-markdown";
+import { Md } from "@/components/data/markdown";
 
 const getRecordCount = (record: Record<string, number>) => {
   let count = 0
@@ -46,7 +46,7 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
 
   return <div className='relative h-full flex flex-col'>
     <div className="absolute right-1 z-10">
-      <TipIcon.Question placement='bottomRight' content={<Markdown className='w-60'>{t('desc.record', { joinArrays: '\n\n' })}</Markdown>} />
+      <TipIcon.Question placement='bottomRight' content={<Md>{t('desc.record', { joinArrays: '\n\n' })}</Md>} />
     </div>
     <Tabs
       className="h-full [&_.ant-tabs-tab]:!py-0.5 [&_.ant-tabs-nav]:mb-0"
