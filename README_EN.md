@@ -1,146 +1,113 @@
+<h4 align="center">
+<a href="./README.md">简体中文</a> | English
+</h4>
 
-[中文](./README.md) | English
+<hr/>
+
+<h1 align="center">My Fingerprint</h1>
+
+<p align="center">
+Protect your browser fingerprints and enhance privacy. Supports <code>Chrome</code>, <code>Edge</code>, and <code>Firefox</code>.
+</p>
+
+<p align="center">
+Lightweight injection script. Built on Manifest V3 with excellent performance and zero disruption.
+</p>
+
+
+<p align="center">
+<a href="https://github.com/omegaee/my-fingerprint/releases">
+  <img alt="Latest Release" src="https://img.shields.io/github/v/release/omegaee/my-fingerprint?style=flat-square">
+</a>
+<a href="https://github.com/omegaee/my-fingerprint/stargazers">
+  <img alt="Stars" src="https://img.shields.io/github/stars/omegaee/my-fingerprint?style=flat-square">
+</a>
+<a href="https://github.com/omegaee/my-fingerprint/issues">
+  <img alt="Issues" src="https://img.shields.io/github/issues/omegaee/my-fingerprint?style=flat-square">
+</a>
+<a href="https://github.com/omegaee/my-fingerprint/blob/main/LICENSE">
+  <img alt="License" src="https://img.shields.io/github/license/omegaee/my-fingerprint?style=flat-square">
+</a>
+</p>
 
 ---
 
-[--- v2.5 Update ---](https://github.com/omegaee/my-fingerprint/releases/latest)
+<h5 align="center">
+  <a href="#features">✨ Features</a> |
+  <a href="#fingerprint">🧬 Fingerprint</a> |
+  <a href="#installation">🧰 Installation</a> |
+  <a href="#testing">🧪 Testing</a> |
+  <a href="#development">🛠️ Development</a> |
+  <a href="#community">🌸 Support</a> |
+  <a href="#disclaimer">📜 Disclaimer</a> |
+  <a href="#credi">🙏 Credits</a>
+</h5>
 
-# My Fingerprint
+## ✨ Features <a id="features"></a>
 
-- `Chrome / Edge / Firefox` Extension
-- Modify various fingerprints of the browser
-- Optional fingerprints
-- Optional random conditions
-- Installation takes effect immediately
-- Monitor page access to fingerprints
-- Supports whitelist control
+- 🚀 Supports Chrome, Edge, and Firefox
+- ⚙️ Works instantly upon installation, no configuration required
+- 📦 Built on Manifest V3 for modern compatibility
+- 🔍 Monitors fingerprint API access on web pages
+- 🧱 Customizable protection rules and whitelist support
+- 📤 Import/export configuration and subscription support
+- 🧩 Lightweight native injection (20.0 KB / Gzip: 10.0 KB), zero dependencies, negligible performance cost
 
-**Supports fingerprints**
-- [x] UserAgent Series
-- [x] Screen Series
-- [x] Language
-- [x] Time Zone
-- [x] Canvas Fingerprint
-- [x] Audio Fingerprint
-- [x] Font Fingerprint
-- [x] WebGL Fingerprint
-- [x] WebRTC Protection
-- [x] WebGPU Fingerprint
-- [x] Graphics Driver Info
+## 🧬 Fingerprint Protection <a id="fingerprint"></a>
 
-## Table of Contents
-- [Usage](#usage)
-- [Popup Module](#popup-module)
-- [Test Target](#test-target)
-- [Development](#development)
-- [Support](#support)
-- [Disclaimer](#disclaimer)
+- Canvas fingerprint
+- Audio fingerprint
+- Fonts fingerprint
+- WebGL fingerprint
+- WebRTC protection
+- WebGPU fingerprint
+- DomRect fingerprint
+- Language and timezone
+- Graphics driver info
+- UserAgent series
+- Screen size and resolution
 
+## 🧰 Installation <a id="installation"></a>
 
-## Usage
+### Chrome / Edge
 
-#### Chrome & Edge
+- Required version: `Chrome/Edge 102+`
+- Recommended: 120+
+- Download `.zip` → Drag into extension manager → Enable
+- Optional: Enable in Incognito/InPrivate mode
 
-***Frontend:***
-- Browser version required `Chrome 102+` `Edge 102+`.
-- Recommend `Chrome 120+` `Edge 120+`.
+### Firefox
 
-***Installation:***
-1. Download the latest version of the Extension `.zip` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
-2. Open the browser extension management, open the developer mode
-3. Drag and drop the downloaded `.zip` into the Browser Extension Manager page.
-4. Enable the Extension (check `Allow in Incognito / Allow in InPrivate` in `Details` if necessary).
+- Required version: `Firefox 136+`
+- Download `.xpi` → Drag into browser window → Click “Add”
 
-***Usage:***
-- Installation takes effect immediately (previously opened tabs have to be refreshed to take effect)
-- (Optional) Left-click on the plug-in icon to enter the configuration page for customized configuration.
-- (Optional) If this does not work, try restarting your browser.
+## 🧪 Testing Targets <a id="testing"></a>
 
-#### Firefox
+- [webbrowsertools.com](https://webbrowsertools.com/)
+- [yalala.com](https://www.yalala.com/)
+- [uutool.cn](https://uutool.cn/browser/)
+- [browserscan.net](https://www.browserscan.net/)
+- [CreepJS](https://abrahamjuliot.github.io/creepjs/)
 
-***Frontend:***
-- Browser version required `Firefox 136+`.
+## 🛠️ Development <a id="development"></a>
 
-***Installation:***
-1. Download the latest version of the Extension `.xpi` -- [Extension Download](https://github.com/omegaee/my-fingerprint/releases/latest)
-2. Drag and drop the `.xpi` file directly into the browser window.
-3. The browser will pop up installation prompt.
-4. Left click on the extension icon to enter the extension page, click on `More -> Permission` to permission the feature.
-
-***Usage:***
-- Installation takes effect immediately (previously opened tabs have to be refreshed to take effect)
-- (Optional) Left-click on the plug-in icon to enter the configuration page for customized configuration.
-- (Optional) If this does not work, try restarting your browser.
-
-
-## Popup Module
-
-<img src='./images/en/ui.png' width='360px' />
-
-#### Configuration Module
-- Normal Fingerprint Config
-- Special Fingerprint Config
-- Other Config
-  - [x] Language - Languages used by browser extensions
-  - [x] Global Seed - Global Seed, Acts on `Random by Global Seed` Options
-  - [x] Web Request Hooks - Making changes to web request headers
-  - [x] Iframe Hooks - Injection into Iframe
-
-#### Record Module
-- Shows how many times the current tab has been accessed for various fingerprints
-
-#### Whitelist Module
-- The whitelist list can be edited
-- Support for sub-domain matching
-  - `example.com` matches `*.example.com`, `*.*.example.com`
-
-#### More
-- Configuration file import and export
-- Permission
-- Subscribe
-
-#### Subscribe
-- The extension will pull the configuration from the subscription target when it loads, the configuration content must be in json format.
-- It will overwrite the original configuration and merge the whitelist.
-- Configuration sample: Exported configuration or [template.json](./example/config/template.json)
-
-**Examples**
-- Blank value
-- Default: `config.json`
-- Local: `file:///example/config.json`
-- Network: `http://example.com/config.json`
-
-
-## Test Target
-- [x] https://webbrowsertools.com/
-- [x] https://www.yalala.com/
-- [x] https://uutool.cn/browser/
-- [x] https://www.ip77.net/
-- [x] https://www.browserscan.net/
-- [x] https://abrahamjuliot.github.io/creepjs/
-
-
-## Development
-```sh
+```bash
 cd <project>
 npm install
+npm run dev          # Chrome / Edge
+npm run dev:firefox  # Firefox
 ```
 
-#### Chrome & Edge
-- Run `npm run dev`
-- In the browser extension interface, turn on `Developer Mode`, click `Load Unzipped Extension`, and select the `<project>/dist/` directory.
+## 🌸 Support <a id="support"></a>
 
-#### Firefox
-- Run `npm run dev:firefox`, failing which you run it again.
-- In the browser extension interface, click `Load Temporary Extension` and select `<project>/dist/manifest.json`.
-- It is recommended to delete `<project>/src/core/output.js` before compiling for non-first time.
+- Submit feedback via Issues or Pull Requests
+- If you find this project helpful, give it a ⭐
+- Your feedback helps make this project better. Every star counts!
 
+## 📜 Disclaimer <a id="disclaimer"></a>
 
-## Support
-- This project is free and open source, if you think it is helpful to you, please give me a Star.
-- If you have any good suggestions or comments, please feel free to submit an Issue or Pull Request.
+This project is for educational and research purposes only. Do not use it for illegal activities. The developer is not responsible for any consequences.
 
+## 🙏 Credits <a id="credits"></a>
 
-## Disclaimer
-- For certain more sensitive operations, use more specialized tools.
-- This project is intended for educational and research purposes only. The developer is not responsible for any losses or issues caused by the use of this project.
+Thanks to all contributors and the open-source community!
