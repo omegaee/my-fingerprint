@@ -1,5 +1,25 @@
-import { sendToBackground } from '@/utils/message';
-import { debounce } from '@/utils/timer';
+/* ----- */
+/* 避免import导入，否则build时content会模块化拆分 */
+/* ----- */
+
+export {}
+
+const sendToBackground: BackgroundMessage.Sender = (message) => {
+  return chrome.runtime.sendMessage(message);
+}
+
+const debounce = function <T extends (...args: any) => any>(func: T, wait?: number): (...args: Parameters<T>) => void {
+  wait = wait || 300;
+  let timeout: NodeJS.Timeout;
+  return function (...args: any[]) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
+
+/* ----- */
+/* 脚本内容 */
+/* ----- */
 
 const fpNoticePool: Record<string, number> = {}
 const iframeNoticePool: Record<string, number> = {}
