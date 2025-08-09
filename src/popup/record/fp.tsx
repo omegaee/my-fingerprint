@@ -11,6 +11,7 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
   const [t] = useTranslation()
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [treeData, setTreeData] = useState<TreeDataNode[]>([]);
+  const [hasInit, setHasInit] = useState(false)
 
   const totalCount = (prefix: string) => {
     let count = 0;
@@ -24,12 +25,15 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
 
   useEffect(() => {
     if (!notice) return;
+    
+    const keys = Object.keys(notice)
+    if (keys.length === 0) return;
 
     const rootNodes: Record<string, TreeDataNode> = {}
     const nodeMap = new Map<string, TreeDataNode>()
     const countMap = new Map<string, number>()
 
-    for (const fullPath in notice) {
+    for (const fullPath of keys) {
       const count = notice[fullPath]
       const paths = fullPath.split('.')
       let parentKey = ''
@@ -91,7 +95,11 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
       other,
       ...Object.values(rest),
     ].filter(v => !!v))
-    setExpandedKeys(Object.keys(rootNodes))
+
+    if (!hasInit) {
+      setHasInit(true)
+      setExpandedKeys(Object.keys(rootNodes))
+    }
   }, [notice])
 
   return <div className='h-full flex flex-col'>
