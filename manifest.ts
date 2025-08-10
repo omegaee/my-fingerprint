@@ -65,7 +65,7 @@ export const firefoxManifest: ManifestV3Export & { [key: string]: any } = {
   ...baseManifest,
   browser_specific_settings: {
     gecko: {
-      id: "my-fingerprint@omegaee.dev",
+      id: "my-fingerprint@omegaee.addons",
       strict_min_version: "136.0"
     }
   },
