@@ -741,9 +741,27 @@ export const hookTasks: HookTask[] = [
    * .toString
    */
   {
-    onEnable: ({ win, symbol, isReg, useProxy }) => {
+    onEnable: ({ win, info, symbol, isReg, useProxy }) => {
+
       useProxy(win.Function.prototype, 'toString', {
         apply(target: any, self: any, args: any[]) {
+          if (info.browser !== 'firefox' && typeof self !== 'function') {
+            try {
+              return Reflect.apply(target, self, args)
+            } catch (e: any) {
+              throw new Proxy(e, {
+                get(target, key, receiver) {
+                  if (key === 'stack') {
+                    const es = e.stack.split('\n')
+                    es[1] = es[1].replace('Object', 'Function')
+                    es.splice(2, 1);
+                    return es.join('\n');
+                  }
+                  return typeof target[key] === 'function' ? new Proxy(target[key], receiver) : target[key]
+                }
+              });
+            }
+          }
           if (self != null && isReg(self)) {
             const raw = self[symbol.raw]
             if (raw) return Reflect.apply(target, raw, args);

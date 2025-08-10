@@ -52,7 +52,20 @@ export class FingerprintHandler {
           if (proto[this.symbol.reflect]) {
             return Reflect.setPrototypeOf(target, raw);
           } else {
-            return Object.setPrototypeOf(target, raw);
+            try {
+              return Object.setPrototypeOf(target, raw);
+            } catch (e: any) {
+              throw this.info.browser === 'firefox' ? e : new Proxy(e, {
+                get: (target, key, receiver) => {
+                  if (key === 'stack') {
+                    const es = e.stack.split('\n')
+                    es.splice(1, 2);
+                    return es.join('\n');
+                  }
+                  return typeof target[key] === 'function' ? new Proxy(target[key], receiver) : target[key]
+                }
+              })
+            }
           }
         }
         return Reflect.setPrototypeOf(target, proto)
