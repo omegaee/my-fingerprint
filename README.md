@@ -17,16 +17,16 @@
 
 <p align="center">
 <a href="https://github.com/omegaee/my-fingerprint/releases">
-  <img alt="Latest Release" src="https://img.shields.io/github/v/release/omegaee/my-fingerprint?style=flat-square">
+  <img alt="Latest Release" src="https://img.shields.io/github/v/release/omegaee/my-fingerprint?style=flat">
 </a>
 <a href="https://github.com/omegaee/my-fingerprint/stargazers">
-  <img alt="Stars" src="https://img.shields.io/github/stars/omegaee/my-fingerprint?style=flat-square">
+  <img alt="Stars" src="https://img.shields.io/github/stars/omegaee/my-fingerprint?style=flat">
 </a>
 <a href="https://github.com/omegaee/my-fingerprint/issues">
-  <img alt="Issues" src="https://img.shields.io/github/issues/omegaee/my-fingerprint?style=flat-square">
+  <img alt="Issues" src="https://img.shields.io/github/issues/omegaee/my-fingerprint?style=flat">
 </a>
 <a href="https://github.com/omegaee/my-fingerprint/blob/main/LICENSE">
-  <img alt="License" src="https://img.shields.io/github/license/omegaee/my-fingerprint?style=flat-square">
+  <img alt="License" src="https://img.shields.io/github/license/omegaee/my-fingerprint?style=flat">
 </a>
 </p>
 
@@ -53,7 +53,7 @@
 - 🔍 可监控页面对指纹 API 的访问情况
 - 🧱 支持白名单控制与自定义配置
 - 📤 提供配置导入导出与订阅功能
-- 🧩 轻量级原生注入（20.0 KB / Gzip: 10.0 KB），无第三方依赖，性能开销极低
+- 🧩 轻量级原生注入（20.0 KB / Gzip: 10.0 KB），零依赖，性能开销极低
 
 ## 🧬 指纹保护 <a id="fingerprint"></a>
 
@@ -75,13 +75,13 @@
 
 - 浏览器版本要求：`Chrome/Edge 102+`
 - 推荐版本：120+
-- 下载 `.zip` 文件 → 拖入扩展管理页面 → 启用扩展
+- [下载](https://github.com/omegaee/my-fingerprint/releases/latest) `.zip` 文件 → 拖入扩展管理页面 → 启用扩展
 - 可选：启用无痕模式支持
 
 ### Firefox
 
 - 浏览器版本要求：`Firefox 136+`
-- 下载 `.xpi` 文件 → 拖入浏览器窗口 → 点击添加
+- [下载](https://github.com/omegaee/my-fingerprint/releases/latest) `.xpi` 文件 → 拖入浏览器窗口 → 点击添加
 
 ## 🧪 测试目标 <a id="testing"></a>
 

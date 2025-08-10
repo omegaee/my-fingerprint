@@ -17,16 +17,16 @@ Lightweight injection script. Built on Manifest V3 with excellent performance an
 
 <p align="center">
 <a href="https://github.com/omegaee/my-fingerprint/releases">
-  <img alt="Latest Release" src="https://img.shields.io/github/v/release/omegaee/my-fingerprint?style=flat-square">
+  <img alt="Latest Release" src="https://img.shields.io/github/v/release/omegaee/my-fingerprint?style=flat">
 </a>
 <a href="https://github.com/omegaee/my-fingerprint/stargazers">
-  <img alt="Stars" src="https://img.shields.io/github/stars/omegaee/my-fingerprint?style=flat-square">
+  <img alt="Stars" src="https://img.shields.io/github/stars/omegaee/my-fingerprint?style=flat">
 </a>
 <a href="https://github.com/omegaee/my-fingerprint/issues">
-  <img alt="Issues" src="https://img.shields.io/github/issues/omegaee/my-fingerprint?style=flat-square">
+  <img alt="Issues" src="https://img.shields.io/github/issues/omegaee/my-fingerprint?style=flat">
 </a>
 <a href="https://github.com/omegaee/my-fingerprint/blob/main/LICENSE">
-  <img alt="License" src="https://img.shields.io/github/license/omegaee/my-fingerprint?style=flat-square">
+  <img alt="License" src="https://img.shields.io/github/license/omegaee/my-fingerprint?style=flat">
 </a>
 </p>
 
@@ -73,13 +73,13 @@ Lightweight injection script. Built on Manifest V3 with excellent performance an
 
 - Required version: `Chrome/Edge 102+`
 - Recommended: 120+
-- Download `.zip` → Drag into extension manager → Enable
+- [Download](https://github.com/omegaee/my-fingerprint/releases/latest) `.zip` → Drag into extension manager → Enable
 - Optional: Enable in Incognito/InPrivate mode
 
 ### Firefox
 
 - Required version: `Firefox 136+`
-- Download `.xpi` → Drag into browser window → Click “Add”
+- [Download](https://github.com/omegaee/my-fingerprint/releases/latest) `.xpi` → Drag into browser window → Click “Add”
 
 ## 🧪 Testing Targets <a id="testing"></a>
 
