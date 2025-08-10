@@ -84,14 +84,6 @@
 - 浏览器版本要求：`Firefox 136+`
 - [下载](https://github.com/omegaee/my-fingerprint/releases/latest) `.xpi` 文件 → 拖入浏览器窗口 → 点击添加
 
-## 🧪 测试目标 <a id="testing"></a>
-
-- [webbrowsertools.com](https://webbrowsertools.com/)
-- [yalala.com](https://www.yalala.com/)
-- [uutool.cn](https://uutool.cn/browser/)
-- [browserscan.net](https://www.browserscan.net/)
-- [CreepJS](https://abrahamjuliot.github.io/creepjs/)
-
 ## ⚙️ 配置模块 <a id="configuration"></a>
 
 扩展支持灵活的配置选项，可通过图标进入设置面板进行调整：
@@ -116,6 +108,14 @@
   - 空值表示关闭订阅  
   - 支持手动订阅或扩展启动时自动拉取远程配置（JSON 格式）  
   - 订阅配置将覆盖原设置，并合并白名单内容
+
+## 🧪 测试目标 <a id="testing"></a>
+
+- [webbrowsertools.com](https://webbrowsertools.com/)
+- [browserscan.net](https://www.browserscan.net/)
+- [CreepJS](https://abrahamjuliot.github.io/creepjs/)
+- [yalala.com](https://www.yalala.com/)
+- [uutool.cn](https://uutool.cn/browser/)
 
 ## 🛠️ 开发 <a id="development"></a>
 

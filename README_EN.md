@@ -113,10 +113,10 @@ This module provides flexible options for customizing fingerprint protection beh
 ## 🧪 Testing Targets <a id="testing"></a>
 
 - [webbrowsertools.com](https://webbrowsertools.com/)
-- [yalala.com](https://www.yalala.com/)
-- [uutool.cn](https://uutool.cn/browser/)
 - [browserscan.net](https://www.browserscan.net/)
 - [CreepJS](https://abrahamjuliot.github.io/creepjs/)
+- [yalala.com](https://www.yalala.com/)
+- [uutool.cn](https://uutool.cn/browser/)
 
 ## 🛠️ Development <a id="development"></a>
 
