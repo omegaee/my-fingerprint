@@ -136,6 +136,8 @@ npm run dev:firefox  # Firefox
 - 如果你觉得项目有帮助，请点个 Star ⭐
 - 微信赞赏支持也欢迎！
 
+👉 查看支持者名单：[支持者列表](./docs/supporters.zh.md)
+
 | 微信 |
 | :---: |
 | <img src='./images/wechat-code.png' title='微信' width='200px' height='200px'  /> |
