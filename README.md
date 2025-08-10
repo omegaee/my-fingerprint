@@ -36,12 +36,13 @@
   <a href="#features">✨ 功能</a> |
   <a href="#fingerprint">🧬 指纹</a> |
   <a href="#installation">🧰 安装</a> |
+  <a href="#configuration">⚙️ 配置</a> |
   <a href="#testing">🧪 测试</a> |
   <a href="#development">🛠️ 开发</a> |
   <a href="#community">🌱 社区</a> |
   <a href="#support">🌸 支持</a> |
   <a href="#disclaimer">📜 声明</a> |
-  <a href="#acknowledgements">🙏 鸣谢</a>
+  <a href="#credi">🙏 鸣谢</a>
 </h5>
 
 
@@ -91,6 +92,31 @@
 - [browserscan.net](https://www.browserscan.net/)
 - [CreepJS](https://abrahamjuliot.github.io/creepjs/)
 
+## ⚙️ 配置模块 <a id="configuration"></a>
+
+扩展支持灵活的配置选项，可通过图标进入设置面板进行调整：
+
+- **强指纹组**
+  - 模拟高度唯一的用户特征，通常与其他指纹项或 IP 信息联合使用
+
+- **弱指纹组**
+  - 获取重复率高的基础信息，适合轻度保护场景
+
+- **脚本配置**
+  - 全局种子：用于“根据全局种子随机值”选项，确保生成结果一致性  
+  - 注入模式：推荐启用“快速注入”以提升兼容性与性能
+
+- **白名单机制**
+  - 支持编辑白名单列表  
+  - 支持子域名匹配：如 `example.com` 可匹配 `*.example.com`、`*.*.example.com`
+
+- **订阅机制**
+  - 可使用配置模板进行初始化（订阅一次后可关闭）  
+    - [标准模式 - 默认配置](https://raw.githubusercontent.com/omegaee/my-fingerprint/main/example/config/template.json)  
+  - 空值表示关闭订阅  
+  - 支持手动订阅或扩展启动时自动拉取远程配置（JSON 格式）  
+  - 订阅配置将覆盖原设置，并合并白名单内容
+
 ## 🛠️ 开发 <a id="development"></a>
 
 ```bash
@@ -118,6 +144,6 @@ npm run dev:firefox  # Firefox
 
 本项目仅用于学习与研究目的。请勿用于非法用途，开发者不对任何损失或问题负责。
 
-## 🙏 鸣谢 <a id="acknowledgements"></a>
+## 🙏 鸣谢 <a id="credi"></a>
 
 感谢所有贡献者与支持者。特别感谢开源社区的力量！

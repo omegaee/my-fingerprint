@@ -36,12 +36,14 @@ Lightweight injection script. Built on Manifest V3 with excellent performance an
   <a href="#features">✨ Features</a> |
   <a href="#fingerprint">🧬 Fingerprint</a> |
   <a href="#installation">🧰 Installation</a> |
+  <a href="#configuration">⚙️ Configuration</a> |
   <a href="#testing">🧪 Testing</a> |
   <a href="#development">🛠️ Development</a> |
-  <a href="#community">🌸 Support</a> |
+  <a href="#support">🌸 Support</a> |
   <a href="#disclaimer">📜 Disclaimer</a> |
   <a href="#credi">🙏 Credits</a>
 </h5>
+
 
 ## ✨ Features <a id="features"></a>
 
@@ -80,6 +82,33 @@ Lightweight injection script. Built on Manifest V3 with excellent performance an
 
 - Required version: `Firefox 136+`
 - [Download](https://github.com/omegaee/my-fingerprint/releases/latest) `.xpi` → Drag into browser window → Click “Add”
+
+## ⚙️ Configuration Module <a id="configuration"></a>
+
+This module provides flexible options for customizing fingerprint protection behavior:
+
+- **Strong Fingerprint Group**
+  - Simulates highly unique user characteristics  
+  - Typically used in combination with other fingerprints or IP data
+
+- **Weak Fingerprint Group**
+  - Captures basic, high-repetition information  
+  - Suitable for lightweight protection scenarios
+
+- **Script Settings**
+  - Global Seed: Used for the “Random by Global Seed” option to ensure consistent output  
+  - Injection Mode: Recommended to enable “Fast Injection” for better compatibility and performance
+
+- **Whitelist Management**
+  - Supports editing whitelist entries  
+  - Subdomain matching supported: e.g., `example.com` matches `*.example.com`, `*.*.example.com`
+
+- **Subscription Options**
+  - Use configuration templates for quick setup (subscription can be disabled after initial use)  
+    - [Standard Mode – Default Template](https://raw.githubusercontent.com/omegaee/my-fingerprint/main/example/config/template.json)  
+  - Empty value disables subscription  
+  - Supports manual subscription or auto-fetching remote config (JSON format) on extension startup  
+  - Subscription config will override existing settings and merge whitelist entries
 
 ## 🧪 Testing Targets <a id="testing"></a>
 
