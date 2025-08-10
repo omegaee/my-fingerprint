@@ -42,7 +42,7 @@
   <a href="#community">🌱 社区</a> |
   <a href="#support">🌸 支持</a> |
   <a href="#disclaimer">📜 声明</a> |
-  <a href="#credi">🙏 鸣谢</a>
+  <a href="#credits">🙏 鸣谢</a>
 </h5>
 
 
@@ -136,7 +136,7 @@ npm run dev:firefox  # Firefox
 - 如果你觉得项目有帮助，请点个 Star ⭐
 - 微信赞赏支持也欢迎！
 
-👉 查看支持者名单：[支持者列表](./docs/supporters.zh.md)
+👉 [查看支持者列表](./docs/supporters.zh.md)
 
 | 微信 |
 | :---: |
@@ -146,6 +146,6 @@ npm run dev:firefox  # Firefox
 
 本项目仅用于学习与研究目的。请勿用于非法用途，开发者不对任何损失或问题负责。
 
-## 🙏 鸣谢 <a id="credi"></a>
+## 🙏 鸣谢 <a id="credits"></a>
 
 感谢所有贡献者与支持者。特别感谢开源社区的力量！

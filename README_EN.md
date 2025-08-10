@@ -41,7 +41,7 @@ Lightweight injection script. Built on Manifest V3 with excellent performance an
   <a href="#development">🛠️ Development</a> |
   <a href="#support">🌸 Support</a> |
   <a href="#disclaimer">📜 Disclaimer</a> |
-  <a href="#credi">🙏 Credits</a>
+  <a href="#credits">🙏 Credits</a>
 </h5>
 
 
