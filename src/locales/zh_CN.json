@@ -71,7 +71,7 @@
       "canvas": "Canvas指纹",
       "audio": "Audio指纹",
       "webgl": "WebGL指纹",
-      "webrtc": "WebRTC拦截",
+      "webrtc": "WebRTC接口",
       "fonts": "Fonts指纹",
       "webgpu": "WebGPU指纹",
       "gpuInfo": "图形驱动信息",

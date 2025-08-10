@@ -71,7 +71,7 @@
       "canvas": "Canvas Fingerprint",
       "audio": "Audio Fingerprint",
       "webgl": "WebGL Fingerprint",
-      "webrtc": "WebRTC Block",
+      "webrtc": "WebRTC Interface",
       "fonts": "Fonts Fingerprint",
       "webgpu": "WebGPU Fingerprint",
       "gpuInfo": "Graphics Driver",
