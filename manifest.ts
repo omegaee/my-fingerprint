@@ -2,7 +2,7 @@ import { ManifestV3Export } from "@crxjs/vite-plugin"
 
 const baseManifest: ManifestV3Export = {
   manifest_version: 3,
-  version: '2.5.1.200',
+  version: '2.6.0',
   name: 'My Fingerprint',
   default_locale: 'en',
   description: '__MSG_ext_desc__',
@@ -65,7 +65,7 @@ export const firefoxManifest: ManifestV3Export & { [key: string]: any } = {
   ...baseManifest,
   browser_specific_settings: {
     gecko: {
-      id: "omegaee@github.com",
+      id: "my-fingerprint@omegaee.dev",
       strict_min_version: "136.0"
     }
   },
