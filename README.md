@@ -40,7 +40,7 @@
   <a href="#testing">🧪 测试</a> |
   <a href="#development">🛠️ 开发</a> |
   <a href="#community">🌱 社区</a> |
-  <a href="#support">🌸 支持</a> |
+  <a href="#support">💝 支持</a> |
   <a href="#disclaimer">📜 声明</a> |
   <a href="#credits">🙏 鸣谢</a>
 </h5>
@@ -131,16 +131,10 @@ npm run dev:firefox  # Firefox
 - 欢迎通过 Issues 和 Pull Requests 提交建议与反馈
 - [![QQ群](https://img.shields.io/badge/QQ%E7%BE%A4-971379868-fedcba?style=flat-square&logo=qq&logoColor=white)](https://qm.qq.com/q/hxchiOUTtu)
 
-## 🌸 支持一下 <a id="support"></a>
+## 💝 支持一下 <a id="support"></a>
 
 - 如果你觉得项目有帮助，请点个 Star ⭐
-- 微信赞赏支持也欢迎！
-
-👉 [查看支持者列表](./docs/supporters.zh.md)
-
-| 微信 |
-| :---: |
-| <img src='./images/wechat-code.png' title='微信' width='200px' height='200px'  /> |
+- 微信赞赏支持也欢迎！[微信赞赏入口](./docs/supporters.zh.md)
 
 ## 📜 声明 <a id="disclaimer"></a>
 
