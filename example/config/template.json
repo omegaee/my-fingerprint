@@ -1,25 +1,21 @@
 {
+  "version": "2.6.0",
   "config": {
+    "enable": true,
     "fp": {
       "navigator": {
         "hardwareConcurrency": {
-          "type": 0
-        },
-        "language": {
           "type": 0
         },
         "languages": {
           "type": 0
         },
         "uaVersion": {
-          "type": 3
+          "type": 0
         }
       },
       "normal": {
-        "glRenderer": {
-          "type": 0
-        },
-        "glVendor": {
+        "gpuInfo": {
           "type": 0
         }
       },
@@ -29,6 +25,9 @@
         },
         "canvas": {
           "type": 3
+        },
+        "domRect": {
+          "type": 0
         },
         "font": {
           "type": 0
@@ -47,22 +46,17 @@
         }
       },
       "screen": {
-        "colorDepth": {
+        "depth": {
           "type": 0
         },
-        "height": {
-          "type": 0
-        },
-        "pixelDepth": {
-          "type": 0
-        },
-        "width": {
+        "size": {
           "type": 0
         }
       }
+    },
+    "subscribe": {
+      "url": "config.json"
     }
   },
-  "whitelist": [
-    "example.com"
-  ]
+  "whitelist": []
 }
