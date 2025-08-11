@@ -1,160 +1,151 @@
+<h4 align="center">
+简体中文 | <a href="./README_EN.md">English</a>
+</h4>
 
-中文 | [English](./README_EN.md)
+<hr/>
+
+<h1 align="center">My Fingerprint</h1>
+
+<p align="center">
+保护你的浏览器指纹，提升隐私安全。支持 <code>Chrome</code>、<code>Edge</code>、<code>Firefox</code>，安装即生效。
+</p>
+
+<p align="center">
+轻量注入脚本，基于 Manifest V3 构建，性能优秀，零干扰。
+</p>
+
+
+<p align="center">
+<a href="https://github.com/omegaee/my-fingerprint/releases">
+  <img alt="Latest Release" src="https://img.shields.io/github/v/release/omegaee/my-fingerprint?style=flat">
+</a>
+<a href="https://github.com/omegaee/my-fingerprint/stargazers">
+  <img alt="Stars" src="https://img.shields.io/github/stars/omegaee/my-fingerprint?style=flat">
+</a>
+<a href="https://github.com/omegaee/my-fingerprint/issues">
+  <img alt="Issues" src="https://img.shields.io/github/issues/omegaee/my-fingerprint?style=flat">
+</a>
+<a href="https://github.com/omegaee/my-fingerprint/blob/main/LICENSE">
+  <img alt="License" src="https://img.shields.io/github/license/omegaee/my-fingerprint?style=flat">
+</a>
+</p>
 
 ---
 
-[--- v2.5 版本更新 ---](https://github.com/omegaee/my-fingerprint/releases/latest)
-
-# My Fingerprint
-
-- `Chrome / Edge / Firefox`扩展
-- 可混淆各浏览器指纹标识
-- 可选指纹项
-- 可选随机条件
-- 安装即生效
-- 可监控页面对指纹的访问情况
-- 支持白名单控制
-
-**支持指纹**
-- [x] UserAgent系列
-- [x] 屏幕系列
-- [x] 语言
-- [x] 时区
-- [x] Canvas指纹
-- [x] Audio指纹
-- [x] Font指纹
-- [x] WebGL指纹
-- [x] WebRTC保护
-- [x] WebGPU指纹
-- [x] 图形驱动信息
-
-## 目录
-- [使用](#使用)
-- [功能模块](#功能模块)
-- [测试目标](#测试目标)
-- [开发](#开发)
-- [社区](#社区)
-- [支持一下](#支持一下)
-- [声明](#声明)
+<h5 align="center">
+  <a href="#features">✨ 功能</a> |
+  <a href="#fingerprint">🧬 指纹</a> |
+  <a href="#installation">🧰 安装</a> |
+  <a href="#configuration">⚙️ 配置</a> |
+  <a href="#testing">🧪 测试</a> |
+  <a href="#development">🛠️ 开发</a> |
+  <a href="#community">🌱 社区</a> |
+  <a href="#support">🌸 支持</a> |
+  <a href="#disclaimer">📜 声明</a> |
+  <a href="#credits">🙏 鸣谢</a>
+</h5>
 
 
-## 使用
+## ✨ 功能特点 <a id="features"></a>
 
-#### Chrome & Edge
+- 🚀 支持 Chrome、Edge、Firefox 浏览器
+- ⚙️ 安装即生效，无需额外配置
+- 📦 基于 Manifest V3，兼容性强
+- 🔍 可监控页面对指纹 API 的访问情况
+- 🧱 支持白名单控制与自定义配置
+- 📤 提供配置导入导出与订阅功能
+- 🧩 轻量级原生注入（20.0 KB / Gzip: 10.0 KB），零依赖，性能开销极低
 
-***前置：***
-- 浏览器版本需求 `Chrome 102+` `Edge 102+`
-- 推荐 `Chrome 120+` `Edge 120+`
+## 🧬 指纹保护 <a id="fingerprint"></a>
 
-***安装：***
-1. 下载扩展最新版本的`.zip` -- [扩展下载](https://github.com/omegaee/my-fingerprint/releases/latest)
-2. 打开浏览器扩展管理，开启开发者模式
-3. 把下载好的`.zip`拖拽进浏览器扩展管理页面
-4. 启用扩展（若有需要，可在`详细`里勾选`在无痕模式下启用 / InPrivate中允许`）
+- Canvas 指纹
+- WebGL 指纹
+- Audio 指纹
+- Fonts 指纹
+- WebRTC 保护
+- WebGPU 指纹
+- DomRect 指纹
+- 语言与时区
+- 图形驱动信息
+- UserAgent
+- 屏幕尺寸与分辨率
 
-***使用：***
-- 安装即生效（之前打开的标签页要刷新才生效）
-- （可选）左键插件图标进入配置页面进行自定义配置
-- （可选）若不生效，尝试重启浏览器
+## 🧰 安装指南 <a id="installation"></a>
 
-#### Firefox
+### Chrome / Edge
 
-***前置：***
-- 浏览器版本需求 `Firefox 136+`
+- 浏览器版本要求：`Chrome/Edge 102+`
+- 推荐版本：120+
+- [下载](https://github.com/omegaee/my-fingerprint/releases/latest) `.zip` 文件 → 拖入扩展管理页面 → 启用扩展
+- 可选：启用无痕模式支持
 
-***安装：***
-1. 下载扩展最新版本的`.xpi` -- [扩展下载](https://github.com/omegaee/my-fingerprint/releases/latest)
-2. 直接将`.xpi`文件直接拖拽到浏览器窗口中
-3. 浏览器会弹出安装提示，点击添加即可
-4. 左键扩展图标进入扩展页面，点击 `更多 -> 授权` 进行功能授权
+### Firefox
 
-***使用：***
-- 安装即生效（之前打开的标签页要刷新才生效）
-- （可选）左键扩展图标进入配置页面进行自定义配置
-- （可选）若不生效，尝试重启浏览器
+- 浏览器版本要求：`Firefox 136+`
+- [下载](https://github.com/omegaee/my-fingerprint/releases/latest) `.xpi` 文件 → 拖入浏览器窗口 → 点击添加
 
+## ⚙️ 配置模块 <a id="configuration"></a>
 
-## 功能模块
+扩展支持灵活的配置选项，可通过图标进入设置面板进行调整：
 
-<img src='./images/zh/ui.png' width='360px' />
+- **强指纹组**
+  - 模拟高度唯一的用户特征，通常与其他指纹项或 IP 信息联合使用
 
-#### 配置模块
-- 普通指纹配置
-- 特殊指纹配置
-- 其他配置
-  - [x] 语言 - 扩展界面使用语言
-  - [x] 全局种子 - 作用于`根据全局种子随机值`选项
-  - [x] 网络请求钩子 - 根据配置内容修改网络请求头
-  - [x] Iframe钩子 - 对Iframe进行注入
+- **弱指纹组**
+  - 获取重复率高的基础信息，适合轻度保护场景
 
-#### 记录模块
-- 显示了当前标签页对各种指纹的访问次数
+- **脚本配置**
+  - 全局种子：用于“根据全局种子随机值”选项，确保生成结果一致性  
+  - 注入模式：推荐启用“快速注入”以提升兼容性与性能
 
-#### 白名单模块
-- 可对以白名单列表进行编辑
-- 支持子域名匹配
-  - `example.com` 匹配 `*.example.com`, `*.*.example.com`
+- **白名单机制**
+  - 支持编辑白名单列表  
+  - 支持子域名匹配：如 `example.com` 可匹配 `*.example.com`、`*.*.example.com`
 
-#### 更多
-- 配置文件的导入导出
-- 权限
-- 订阅
+- **订阅机制**
+  - 可使用配置模板进行初始化（订阅一次后可关闭）  
+    - [标准模式 - 默认配置](https://raw.githubusercontent.com/omegaee/my-fingerprint/main/example/config/template.json)  
+  - 空值表示关闭订阅  
+  - 支持手动订阅或扩展启动时自动拉取远程配置（JSON 格式）  
+  - 订阅配置将覆盖原设置，并合并白名单内容
 
-#### 订阅
-- 扩展加载时会从订阅目标上拉取配置，配置内容必须是json格式。
-- 会覆盖原配置并合并白名单。
-- 配置样本: 导出的配置或[template.json](./example/config/template.json)
+## 🧪 测试目标 <a id="testing"></a>
 
-**例子**
-- 空值（关闭订阅）
-- 默认: `config.json`
-  - 默认为扩展所在目录
-- 本地: `file:///example/config.json`
-  - 需要开启扩展的`允许访问文件网址`
-- 网络: `http://example.com/config.json`
+- [webbrowsertools.com](https://webbrowsertools.com/)
+- [browserscan.net](https://www.browserscan.net/)
+- [CreepJS](https://abrahamjuliot.github.io/creepjs/)
+- [yalala.com](https://www.yalala.com/)
+- [uutool.cn](https://uutool.cn/browser/)
 
+## 🛠️ 开发 <a id="development"></a>
 
-## 测试目标
-- [x] https://webbrowsertools.com/
-- [x] https://www.yalala.com/
-- [x] https://uutool.cn/browser/
-- [x] https://www.ip77.net/
-- [x] https://www.browserscan.net/
-- [x] https://abrahamjuliot.github.io/creepjs/
-
-
-## 开发
-```sh
+```bash
 cd <project>
 npm install
+npm run dev          # Chrome / Edge
+npm run dev:firefox  # Firefox
 ```
 
-#### Chrome & Edge
-- 执行`npm run dev`
-- 在浏览器扩展界面，开启`开发者模式`，点击`加载已解压的扩展程序`，选择`<project>/dist/`目录即可
+## 🌱 社区 <a id="community"></a>
 
-#### Firefox
-- 执行`npm run dev:firefox`, 失败则再执行一次
-- 在浏览器扩展界面，点击`加载临时扩展`，选择`<project>/dist/manifest.json`即可
-- 非首次编译前建议先删除`<project>/src/core/output.js`
+- 欢迎通过 Issues 和 Pull Requests 提交建议与反馈
+- [![QQ群](https://img.shields.io/badge/QQ%E7%BE%A4-971379868-fedcba?style=flat-square&logo=qq&logoColor=white)](https://qm.qq.com/q/hxchiOUTtu)
 
+## 🌸 支持一下 <a id="support"></a>
 
-## 社区
-> 为了统一管理，建议优先使用 `Issues` 、 `Pull requests` 等功能
+- 如果你觉得项目有帮助，请点个 Star ⭐
+- 微信赞赏支持也欢迎！
 
-[![QQ群](https://img.shields.io/badge/QQ%E7%BE%A4-971379868-fedcba?style=flat-square&logo=qq&logoColor=white)](https://qm.qq.com/q/hxchiOUTtu)
-
-
-## 支持一下
-- 本项目免费开源，如果你觉得对你有帮助，请给我一颗Star
-- 如果有好的建议或意见，欢迎提交Issue或Pull Request
-- 欢迎赞赏支持
+👉 [查看支持者列表](./docs/supporters.zh.md)
 
 | 微信 |
 | :---: |
-| <img src='./images/wechat-code.png' title='微信' width='210px' height='210px'  /> |
+| <img src='./images/wechat-code.png' title='微信' width='200px' height='200px'  /> |
 
+## 📜 声明 <a id="disclaimer"></a>
 
-## 声明
-- 若要进行某些较敏感的操作，请使用更加专业的工具。
-- 本项目仅用于学习和研究，开发者不对因使用本项目而导致的任何损失或问题负责。
+本项目仅用于学习与研究目的。请勿用于非法用途，开发者不对任何损失或问题负责。
+
+## 🙏 鸣谢 <a id="credits"></a>
+
+感谢所有贡献者与支持者。特别感谢开源社区的力量！
