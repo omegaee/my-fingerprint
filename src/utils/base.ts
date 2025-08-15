@@ -268,3 +268,14 @@ export const selectParentDomains = (domains: string[], src: string) => {
   }
   return list
 }
+
+/**
+ * 对象提取值
+ */
+export const pick = <T extends object, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K> => {
+  const res = {} as Pick<T, K>;
+  for (const key of keys) {
+    res[key] = obj[key];
+  }
+  return res;
+}

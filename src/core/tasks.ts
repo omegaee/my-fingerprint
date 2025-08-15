@@ -1,7 +1,7 @@
 import { HookType } from '@/types/enum'
 import { type HookTask } from "./core";
 import { genRandomVersionUserAgent } from "@/utils/equipment";
-import { seededEl, seededRandom, shuffleArray } from '@/utils/base';
+import { pick, seededRandom } from '@/utils/base';
 import {
   notify,
   drawNoise,
@@ -645,20 +645,35 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.domRect.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useGetterProxy }) => {
+    onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
       const seed = useSeed(conf.fp.other.domRect)
       if (seed == null) return;
 
-      useGetterProxy(win.DOMRect.prototype, [
-        'x', 'y', 'width', 'height'
-      ], (_, getter) => ({
-        apply(target, thisArg: DOMRect, args: any) {
-          notify('strong.domRect')
-          const noise = seededRandom(seed, 1e-6, -1e-6);
-          const res = getter.call(thisArg);
-          return res + noise;
+      const mine = new WeakSet<DOMRect>()
+
+      useProxy(win, [
+        'DOMRect', 'DOMRectReadOnly'
+      ], {
+        construct(target, args, newTarget) {
+          const res = Reflect.construct(target, args, newTarget)
+          mine.add(res)
+          return res;
         }
-      }))
+      })
+
+      {
+        const noise = seededRandom(seed, 1e-6, -1e-6);
+        useGetterProxy(win.DOMRect.prototype, [
+          'x', 'y', 'width', 'height'
+        ], (_, getter) => ({
+          apply(target, thisArg: DOMRect, args: any) {
+            notify('strong.domRect')
+            const res = getter.call(thisArg);
+            if (mine.has(thisArg)) return res;
+            return res + noise;
+          }
+        }))
+      }
 
       {
         const hook = (key: keyof DOMRectReadOnly, toResult: (rect: DOMRectReadOnly) => number) => {
@@ -673,6 +688,13 @@ export const hookTasks: HookTask[] = [
         hook('bottom', rect => rect.y + rect.height)
         hook('right', rect => rect.x + rect.width)
       }
+
+      useProxy(win.DOMRectReadOnly.prototype, 'toJSON', {
+        apply(target, thisArg: DOMRectReadOnly, args: any) {
+          notify('strong.domRect')
+          return pick(thisArg, ['x', 'y', 'width', 'height', 'bottom', 'left', 'right', 'top']);
+        }
+      })
     }
   },
 
