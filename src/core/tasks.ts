@@ -811,6 +811,7 @@ export const hookTasks: HookTask[] = [
                   return es.join('\n');
                 }
                 const res = target[key]
+                if (key === 'constructor') return res;
                 return typeof res === 'function' ? res.bind(target) : res;
               }
             });
