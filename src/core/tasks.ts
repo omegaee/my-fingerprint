@@ -11,6 +11,7 @@ import {
   randomCanvasNoise,
   randomFontNoise,
   randomWebglNoise,
+  randomScreenSize,
 } from './utils';
 
 export const hookTasks: HookTask[] = [
@@ -87,7 +88,7 @@ export const hookTasks: HookTask[] = [
           useGetterProxy([win.Navigator.prototype, win.navigator], [
             'userAgent', 'appVersion'
           ], (key, getter) => ({
-            apply(target, thisArg: Screen, args: any) {
+            apply(target, thisArg: Navigator, args: any) {
               notify('weak.' + key)
               return genRandomVersionUserAgent(seed, {
                 userAgent: _userAgent.call(thisArg),
@@ -104,7 +105,7 @@ export const hookTasks: HookTask[] = [
         if (seed != null && info.browser !== 'firefox') {
           // @ts-ignore
           useGetterProxy([win.Navigator.prototype, win.navigator], 'userAgentData', (_, getter) => ({
-            apply(target, thisArg: Screen, args: any) {
+            apply(target, thisArg: Navigator, args: any) {
               notify('weak.userAgentData')
               const result = getter.call(thisArg)
               return proxyUserAgentData(seed, result);
@@ -120,7 +121,7 @@ export const hookTasks: HookTask[] = [
         const value: any = useHookMode(fps[key] as any).value
         if (value == null) return;
         return {
-          apply(target, thisArg: Screen, args: any) {
+          apply(target, thisArg: Navigator, args: any) {
             notify('weak.' + key)
             return value;
           }
@@ -130,7 +131,7 @@ export const hookTasks: HookTask[] = [
       {
         const value = useHookMode(fps.languages).value?.[0]
         value != null && useGetterProxy([win.Navigator.prototype, win.navigator], 'language', {
-          apply(target, thisArg: Screen, args: any) {
+          apply(target, thisArg: Navigator, args: any) {
             notify('weak.languages')
             return value;
           }
@@ -146,29 +147,57 @@ export const hookTasks: HookTask[] = [
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.screen)),
     onEnable: ({ win, conf, symbol, useHookMode, useGetterProxy }) => {
       const fps = conf.fp.screen;
+      const ws = win.screen;
 
       (win.screen as any)[symbol.own] = getOwnProperties(win.screen);
 
-      const size = useHookMode(fps.size).value
+      /* Screen Depth */
       const depth = useHookMode(fps.depth).value
-      const tasks: { [key in keyof Screen]?: number } = {
-        'width': size?.width,
-        'height': size?.height,
-        'colorDepth': depth?.color,
-        'pixelDepth': depth?.pixel,
-      }
-      useGetterProxy([win.Screen.prototype, win.screen],
-        Object.keys(tasks) as (keyof Screen)[],
-        (key, getter) => {
-          const value = tasks[key]
-          if (value == null) return;
-          return {
-            apply(target, thisArg: Screen, args: any) {
-              notify('weak.' + key)
-              return value;
+      if (depth) {
+        const tasks: { [key in keyof Screen]?: number } = {
+          'colorDepth': depth?.color,
+          'pixelDepth': depth?.pixel,
+        }
+        useGetterProxy([win.Screen.prototype, win.screen],
+          Object.keys(tasks) as (keyof Screen)[],
+          (key, getter) => {
+            const num = tasks[key]
+            if (num == null) return;
+            return {
+              apply(target, thisArg: Screen, args: any) {
+                notify('weak.' + key)
+                return num;
+              }
             }
-          }
-        });
+          });
+      }
+
+      /* Screen Size */
+      {
+        const { value, seed } = useHookMode(fps.size)
+        const size: any =
+          seed != null ? randomScreenSize(ws, seed) :
+            value != null ? value :
+              null;
+
+        if (size) {
+          if (size.width != null) size.availWidth = size.width - (ws.width - ws.availWidth);
+          if (size.height != null) size.availHeight = size.height - (ws.height - ws.availHeight);
+
+          useGetterProxy([win.Screen.prototype, ws], [
+            'width', 'height', 'availWidth', 'availHeight'
+          ], (key, getter) => {
+            const num = size[key]
+            if (num == null) return;
+            return {
+              apply(target, thisArg: Screen, args: any) {
+                notify('weak.' + key)
+                return num;
+              }
+            }
+          })
+        }
+      }
 
     },
   },

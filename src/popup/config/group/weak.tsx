@@ -130,7 +130,7 @@ export const WeakFpConfigGroup = memo(() => {
     {/* screen size */}
     <HookModeContent
       mode={fp.screen.size}
-      types={valueTypes}
+      types={baseValueTypes}
       parser={{
         toInput: v => v ?? { width: screen.width, height: screen.height },
         toValue(v) {
@@ -143,8 +143,8 @@ export const WeakFpConfigGroup = memo(() => {
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.size')}
-        className={mode.isDefault ? '' : dotStyles.error}
-        endContent={<TipIcon.Question content={<ConfigDesc tags={deprecatedTag} desc={t('item.desc.size')} />} />}
+        className={mode.isDefault ? '' : dotStyles.warning}
+        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.size')} />} />}
       >
         {select}
         {mode.isValue && <>

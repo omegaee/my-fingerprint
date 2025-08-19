@@ -73,6 +73,28 @@ export const randomFontNoise = (seed: number, mark: string): number => {
   return Math.floor(random) - 1;
 }
 
+/**
+ * 获取随机屏幕尺寸
+ */
+export const randomScreenSize = (screen: Screen, seed: number) => {
+  const offset = Math.round(seededRandom(seed, 100, -100))
+  const ratio = screen.width / screen.height;
+
+  let width: number
+  let height: number
+  if (screen.width >= screen.height) {
+    // 偏移宽度
+    width = screen.width + offset;
+    height = Math.round(width / ratio);
+  } else {
+    // 偏移高度
+    height = screen.height + offset;
+    width = Math.round(height * ratio);
+  }
+
+  return { width, height };
+}
+
 
 // 
 // --- other ---
