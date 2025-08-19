@@ -55,14 +55,15 @@ export class FingerprintHandler {
             try {
               return Object.setPrototypeOf(target, raw);
             } catch (e: any) {
-              throw this.info.browser === 'firefox' ? e : new Proxy(e, {
+              throw this.info.browser === 'firefox' ? e : this.newProxy(e, {
                 get: (target, key, receiver) => {
                   if (key === 'stack') {
                     const es = e.stack.split('\n')
                     es.splice(1, 2);
                     return es.join('\n');
                   }
-                  return typeof target[key] === 'function' ? new Proxy(target[key], receiver) : target[key]
+                  const res = target[key]
+                  return typeof res === 'function' ? res.bind(target) : res;
                 }
               })
             }
