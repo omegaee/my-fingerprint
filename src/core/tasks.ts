@@ -802,19 +802,14 @@ export const hookTasks: HookTask[] = [
             }
             return Reflect.apply(target, self, args);
           } catch (e: any) {
-            throw info.browser === 'firefox' ? e : newProxy(e, {
-              get(target, key, receiver) {
-                if (key === 'stack') {
-                  const es = e.stack.split('\n')
-                  es[1] = es[1].replace('Object', 'Function')
-                  es.splice(2, 1);
-                  return es.join('\n');
-                }
-                const res = target[key]
-                if (key === 'constructor') return res;
-                return typeof res === 'function' ? res.bind(target) : res;
-              }
-            });
+            // 堆栈伪造
+            if (info.browser !== 'firefox') {
+              const es = e.stack.split('\n')
+              es[1] = es[1].replace('Object', 'Function')
+              es.splice(2, 1);
+              e.stack = es.join('\n');
+            }
+            throw e;
           }
         }
       })

@@ -55,18 +55,13 @@ export class FingerprintHandler {
             try {
               return Object.setPrototypeOf(target, raw);
             } catch (e: any) {
-              throw this.info.browser === 'firefox' ? e : this.newProxy(e, {
-                get: (target, key, receiver) => {
-                  if (key === 'stack') {
-                    const es = e.stack.split('\n')
-                    es.splice(1, 2);
-                    return es.join('\n');
-                  }
-                  const res = target[key]
-                  if (key === 'constructor') return res;
-                  return typeof res === 'function' ? res.bind(target) : res;
-                }
-              })
+              // 堆栈伪造
+              if (this.info.browser !== 'firefox') {
+                const es = e.stack.split('\n')
+                es.splice(1, 2);
+                e.stack = es.join('\n');
+              }
+              throw e;
             }
           }
         }
