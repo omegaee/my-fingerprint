@@ -771,12 +771,12 @@ export const hookTasks: HookTask[] = [
    * .setPrototypeOf
    */
   {
-    onEnable: ({ win, symbol, isHasRaw, useProxy }) => {
+    onEnable: ({ win, symbol, hasRaw, useProxy }) => {
       useProxy(win.Reflect, 'setPrototypeOf', {
         apply(target: any, self: any, args: any[]) {
           const src = args[0]
           const dst = args[1]
-          if (isHasRaw(src) && dst != null) {
+          if (hasRaw(src) && dst != null) {
             dst[symbol.reflect] = true
             const res = Reflect.apply(target, self, args);
             delete dst[symbol.reflect]
@@ -792,7 +792,19 @@ export const hookTasks: HookTask[] = [
    * .toString
    */
   {
-    onEnable: ({ win, info, symbol, isReg, newProxy, useProxy }) => {
+    onEnable: ({ win, info, symbol, otherProxy, isReg, useProxy }) => {
+
+      function isRealFunction(obj: any) {
+        const target = Function.prototype.toString
+        let proto = obj;
+        while (proto = Object.getPrototypeOf(proto)) {
+          if (proto.toString === target) {
+            return !otherProxy.has(proto)
+          }
+        }
+        return false;
+      }
+
       useProxy(win.Function.prototype, 'toString', {
         apply(target: any, self: any, args: any[]) {
           try {
@@ -805,12 +817,30 @@ export const hookTasks: HookTask[] = [
             // 堆栈伪造
             if (info.browser !== 'firefox') {
               const es = e.stack.split('\n')
-              es[1] = es[1].replace('Object', 'Function')
+              if (isRealFunction(self)) {
+                es[1] = es[1].replace('Object', 'Function')
+              }
               es.splice(2, 1);
               e.stack = es.join('\n');
             }
             throw e;
           }
+        }
+      })
+
+    }
+  },
+
+  /**
+   * Proxy
+   */
+  {
+    onEnable: ({ win, otherProxy, useProxy }) => {
+      useProxy(win, 'Proxy', {
+        construct(target, args, newTarget) {
+          const v = Reflect.construct(target, args, newTarget)
+          otherProxy.add(v)
+          return v;
         }
       })
     }

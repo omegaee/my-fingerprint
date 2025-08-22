@@ -29,6 +29,7 @@ export class FingerprintHandler {
 
   /// hook存储
   public registry = new WeakSet<object>()
+  public otherProxy = new WeakSet<object>()
 
   /// hook索引
   public symbol = {
@@ -80,7 +81,7 @@ export class FingerprintHandler {
   /**
    * 判断对象以及上游是否注册代理
    */
-  public isHasRaw = (target: any) => {
+  public hasRaw = (target: any) => {
     if (target == null) return false;
     return target[this.symbol.raw] != null
   }
@@ -95,11 +96,13 @@ export class FingerprintHandler {
     return raw ?? target;
   }
 
+  private RawProxy = this.useRaw(Proxy);
+
   /**
    * 创建代理
    */
   public newProxy = <T extends object>(target: T, handler: ProxyHandler<T>): T => {
-    const proxy = new Proxy(target, this.toProxyHandler(handler));
+    const proxy = new this.RawProxy(target, this.toProxyHandler(handler));
     this.registry.add(proxy);
     return proxy;
   }
@@ -124,18 +127,14 @@ export class FingerprintHandler {
       for (const _k of key) {
         const _handler = typeof handler === 'function' ? handler(_k) : handler;
         if (_handler) {
-          const proxy = new Proxy(target[_k] as any, this.toProxyHandler(_handler));
-          target[_k] = proxy as T[K];
-          this.registry.add(proxy);
+          target[_k] = this.newProxy(target[_k] as any, _handler);
         }
       }
     } else {
       /* one */
       const _handler = typeof handler === 'function' ? handler(key) : handler;
       if (_handler) {
-        const proxy = new Proxy(target[key] as any, this.toProxyHandler(_handler));
-        target[key] = proxy as T[K];
-        this.registry.add(proxy);
+        target[key] = this.newProxy(target[key] as any, _handler);
       }
     }
   }
