@@ -7,11 +7,11 @@
 <h1 align="center">My Fingerprint</h1>
 
 <p align="center">
-Protect your browser fingerprints and enhance privacy. Supports <code>Chrome</code>, <code>Edge</code>, and <code>Firefox</code>.
+Protect your browser fingerprints and enhance privacy. <code>Chrome</code>, <code>Edge</code>, <code>Firefox</code> supported.
 </p>
 
 <p align="center">
-Lightweight injection script. Built on Manifest V3 with excellent performance and zero disruption.
+A lightweight, zero-disruption browser extension built on Manifest V3.
 </p>
 
 
@@ -39,7 +39,7 @@ Lightweight injection script. Built on Manifest V3 with excellent performance an
   <a href="#configuration">⚙️ Configuration</a> |
   <a href="#testing">🧪 Testing</a> |
   <a href="#development">🛠️ Development</a> |
-  <a href="#support">🌸 Support</a> |
+  <a href="#support">💝 Support</a> |
   <a href="#disclaimer">📜 Disclaimer</a> |
   <a href="#credits">🙏 Credits</a>
 </h5>
@@ -71,14 +71,24 @@ Lightweight injection script. Built on Manifest V3 with excellent performance an
 
 ## 🧰 Installation <a id="installation"></a>
 
-### Chrome / Edge
+### 🧩 Extension Store Installation
+
+💡 Extension store updates may lag behind GitHub due to review delays.
+
+- [Edge](https://microsoftedge.microsoft.com/addons/detail/mikeajonghdjobhfokpleagjockmmgdk)  
+- [Firefox](https://addons.mozilla.org/firefox/addon/my-fingerprint/)  
+- Chrome: Not yet available. Please use manual installation.
+
+### 📦 Manual Installation
+
+#### Chrome / Edge
 
 - Required version: `Chrome/Edge 102+`
 - Recommended: 120+
 - [Download](https://github.com/omegaee/my-fingerprint/releases/latest) `.zip` → Drag into extension manager → Enable
 - Optional: Enable in Incognito/InPrivate mode
 
-### Firefox
+#### Firefox
 
 - Required version: `Firefox 136+`
 - [Download](https://github.com/omegaee/my-fingerprint/releases/latest) `.xpi` → Drag into browser window → Click “Add”
@@ -113,8 +123,9 @@ This module provides flexible options for customizing fingerprint protection beh
 ## 🧪 Testing Targets <a id="testing"></a>
 
 - [webbrowsertools.com](https://webbrowsertools.com/)
-- [browserscan.net](https://www.browserscan.net/)
+- [browserleaks.com](https://browserleaks.com/)
 - [CreepJS](https://abrahamjuliot.github.io/creepjs/)
+- [browserscan.net](https://www.browserscan.net/)
 - [yalala.com](https://www.yalala.com/)
 - [uutool.cn](https://uutool.cn/browser/)
 
@@ -127,7 +138,7 @@ npm run dev          # Chrome / Edge
 npm run dev:firefox  # Firefox
 ```
 
-## 🌸 Support <a id="support"></a>
+## 💝 Support <a id="support"></a>
 
 - Submit feedback via Issues or Pull Requests
 - If you find this project helpful, give it a ⭐

@@ -7,11 +7,11 @@
 <h1 align="center">My Fingerprint</h1>
 
 <p align="center">
-保护你的浏览器指纹，提升隐私安全。支持 <code>Chrome</code>、<code>Edge</code>、<code>Firefox</code>，安装即生效。
+保护你的浏览器指纹，提升隐私安全。支持 <code>Chrome</code>、<code>Edge</code>、<code>Firefox</code>。
 </p>
 
 <p align="center">
-轻量注入脚本，基于 Manifest V3 构建，性能优秀，零干扰。
+轻量、零干扰的浏览器扩展，基于 Manifest V3 构建。
 </p>
 
 
@@ -54,7 +54,7 @@
 - 🔍 可监控页面对指纹 API 的访问情况
 - 🧱 支持白名单控制与自定义配置
 - 📤 提供配置导入导出与订阅功能
-- 🧩 轻量级原生注入（20.0 KB / Gzip: 10.0 KB），零依赖，性能开销极低
+- 🧩 轻量级原生注入，零依赖，性能开销极低
 
 ## 🧬 指纹保护 <a id="fingerprint"></a>
 
@@ -72,17 +72,27 @@
 
 ## 🧰 安装指南 <a id="installation"></a>
 
-### Chrome / Edge
+### 🧩 扩展商店安装
+
+💡 扩展商店的更新可能因审核延迟而滞后于 GitHub。
+
+- [Edge](https://microsoftedge.microsoft.com/addons/detail/mikeajonghdjobhfokpleagjockmmgdk)
+- [Firefox](https://addons.mozilla.org/firefox/addon/my-fingerprint/)
+- Chrome: 尚未上架，可通过手动安装使用
+
+### 📦 手动安装
+
+#### Chrome / Edge
 
 - 浏览器版本要求：`Chrome/Edge 102+`
 - 推荐版本：120+
-- [下载](https://github.com/omegaee/my-fingerprint/releases/latest) `.zip` 文件 → 拖入扩展管理页面 → 启用扩展
+- [下载扩展包](https://github.com/omegaee/my-fingerprint/releases/latest) `.zip` 文件 → 拖入扩展管理页面 → 启用扩展
 - 可选：启用无痕模式支持
 
-### Firefox
+#### Firefox
 
 - 浏览器版本要求：`Firefox 136+`
-- [下载](https://github.com/omegaee/my-fingerprint/releases/latest) `.xpi` 文件 → 拖入浏览器窗口 → 点击添加
+- [下载扩展包](https://github.com/omegaee/my-fingerprint/releases/latest) `.xpi` 文件 → 拖入浏览器窗口 → 点击添加
 
 ## ⚙️ 配置模块 <a id="configuration"></a>
 
@@ -112,8 +122,9 @@
 ## 🧪 测试目标 <a id="testing"></a>
 
 - [webbrowsertools.com](https://webbrowsertools.com/)
-- [browserscan.net](https://www.browserscan.net/)
+- [browserleaks.com](https://browserleaks.com/)
 - [CreepJS](https://abrahamjuliot.github.io/creepjs/)
+- [browserscan.net](https://www.browserscan.net/)
 - [yalala.com](https://www.yalala.com/)
 - [uutool.cn](https://uutool.cn/browser/)
 
