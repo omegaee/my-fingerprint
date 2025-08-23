@@ -53,7 +53,7 @@ A lightweight, zero-disruption browser extension built on Manifest V3.
 - 🔍 Monitors fingerprint API access on web pages
 - 🧱 Customizable protection rules and whitelist support
 - 📤 Import/export configuration and subscription support
-- 🧩 Lightweight native injection (20.0 KB / Gzip: 10.0 KB), zero dependencies, negligible performance cost
+- 🧩 Lightweight native injection, zero dependencies, negligible performance cost
 
 ## 🧬 Fingerprint Protection <a id="fingerprint"></a>
 
