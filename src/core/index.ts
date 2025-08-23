@@ -1,4 +1,4 @@
-import { FingerprintHandler, WIN_KEY } from "./core";
+import { FingerprintContext, WIN_KEY } from "./core";
 import { genRandomSeed, existParentDomain } from "@/utils/base";
 import { getBrowser } from "@/utils/equipment";
 import { sendToWindow } from "@/utils/message";
@@ -16,7 +16,10 @@ const storage: LocalStorage = _local;
     if (!data) return;
     if (existParentDomain(storage.whitelist, data.host)) return;
     try {
-      new FingerprintHandler(win, data, storage.config);
+      new FingerprintContext(win, {
+        info: data,
+        conf: storage.config,
+      });
     } catch (_) { }
   }
 

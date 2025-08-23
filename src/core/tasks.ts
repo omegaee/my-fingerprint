@@ -792,7 +792,7 @@ export const hookTasks: HookTask[] = [
    * .toString
    */
   {
-    onEnable: ({ win, info, symbol, otherProxy, isReg, useProxy }) => {
+    onEnable: ({ win, info, symbol, myProxy, otherProxy, useProxy }) => {
 
       function isRealFunction(obj: any) {
         const target = Function.prototype.toString
@@ -808,7 +808,7 @@ export const hookTasks: HookTask[] = [
       useProxy(win.Function.prototype, 'toString', {
         apply(target: any, self: any, args: any[]) {
           try {
-            if (self != null && isReg(self)) {
+            if (self != null && myProxy.has(self)) {
               const raw = self[symbol.raw]
               if (raw) return Reflect.apply(target, raw, args);
             }

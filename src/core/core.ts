@@ -6,9 +6,9 @@ import { notifyIframeOrigin } from './utils';
 
 export type HookTask = {
   // 条件，为空则默认为true
-  condition?: (ctx: FingerprintHandler) => boolean | undefined
+  condition?: (ctx: FingerprintContext) => boolean | undefined
   // 钩子函数
-  onEnable?: (ctx: FingerprintHandler) => void
+  onEnable?: (ctx: FingerprintContext) => void
 }
 
 // export const WIN_KEY = Symbol('__my_fingerprint__')
@@ -21,22 +21,24 @@ type SeedInfo = {
   global: number
 }
 
-export class FingerprintHandler {
+type ContextOptions = Pick<FingerprintContext, 'info' | 'conf'> & Partial<FingerprintContext>
+
+export class FingerprintContext {
   public win: Window & typeof globalThis
   public info: WindowStorage
   public seed: SeedInfo
   public conf: LocalStorageConfig
 
   /// hook存储
-  public registry = new WeakSet<object>()
-  public otherProxy = new WeakSet<object>()
+  public myProxy: WeakSet<object>;
+  public otherProxy: WeakSet<object>;
 
   /// hook索引
-  public symbol = {
-    own: Symbol('OwnProperty'),
-    raw: Symbol('RawValue'),
-    reflect: Symbol('Reflect'),
-  }
+  public symbol: {
+    own: symbol;
+    raw: symbol;
+    reflect: symbol;
+  };
 
   private toProxyHandler = <T extends object>(handler: ProxyHandler<T>): ProxyHandler<T> => {
     return {
@@ -75,7 +77,7 @@ export class FingerprintHandler {
    * 判断对象是否注册代理
    */
   public isReg = (target: any) => {
-    return this.registry.has(target)
+    return this.myProxy.has(target)
   }
 
   /**
@@ -96,14 +98,13 @@ export class FingerprintHandler {
     return raw ?? target;
   }
 
-  private RawProxy = this.useRaw(Proxy);
-
   /**
    * 创建代理
    */
   public newProxy = <T extends object>(target: T, handler: ProxyHandler<T>): T => {
-    const proxy = new this.RawProxy(target, this.toProxyHandler(handler));
-    this.registry.add(proxy);
+    const RawProxy = this.useRaw(Proxy)
+    const proxy = new RawProxy(target, this.toProxyHandler(handler));
+    this.myProxy.add(proxy);
     return proxy;
   }
 
@@ -267,7 +268,9 @@ export class FingerprintHandler {
     }
   }
 
-  public constructor(win: Window & typeof globalThis, info: WindowStorage, config: LocalStorageConfig) {
+  public constructor(win: Window & typeof globalThis, opt: ContextOptions) {
+    const { info, conf } = opt;
+
     if (!win) throw new Error('win is required');
     if (win === window.top) {
       if (info.hooked) throw new Error('win is already hooked');
@@ -287,16 +290,22 @@ export class FingerprintHandler {
 
     this.win = win
     this.info = info
-    this.conf = config
+    this.conf = conf
 
-    this.seed = {
+    this.myProxy = opt.myProxy ?? new WeakSet()
+    this.otherProxy = opt.otherProxy ?? new WeakSet()
+    this.seed = opt.seed ?? {
       page: info.seed,
       domain: Math.floor(seededRandom(info.host, Number.MAX_SAFE_INTEGER, 1)),
-      browser: config.seed.browser ?? genRandomSeed(),
-      global: config.seed.global ?? genRandomSeed(),
+      browser: conf.seed.browser ?? genRandomSeed(),
+      global: conf.seed.global ?? genRandomSeed(),
+    }
+    this.symbol = opt.symbol ?? {
+      own: Symbol('OwnProperty'),
+      raw: Symbol('RawValue'),
+      reflect: Symbol('Reflect'),
     }
 
-    // this.listenMessage()
     this.hookContent()
 
     if (win !== window.top) {
@@ -328,7 +337,7 @@ export class FingerprintHandler {
    */
   public hookIframe = (iframe: HTMLIFrameElement) => {
     try {
-      new FingerprintHandler(iframe.contentWindow as any, this.info, this.conf)
+      new FingerprintContext(iframe.contentWindow as any, this)
     } catch (_) { }
   }
 
