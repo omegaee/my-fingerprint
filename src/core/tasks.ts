@@ -286,19 +286,26 @@ export const hookTasks: HookTask[] = [
     onEnable: ({ win, conf, useHookMode, useProxy }) => {
       const fps = conf.fp.normal
 
+      let ex: WEBGL_debug_renderer_info | null
+
       /* Report: Parameter */
       const info = useHookMode(fps.gpuInfo).value
       if (info) {
         const handler = {
           apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
-            const ex = thisArg.getExtension('WEBGL_debug_renderer_info')
+            if (!ex) ex = thisArg.getExtension('WEBGL_debug_renderer_info');
             if (ex) {
               if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
                 notify('weak.gpuInfo')
-                if (info.vendor) return info.vendor;
+                // 减缓执行速度
+                if (info.vendor && target.apply(thisArg, args)) {
+                  return info.vendor;
+                }
               } else if (args[0] === ex.UNMASKED_RENDERER_WEBGL) {
                 notify('weak.gpuInfo')
-                if (info.renderer) return info.renderer;
+                if (info.renderer && target.apply(thisArg, args)) {
+                  return info.renderer;
+                }
               }
             }
             return target.apply(thisArg, args);
