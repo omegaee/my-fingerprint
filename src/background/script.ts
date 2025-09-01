@@ -7,11 +7,19 @@ import { coreInject } from "@/core/output";
 const REG_ID = 'core'
 let mScriptCode: string | undefined = undefined
 
+export const hasUserScripts = () => {
+  try {
+    return !!chrome.userScripts
+  } catch (_) {
+    return false
+  }
+}
+
 /**
  * 是否使用快速注入模式
  */
 export const isFastInject = (storage: LocalStorage) => {
-  return storage.config.action.fastInject && chrome.userScripts;
+  return storage.config.action.fastInject && hasUserScripts();
 }
 
 /**

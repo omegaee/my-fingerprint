@@ -2,6 +2,7 @@ import { genRandomSeed, existParentDomain } from "@/utils/base";
 import { debounce, debouncedAsync } from "@/utils/timer";
 import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
+import { hasUserScripts } from "./script";
 
 let mContent: LocalStorageContent | undefined
 
@@ -82,7 +83,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         },
       },
       action: {
-        fastInject: chrome.userScripts ? true : false,
+        fastInject: hasUserScripts() ? true : false,
       },
       input: {
         globalSeed: String(sGlobal),
