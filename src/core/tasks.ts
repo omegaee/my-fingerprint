@@ -297,7 +297,7 @@ export const hookTasks: HookTask[] = [
             if (ex) {
               if (args[0] === ex.UNMASKED_VENDOR_WEBGL) {
                 notify('weak.gpuInfo')
-                // 减缓执行速度
+                // 模拟调用
                 if (info.vendor && target.apply(thisArg, args)) {
                   return info.vendor;
                 }

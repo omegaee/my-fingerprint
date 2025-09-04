@@ -21,7 +21,7 @@ const sendFpRecord = debounce(() => {
   sendToWindow(window.top ?? window, {
     type: 'notice.push.fp',
     data: fpNoticePool,
-  }, '*')
+  })
   fpNoticePool = {}
 })
 
@@ -38,7 +38,7 @@ const sendIframeRecord = debounce(() => {
   sendToWindow(window.top ?? window, {
     type: 'notice.push.iframe',
     data: iframeNoticePool,
-  }, '*')
+  })
   iframeNoticePool = {}
 })
 

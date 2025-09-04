@@ -60,7 +60,7 @@ const storage: LocalStorage = _local;
         hook(window, msg.data)
       }
     }) as WindowMessage.Listener)
-    sendToWindow(window.top ?? window, { type: 'core.get-info' }, '*')
+    sendToWindow(window.top ?? window, { type: 'core.get-info' })
   }
 
 })()
