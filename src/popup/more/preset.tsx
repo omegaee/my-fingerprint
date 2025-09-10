@@ -1,6 +1,6 @@
 import { GithubApi, type GithubContentItem } from "@/api/github"
 import { sharedAsync } from "@/utils/timer"
-import { App, Button, Popconfirm, Spin, Tag } from "antd"
+import { App, Button, Divider, Popconfirm, Spin, Tag } from "antd"
 import { useEffect, useMemo, useState } from "react"
 import { LoadingOutlined } from '@ant-design/icons'
 import { trimSuffix } from "@/utils/base"
@@ -28,7 +28,7 @@ const PresetContent = ({ }: {
   return <div className="w-full h-48 flex justify-center items-center bg-[--ant-color-bg-container] rounded">
     {presets == null ?
       <Spin indicator={<LoadingOutlined spin />} /> :
-      <div className="w-full h-full p-2 flex gap-2 animate-fadeIn">
+      <div className="w-full h-full p-2 flex animate-fadeIn">
         <div className="w-24 shrink-0 flex flex-col overflow-auto no-scrollbar">
           {presets.length === 0 && <div className="h-full flex justify-center items-center">{t('tip.label.no-fp-notice')}</div>}
           {presets
@@ -40,7 +40,8 @@ const PresetContent = ({ }: {
               onSelect={setSelected}
             />)}
         </div>
-        <div className="grow bg-[--ant-color-bg-layout] rounded">
+        <Divider className="h-full mx-2" type='vertical' />
+        <div className="grow rounded">
           <PresetPanel item={selected} />
         </div>
       </div>}
@@ -113,29 +114,29 @@ const PresetPanel = ({ item }: {
   }
 
   return item == null ?
-    <div className="h-full flex justify-center items-center">请选择内容</div> :
+    <div className="h-full flex justify-center items-center">{t('tip.label.select-content')}</div> :
     raw == null ?
       <div className="h-full flex justify-center items-center"><Spin indicator={<LoadingOutlined spin />} /></div> :
       preset == null ?
-        <div className="h-full flex justify-center items-center">不支持的内容</div> :
-        <div className="h-full p-2 flex flex-col justify-between overflow-y-auto">
+        <div className="h-full flex justify-center items-center">{'tip.label.unsupport-content'}</div> :
+        <div className="h-full flex flex-col justify-between overflow-y-auto">
           <div className="flex flex-col gap-2">
             <div>
-              {preset.version == null ? <Tag>通用</Tag> : <Tag>v{preset.version}</Tag>}
-              {preset.version != null && manifest.version !== preset.version && <Tag color='error'>版本号不一致</Tag>}
+              <Tag>{preset.version == null ? t('tag.general') : `v${preset.version}`}</Tag>
+              {preset.version != null && manifest.version !== preset.version && <Tag color='error'>{t('tip.label.version-mismatch')}</Tag>}
             </div>
-            <p className="font-bold">{asLang(preset.title) ?? '未命名'}</p>
-            <p>{asLang(preset.description) ?? '暂无描述'}</p>
+            <p className="font-bold">{asLang(preset.title) ?? 'null'}</p>
+            <p>{asLang(preset.description) ?? 'null'}</p>
           </div>
           <div className="self-end">
             <Popconfirm
-              title={'应用'}
+              title={t('g.apply')}
               description={t('tip.if.config-import')}
               onConfirm={onApply}
               okText={t('g.confirm')}
               showCancel={false}
             >
-              <Button>应用</Button>
+              <Button>{t('g.apply')}</Button>
             </Popconfirm>
           </div>
         </div>

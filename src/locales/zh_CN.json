@@ -10,7 +10,8 @@
     "confirm": "确定",
     "cancel": "取消",
     "save": "保存",
-    "random": "随机"
+    "random": "随机",
+    "apply": "应用"
   },
   "e": {
     "enabled": "扩展已开启",
@@ -44,7 +45,8 @@
       "weak": "弱指纹",
       "strong": "强指纹",
       "other": "其他"
-    }
+    },
+    "preset-panel": "在线预设面板"
   },
   "type": {
     "default": "系统值",
@@ -145,7 +147,10 @@
       "json": "Json格式",
       "subscribe-save": "保存并订阅",
       "subscribe-test": "订阅目标检测",
-      "no-fp-notice": "暂无记录"
+      "no-fp-notice": "暂无记录",
+      "select-content": "请选择内容",
+      "unsupport-content": "内容不支持",
+      "version-mismatch": "版本不匹配"
     },
     "ok": {
       "config-import": "配置导入成功",
@@ -202,7 +207,8 @@
   },
   "tag": {
     "deprecated": "弃用",
-    "unstable": "不稳定"
+    "unstable": "不稳定",
+    "general": "通用"
   },
   "city": {
     "SH": "上海",

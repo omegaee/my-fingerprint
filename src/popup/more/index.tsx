@@ -27,7 +27,7 @@ export const MoreView = ({ }: MoreViewProps) => {
       <SubscribeView />
     </div>
     <div className="mt-3">
-      <Divider rootClassName="!mb-3" orientation='center'>在线预设面板</Divider>
+      <Divider rootClassName="!mb-3" orientation='center'>{t('label.preset-panel')}</Divider>
       <PresetContent />
     </div>
   </div>

@@ -10,7 +10,8 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "save": "Save",
-    "random": "Random"
+    "random": "Random",
+    "apply": "Apply"
   },
   "e": {
     "enabled": "Extension Enabled",
@@ -44,7 +45,8 @@
       "weak": "Weak",
       "strong": "Strong",
       "other": "Other"
-    }
+    },
+    "preset-panel": "Online Preset Panel"
   },
   "type": {
     "default": "Default",
@@ -145,7 +147,10 @@
       "json": "Json Format",
       "subscribe-save": "Save and Subscribe",
       "subscribe-test": "Subscription Target Detection",
-      "no-fp-notice": "No records found"
+      "no-fp-notice": "No records found",
+      "select-content": "Please select content",
+      "unsupport-content": "Unsupported content",
+      "version-mismatch": "Version Mismatch"
     },
     "ok": {
       "config-import": "Import Config Success",
@@ -202,7 +207,8 @@
   },
   "tag": {
     "deprecated": "Deprecated",
-    "unstable": "Unstable"
+    "unstable": "Unstable",
+    "general": "General"
   },
   "city": {
     "SH": "Shanghai",
