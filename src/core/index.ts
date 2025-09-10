@@ -15,6 +15,7 @@ const storage: LocalStorage = _local;
   const hook = (win: Window & typeof globalThis, data: WindowStorage | undefined) => {
     if (!data) return;
     if (existParentDomain(storage.whitelist, data.host)) return;
+    if (win.location.hostname !== data.host && existParentDomain(storage.whitelist, win.location.hostname)) return;
     try {
       new FingerprintContext(win, {
         info: data,
