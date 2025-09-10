@@ -1,0 +1,8 @@
+{
+  "title": "已知问题白名单",
+  "description": "包含已知问题的网站白名单",
+  "whitelist": [
+    "challenges.cloudflare.com",
+    "newassets.hcaptcha.com"
+  ]
+}

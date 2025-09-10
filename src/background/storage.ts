@@ -1,5 +1,5 @@
 import { genRandomSeed, existParentDomain } from "@/utils/base";
-import { debounce, debouncedAsync } from "@/utils/timer";
+import { debounce, sharedAsync } from "@/utils/timer";
 import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
 import { hasUserScripts } from "./script";
@@ -135,7 +135,7 @@ const mergeStorage = (src: LocalStorageConfig, dst?: DeepPartial<LocalStorageCon
 /**
  * 初始化默认配置
  */
-export const initLocalStorage = debouncedAsync(async () => {
+export const initLocalStorage = sharedAsync(async () => {
   /* init config */
   const _curr = await chrome.storage.local.get() as LocalStorage
   let _new = genDefaultLocalStorage()

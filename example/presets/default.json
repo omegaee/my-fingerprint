@@ -1,4 +1,6 @@
 {
+  "title": "默认配置",
+  "description": "默认配置",
   "version": "2.6.2",
   "config": {
     "fp": {

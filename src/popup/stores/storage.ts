@@ -1,6 +1,6 @@
 import { deepProxy, selectChildDomains, tryUrl } from "@/utils/base"
 import { sendToBackground } from "@/utils/message"
-import { debounce, debouncedAsync } from "@/utils/timer"
+import { debounce, sharedAsync } from "@/utils/timer"
 import { create } from "zustand"
 
 type State = {
@@ -52,7 +52,7 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     })
   }
 
-  const loadStorage = debouncedAsync(async () => {
+  const loadStorage = sharedAsync(async () => {
     syncLoadStorage(await chrome.storage.local.get() as LocalStorage)
   })
 
