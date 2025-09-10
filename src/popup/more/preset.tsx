@@ -119,27 +119,23 @@ const PresetPanel = ({ item }: {
       <div className="h-full flex justify-center items-center"><Spin indicator={<LoadingOutlined spin />} /></div> :
       preset == null ?
         <div className="h-full flex justify-center items-center">{'tip.label.unsupport-content'}</div> :
-        <div className="h-full flex flex-col justify-between overflow-y-auto">
-          <div className="flex flex-col gap-2">
-            <div>
-              <Tag>{preset.version == null ? t('tag.general') : `v${preset.version}`}</Tag>
-              {preset.version != null && manifest.version !== preset.version && <Tag color='error'>{t('tip.label.version-mismatch')}</Tag>}
-              {!preset.config && preset.whitelist?.length && <Tag color='success'>{t('tag.only-whitelist')}</Tag>}
-            </div>
-            <p className="font-bold">{asLang(preset.title) ?? 'null'}</p>
-            <p>{asLang(preset.description) ?? 'null'}</p>
+        <div className="h-full flex flex-col gap-2 overflow-y-auto">
+          <div>
+            <Tag>{preset.version == null ? t('tag.general') : `v${preset.version}`}</Tag>
+            {preset.version != null && manifest.version !== preset.version && <Tag color='error'>{t('tip.label.version-mismatch')}</Tag>}
+            {!preset.config && preset.whitelist?.length && <Tag color='success'>{t('tag.only-whitelist')}</Tag>}
           </div>
-          <div className="self-end">
-            <Popconfirm
-              title={t('g.apply')}
-              description={t('tip.if.config-import')}
-              onConfirm={onApply}
-              okText={t('g.confirm')}
-              showCancel={false}
-            >
-              <Button>{t('g.apply')}</Button>
-            </Popconfirm>
-          </div>
+          <p className="font-bold">{asLang(preset.title) ?? 'null'}</p>
+          <p>{asLang(preset.description) ?? 'null'}</p>
+          <Popconfirm
+            title={t('g.apply')}
+            description={t('tip.if.config-import')}
+            onConfirm={onApply}
+            okText={t('g.confirm')}
+            showCancel={false}
+          >
+            <Button>{t('g.apply')}</Button>
+          </Popconfirm>
         </div>
 }
 
