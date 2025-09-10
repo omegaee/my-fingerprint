@@ -54,7 +54,7 @@ export const WeakFpConfigGroup = memo(() => {
       >{(mode, { select }) =>
         <ConfigItemY
           label={t('item.title.uaVersion')}
-          className={mode.isDefault ? '' : dotStyles.success}
+          className={mode.isDefault ? '' : dotStyles.warning}
           endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.uaVersion', { joinArrays: '\n\n' })} />} />}
         >
           {select}
@@ -76,8 +76,8 @@ export const WeakFpConfigGroup = memo(() => {
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.languages')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.languages', { joinArrays: '\n\n' })} />} />}
+        className={mode.isDefault ? '' : dotStyles.warning}
+        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.languages', { joinArrays: '\n\n' })} />} />}
       >
         {select}
         {mode.isValue && <>
