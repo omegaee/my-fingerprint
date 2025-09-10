@@ -208,7 +208,8 @@
   "tag": {
     "deprecated": "Deprecated",
     "unstable": "Unstable",
-    "general": "General"
+    "general": "General",
+    "only-whitelist": "Only Whitelist"
   },
   "city": {
     "SH": "Shanghai",

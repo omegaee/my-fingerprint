@@ -208,7 +208,8 @@
   "tag": {
     "deprecated": "弃用",
     "unstable": "不稳定",
-    "general": "通用"
+    "general": "通用",
+    "only-whitelist": "仅白名单"
   },
   "city": {
     "SH": "上海",

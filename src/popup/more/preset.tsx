@@ -124,6 +124,7 @@ const PresetPanel = ({ item }: {
             <div>
               <Tag>{preset.version == null ? t('tag.general') : `v${preset.version}`}</Tag>
               {preset.version != null && manifest.version !== preset.version && <Tag color='error'>{t('tip.label.version-mismatch')}</Tag>}
+              {!preset.config && preset.whitelist?.length && <Tag color='success'>{t('tag.only-whitelist')}</Tag>}
             </div>
             <p className="font-bold">{asLang(preset.title) ?? 'null'}</p>
             <p>{asLang(preset.description) ?? 'null'}</p>
