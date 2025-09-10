@@ -12,7 +12,7 @@ export type MoreViewProps = {
 export const MoreView = ({ }: MoreViewProps) => {
   const [t] = useTranslation()
 
-  return <section>
+  return <div className="h-full overflow-y-auto no-scrollbar">
     <div className="mb-3">
       <Divider rootClassName="!mt-0 !mb-3" orientation='center'>{t('label.config-file')}</Divider>
       <MoreConfigView className="flex flex-wrap justify-center items-center gap-2" />
@@ -26,12 +26,11 @@ export const MoreView = ({ }: MoreViewProps) => {
       </Divider>
       <SubscribeView />
     </div>
-    <div className="my-3">
+    <div className="mt-3">
       <Divider rootClassName="!mb-3" orientation='center'>在线预设面板</Divider>
       <PresetContent />
     </div>
-    <Divider rootClassName="!mt-3 !mb-0" />
-  </section>
+  </div>
 }
 
 export default MoreView
