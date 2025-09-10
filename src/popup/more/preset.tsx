@@ -9,7 +9,7 @@ import { useShallow } from "zustand/shallow"
 import { useStorageStore } from "../stores/storage"
 
 const getPresets = sharedAsync(async () => {
-  return GithubApi.getContentList('/example/presets?ref=feat/config-preset')
+  return GithubApi.getContentList('/example/presets')
 })
 
 const PresetContent = ({ }: {
