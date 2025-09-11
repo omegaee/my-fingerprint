@@ -57,3 +57,5 @@ type ScreenDepth = {
   color?: number
   pixel?: number
 }
+
+type I18nString = string | Record<string, string>

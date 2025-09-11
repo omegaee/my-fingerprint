@@ -4,7 +4,7 @@ import MoreConfigView from "./config";
 import SubscribeView from "./subscribe";
 import TipIcon from "@/components/data/tip-icon";
 import { Md } from "@/components/data/markdown";
-import PresetContent from "./preset";
+import PresetPanel from "./preset";
 
 export type MoreViewProps = {
 }
@@ -28,7 +28,7 @@ export const MoreView = ({ }: MoreViewProps) => {
     </div>
     <div className="mt-3">
       <Divider rootClassName="!mb-3" orientation='center'>{t('label.preset-panel')}</Divider>
-      <PresetContent />
+      <PresetPanel />
     </div>
   </div>
 }

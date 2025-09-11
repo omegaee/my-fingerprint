@@ -1,13 +1,4 @@
 {
-  "title": {
-    "en": "Standard Mode",
-    "zh": "标准模式"
-  },
-  "description": {
-    "en": "Enables basic fingerprint protection while ensuring page compatibility, suitable for everyday use with a balance between privacy and functionality.",
-    "zh": "在确保页面兼容性的前提下，启用基础指纹防护，适合日常使用，兼顾隐私与功能体验。"
-  },
-  "version": "2.6.2",
   "config": {
     "fp": {
       "navigator": {
@@ -28,10 +19,10 @@
       },
       "other": {
         "audio": {
-          "type": 0
+          "type": 2
         },
         "canvas": {
-          "type": 3
+          "type": 2
         },
         "domRect": {
           "type": 0
@@ -43,13 +34,13 @@
           "type": 0
         },
         "webgl": {
-          "type": 3
+          "type": 2
         },
         "webgpu": {
-          "type": 0
+          "type": 2
         },
         "webrtc": {
-          "type": 0
+          "type": 7
         }
       },
       "screen": {

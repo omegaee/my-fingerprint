@@ -11,7 +11,9 @@
     "cancel": "Cancel",
     "save": "Save",
     "random": "Random",
-    "apply": "Apply"
+    "apply": "Apply",
+    "local": "Local",
+    "online": "Online"
   },
   "e": {
     "enabled": "Extension Enabled",

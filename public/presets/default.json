@@ -1,13 +1,4 @@
 {
-  "title": {
-    "en": "Incognito Mode",
-    "zh": "隐身模式"
-  },
-  "description": {
-    "en": "Activates additional verified fingerprint spoofing techniques and uses tab-level randomization, which may affect the functionality of certain websites.",
-    "zh": "启用更多经过验证的指纹伪装项，并使用标签页随机机制，可能影响部分网站功能。"
-  },
-  "version": "2.6.2",
   "config": {
     "fp": {
       "navigator": {
@@ -28,10 +19,10 @@
       },
       "other": {
         "audio": {
-          "type": 2
+          "type": 0
         },
         "canvas": {
-          "type": 2
+          "type": 3
         },
         "domRect": {
           "type": 0
@@ -43,13 +34,13 @@
           "type": 0
         },
         "webgl": {
-          "type": 2
+          "type": 3
         },
         "webgpu": {
-          "type": 2
+          "type": 0
         },
         "webrtc": {
-          "type": 7
+          "type": 0
         }
       },
       "screen": {

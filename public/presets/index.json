@@ -1,0 +1,26 @@
+{
+  "presets": [
+    {
+      "file": "default.json",
+      "name": {
+        "en": "Default Mode",
+        "zh": "默认模式"
+      },
+      "description": {
+        "en": "Enables basic fingerprint protection while ensuring page compatibility, suitable for everyday use with a balance between privacy and functionality.",
+        "zh": "在确保页面兼容性的前提下，启用基础指纹防护，适合日常使用，兼顾隐私与功能体验。"
+      }
+    },
+    {
+      "file": "incognito.json",
+      "name": {
+        "en": "Incognito Mode",
+        "zh": "隐身模式"
+      },
+      "description": {
+        "en": "Activates additional verified fingerprint spoofing techniques and uses tab-level randomization, which may affect the functionality of certain websites.",
+        "zh": "启用更多经过验证的指纹伪装项，并使用标签页随机机制，可能影响部分网站功能。"
+      }
+    }
+  ]
+}

@@ -11,7 +11,9 @@
     "cancel": "取消",
     "save": "保存",
     "random": "随机",
-    "apply": "应用"
+    "apply": "应用",
+    "local": "本地",
+    "online": "在线"
   },
   "e": {
     "enabled": "扩展已开启",
