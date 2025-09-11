@@ -33,8 +33,8 @@ export const useHookMode = <V, I>(mode?: HookMode<V>, parser?: {
 export const useI18n = () => {
   const [t, i18n] = useTranslation()
   const default_locale = useMemo(() => chrome.runtime.getManifest().default_locale, [])
-  const asLang = (ps?: I18nString): string | null => {
-    if (!ps) return null;
+  const asLang = (ps?: I18nString): string | undefined => {
+    if (!ps) return undefined;
     if (typeof ps === 'string') return ps;
     const langs = [
       i18n.language,
@@ -47,7 +47,7 @@ export const useI18n = () => {
       const value = ps[lang];
       if (value) return value;
     }
-    return Object.values(ps)[0] ?? null;
+    return Object.values(ps)[0] ?? undefined;
   };
   return {
     t, i18n, asLang, default_locale,

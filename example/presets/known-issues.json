@@ -1,12 +1,4 @@
 {
-  "name": {
-    "en": "Known Issues Whitelist",
-    "zh": "已知问题白名单"
-  },
-  "description": {
-    "en": "Provides preset whitelist rules for websites that may encounter compatibility issues under specific configurations. If a page behaves abnormally due to the extension, enabling this preset may help improve compatibility.",
-    "zh": "针对在特定配置下可能出现兼容性问题的网站，提供预设白名单规则。遇到该扩展导致的页面异常时可尝试启用以提升兼容性。"
-  },
   "whitelist": [
     "challenges.cloudflare.com",
     "newassets.hcaptcha.com"
