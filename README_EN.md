@@ -39,6 +39,7 @@ A lightweight, zero-disruption browser extension built on Manifest V3.
   <a href="#configuration">⚙️ Configuration</a> |
   <a href="#testing">🧪 Testing</a> |
   <a href="#development">🛠️ Development</a> |
+  <a href="#faq">❓ FAQ</a> |
   <a href="#support">💝 Support</a> |
   <a href="#disclaimer">📜 Disclaimer</a> |
   <a href="#credits">🙏 Credits</a>
@@ -97,23 +98,23 @@ A lightweight, zero-disruption browser extension built on Manifest V3.
 
 This module provides flexible options for customizing fingerprint protection behavior:
 
-- **Strong Fingerprint Group**
+- Strong Fingerprint Group
   - Simulates highly unique user characteristics  
   - Typically used in combination with other fingerprints or IP data
 
-- **Weak Fingerprint Group**
+- Weak Fingerprint Group
   - Captures basic, high-repetition information  
   - Suitable for lightweight protection scenarios
 
-- **Script Settings**
+- Script Settings
   - Global Seed: Used for the “Random by Global Seed” option to ensure consistent output  
   - Injection Mode: Recommended to enable “Fast Injection” for better compatibility and performance
 
-- **Whitelist Management**
+- Whitelist Management
   - Supports editing whitelist entries  
   - Subdomain matching supported: e.g., `example.com` matches `*.example.com`, `*.*.example.com`
 
-- **Subscription Options**
+- Subscription Options
   - Use configuration templates for quick setup (subscription can be disabled after initial use)  
     - [Standard Mode – Default Template](https://raw.githubusercontent.com/omegaee/my-fingerprint/main/example/config/template.json)  
   - Empty value disables subscription  
@@ -137,6 +138,30 @@ npm install
 npm run dev          # Chrome / Edge
 npm run dev:firefox  # Firefox
 ```
+
+
+## ❓ FAQ <a id="faq"></a>
+
+**Q: Why do I need this extension?**
+
+A: Browser fingerprints can be used for cross-site tracking, compromising user privacy. This extension disguises key fingerprint data to reduce the risk of identification and tracking.
+
+**Q: How is this extension different from a fingerprint browser?**
+
+A: A well-designed fingerprint browser simulates a complete environment for deep obfuscation, ideal for anti-detection scenarios. This extension uses JS injection, offering lightweight protection suitable for everyday use and most fingerprint-related threats.
+
+**Q: Are browser fingerprints a unique identifier?**
+
+A: Not strictly. A single fingerprint may not be unique, but when combined with IP address, browser storage, and other data, it can strongly identify a user.
+
+**Q: Is it better to protect as many fingerprints as possible?**
+
+A: Not necessarily. In many cases, modifying just one key fingerprint is enough to break tracking. Overprotecting may cause site compatibility issues or expose abnormal behavior. Choose protection items based on actual needs.
+
+**Q: What's the difference between strong and weak fingerprints?**
+
+A: Strong fingerprints are highly unique and often used for precise tracking—modifying them greatly enhances privacy. Weak fingerprints have low uniqueness and are usually safe to leave unchanged to maintain compatibility.
+
 
 ## 💝 Support <a id="support"></a>
 
