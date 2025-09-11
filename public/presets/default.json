@@ -1,0 +1,56 @@
+{
+  "config": {
+    "fp": {
+      "navigator": {
+        "hardwareConcurrency": {
+          "type": 0
+        },
+        "languages": {
+          "type": 0
+        },
+        "uaVersion": {
+          "type": 0
+        }
+      },
+      "normal": {
+        "gpuInfo": {
+          "type": 0
+        }
+      },
+      "other": {
+        "audio": {
+          "type": 0
+        },
+        "canvas": {
+          "type": 3
+        },
+        "domRect": {
+          "type": 0
+        },
+        "font": {
+          "type": 0
+        },
+        "timezone": {
+          "type": 0
+        },
+        "webgl": {
+          "type": 3
+        },
+        "webgpu": {
+          "type": 0
+        },
+        "webrtc": {
+          "type": 0
+        }
+      },
+      "screen": {
+        "depth": {
+          "type": 0
+        },
+        "size": {
+          "type": 0
+        }
+      }
+    }
+  }
+}

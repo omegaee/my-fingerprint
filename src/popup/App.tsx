@@ -126,7 +126,7 @@ function Application() {
   }, [i18n.language, tab])
 
   return (
-    <Layout className="overflow-y-auto no-scrollbar p-2 w-72 flex flex-col">
+    <Layout className="overflow-y-auto no-scrollbar p-2 w-80 flex flex-col">
       {contextHolder}
 
       <section className='relative'>

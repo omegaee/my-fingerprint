@@ -279,3 +279,11 @@ export const pick = <T extends object, K extends keyof T>(obj: T, keys: readonly
   }
   return res;
 }
+
+/**
+ * 移除后缀
+ */
+export function trimSuffix(str: string) {
+  const index = str.lastIndexOf('.');
+  return index !== -1 ? str.substring(0, index) : str;
+}

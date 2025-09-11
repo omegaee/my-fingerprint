@@ -1,6 +1,6 @@
 import { deepProxy, selectChildDomains, tryUrl } from "@/utils/base"
 import { sendToBackground } from "@/utils/message"
-import { debounce, debouncedAsync } from "@/utils/timer"
+import { debounce, sharedAsync } from "@/utils/timer"
 import { create } from "zustand"
 
 type State = {
@@ -13,7 +13,7 @@ type State = {
 type Actions = {
   syncLoadStorage: (storage: LocalStorage) => void
   loadStorage: () => Promise<void>
-  importStorage: (ss: LocalStorage) => Promise<void>
+  importStorage: (ss: DeepPartial<LocalStorage>) => Promise<void>
   saveConfig: () => void
   addWhitelist: (list: string | string[]) => void
   deleteWhitelist: (list: string | string[]) => void
@@ -52,7 +52,7 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     })
   }
 
-  const loadStorage = debouncedAsync(async () => {
+  const loadStorage = sharedAsync(async () => {
     syncLoadStorage(await chrome.storage.local.get() as LocalStorage)
   })
 
