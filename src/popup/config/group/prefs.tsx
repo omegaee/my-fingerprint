@@ -5,9 +5,8 @@ import { memo, useMemo } from "react";
 import { Select, Spin } from "antd";
 import { LoadingOutlined } from '@ant-design/icons'
 import { usePrefsStore } from "@/popup/stores/prefs";
-import { ConfigItemY } from "../item";
+import { ConfigDesc, ConfigItemY } from "../item";
 import { useShallow } from "zustand/shallow";
-import { Md } from "@/components/data/markdown";
 
 const LANG_OPTIONS = [
   {
@@ -19,6 +18,8 @@ const LANG_OPTIONS = [
     value: 'en-US'
   }
 ]
+
+const nsImportTag = ['unsupport-import']
 
 export const PrefsConfigGroup = memo(() => {
   const [t, i18n] = useTranslation()
@@ -47,7 +48,7 @@ export const PrefsConfigGroup = memo(() => {
 
     <ConfigItemY
       label={t('item.title.e-language')}
-      endContent={<TipIcon.Question content={<Md>{t('item.desc.e-language')}</Md>} />}
+      endContent={<TipIcon.Question content={<ConfigDesc tags={nsImportTag} desc={t('item.desc.e-language')} />} />}
     >
       <Select
         options={LANG_OPTIONS}
@@ -61,7 +62,7 @@ export const PrefsConfigGroup = memo(() => {
 
     <ConfigItemY
       label={t('item.title.theme')}
-      endContent={<TipIcon.Question content={<Md>{t('item.desc.theme')}</Md>} />}
+      endContent={<TipIcon.Question content={<ConfigDesc tags={nsImportTag} desc={t('item.desc.theme')} />} />}
     >
       <Select
         options={themeOptions}

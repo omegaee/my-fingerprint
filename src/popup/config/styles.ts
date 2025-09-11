@@ -8,4 +8,5 @@ export const selectStatusDotStyles = {
 export const tagColors = {
   unstable: 'orange',
   deprecated: 'red',
+  'unsupport-import': 'cyan',
 }

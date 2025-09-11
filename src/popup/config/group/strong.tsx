@@ -68,20 +68,6 @@ export const StrongFpConfigGroup = memo(() => {
     </HookModeContent>
 
     <HookModeContent
-      mode={fp.other.font}
-      types={baseTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.fonts')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.fonts')} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
-
-    <HookModeContent
       mode={fp.other.webrtc}
       types={disabledTypes}
       selectClassName={dotStyles.base}
@@ -107,6 +93,20 @@ export const StrongFpConfigGroup = memo(() => {
         label={t('item.title.webgpu')}
         className={mode.isDefault ? '' : dotStyles.success}
         endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.webgpu')} />} />}
+      >
+        {select}
+      </ConfigItemY>}
+    </HookModeContent>
+
+    <HookModeContent
+      mode={fp.other.font}
+      types={baseTypes}
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
+      <ConfigItemY
+        label={t('item.title.fonts')}
+        className={mode.isDefault ? '' : dotStyles.success}
+        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.fonts')} />} />}
       >
         {select}
       </ConfigItemY>}

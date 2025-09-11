@@ -6,10 +6,12 @@ import { genRandomSeed, hashNumberFromString } from "@/utils/base"
 import { App, Button, Input, Spin, Switch, Tooltip } from "antd"
 import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
 import { requestPermission } from "@/utils/browser"
-import { ConfigItemX, ConfigItemY } from "../item"
+import { ConfigDesc, ConfigItemX, ConfigItemY } from "../item"
 import { sendToBackground } from "@/utils/message"
 import { useShallow } from "zustand/shallow"
 import { Md } from "@/components/data/markdown"
+
+const nsImportTag = ['unsupport-import']
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
@@ -94,9 +96,7 @@ export const ScriptConfigGroup = memo(() => {
 
     <ConfigItemX
       label={t('item.title.inject.mode')}
-      endContent={<>
-        <TipIcon.Question content={<Md>{t('item.desc.inject-mode', { joinArrays: '\n\n' })}</Md>} />
-      </>}
+      endContent={<TipIcon.Question content={<ConfigDesc tags={nsImportTag} desc={t('item.desc.inject-mode', { joinArrays: '\n\n' })} />} />}
     >
       <Switch
         className="[&_.ant-switch-inner>span]:font-bold"
