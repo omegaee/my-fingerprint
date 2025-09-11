@@ -62,12 +62,12 @@ const PresetPanel = ({ }: {
     if (selectedKey.startsWith('local:')) {
       const key = selectedKey.split(':')[1]
       const item = localPresets?.find(v => v.file === key)
-      return item && { item, mode: 'local' }
+      return item && { item, mode: 'local' };
     }
     if (selectedKey.startsWith('online:')) {
       const key = selectedKey.split(':')[1]
       const item = onlinePresets?.find(v => v.file === key)
-      return item && { item, mode: 'online' }
+      return item && { item, mode: 'online' };
     }
   }, [selectedKey])
 
@@ -89,7 +89,7 @@ const PresetPanel = ({ }: {
           </div>}
           {onlinePresets && onlinePresets.length !== 0 && <div className="mb-1 last:mb-0">
             <div className="mb-1 font-bold">{t('g.online')}</div>
-            {localPresets?.map(v => <PresetItemView
+            {onlinePresets?.map(v => <PresetItemView
               key={v.file}
               title={asLang(v.name)}
               className={`online:${v.file}` === selectedKey ? 'bg-[--ant-color-primary-bg]' : undefined}
