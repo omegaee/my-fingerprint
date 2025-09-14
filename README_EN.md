@@ -143,24 +143,22 @@ npm run dev:firefox  # Firefox
 ## ❓ FAQ <a id="faq"></a>
 
 **Q: Why do I need this extension?**
-
-A: Browser fingerprints can be used for cross-site tracking, compromising user privacy. This extension disguises key fingerprint data to reduce the risk of identification and tracking.
+> A: Browser fingerprints can be used for cross-site tracking, compromising user privacy. This extension disguises key fingerprint data to reduce the risk of identification and tracking.
 
 **Q: How is this extension different from a fingerprint browser?**
-
-A: A well-designed fingerprint browser simulates a complete environment for deep obfuscation, ideal for anti-detection scenarios. This extension uses JS injection, offering lightweight protection suitable for everyday use and most fingerprint-related threats.
+> A: A well-designed fingerprint browser simulates a complete environment for deep obfuscation, ideal for anti-detection scenarios. This extension uses JS injection, offering lightweight protection suitable for everyday use and most fingerprint-related threats.
 
 **Q: Are browser fingerprints a unique identifier?**
-
-A: Not strictly. A single fingerprint may not be unique, but when combined with IP address, browser storage, and other data, it can strongly identify a user.
+> A: Not strictly. A single fingerprint may not be unique, but when combined with IP address, browser storage, and other data, it can strongly identify a user.
 
 **Q: Is it better to protect as many fingerprints as possible?**
-
-A: Not necessarily. In many cases, modifying just one key fingerprint is enough to break tracking. Overprotecting may cause site compatibility issues or expose abnormal behavior. Choose protection items based on actual needs.
+> A: Not necessarily. In many cases, modifying just one key fingerprint is enough to break tracking. Overprotecting may cause site compatibility issues or expose abnormal behavior. Choose protection items based on actual needs.
 
 **Q: What's the difference between strong and weak fingerprints?**
+> A: Strong fingerprints are highly unique and often used for precise tracking—modifying them greatly enhances privacy. Weak fingerprints have low uniqueness and are usually safe to leave unchanged to maintain compatibility.
 
-A: Strong fingerprints are highly unique and often used for precise tracking—modifying them greatly enhances privacy. Weak fingerprints have low uniqueness and are usually safe to leave unchanged to maintain compatibility.
+**Q: What should I do if the extension doesn't work properly or some pages behave abnormally?**  
+> A: Try enabling **Fast Injection Mode** in the script settings to improve compatibility. For abnormal pages, you can either **add them to the whitelist** or apply the **Known Issues List** from the configuration presets to resolve common problems.
 
 
 ## 💝 Support <a id="support"></a>
