@@ -1,0 +1,294 @@
+{
+  "timezone": [
+    {
+      "key": "LG",
+      "title": {
+        "en": "London",
+        "zh": "伦敦"
+      },
+      "zone": "Europe/London",
+      "locale": "en-GB",
+      "offset": 0
+    },
+    {
+      "key": "PAR",
+      "title": {
+        "en": "Paris",
+        "zh": "巴黎"
+      },
+      "zone": "Europe/Paris",
+      "locale": "fr-FR",
+      "offset": 1
+    },
+    {
+      "key": "BER",
+      "title": {
+        "en": "Berlin",
+        "zh": "柏林"
+      },
+      "zone": "Europe/Berlin",
+      "locale": "de-DE",
+      "offset": 1
+    },
+    {
+      "key": "CAI",
+      "title": {
+        "en": "Cairo",
+        "zh": "开罗"
+      },
+      "zone": "Africa/Cairo",
+      "locale": "ar-EG",
+      "offset": 2
+    },
+    {
+      "key": "MSK",
+      "title": {
+        "en": "Moscow",
+        "zh": "莫斯科"
+      },
+      "zone": "Europe/Moscow",
+      "locale": "ru-RU",
+      "offset": 3
+    },
+    {
+      "key": "DXB",
+      "title": {
+        "en": "Dubai",
+        "zh": "迪拜"
+      },
+      "zone": "Asia/Dubai",
+      "locale": "ar-AE",
+      "offset": 4
+    },
+    {
+      "key": "KZ",
+      "title": {
+        "en": "Almaty",
+        "zh": "阿拉木图"
+      },
+      "zone": "Asia/Almaty",
+      "locale": "zh-CN",
+      "offset": 5
+    },
+    {
+      "key": "KHI",
+      "title": {
+        "en": "Karachi",
+        "zh": "卡拉奇"
+      },
+      "zone": "Asia/Karachi",
+      "locale": "ur-PK",
+      "offset": 5
+    },
+    {
+      "key": "DAC",
+      "title": {
+        "en": "Dhaka",
+        "zh": "达卡"
+      },
+      "zone": "Asia/Dhaka",
+      "locale": "bn-BD",
+      "offset": 6
+    },
+    {
+      "key": "BKK",
+      "title": {
+        "en": "Bangkok",
+        "zh": "曼谷"
+      },
+      "zone": "Asia/Bangkok",
+      "locale": "th-TH",
+      "offset": 7
+    },
+    {
+      "key": "JKT",
+      "title": {
+        "en": "Jakarta",
+        "zh": "雅加达"
+      },
+      "zone": "Asia/Jakarta",
+      "locale": "id-ID",
+      "offset": 7
+    },
+    {
+      "key": "SH",
+      "title": {
+        "en": "Shanghai",
+        "zh": "上海"
+      },
+      "zone": "Asia/Shanghai",
+      "locale": "zh-CN",
+      "offset": 8
+    },
+    {
+      "key": "SG",
+      "title": {
+        "en": "Singapore",
+        "zh": "新加坡"
+      },
+      "zone": "Asia/Singapore",
+      "locale": "zh-SG",
+      "offset": 8
+    },
+    {
+      "key": "TY",
+      "title": {
+        "en": "Tokyo",
+        "zh": "东京"
+      },
+      "zone": "Asia/Tokyo",
+      "locale": "ja-JP",
+      "offset": 9
+    },
+    {
+      "key": "SE",
+      "title": {
+        "en": "Seoul",
+        "zh": "首尔"
+      },
+      "zone": "Asia/Seoul",
+      "locale": "ko-KR",
+      "offset": 9
+    },
+    {
+      "key": "SYD",
+      "title": {
+        "en": "Sydney",
+        "zh": "悉尼"
+      },
+      "zone": "Australia/Sydney",
+      "locale": "en-AU",
+      "offset": 10
+    },
+    {
+      "key": "NOU",
+      "title": {
+        "en": "Noumea",
+        "zh": "努美阿"
+      },
+      "zone": "Pacific/Noumea",
+      "locale": "fr-NC",
+      "offset": 11
+    },
+    {
+      "key": "AKL",
+      "title": {
+        "en": "Auckland",
+        "zh": "奥克兰"
+      },
+      "zone": "Pacific/Auckland",
+      "locale": "en-NZ",
+      "offset": 12
+    },
+    {
+      "key": "CVT",
+      "title": {
+        "en": "Cape Verde",
+        "zh": "佛得角"
+      },
+      "zone": "Atlantic/Cape_Verde",
+      "locale": "pt-CV",
+      "offset": -1
+    },
+    {
+      "key": "GST",
+      "title": {
+        "en": "Noronha",
+        "zh": "诺罗尼亚"
+      },
+      "zone": "America/Noronha",
+      "locale": "pt-BR",
+      "offset": -2
+    },
+    {
+      "key": "BRT",
+      "title": {
+        "en": "Sao Paulo",
+        "zh": "圣保罗"
+      },
+      "zone": "America/Sao_Paulo",
+      "locale": "pt-BR",
+      "offset": -3
+    },
+    {
+      "key": "AST",
+      "title": {
+        "en": "Caracas",
+        "zh": "加拉加斯"
+      },
+      "zone": "America/Caracas",
+      "locale": "es-VE",
+      "offset": -4
+    },
+    {
+      "key": "NY",
+      "title": {
+        "en": "New York",
+        "zh": "纽约"
+      },
+      "zone": "America/New_York",
+      "locale": "en-US",
+      "offset": -5
+    },
+    {
+      "key": "CHI",
+      "title": {
+        "en": "Chicago",
+        "zh": "芝加哥"
+      },
+      "zone": "America/Chicago",
+      "locale": "en-US",
+      "offset": -6
+    },
+    {
+      "key": "DEN",
+      "title": {
+        "en": "Denver",
+        "zh": "丹佛"
+      },
+      "zone": "America/Denver",
+      "locale": "en-US",
+      "offset": -7
+    },
+    {
+      "key": "LAX",
+      "title": {
+        "en": "Los Angeles",
+        "zh": "洛杉矶"
+      },
+      "zone": "America/Los_Angeles",
+      "locale": "en-US",
+      "offset": -8
+    },
+    {
+      "key": "AKST",
+      "title": {
+        "en": "Anchorage",
+        "zh": "安克雷奇"
+      },
+      "zone": "America/Anchorage",
+      "locale": "en-US",
+      "offset": -9
+    },
+    {
+      "key": "HNL",
+      "title": {
+        "en": "Honolulu",
+        "zh": "夏威夷"
+      },
+      "zone": "Pacific/Honolulu",
+      "locale": "en-US",
+      "offset": -10
+    },
+    {
+      "key": "NUT",
+      "title": {
+        "en": "Niue",
+        "zh": "纽埃"
+      },
+      "zone": "Pacific/Niue",
+      "locale": "en-NU",
+      "offset": -11
+    }
+  ]
+}

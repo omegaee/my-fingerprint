@@ -1,171 +1,23 @@
-import { useTranslation } from "react-i18next"
 import { useStorageStore } from "@/popup/stores/storage"
 import TipIcon from "@/components/data/tip-icon"
 import Markdown from "react-markdown"
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { HookType } from '@/types/enum'
 import { LoadingOutlined } from '@ant-design/icons'
 import { Form, Input, InputNumber, Select, Spin } from "antd"
 import { ConfigItemY, HookModeContent } from "../item"
 import { selectStatusDotStyles as dotStyles } from "../styles"
-
-const TIMEZONE_LIST: Required<TimeZoneInfo>[] = [
-  {
-    text: 'LG',
-    zone: 'Europe/London',
-    locale: 'en-GB',
-    offset: 0
-  }, {
-    text: 'PAR',
-    zone: 'Europe/Paris',
-    locale: 'fr-FR',
-    offset: +1
-  }, {
-    text: 'BER',
-    zone: 'Europe/Berlin',
-    locale: 'de-DE',
-    offset: +1,
-  }, {
-    text: 'CAI',
-    zone: 'Africa/Cairo',
-    locale: 'ar-EG',
-    offset: +2,
-  }, {
-    text: 'MSK',
-    zone: 'Europe/Moscow',
-    locale: 'ru-RU',
-    offset: +3
-  }, {
-    text: 'DXB',
-    zone: 'Asia/Dubai',
-    locale: 'ar-AE',
-    offset: +4
-  }, {
-    text: 'KZ',
-    zone: 'Asia/Almaty',
-    locale: 'zh-CN',
-    offset: +5
-  }, {
-    text: 'KHI',
-    zone: 'Asia/Karachi',
-    locale: 'ur-PK',
-    offset: +5
-  }, {
-    text: 'DAC',
-    zone: 'Asia/Dhaka',
-    locale: 'bn-BD',
-    offset: +6
-  }, {
-    text: 'BKK',
-    zone: 'Asia/Bangkok',
-    locale: 'th-TH',
-    offset: +7
-  }, {
-    text: 'JKT',
-    zone: 'Asia/Jakarta',
-    locale: 'id-ID',
-    offset: +7
-  }, {
-    text: 'SH',
-    zone: 'Asia/Shanghai',
-    locale: 'zh-CN',
-    offset: +8
-  }, {
-    text: 'SG',
-    zone: 'Asia/Singapore',
-    locale: 'zh-SG',
-    offset: +8
-  }, {
-    text: 'TY',
-    zone: 'Asia/Tokyo',
-    locale: 'ja-JP',
-    offset: +9
-  }, {
-    text: 'SE',
-    zone: 'Asia/Seoul',
-    locale: 'ko-KR',
-    offset: +9
-  }, {
-    text: 'SYD',
-    zone: 'Australia/Sydney',
-    locale: 'en-AU',
-    offset: +10,
-  }, {
-    text: 'NOU',
-    zone: 'Pacific/Noumea',
-    locale: 'fr-NC',
-    offset: +11
-  }, {
-    text: 'AKL',
-    zone: 'Pacific/Auckland',
-    locale: 'en-NZ',
-    offset: +12
-  }, {
-    text: 'CVT',
-    zone: 'Atlantic/Cape_Verde',
-    locale: 'pt-CV',
-    offset: -1
-  }, {
-    text: 'GST',
-    zone: 'America/Noronha',
-    locale: 'pt-BR',
-    offset: -2
-  }, {
-    text: 'BRT',
-    zone: 'America/Sao_Paulo',
-    locale: 'pt-BR',
-    offset: -3
-  }, {
-    text: 'AST',
-    zone: 'America/Caracas',
-    locale: 'es-VE',
-    offset: -4
-  }, {
-    text: 'NY',
-    zone: 'America/New_York',
-    locale: 'en-US',
-    offset: -5
-  }, {
-    text: 'CHI',
-    zone: 'America/Chicago',
-    locale: 'en-US',
-    offset: -6
-  }, {
-    text: 'DEN',
-    zone: 'America/Denver',
-    locale: 'en-US',
-    offset: -7
-  }, {
-    text: 'LAX',
-    zone: 'America/Los_Angeles',
-    locale: 'en-US',
-    offset: -8
-  }, {
-    text: 'AKST',
-    zone: 'America/Anchorage',
-    locale: 'en-US',
-    offset: -9
-  }, {
-    text: 'HNL',
-    zone: 'Pacific/Honolulu',
-    locale: 'en-US',
-    offset: -10
-  }, {
-    text: 'NUT',
-    zone: 'Pacific/Niue',
-    locale: 'en-NU',
-    offset: -11
-  },
-]
-
-const TIMEZONE_MAP = TIMEZONE_LIST.reduce<Record<string, Required<TimeZoneInfo> | undefined>>((res, value) => {
-  res[value.text] = value
-  return res
-}, {})
+import { sharedAsync } from "@/utils/timer"
+import { LocalApi, type TimeZoneInfoOption } from "@/api/local"
+import { useI18n } from "@/utils/hooks"
 
 type OptionType = (string & {}) | HookType
 
-const getCurrentTimeZoneInfo = (): Omit<TimeZoneInfo, 'text'> => {
+type TimeZoneInfoValue = TimeZoneInfo & {
+  key?: string
+}
+
+const getCurrentTimeZoneInfo = (): TimeZoneInfo => {
   const opts = Intl.DateTimeFormat().resolvedOptions()
   return {
     locale: opts.locale,
@@ -175,11 +27,20 @@ const getCurrentTimeZoneInfo = (): Omit<TimeZoneInfo, 'text'> => {
 }
 const currentTz = getCurrentTimeZoneInfo()
 
+const getLocalTimezones = sharedAsync(async () => {
+  return LocalApi.timezone()
+})
+
 export const TimeZoneConfigItem = () => {
-  const [t, i18n] = useTranslation()
+  const { t, i18n, asLang } = useI18n()
+  const [localTimezones, setLocalTimezones] = useState<TimeZoneInfoOption[]>()
 
   const config = useStorageStore((state) => state.config)
   const fp = config?.fp
+
+  useEffect(() => {
+    getLocalTimezones().then(setLocalTimezones)
+  }, [])
 
   const options = useMemo(() => {
     return [
@@ -197,29 +58,29 @@ export const TimeZoneConfigItem = () => {
           },
         ],
       },
-      {
+      localTimezones && {
         label: <span>{t('g.preset')}</span>,
         title: 'preset',
-        options: TIMEZONE_LIST.map((tz) => ({
-          value: tz.text,
-          label: `(${tz.offset >= 0 ? '+' : ''}${tz.offset}) ${t('city.' + tz.text)}`,
+        options: localTimezones.map((tz) => ({
+          value: tz.key,
+          label: `(${tz.offset >= 0 ? '+' : ''}${tz.offset}) ${asLang(tz.title)}`,
         })),
       },
-    ]
-  }, [i18n.language])
+    ].filter(v => !!v)
+  }, [i18n.language, localTimezones])
+
+  const findTzByKey = (key: string) => {
+    return localTimezones?.find(v => v.key === key)
+  }
 
   return fp ? <>
-
-    <HookModeContent
+    <HookModeContent<TimeZoneInfoValue, TimeZoneInfoValue>
       isMakeSelect={false}
       mode={fp.other.timezone}
       parser={{
-        toInput: v => v ?? {
-          ...currentTz,
-          text: undefined,
-        },
+        toInput: v => v ?? { ...currentTz },
         toValue(v) {
-          v.offset ||= currentTz.offset
+          v.offset ??= currentTz.offset
           v.zone ||= currentTz.zone
           v.locale ||= currentTz.locale
           return v
@@ -234,36 +95,42 @@ export const TimeZoneConfigItem = () => {
         <Select<OptionType>
           className={dotStyles.base}
           options={options}
-          value={mode.input.text || mode.type}
+          value={mode.input.key || mode.type}
           onChange={(v) => {
             if (v === HookType.default || v === HookType.value) {
               mode.setType(v);
-              mode.setInput({
-                ...currentTz,
-                text: undefined,
-              });
+              mode.setInput({ ...currentTz });
             } else {
+              const tz = findTzByKey(v as string);
               mode.setType(HookType.value);
-              mode.setInput({ ...TIMEZONE_MAP[v]! });
+              if (tz) {
+                const { title, ...rest } = tz
+                mode.setInput(rest);
+              } else {
+                mode.setInput({ ...currentTz });
+              }
             }
           }}
         />
-        {mode.isValue && !mode.input.text && <>
+        {mode.isValue && <>
           <Form.Item label={t('item.sub.tz.offset')}>
             <InputNumber
+              disabled={!!mode.input.key}
               min={-12} max={12}
               value={mode.input.offset}
-              onChange={(offset) => offset != null && mode.setInput({ ...mode.input, offset })}
+              onChange={(offset) => mode.setInput({ ...mode.input, offset: offset ?? currentTz.offset })}
             />
           </Form.Item>
           <Form.Item label={t('item.sub.tz.locale')}>
             <Input
+              disabled={!!mode.input.key}
               value={mode.input.locale}
               onChange={({ target }) => mode.setInput({ ...mode.input, locale: target.value })}
             />
           </Form.Item>
           <Form.Item label={t('item.sub.tz.zone')}>
             <Input
+              disabled={!!mode.input.key}
               value={mode.input.zone}
               onChange={({ target }) => mode.setInput({ ...mode.input, zone: target.value })}
             />
@@ -271,7 +138,6 @@ export const TimeZoneConfigItem = () => {
         </>}
       </ConfigItemY>}
     </HookModeContent>
-
   </> : <Spin indicator={<LoadingOutlined spin />} />
 }
 
