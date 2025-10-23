@@ -33,7 +33,7 @@ type ConfigItemYProps = {
 }
 
 export const ConfigItemY = ({ children, label, startContent, endContent, className }: ConfigItemYProps) => {
-  return <div className={"mb-1 last:mb-0 flex flex-col gap-2 p-1 rounded hover:bg-[--ant-color-primary-bg-hover] duration-200 [&_.ant-form-item]:mb-0 [&_.ant-form-item-label]:p-0 " + (className ?? "")}>
+  return <div className={"mb-1 last:mb-0 flex flex-col gap-2 p-1 rounded hover:bg-[--default-100] duration-200 [&_.ant-form-item]:mb-0 [&_.ant-form-item-label]:p-0 " + (className ?? "")}>
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
         {label}

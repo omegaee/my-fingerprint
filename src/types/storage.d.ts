@@ -34,6 +34,7 @@ type LocalStorageConfig = {
 
 type HookFingerprint = {
   navigator: {
+    ua: DefaultHookMode | ValueHookMode<UserAgentInfo>
     uaVersion: DefaultHookMode | RandomHookMode
     languages: DefaultHookMode | RandomHookMode | ValueHookMode<string[]>
     hardwareConcurrency: DefaultHookMode | RandomHookMode | ValueHookMode<number>

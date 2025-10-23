@@ -2,10 +2,19 @@ import { HookType } from "@/types/enum"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+export type HookModeHandler<I> = {
+  type: HookType
+  input: I
+  setType: (type: HookType) => void
+  setInput: (input: I) => void
+  isDefault: boolean
+  isValue: boolean
+}
+
 export const useHookMode = <V, I>(mode?: HookMode<V>, parser?: {
   toInput?: (value?: V) => I  // 初次时序列化
   toValue?: (input: I) => V  // 存储时反序列化
-}) => {
+}): HookModeHandler<I> => {
   const modeValue = (mode as any).value
   const { toInput, toValue } = parser ?? {}
 

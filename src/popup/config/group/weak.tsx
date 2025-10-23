@@ -10,6 +10,7 @@ import TipIcon from "@/components/data/tip-icon"
 import { getBrowserInfo } from "@/utils/browser"
 import { selectStatusDotStyles as dotStyles } from "../styles"
 import { useShallow } from "zustand/shallow"
+import UserAgentConfigItem from "../special/user-agent"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const baseValueTypes = [...baseTypes, HookType.value]
@@ -43,6 +44,8 @@ export const WeakFpConfigGroup = memo(() => {
   }, [])
 
   return fp ? <div key={storage.version}>
+    <UserAgentConfigItem />
+
     <TimeZoneConfigItem />
 
     {/* uaVersion */}

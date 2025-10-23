@@ -57,4 +57,26 @@ type ScreenDepth = {
   pixel?: number
 }
 
+type UserAgentInfo = {
+  base: {
+    userAgent: string
+    appVersion: string
+    platform: string
+  }
+  data: {
+    architecture: string
+    bitness: string
+    mobile: boolean
+    model: string
+    platform: string
+    platformVersion: string
+    formFactors: string[]
+    mainVersion: string
+    versions: {
+      brand: string
+      version: string
+    }[]
+  }
+}
+
 type I18nString = string | Record<string, string>
