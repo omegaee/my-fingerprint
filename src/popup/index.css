@@ -39,33 +39,33 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
-  --bg: #ffffff;
-  --fg: #000000;
-  --default-50: #FAFAFA;
-  --default-100: #F4F4F5;
-  --default-200: #E4E4E7;
-  --default-300: #D4D4D8;
-  --default-400: #A1A1AA;
-  --default-500: #71717A;
-  --default-600: #52525B;
-  --default-700: #3F3F46;
-  --default-800: #27272A;
-  --default-900: #18181B;
+  --background: #FFFFFF;
+  --foreground: #11181C;
+  --default-50: #fafafa;
+  --default-100: #f4f4f5;
+  --default-200: #e4e4e7;
+  --default-300: #d4d4d8;
+  --default-400: #a1a1aa;
+  --default-500: #71717a;
+  --default-600: #52525b;
+  --default-700: #3f3f46;
+  --default-800: #27272a;
+  --default-900: #18181b;
 }
 
 .dark {
-  --bg: #0a0a0a;
-  --fg: #ededed;
-  --default-50: #1f1f1f;
-  --default-100: #282828;
-  --default-200: #343434;
-  --default-300: #3f3f46;
-  --default-400: #4f4f57;
-  --default-500: #5f5f67;
-  --default-600: #6f6f77;
-  --default-700: #7f7f87;
-  --default-800: #8f8f97;
-  --default-900: #9f9fa7;
+  --background: #000000;
+  --foreground: #ECEDEE;
+  --default-50: #18181b;
+  --default-100: #27272a;
+  --default-200: #3f3f46;
+  --default-300: #52525b;
+  --default-400: #71717a;
+  --default-500: #a1a1aa;
+  --default-600: #d4d4d8;
+  --default-700: #e4e4e7;
+  --default-800: #f4f4f5;
+  --default-900: #fafafa;
 }
 
 .ant-tabs .ant-tabs-content,

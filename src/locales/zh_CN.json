@@ -66,6 +66,7 @@
       "glRenderer": "渲染器"
     },
     "title": {
+      "ua": "UserAgent信息",
       "uaVersion": "UserAgent版本号",
       "languages": "浏览器语言",
       "hardwareConcurrency": "逻辑处理器数量",
@@ -90,6 +91,7 @@
       }
     },
     "desc": {
+      "ua": "UserAgent信息",
       "uaVersion": [
         "UserAgent版本号信息，仅修改`userAgent`和`userAgentData`的子版本号段",
         "现在浏览器的userAgent简单安全，并不会泄露过多信息",

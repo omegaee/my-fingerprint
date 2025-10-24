@@ -66,6 +66,7 @@
       "glRenderer": "Renderer"
     },
     "title": {
+      "ua": "UserAgent Info",
       "uaVersion": "UserAgent Version",
       "languages": "Browser Language",
       "hardwareConcurrency": "Number of logical processors",
@@ -90,6 +91,7 @@
       }
     },
     "desc": {
+      "ua": "UserAgent Info",
       "uaVersion": [
         "UserAgent version info: only modifies the sub-version segments of `userAgent` and `userAgentData`.",
         "Modern browsers use simplified and safer userAgent strings that reveal minimal information.",

@@ -83,8 +83,9 @@ export const usePrefsStore = create<State & Actions>()(
       },
       setTheme: (theme: Theme) => {
         set({ theme })
-        document.documentElement.setAttribute('data-theme', getThemeName(theme))
-        document.documentElement.classList.toggle('dark', theme === 'dark')
+        const tn = getThemeName(theme)
+        document.documentElement.setAttribute('data-theme', tn)
+        document.documentElement.classList.toggle('dark', tn === 'dark')
       },
       getThemeConfig: () => {
         switch (get().theme) {
@@ -116,8 +117,9 @@ export const usePrefsStore = create<State & Actions>()(
     }) as any,
     onRehydrateStorage: () => (state) => {
       if (!state) return;
-      document.documentElement.setAttribute('data-theme', getThemeName(state.theme));
-      document.documentElement.classList.toggle('dark', state.theme === 'dark');
+      const tn = getThemeName(state.theme)
+      document.documentElement.setAttribute('data-theme', tn)
+      document.documentElement.classList.toggle('dark', tn === 'dark')
     }
   })
 )
