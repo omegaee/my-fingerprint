@@ -98,7 +98,7 @@ const UserAgentConfigItem = ({ }: {}) => {
     >{(mode) => (
       <ConfigItemY
         label={t('item.title.ua')}
-        className={cn(!mode.isDefault && dotStyles.success)}
+        className={cn(!mode.isDefault && dotStyles.warning)}
         endContent={<TipIcon.Question content={<Markdown>{t('item.desc.ua')}</Markdown>} />}
       >
         <Select<OptionType>

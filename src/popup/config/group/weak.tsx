@@ -44,7 +44,7 @@ export const WeakFpConfigGroup = memo(() => {
   }, [])
 
   return fp ? <div key={storage.version}>
-    <UserAgentConfigItem />
+    {browserInfo.name !== 'firefox' && <UserAgentConfigItem />}
 
     <TimeZoneConfigItem />
 

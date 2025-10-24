@@ -91,9 +91,20 @@ const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
 
 const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
   const uaMode = config.fp.navigator.ua
+
+  const modeValue = (uaMode as any).value;
+  const modeValueStr = typeof modeValue === 'object' ? JSON.stringify(modeValue) : modeValue;
+
+  const key = `${uaMode.type}:${modeValueStr}`
+  const mem = MEMORY.lang
+  if (mem && mem[0] === key) return mem[1];
+
+  singal.isUpdate = true;
+
   if (uaMode.type !== HookType.value) return [];
 
   const { ua, uaData } = uaMode.value;
+  if (ua == null && uaData == null) return [];
 
   const fullVersionList = uaData.versions;
   const brands = fullVersionList?.map(v => ({
@@ -123,46 +134,42 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
     makeRule("Sec-Ch-Ua-Full-Version-List", fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
   ].filter(Boolean) as RuleHeader[]
 
-  singal.isUpdate = true;
+  MEMORY.ua = [key, res]
   return res;
 }
 
 const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonly RuleHeader[] => {
   const langsMode = config.fp.navigator.languages
-  const key = `${langsMode.type}:${(langsMode as any).value ?? ''}:${config.seed.global}:${config.seed.browser}`
+
+  const modeValue = (langsMode as any).value;
+  const modeValueStr = typeof modeValue === 'object' ? JSON.stringify(modeValue) : modeValue;
+
+  const key = `${langsMode.type}:${modeValueStr}`
   const mem = MEMORY.lang
   if (mem && mem[0] === key) return mem[1];
 
+  singal.isUpdate = true;
+
+  if (langsMode.type !== HookType.value) return [];
+
   const res: RuleHeader[] = []
-  if (langsMode && langsMode.type !== HookType.default) {
-    /* 获取种子 */
-    let langs: string[] | undefined
-    if (langsMode.type === HookType.value) {
-      langs = langsMode.value
-    } else {
-      const langSeed = getSeedByMode(config, langsMode)
-      if (langSeed) {
-        langs = shuffleArray(RAW.languages, langSeed)
-      }
+  const langs = langsMode.value;
+
+  if (langs?.length) {
+    const [first, ...rest] = langs
+    let qFactor = 1
+    for (let i = 0; i < rest.length && qFactor > 0.1; i++) {
+      qFactor -= 0.1
+      rest[i] = `${rest[i]};q=${qFactor.toFixed(1)}`
     }
-    /* 修改 */
-    if (langs?.length) {
-      const [first, ...rest] = langs
-      let qFactor = 1
-      for (let i = 0; i < rest.length && qFactor > 0.1; i++) {
-        qFactor -= 0.1
-        rest[i] = `${rest[i]};q=${qFactor.toFixed(1)}`
-      }
-      res.push({
-        header: "Accept-Language",
-        operation: "set" as any,
-        value: [first, ...rest].join(","),
-      })
-    }
+    res.push({
+      header: "Accept-Language",
+      operation: "set" as any,
+      value: [first, ...rest].join(","),
+    })
   }
 
   MEMORY.lang = [key, res]
-  singal.isUpdate = true;
   return res;
 }
 
