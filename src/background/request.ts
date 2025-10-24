@@ -90,38 +90,39 @@ const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
 }
 
 const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
-  const uaMode = config.fp.navigator.uaVersion
-  const key = `${uaMode.type}:${config.seed.global}:${config.seed.browser}`
-  const mem = MEMORY.ua
-  if (mem && mem[0] === key) return mem[1];
+  const uaMode = config.fp.navigator.ua
+  if (uaMode.type !== HookType.value) return [];
 
-  const res: RuleHeader[] = []
-  const uaSeed = getSeedByMode(config, uaMode);
-  if (uaSeed) {
-    res.push({
-      header: "User-Agent",
-      operation: "set" as any,
-      value: genRandomVersionUserAgent(uaSeed, navigator),
-    })
-    const uaData = await genRandomVersionUserAgentData(uaSeed, navigator)
-    uaData.brands && res.push({
-      header: "Sec-Ch-Ua",
-      operation: "set" as any,
-      value: uaData.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
-    })
-    uaData.fullVersionList && res.push({
-      header: "Sec-Ch-Ua-Full-Version-List",
-      operation: "set" as any,
-      value: uaData.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
-    })
-    uaData.uaFullVersion && res.push({
-      header: "Sec-Ch-Ua-Full-Version",
-      operation: "set" as any,
-      value: uaData.uaFullVersion,
-    })
+  const { ua, uaData } = uaMode.value;
+
+  const fullVersionList = uaData.versions;
+  const brands = fullVersionList?.map(v => ({
+    ...v,
+    version: v.version.split('.')[0]
+  }))
+
+  const makeRule = (header: string, value: string) => {
+    return value == null ? undefined : {
+      header,
+      operation: "set",
+      value,
+    }
   }
 
-  MEMORY.ua = [key, res]
+  const res = [
+    makeRule("User-Agent", ua.userAgent),
+    makeRule("Sec-Ch-Ua-Arch", uaData.arch),
+    makeRule("Sec-Ch-Ua-Bitness", uaData.bitness),
+    makeRule("Sec-Ch-Ua-Platform", uaData.platform),
+    makeRule("Sec-Ch-Ua-Platform-Version", uaData.platformVersion),
+    makeRule("Sec-Ch-Ua-Mobile", uaData.mobile ? "?1" : "?0"),
+    makeRule("Sec-Ch-Ua-Model", uaData.model),
+    makeRule("Sec-Ch-Ua-Full-Version", uaData.formFactors.join(", ")),
+    makeRule("Sec-Ch-Ua-Full-Version", uaData.uaFullVersion),
+    makeRule("Sec-Ch-Ua", brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
+    makeRule("Sec-Ch-Ua-Full-Version-List", fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
+  ].filter(Boolean) as RuleHeader[]
+
   singal.isUpdate = true;
   return res;
 }
