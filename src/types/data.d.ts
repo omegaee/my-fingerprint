@@ -58,20 +58,20 @@ type ScreenDepth = {
 }
 
 type UserAgentInfo = {
-  base: {
+  ua: {
     userAgent: string
     appVersion: string
     platform: string
   }
-  data: {
-    architecture: string
+  uaData: {
+    arch: string
     bitness: string
     mobile: boolean
     model: string
     platform: string
     platformVersion: string
     formFactors: string[]
-    mainVersion: string
+    uaFullVersion: string
     versions: {
       brand: string
       version: string
