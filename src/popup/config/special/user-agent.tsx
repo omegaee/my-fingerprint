@@ -135,7 +135,7 @@ const ConfigContentView = ({ mode, defaultValues }: {
   ].map((v) => ({
     ...v,
     className: 'mb-2 last:mb-0 bg-default-100 !border-none !rounded [&_.ant-collapse-content]:bg-default-100',
-  })), []);
+  })), [mode]);
 
   return <div>
     <Collapse
@@ -159,18 +159,41 @@ const UserAgentView = ({ mode, defaultValues }: {
     <label>userAgent</label>
     <Input
       value={data.userAgent}
+      onInput={({ target }: any) => {
+        data.userAgent = target.value
+        mode.update()
+      }}
     />
 
     <label>appVersion</label>
     <Input
       value={data.appVersion}
+      onInput={({ target }: any) => {
+        data.appVersion = target.value
+        mode.update()
+      }}
     />
 
     <label>platform</label>
     <Input
       value={data.platform}
+      onInput={({ target }: any) => {
+        data.platform = target.value
+        mode.update()
+      }}
     />
   </div>
+}
+
+const parseVersions = (v: string) => {
+  const arr = v.split(',').map(v => v.trim()).filter(v => !!v)
+  return arr.map(v => {
+    const [brand, version] = v.split('=').map(v => v.trim())
+    return {
+      brand,
+      version,
+    }
+  })
 }
 
 const UserAgentDataView = ({ mode, defaultValues }: {
@@ -186,44 +209,78 @@ const UserAgentDataView = ({ mode, defaultValues }: {
       <div>
         <Switch
           checked={data.mobile}
+          onChange={(checked) => {
+            data.mobile = checked
+            mode.update()
+          }}
         />
       </div>
 
       <label>arch</label>
       <Input
         value={data.arch}
+        onInput={({ target }: any) => {
+          data.arch = target.value
+          mode.update()
+        }}
       />
 
       <label>bitness</label>
       <Input
         value={data.bitness}
+        onInput={({ target }: any) => {
+          data.bitness = target.value
+          mode.update()
+        }}
       />
 
       <label>platform</label>
       <Input
         value={data.platform}
+        onInput={({ target }: any) => {
+          data.platform = target.value
+          mode.update()
+        }}
       />
 
       <label>platformVersion</label>
       <Input
         value={data.platformVersion}
+        onInput={({ target }: any) => {
+          data.platformVersion = target.value
+          mode.update()
+        }}
       />
 
       <label>model</label>
       <Input
         value={data.model}
+        onInput={({ target }: any) => {
+          data.model = target.value
+          mode.update()
+        }}
       />
 
       <label>formFactors</label>
       <Input
-        value={data.formFactors.join(',')}
+        value={data.formFactors.join(', ')}
+        onInput={(e: any) => {
+          const value = e.target.value as string
+          data.formFactors = value.split(',').map(v => v.trim()).filter(v => !!v)
+          mode.update()
+        }}
       />
 
       <label>uaFullVersion</label>
       <Input
         value={data.uaFullVersion}
+        onInput={({ target }: any) => {
+          data.uaFullVersion = target.value
+          mode.update()
+        }}
       />
     </div>
+
     <div>
       <label className="mb-1">versions</label>
       <Input.TextArea
@@ -233,6 +290,10 @@ const UserAgentDataView = ({ mode, defaultValues }: {
           maxRows: 3,
         }}
         value={versions}
+        onInput={({ target }: any) => {
+          data.versions = parseVersions(target.value)
+          mode.update()
+        }}
       />
     </div>
   </div>

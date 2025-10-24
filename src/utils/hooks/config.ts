@@ -5,10 +5,11 @@ import { useTranslation } from "react-i18next"
 export type HookModeHandler<I> = {
   type: HookType
   input: I
-  setType: (type: HookType) => void
-  setInput: (input: I) => void
   isDefault: boolean
   isValue: boolean
+  setType: (type: HookType) => void
+  setInput: (input: I) => void
+  update: (onBefore?: () => void) => void
 }
 
 export const useHookMode = <V, I>(mode?: HookMode<V>, parser?: {
@@ -20,10 +21,13 @@ export const useHookMode = <V, I>(mode?: HookMode<V>, parser?: {
 
   const [type, setType] = useState<HookType>(mode?.type ?? HookType.default)
   const [input, setInput] = useState<I>(toInput ? toInput(modeValue) : modeValue)
+  const [version, setVersion] = useState(0)
 
   return {
     type,
     input,
+    isDefault: type === HookType.default,
+    isValue: type === HookType.value,
     setType: (type: HookType) => {
       if (mode) mode.type = type;
       setType(type)
@@ -34,8 +38,13 @@ export const useHookMode = <V, I>(mode?: HookMode<V>, parser?: {
         (mode as any).value = toValue ? toValue(input) : input;
       }
     },
-    isDefault: type === HookType.default,
-    isValue: type === HookType.value,
+    update: (onBefore) => {
+      onBefore?.()
+      if (mode) {
+        (mode as any).value = toValue ? toValue(input) : input;
+      }
+      setVersion(v => v + 1)
+    }
   }
 }
 
