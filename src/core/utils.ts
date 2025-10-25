@@ -208,16 +208,16 @@ export const proxyUserAgentData = (ctx: FingerprintContext, rawValue: any, proxy
             apply: (target, thisArg, args) => {
               return target.apply(thisArg, args)?.then((v: any) => {
                 if (!v) return v;
-                if (v.architecture) v.architecture = uaData.arch;
-                if (v.bitness) v.bitness = uaData.bitness;
-                if (v.model) v.model = uaData.model;
+                if (v.architecture != null) v.architecture = uaData.arch;
+                if (v.bitness != null) v.bitness = uaData.bitness;
+                if (v.model != null) v.model = uaData.model;
                 if (v.mobile != null) v.mobile = uaData.mobile;
-                if (v.platform) v.platform = uaData.platform;
-                if (v.platformVersion) v.platformVersion = uaData.platformVersion;
-                if (v.formFactors) v.formFactors = uaData.formFactors;
-                if (v.uaFullVersion) v.uaFullVersion = uaData.uaFullVersion;
-                if (v.brands) v.brands = brands;
-                if (v.fullVersionList) v.fullVersionList = fullVersionList;
+                if (v.platform != null) v.platform = uaData.platform;
+                if (v.platformVersion != null) v.platformVersion = uaData.platformVersion;
+                if (v.formFactors != null) v.formFactors = uaData.formFactors;
+                if (v.uaFullVersion != null) v.uaFullVersion = uaData.uaFullVersion;
+                if (v.brands != null) v.brands = brands;
+                if (v.fullVersionList != null) v.fullVersionList = fullVersionList;
                 return v;
               })
             }

@@ -1,7 +1,6 @@
 import { useStorageStore } from "@/popup/stores/storage"
-import { ConfigItemY, HookModeContent } from "../item"
+import { ConfigDesc, ConfigItemY, HookModeContent } from "../item"
 import { selectStatusDotStyles as dotStyles } from "../styles"
-import Markdown from "react-markdown"
 import TipIcon from "@/components/data/tip-icon"
 import { useTranslation } from "react-i18next"
 import { Button, Checkbox, Collapse, CollapseProps, Input, Select, Spin, Tooltip } from "antd"
@@ -10,6 +9,8 @@ import { HookModeHandler } from "@/utils/hooks"
 import { cn } from "@/utils/style"
 import { useEffect, useMemo, useState } from "react"
 import { HookType } from '@/types/enum'
+
+const unstableTag = ['unstable']
 
 const userAgentData: any = (navigator as any).userAgentData;
 
@@ -150,7 +151,7 @@ const ClientHintsConfigItem = ({ }: {}) => {
       <ConfigItemY
         label={t('item.title.clientHints')}
         className={cn(!mode.isDefault && dotStyles.warning)}
-        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.clientHints')}</Markdown>} />}
+        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.clientHints')} />} />}
       >
         <Select<OptionType>
           className={dotStyles.base}

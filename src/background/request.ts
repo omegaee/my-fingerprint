@@ -117,14 +117,14 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
 
   const res = [
     makeRule("User-Agent", ua.userAgent),
-    makeRule("Sec-Ch-Ua-Arch", uaData.arch),
-    makeRule("Sec-Ch-Ua-Bitness", uaData.bitness),
-    makeRule("Sec-Ch-Ua-Platform", uaData.platform),
-    makeRule("Sec-Ch-Ua-Platform-Version", uaData.platformVersion),
+    makeRule("Sec-Ch-Ua-Arch", `"${uaData.arch}"`),
+    makeRule("Sec-Ch-Ua-Bitness", `"${uaData.bitness}"`),
+    makeRule("Sec-Ch-Ua-Platform", `"${uaData.platform}"`),
+    makeRule("Sec-Ch-Ua-Platform-Version", `"${uaData.platformVersion}"`),
     makeRule("Sec-Ch-Ua-Mobile", uaData.mobile ? "?1" : "?0"),
-    makeRule("Sec-Ch-Ua-Model", uaData.model),
-    makeRule("Sec-Ch-Ua-Form-Factors", uaData.formFactors.join(", ")),
-    makeRule("Sec-Ch-Ua-Full-Version", uaData.uaFullVersion),
+    makeRule("Sec-Ch-Ua-Model", `"${uaData.model}"`),
+    makeRule("Sec-Ch-Ua-Form-Factors", uaData.formFactors.map(v => `"${v}"`).join(", ")),
+    makeRule("Sec-Ch-Ua-Full-Version", `"${uaData.uaFullVersion}"`),
     makeRule("Sec-Ch-Ua", brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
     makeRule("Sec-Ch-Ua-Full-Version-List", fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
   ].filter(Boolean) as RuleHeader[]
