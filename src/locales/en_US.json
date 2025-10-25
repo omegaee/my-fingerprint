@@ -13,7 +13,8 @@
     "random": "Random",
     "apply": "Apply",
     "local": "Local",
-    "online": "Online"
+    "online": "Online",
+    "reset": "Reset"
   },
   "e": {
     "enabled": "Extension Enabled",

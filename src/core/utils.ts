@@ -214,6 +214,7 @@ export const proxyUserAgentData = (ctx: FingerprintContext, rawValue: any, proxy
                 if (v.mobile != null) v.mobile = uaData.mobile;
                 if (v.platform) v.platform = uaData.platform;
                 if (v.platformVersion) v.platformVersion = uaData.platformVersion;
+                if (v.formFactors) v.formFactors = uaData.formFactors;
                 if (v.uaFullVersion) v.uaFullVersion = uaData.uaFullVersion;
                 if (v.brands) v.brands = brands;
                 if (v.fullVersionList) v.fullVersionList = fullVersionList;

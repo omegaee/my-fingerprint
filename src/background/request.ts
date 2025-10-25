@@ -1,6 +1,5 @@
-import { genRandomVersionUserAgent, genRandomVersionUserAgentData, getBrowser } from "@/utils/equipment"
+import { getBrowser } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
-import { shuffleArray } from "@/utils/base"
 import { HookType } from '@/types/enum'
 import { isDefaultMode } from "@/utils/storage"
 
@@ -10,10 +9,6 @@ type RuleSignal = {
 }
 
 const UA_NET_RULE_ID = 1
-
-const RAW = {
-  languages: navigator.languages,
-}
 
 const MEMORY = {
   browser: getBrowser(navigator.userAgent),
@@ -26,7 +21,7 @@ const MEMORY = {
 const isHookNetRequest = (storage: LocalStorage) => {
   const fp = storage.config.fp
   return !isDefaultMode([
-    fp.navigator.uaVersion,
+    fp.navigator.ua,
     fp.navigator.languages,
   ])
 }
@@ -109,7 +104,7 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
   const fullVersionList = uaData.versions;
   const brands = fullVersionList?.map(v => ({
     ...v,
-    version: v.version.split('.')[0]
+    version: v.version?.split('.')[0] ?? ''
   }))
 
   const makeRule = (header: string, value: string) => {
@@ -128,7 +123,7 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
     makeRule("Sec-Ch-Ua-Platform-Version", uaData.platformVersion),
     makeRule("Sec-Ch-Ua-Mobile", uaData.mobile ? "?1" : "?0"),
     makeRule("Sec-Ch-Ua-Model", uaData.model),
-    makeRule("Sec-Ch-Ua-Full-Version", uaData.formFactors.join(", ")),
+    makeRule("Sec-Ch-Ua-Form-Factors", uaData.formFactors.join(", ")),
     makeRule("Sec-Ch-Ua-Full-Version", uaData.uaFullVersion),
     makeRule("Sec-Ch-Ua", brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
     makeRule("Sec-Ch-Ua-Full-Version-List", fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
