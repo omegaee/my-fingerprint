@@ -67,8 +67,7 @@
       "glRenderer": "Renderer"
     },
     "title": {
-      "ua": "UserAgent Info",
-      "uaVersion": "UserAgent Version",
+      "clientHints": "ClientHints Info",
       "languages": "Browser Language",
       "hardwareConcurrency": "Number of logical processors",
       "size": "Screen Size",
@@ -92,12 +91,7 @@
       }
     },
     "desc": {
-      "ua": "UserAgent Info",
-      "uaVersion": [
-        "UserAgent version info: only modifies the sub-version segments of `userAgent` and `userAgentData`.",
-        "Modern browsers use simplified and safer userAgent strings that reveal minimal information.",
-        "Some APIs are tied to specific userAgent versions, so changes may be detectable."
-      ],
+      "clientHints": "ClientHints information, including `UserAgent` and `UserAgentData` configurations",
       "languages": [
         "Browser language settings.",
         "Custom: separate multiple values with commas, e.g. `en-US,en,zh-CN,zh`. The first value is treated as the preferred language."

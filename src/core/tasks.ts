@@ -81,7 +81,7 @@ export const hookTasks: HookTask[] = [
       (win.navigator as any)[symbol.own] = getOwnProperties(win.navigator);
 
       /* userAgent & userAgentData */
-      const uaInfo = useHookMode(fps.ua).value;
+      const uaInfo = useHookMode(fps.clientHints).value;
       if (uaInfo != null) {
         if (uaInfo.ua != null) {
           useGetterProxy([win.Navigator.prototype, win.navigator], [

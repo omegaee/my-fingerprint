@@ -171,7 +171,7 @@ export const drawNoise = (
 /**
  * 代理UserAgentData
  */
-export const proxyUserAgentData = (ctx: FingerprintContext, rawValue: any, proxyValue: UserAgentInfo) => {
+export const proxyUserAgentData = (ctx: FingerprintContext, rawValue: any, proxyValue: ClientHintsInfo) => {
   if (!rawValue || !proxyValue) return rawValue;
 
   const uaData = proxyValue.uaData

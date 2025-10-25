@@ -57,7 +57,7 @@ type ScreenDepth = {
   pixel?: number
 }
 
-type UserAgentInfo = {
+type ClientHintsInfo = {
   ua: {
     userAgent: string
     appVersion: string

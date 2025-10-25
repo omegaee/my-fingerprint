@@ -16,8 +16,8 @@ const userAgentData: any = (navigator as any).userAgentData;
 type OptionType = (string & {}) | HookType
 
 type UserAgentInput = {
-  ua: UserAgentInfo['ua']
-  uaData: Omit<UserAgentInfo['uaData'], 'formFactors' | 'versions'> & {
+  ua: ClientHintsInfo['ua']
+  uaData: Omit<ClientHintsInfo['uaData'], 'formFactors' | 'versions'> & {
     formFactors: string
     versions: string
   }
@@ -63,9 +63,9 @@ const getUaData = async () => {
   }
 }
 
-const UserAgentConfigItem = ({ }: {}) => {
+const ClientHintsConfigItem = ({ }: {}) => {
   const { t, i18n } = useTranslation()
-  const [uaInfo, setUaInfo] = useState<UserAgentInfo>()
+  const [uaInfo, setUaInfo] = useState<ClientHintsInfo>()
 
   const config = useStorageStore((state) => state.config)
   const fp = config?.fp
@@ -118,9 +118,9 @@ const UserAgentConfigItem = ({ }: {}) => {
   }
 
   return (fp && uaInfo) ? <>
-    <HookModeContent<UserAgentInfo, UserAgentInput>
+    <HookModeContent<ClientHintsInfo, UserAgentInput>
       isMakeSelect={false}
-      mode={fp.navigator.ua}
+      mode={fp.navigator.clientHints}
       parser={{
         toInput: (value) => {
           const input = value ?? { ...uaInfo }
@@ -148,9 +148,9 @@ const UserAgentConfigItem = ({ }: {}) => {
       }}
     >{(mode) => (
       <ConfigItemY
-        label={t('item.title.ua')}
+        label={t('item.title.clientHints')}
         className={cn(!mode.isDefault && dotStyles.warning)}
-        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.ua')}</Markdown>} />}
+        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.clientHints')}</Markdown>} />}
       >
         <Select<OptionType>
           className={dotStyles.base}
@@ -159,6 +159,7 @@ const UserAgentConfigItem = ({ }: {}) => {
           onChange={(v) => {
             if (v === HookType.default || v === HookType.value) {
               mode.setType(v);
+              mode.update();
             }
           }}
         />
@@ -170,7 +171,7 @@ const UserAgentConfigItem = ({ }: {}) => {
 
 const ConfigContentView = ({ mode, defaultValues }: {
   mode: HookModeHandler<UserAgentInput>
-  defaultValues: UserAgentInfo
+  defaultValues: ClientHintsInfo
 }) => {
   const resetUserAgent = () => {
     mode.input.ua = { ...defaultValues.ua }
@@ -234,7 +235,7 @@ const ResetButton = ({ onPress }: {
 
 const UserAgentView = ({ mode, defaultValues }: {
   mode: HookModeHandler<UserAgentInput>
-  defaultValues: UserAgentInfo
+  defaultValues: ClientHintsInfo
 }) => {
   const raw = defaultValues.ua;
   const data = mode.input.ua;
@@ -274,7 +275,7 @@ const UserAgentView = ({ mode, defaultValues }: {
 
 const UserAgentDataView = ({ mode, defaultValues }: {
   mode: HookModeHandler<UserAgentInput>
-  defaultValues: UserAgentInfo
+  defaultValues: ClientHintsInfo
 }) => {
   const raw = defaultValues.uaData;
   const data = mode.input.uaData;
@@ -382,4 +383,4 @@ const UserAgentDataView = ({ mode, defaultValues }: {
   </div>
 }
 
-export default UserAgentConfigItem
+export default ClientHintsConfigItem

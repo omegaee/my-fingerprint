@@ -21,7 +21,7 @@ const MEMORY = {
 const isHookNetRequest = (storage: LocalStorage) => {
   const fp = storage.config.fp
   return !isDefaultMode([
-    fp.navigator.ua,
+    fp.navigator.clientHints,
     fp.navigator.languages,
   ])
 }
@@ -85,7 +85,7 @@ const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
 }
 
 const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
-  const uaMode = config.fp.navigator.ua
+  const uaMode = config.fp.navigator.clientHints
 
   const modeValue = (uaMode as any).value;
   const modeValueStr = typeof modeValue === 'object' ? JSON.stringify(modeValue) : modeValue;

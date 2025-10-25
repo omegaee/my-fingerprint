@@ -67,8 +67,7 @@
       "glRenderer": "渲染器"
     },
     "title": {
-      "ua": "UserAgent信息",
-      "uaVersion": "UserAgent版本号",
+      "clientHints": "ClientHints信息",
       "languages": "浏览器语言",
       "hardwareConcurrency": "逻辑处理器数量",
       "size": "屏幕尺寸",
@@ -92,12 +91,7 @@
       }
     },
     "desc": {
-      "ua": "UserAgent信息",
-      "uaVersion": [
-        "UserAgent版本号信息，仅修改`userAgent`和`userAgentData`的子版本号段",
-        "现在浏览器的userAgent简单安全，并不会泄露过多信息",
-        "由于某些api伴随userAgent版本变更，因此修改容易被识别"
-      ],
+      "clientHints": "ClientHints信息，包含`UserAgent`和`UserAgentData`配置",
       "languages": [
         "浏览器语言",
         "自定义：多个值用逗号分隔，首个值作为首选语言，例如`zh-CN,zh,en-US,en`"
