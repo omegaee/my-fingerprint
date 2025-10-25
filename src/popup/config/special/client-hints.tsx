@@ -151,7 +151,7 @@ const ClientHintsConfigItem = ({ }: {}) => {
       <ConfigItemY
         label={t('item.title.clientHints')}
         className={cn(!mode.isDefault && dotStyles.warning)}
-        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.clientHints')} />} />}
+        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.clientHints', { joinArrays: '\n\n' })} />} />}
       >
         <Select<OptionType>
           className={dotStyles.base}

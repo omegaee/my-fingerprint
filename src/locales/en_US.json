@@ -91,7 +91,11 @@
       }
     },
     "desc": {
-      "clientHints": "ClientHints information, including `UserAgent` and `UserAgentData` configurations",
+      "clientHints": [
+        "ClientHints information, including `UserAgent` and `UserAgentData` configuration",
+        "`versions` should use the format `brand=version`, with multiple values separated by commas",
+        "`formFactors` supports multiple values separated by commas"
+      ],
       "languages": [
         "Browser language settings.",
         "Custom: separate multiple values with commas, e.g. `en-US,en,zh-CN,zh`. The first value is treated as the preferred language."

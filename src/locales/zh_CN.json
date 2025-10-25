@@ -91,7 +91,11 @@
       }
     },
     "desc": {
-      "clientHints": "ClientHints信息，包含`UserAgent`和`UserAgentData`配置",
+      "clientHints": [
+        "ClientHints信息，包含`UserAgent`和`UserAgentData`配置",
+        "`versions`使用`brand=version`的格式，多个值用逗号分隔",
+        "`formFactors`多个值用逗号分隔"
+      ],
       "languages": [
         "浏览器语言",
         "自定义：多个值用逗号分隔，首个值作为首选语言，例如`zh-CN,zh,en-US,en`"
