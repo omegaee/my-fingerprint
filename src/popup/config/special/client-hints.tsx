@@ -5,16 +5,19 @@ import TipIcon from "@/components/data/tip-icon"
 import { useTranslation } from "react-i18next"
 import { Button, Checkbox, Collapse, CollapseProps, Input, Select, Spin, Tooltip } from "antd"
 import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
-import { HookModeHandler } from "@/utils/hooks"
+import { HookModeHandler, useI18n } from "@/utils/hooks"
 import { cn } from "@/utils/style"
 import { useEffect, useMemo, useState } from "react"
 import { HookType } from '@/types/enum'
+import { sharedAsync } from "@/utils/timer"
+import { ClientHintsOption, LocalApi } from "@/api/local"
 
 const unstableTag = ['unstable']
 
 const userAgentData: any = (navigator as any).userAgentData;
 
 type OptionType = (string & {}) | HookType
+type ModeHandler = HookModeHandler<ClientHintsInfo, UserAgentInput>
 
 type UserAgentInput = {
   ua: ClientHintsInfo['ua']
@@ -64,8 +67,9 @@ const getUaData = async () => {
   }
 }
 
+const fetchClientHints = sharedAsync(LocalApi.clientHints)
+
 const ClientHintsConfigItem = ({ }: {}) => {
-  const { t, i18n } = useTranslation()
   const [uaInfo, setUaInfo] = useState<ClientHintsInfo>()
 
   const config = useStorageStore((state) => state.config)
@@ -92,27 +96,8 @@ const ClientHintsConfigItem = ({ }: {}) => {
           versions: data.fullVersionList,
         }
       })
-    })
+    });
   }, [])
-
-  const options = useMemo(() => {
-    return [
-      {
-        label: <span>{t('g.special')}</span>,
-        title: 'special',
-        options: [
-          {
-            value: HookType.default,
-            label: t('type.' + HookType[HookType.default]),
-          },
-          {
-            value: HookType.value,
-            label: t('type.' + HookType[HookType.value]),
-          },
-        ],
-      },
-    ].filter(v => !!v)
-  }, [i18n.language])
 
   if (!userAgentData) {
     return <></>
@@ -147,45 +132,112 @@ const ClientHintsConfigItem = ({ }: {}) => {
           }
         },
       }}
-    >{(mode) => (
-      <ConfigItemY
-        label={t('item.title.clientHints')}
-        className={cn(!mode.isDefault && dotStyles.warning)}
-        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.clientHints', { joinArrays: '\n\n' })} />} />}
-      >
-        <Select<OptionType>
-          className={dotStyles.base}
-          options={options}
-          value={mode.type}
-          onChange={(v) => {
-            if (v === HookType.default || v === HookType.value) {
-              mode.setType(v);
-              mode.update();
-            }
-          }}
-        />
-        {mode.isValue && <ConfigContentView mode={mode} defaultValues={uaInfo} />}
-      </ConfigItemY>
-    )}</HookModeContent>
+    >{(mode) => <ModeView mode={mode} defaultValues={uaInfo} />}</HookModeContent>
   </> : <Spin indicator={<LoadingOutlined spin />} />
 }
 
+/**
+ * 配置模块
+ */
+const ModeView = ({ mode, defaultValues }: {
+  mode: ModeHandler
+  defaultValues: ClientHintsInfo
+}) => {
+  const { t, i18n, asLang } = useI18n()
+  const [isOpen, setIsOpen] = useState(false)
+  const [localPreset, setLocalPreset] = useState<ClientHintsOption[]>([])
+
+  const presetKey = (mode.value as any)?.key;
+
+  useEffect(() => {
+    if (!isOpen || localPreset.length != 0) return;
+    fetchClientHints()
+      .then((data) => {
+        setLocalPreset(data)
+      }).catch((e) => {
+        console.log(e)
+      })
+  }, [isOpen])
+
+  const options = useMemo(() => {
+    return [
+      {
+        label: <span>{t('g.special')}</span>,
+        title: 'special',
+        options: [
+          {
+            value: HookType.default,
+            label: t('type.' + HookType[HookType.default]),
+          },
+          {
+            value: HookType.value,
+            label: t('type.' + HookType[HookType.value]),
+          },
+        ],
+      },
+      localPreset && {
+        label: <span>{t('g.preset')}</span>,
+        title: 'preset',
+        options: localPreset.map((v) => ({
+          value: v.key,
+          label: asLang(v.title),
+        })),
+      },
+    ].filter(v => !!v)
+  }, [i18n.language, localPreset])
+
+  const onChange = (v: OptionType) => {
+    if (v === HookType.default || v === HookType.value) {
+      if (v === HookType.value) {
+        mode.setValue({ ...defaultValues })
+      }
+      mode.setType(v);
+    } else {
+      const preset = localPreset?.find(item => item.key === v);
+      if (preset) {
+        const { title, ...rest } = preset;
+        mode.setValue(rest)
+      }
+      mode.setType(HookType.value);
+    }
+  }
+
+  return <ConfigItemY
+    label={t('item.title.clientHints')}
+    className={cn(!mode.isDefault && dotStyles.warning)}
+    endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.clientHints', { joinArrays: '\n\n' })} />} />}
+  >
+    <Select<OptionType>
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className={dotStyles.base}
+      options={options}
+      value={presetKey || mode.type}
+      onChange={onChange}
+    />
+    {(mode.isValue && !presetKey) && <ConfigContentView mode={mode} defaultValues={defaultValues} />}
+  </ConfigItemY>
+}
+
+/**
+ * 配置组
+ */
 const ConfigContentView = ({ mode, defaultValues }: {
-  mode: HookModeHandler<UserAgentInput>
+  mode: HookModeHandler<ClientHintsInfo, UserAgentInput>
   defaultValues: ClientHintsInfo
 }) => {
   const resetUserAgent = () => {
-    mode.input.ua = { ...defaultValues.ua }
-    mode.update()
+    mode.setValue({
+      ua: { ...defaultValues.ua },
+      uaData: mode.value.uaData,
+    })
   }
 
   const resetUserAgentData = () => {
-    mode.input.uaData = {
-      ...defaultValues.uaData,
-      formFactors: defaultValues.uaData.formFactors.join(', '),
-      versions: versionsToStr(defaultValues.uaData.versions),
-    }
-    mode.update()
+    mode.setValue({
+      ua: mode.value.ua,
+      uaData: { ...defaultValues.uaData },
+    })
   }
 
   const items = useMemo<CollapseProps['items']>(() => [
@@ -235,7 +287,7 @@ const ResetButton = ({ onPress }: {
 }
 
 const UserAgentView = ({ mode, defaultValues }: {
-  mode: HookModeHandler<UserAgentInput>
+  mode: HookModeHandler<ClientHintsInfo, UserAgentInput>
   defaultValues: ClientHintsInfo
 }) => {
   const raw = defaultValues.ua;
@@ -248,7 +300,7 @@ const UserAgentView = ({ mode, defaultValues }: {
       value={data.userAgent}
       onInput={({ target }: any) => {
         data.userAgent = target.value || raw.userAgent;
-        mode.update()
+        mode.updateValue()
       }}
     />
 
@@ -258,7 +310,7 @@ const UserAgentView = ({ mode, defaultValues }: {
       value={data.appVersion}
       onInput={({ target }: any) => {
         data.appVersion = target.value || raw.appVersion;
-        mode.update()
+        mode.updateValue()
       }}
     />
 
@@ -268,14 +320,14 @@ const UserAgentView = ({ mode, defaultValues }: {
       value={data.platform}
       onInput={({ target }: any) => {
         data.platform = target.value || raw.platform;
-        mode.update()
+        mode.updateValue()
       }}
     />
   </div>
 }
 
 const UserAgentDataView = ({ mode, defaultValues }: {
-  mode: HookModeHandler<UserAgentInput>
+  mode: HookModeHandler<ClientHintsInfo, UserAgentInput>
   defaultValues: ClientHintsInfo
 }) => {
   const raw = defaultValues.uaData;
@@ -289,7 +341,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
           checked={data.mobile}
           onChange={({ target }: any) => {
             data.mobile = target.checked
-            mode.update()
+            mode.updateValue()
           }}
         />
       </div>
@@ -300,7 +352,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
         value={data.arch}
         onInput={({ target }: any) => {
           data.arch = target.value || raw.arch;
-          mode.update()
+          mode.updateValue()
         }}
       />
 
@@ -310,7 +362,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
         value={data.bitness}
         onInput={({ target }: any) => {
           data.bitness = target.value || raw.bitness;
-          mode.update()
+          mode.updateValue()
         }}
       />
 
@@ -320,7 +372,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
         value={data.platform}
         onInput={({ target }: any) => {
           data.platform = target.value || raw.platform;
-          mode.update()
+          mode.updateValue()
         }}
       />
 
@@ -330,7 +382,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
         value={data.platformVersion}
         onInput={({ target }: any) => {
           data.platformVersion = target.value || raw.platformVersion;
-          mode.update()
+          mode.updateValue()
         }}
       />
 
@@ -340,7 +392,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
         value={data.model}
         onInput={({ target }: any) => {
           data.model = target.value || raw.model;
-          mode.update()
+          mode.updateValue()
         }}
       />
 
@@ -350,7 +402,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
         value={data.formFactors}
         onInput={({ target }: any) => {
           data.formFactors = target.value;
-          mode.update()
+          mode.updateValue()
         }}
       />
 
@@ -360,7 +412,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
         value={data.uaFullVersion}
         onInput={({ target }: any) => {
           data.uaFullVersion = target.value || raw.uaFullVersion;
-          mode.update()
+          mode.updateValue()
         }}
       />
     </div>
@@ -377,7 +429,7 @@ const UserAgentDataView = ({ mode, defaultValues }: {
         value={data.versions}
         onInput={({ target }: any) => {
           data.versions = target.value;
-          mode.update()
+          mode.updateValue()
         }}
       />
     </div>
