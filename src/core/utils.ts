@@ -2,6 +2,7 @@ import { hashNumberFromString, seededRandom, subversionRandom } from "@/utils/ba
 import { brandRandom } from "@/utils/equipment";
 import { sendToWindow } from "@/utils/message";
 import { debounce } from "@/utils/timer";
+import type { FingerprintContext } from "./core";
 
 // 
 // --- notification ---
@@ -170,47 +171,60 @@ export const drawNoise = (
 /**
  * 代理UserAgentData
  */
-export const proxyUserAgentData = (seed: number, userAgentData?: any) => {
-  if (!userAgentData) return;
+export const proxyUserAgentData = (ctx: FingerprintContext, rawValue: any, proxyValue: ClientHintsInfo) => {
+  if (!rawValue || !proxyValue) return rawValue;
 
-  return new Proxy(userAgentData, {
+  const uaData = proxyValue.uaData
+  if (!uaData) return rawValue;
+
+  const fullVersionList = uaData.versions
+  const brands = fullVersionList?.map(v => ({
+    ...v,
+    version: v.version.split('.')[0]
+  }))
+
+  return ctx.newProxy(rawValue, {
     get: (target, key) => {
+      const raw = target[key]
       switch (key) {
-        case 'brands': {
-          const raw: Brand[] = target[key]
-          const brands: Brand[] = raw?.map?.((brand: Brand) => brandRandom(seed, brand))
-          return brands ?? raw
-        }
+        case 'brands': return brands;
+        case 'mobile': return uaData.mobile;
+        case 'platform': return uaData.platform;
         case 'toJSON': {
-          const raw: () => NavigatorUADataAttr = target[key]
-          return !raw ? raw : new Proxy(raw.bind(target), {
-            apply: (target, thisArg, args: Parameters<typeof raw>) => {
-              const rawRes = target.apply(thisArg, args)
-              const brands = rawRes?.brands?.map?.((brand: Brand) => brandRandom(seed, brand))
-              return brands ?? rawRes
+          if (!raw) return raw;
+          return ctx.newProxy(raw.bind(target), {
+            apply: (target, thisArg, args) => {
+              const res = target.apply(thisArg, args);
+              res.brands = brands;
+              res.mobile = uaData.mobile;
+              res.platform = uaData.platform;
+              return res;
             }
           })
         }
         case 'getHighEntropyValues': {
-          const raw: (opt?: string[]) => Promise<HighEntropyValuesAttr> = target[key]
-          return !raw ? raw : new Proxy(raw.bind(target), {
-            apply: (target, thisArg, args: Parameters<typeof raw>) => {
-              return target.apply(thisArg, args)?.then((data) => {
-                if (!data) return data;
-                return {
-                  ...data,
-                  brands: data.brands?.map?.((brand) => brandRandom(seed, brand)),
-                  fullVersionList: data.fullVersionList?.map?.((brand) => brandRandom(seed, brand)),
-                  uaFullVersion: data.uaFullVersion && subversionRandom(seed, data.uaFullVersion).full,
-                }
+          if (!raw) return raw;
+          return ctx.newProxy(raw.bind(target), {
+            apply: (target, thisArg, args) => {
+              return target.apply(thisArg, args)?.then((v: any) => {
+                if (!v) return v;
+                if (v.architecture != null) v.architecture = uaData.arch;
+                if (v.bitness != null) v.bitness = uaData.bitness;
+                if (v.model != null) v.model = uaData.model;
+                if (v.mobile != null) v.mobile = uaData.mobile;
+                if (v.platform != null) v.platform = uaData.platform;
+                if (v.platformVersion != null) v.platformVersion = uaData.platformVersion;
+                if (v.formFactors != null) v.formFactors = uaData.formFactors;
+                if (v.uaFullVersion != null) v.uaFullVersion = uaData.uaFullVersion;
+                if (v.brands != null) v.brands = brands;
+                if (v.fullVersionList != null) v.fullVersionList = fullVersionList;
+                return v;
               })
             }
           })
         }
       }
-
-      const value = target[key]
-      return typeof value === 'function' ? value.bind(target) : value
+      return typeof raw === 'function' ? raw.bind(target) : raw
     }
   })
 }

@@ -241,12 +241,13 @@ export class FingerprintContext {
    * 获取指定项的种子或自定义值
    */
   public useHookMode = <V>(mode?: HookMode<V>): {
+    isDefault?: boolean
     seed?: number
     value?: V
   } => {
     switch (mode?.type) {
       case HookType.default:
-        return {};
+        return { isDefault: true };
       case HookType.value:
         return { value: mode.value };
       default:

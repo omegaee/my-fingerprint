@@ -1,6 +1,5 @@
-import { genRandomVersionUserAgent, genRandomVersionUserAgentData, getBrowser } from "@/utils/equipment"
+import { getBrowser } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
-import { shuffleArray } from "@/utils/base"
 import { HookType } from '@/types/enum'
 import { isDefaultMode } from "@/utils/storage"
 
@@ -10,10 +9,6 @@ type RuleSignal = {
 }
 
 const UA_NET_RULE_ID = 1
-
-const RAW = {
-  languages: navigator.languages,
-}
 
 const MEMORY = {
   browser: getBrowser(navigator.userAgent),
@@ -26,7 +21,7 @@ const MEMORY = {
 const isHookNetRequest = (storage: LocalStorage) => {
   const fp = storage.config.fp
   return !isDefaultMode([
-    fp.navigator.uaVersion,
+    fp.navigator.clientHints,
     fp.navigator.languages,
   ])
 }
@@ -90,78 +85,86 @@ const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
 }
 
 const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
-  const uaMode = config.fp.navigator.uaVersion
-  const key = `${uaMode.type}:${config.seed.global}:${config.seed.browser}`
-  const mem = MEMORY.ua
+  const uaMode = config.fp.navigator.clientHints
+
+  const modeValue = (uaMode as any).value;
+  const modeValueStr = typeof modeValue === 'object' ? JSON.stringify(modeValue) : modeValue;
+
+  const key = `${uaMode.type}:${modeValueStr}`
+  const mem = MEMORY.lang
   if (mem && mem[0] === key) return mem[1];
 
-  const res: RuleHeader[] = []
-  const uaSeed = getSeedByMode(config, uaMode);
-  if (uaSeed) {
-    res.push({
-      header: "User-Agent",
-      operation: "set" as any,
-      value: genRandomVersionUserAgent(uaSeed, navigator),
-    })
-    const uaData = await genRandomVersionUserAgentData(uaSeed, navigator)
-    uaData.brands && res.push({
-      header: "Sec-Ch-Ua",
-      operation: "set" as any,
-      value: uaData.brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
-    })
-    uaData.fullVersionList && res.push({
-      header: "Sec-Ch-Ua-Full-Version-List",
-      operation: "set" as any,
-      value: uaData.fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", "),
-    })
-    uaData.uaFullVersion && res.push({
-      header: "Sec-Ch-Ua-Full-Version",
-      operation: "set" as any,
-      value: uaData.uaFullVersion,
-    })
+  singal.isUpdate = true;
+
+  if (uaMode.type !== HookType.value) return [];
+
+  const { ua, uaData } = uaMode.value;
+  if (ua == null && uaData == null) return [];
+
+  const fullVersionList = uaData.versions;
+  const brands = fullVersionList?.map(v => ({
+    ...v,
+    version: v.version?.split('.')[0] ?? ''
+  }))
+
+  const makeRule = (header: string, value: string) => {
+    return value == null ? undefined : {
+      header,
+      operation: "set",
+      value,
+    }
   }
 
+  const res = [
+    makeRule("User-Agent", ua.userAgent),
+    makeRule("Sec-Ch-Ua-Arch", `"${uaData.arch}"`),
+    makeRule("Sec-Ch-Ua-Bitness", `"${uaData.bitness}"`),
+    makeRule("Sec-Ch-Ua-Platform", `"${uaData.platform}"`),
+    makeRule("Sec-Ch-Ua-Platform-Version", `"${uaData.platformVersion}"`),
+    makeRule("Sec-Ch-Ua-Mobile", uaData.mobile ? "?1" : "?0"),
+    makeRule("Sec-Ch-Ua-Model", `"${uaData.model}"`),
+    makeRule("Sec-Ch-Ua-Form-Factors", uaData.formFactors.map(v => `"${v}"`).join(", ")),
+    makeRule("Sec-Ch-Ua-Full-Version", `"${uaData.uaFullVersion}"`),
+    makeRule("Sec-Ch-Ua", brands.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
+    makeRule("Sec-Ch-Ua-Full-Version-List", fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
+  ].filter(Boolean) as RuleHeader[]
+
   MEMORY.ua = [key, res]
-  singal.isUpdate = true;
   return res;
 }
 
 const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonly RuleHeader[] => {
   const langsMode = config.fp.navigator.languages
-  const key = `${langsMode.type}:${(langsMode as any).value ?? ''}:${config.seed.global}:${config.seed.browser}`
+
+  const modeValue = (langsMode as any).value;
+  const modeValueStr = typeof modeValue === 'object' ? JSON.stringify(modeValue) : modeValue;
+
+  const key = `${langsMode.type}:${modeValueStr}`
   const mem = MEMORY.lang
   if (mem && mem[0] === key) return mem[1];
 
+  singal.isUpdate = true;
+
+  if (langsMode.type !== HookType.value) return [];
+
   const res: RuleHeader[] = []
-  if (langsMode && langsMode.type !== HookType.default) {
-    /* 获取种子 */
-    let langs: string[] | undefined
-    if (langsMode.type === HookType.value) {
-      langs = langsMode.value
-    } else {
-      const langSeed = getSeedByMode(config, langsMode)
-      if (langSeed) {
-        langs = shuffleArray(RAW.languages, langSeed)
-      }
+  const langs = langsMode.value;
+
+  if (langs?.length) {
+    const [first, ...rest] = langs
+    let qFactor = 1
+    for (let i = 0; i < rest.length && qFactor > 0.1; i++) {
+      qFactor -= 0.1
+      rest[i] = `${rest[i]};q=${qFactor.toFixed(1)}`
     }
-    /* 修改 */
-    if (langs?.length) {
-      const [first, ...rest] = langs
-      let qFactor = 1
-      for (let i = 0; i < rest.length && qFactor > 0.1; i++) {
-        qFactor -= 0.1
-        rest[i] = `${rest[i]};q=${qFactor.toFixed(1)}`
-      }
-      res.push({
-        header: "Accept-Language",
-        operation: "set" as any,
-        value: [first, ...rest].join(","),
-      })
-    }
+    res.push({
+      header: "Accept-Language",
+      operation: "set" as any,
+      value: [first, ...rest].join(","),
+    })
   }
 
   MEMORY.lang = [key, res]
-  singal.isUpdate = true;
   return res;
 }
 

@@ -1,4 +1,11 @@
+import { appFetchJson } from "@/utils/net"
+
 export type TimeZoneInfoOption = TimeZoneInfo & {
+  key: string
+  title: I18nString
+}
+
+export type ClientHintsOption = ClientHintsInfo & {
   key: string
   title: I18nString
 }
@@ -6,11 +13,13 @@ export type TimeZoneInfoOption = TimeZoneInfo & {
 export const LocalApi = {
   timezone: async () => {
     const url = chrome.runtime.getURL('settings/timezone.json')
-    return await fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json();
-      })
+    return appFetchJson(url)
       .then(v => v.timezone as TimeZoneInfoOption[])
-  }
+  },
+
+  clientHints: async () => {
+    const url = chrome.runtime.getURL('settings/client-hints.json')
+    return appFetchJson(url)
+      .then(v => v.chromium as ClientHintsOption[])
+  },
 }

@@ -13,7 +13,8 @@
     "random": "随机",
     "apply": "应用",
     "local": "本地",
-    "online": "在线"
+    "online": "在线",
+    "reset": "重置"
   },
   "e": {
     "enabled": "扩展已开启",
@@ -66,7 +67,7 @@
       "glRenderer": "渲染器"
     },
     "title": {
-      "uaVersion": "UserAgent版本号",
+      "clientHints": "ClientHints信息",
       "languages": "浏览器语言",
       "hardwareConcurrency": "逻辑处理器数量",
       "size": "屏幕尺寸",
@@ -90,10 +91,10 @@
       }
     },
     "desc": {
-      "uaVersion": [
-        "UserAgent版本号信息，仅修改`userAgent`和`userAgentData`的子版本号段",
-        "现在浏览器的userAgent简单安全，并不会泄露过多信息",
-        "由于某些api伴随userAgent版本变更，因此修改容易被识别"
+      "clientHints": [
+        "ClientHints信息，包含`UserAgent`和`UserAgentData`配置",
+        "`versions`使用`brand=version`的格式，多个值用逗号分隔",
+        "`formFactors`多个值用逗号分隔"
       ],
       "languages": [
         "浏览器语言",

@@ -74,41 +74,35 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.navigator)),
-    onEnable: ({ win, conf, info, symbol, useSeed, useHookMode, useGetterProxy }) => {
+    onEnable: (ctx) => {
+      const { win, conf, info, symbol, useSeed, useHookMode, useGetterProxy, newProxy } = ctx;
       const fps = conf.fp.navigator;
 
       (win.navigator as any)[symbol.own] = getOwnProperties(win.navigator);
 
-      const _userAgent = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'userAgent')?.get
-      const _appVersion = Object.getOwnPropertyDescriptor(win.Navigator.prototype, 'appVersion')?.get
-      /* ua & appVersion */
-      {
-        const seed = useSeed(fps.uaVersion)
-        if (seed != null && info.browser !== 'firefox' && _userAgent && _appVersion) {
+      /* userAgent & userAgentData */
+      const uaInfo = useHookMode(fps.clientHints).value;
+      if (uaInfo != null) {
+        if (uaInfo.ua != null) {
           useGetterProxy([win.Navigator.prototype, win.navigator], [
-            'userAgent', 'appVersion'
-          ], (key, getter) => ({
-            apply(target, thisArg: Navigator, args: any) {
-              notify('weak.' + key)
-              return genRandomVersionUserAgent(seed, {
-                userAgent: _userAgent.call(thisArg),
-                appVersion: _appVersion.call(thisArg)
-              }, key === 'appVersion');
+            'userAgent', 'appVersion', 'platform',
+          ], (key, getter) => {
+            const value = uaInfo.ua[key]
+            if (value == null) return;
+            return {
+              apply(target, thisArg: Navigator, args: any) {
+                notify('weak.' + key)
+                return value;
+              }
             }
-          }))
+          })
         }
-      }
-
-      /* userAgentData */
-      {
-        const seed = useSeed(fps.uaVersion)
-        if (seed != null && info.browser !== 'firefox') {
-          // @ts-ignore
-          useGetterProxy([win.Navigator.prototype, win.navigator], 'userAgentData', (_, getter) => ({
+        if (uaInfo.uaData != null) {
+          useGetterProxy([win.Navigator.prototype, win.navigator], ('userAgentData' as any), (_, getter) => ({
             apply(target, thisArg: Navigator, args: any) {
               notify('weak.userAgentData')
               const result = getter.call(thisArg)
-              return proxyUserAgentData(seed, result);
+              return proxyUserAgentData(ctx, result, uaInfo);
             }
           }))
         }

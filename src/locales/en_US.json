@@ -13,7 +13,8 @@
     "random": "Random",
     "apply": "Apply",
     "local": "Local",
-    "online": "Online"
+    "online": "Online",
+    "reset": "Reset"
   },
   "e": {
     "enabled": "Extension Enabled",
@@ -66,7 +67,7 @@
       "glRenderer": "Renderer"
     },
     "title": {
-      "uaVersion": "UserAgent Version",
+      "clientHints": "ClientHints Info",
       "languages": "Browser Language",
       "hardwareConcurrency": "Number of logical processors",
       "size": "Screen Size",
@@ -90,10 +91,10 @@
       }
     },
     "desc": {
-      "uaVersion": [
-        "UserAgent version info: only modifies the sub-version segments of `userAgent` and `userAgentData`.",
-        "Modern browsers use simplified and safer userAgent strings that reveal minimal information.",
-        "Some APIs are tied to specific userAgent versions, so changes may be detectable."
+      "clientHints": [
+        "ClientHints information, including `UserAgent` and `UserAgentData` configuration",
+        "`versions` should use the format `brand=version`, with multiple values separated by commas",
+        "`formFactors` supports multiple values separated by commas"
       ],
       "languages": [
         "Browser language settings.",

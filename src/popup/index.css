@@ -38,6 +38,34 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  --background: #FFFFFF;
+  --foreground: #11181C;
+  --default-50: #fafafa;
+  --default-100: #f4f4f5;
+  --default-200: #e4e4e7;
+  --default-300: #d4d4d8;
+  --default-400: #a1a1aa;
+  --default-500: #71717a;
+  --default-600: #52525b;
+  --default-700: #3f3f46;
+  --default-800: #27272a;
+  --default-900: #18181b;
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #ECEDEE;
+  --default-50: #18181b;
+  --default-100: #27272a;
+  --default-200: #3f3f46;
+  --default-300: #52525b;
+  --default-400: #71717a;
+  --default-500: #a1a1aa;
+  --default-600: #d4d4d8;
+  --default-700: #e4e4e7;
+  --default-800: #f4f4f5;
+  --default-900: #fafafa;
 }
 
 .ant-tabs .ant-tabs-content,

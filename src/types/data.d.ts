@@ -57,4 +57,26 @@ type ScreenDepth = {
   pixel?: number
 }
 
+type ClientHintsInfo = {
+  ua: {
+    userAgent: string
+    appVersion: string
+    platform: string
+  }
+  uaData: {
+    arch: string
+    bitness: string
+    mobile: boolean
+    model: string
+    platform: string
+    platformVersion: string
+    formFactors: string[]
+    uaFullVersion: string
+    versions: {
+      brand: string
+      version: string
+    }[]
+  }
+}
+
 type I18nString = string | Record<string, string>
