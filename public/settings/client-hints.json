@@ -141,8 +141,8 @@
       }
     },
     {
-      "key": "Chrome/135 macOS/14.4 Intel",
-      "title": "Chrome/135 macOS/14.4 Intel",
+      "key": "Chrome/135 MacOS/14.4 Intel",
+      "title": "Chrome/135 MacOS/14.4 Intel",
       "ua": {
         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
         "appVersion": "5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
@@ -211,6 +211,41 @@
       }
     },
     {
+      "key": "Chrome/132 Windows/10 x64",
+      "title": "Chrome/132 Windows/10 x64",
+      "ua": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+        "appVersion": "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "uaData": {
+        "arch": "x86",
+        "bitness": "64",
+        "mobile": false,
+        "model": "",
+        "platform": "Windows",
+        "platformVersion": "10.0.0",
+        "formFactors": [
+          "Desktop"
+        ],
+        "uaFullVersion": "132.0.5600.71",
+        "versions": [
+          {
+            "brand": "Google Chrome",
+            "version": "132.0.5600.71"
+          },
+          {
+            "brand": "Not?A_Brand",
+            "version": "99.0.0.0"
+          },
+          {
+            "brand": "Chromium",
+            "version": "132.0.5600.71"
+          }
+        ]
+      }
+    },
+    {
       "key": "Chrome/130 Android/13 Galaxy S23 Ultra",
       "title": "Chrome/130 Android/13 Galaxy S23 Ultra",
       "ua": {
@@ -246,6 +281,41 @@
       }
     },
     {
+      "key": "Chrome/129 MacOS/13.6 arm64",
+      "title": "Chrome/129 MacOS/13.6 arm64",
+      "ua": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+        "appVersion": "5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+        "platform": "MacIntel"
+      },
+      "uaData": {
+        "arch": "arm",
+        "bitness": "64",
+        "mobile": false,
+        "model": "",
+        "platform": "macOS",
+        "platformVersion": "13.6",
+        "formFactors": [
+          "Desktop"
+        ],
+        "uaFullVersion": "129.0.5450.90",
+        "versions": [
+          {
+            "brand": "Google Chrome",
+            "version": "129.0.5450.90"
+          },
+          {
+            "brand": "Not?A_Brand",
+            "version": "99.0.0.0"
+          },
+          {
+            "brand": "Chromium",
+            "version": "129.0.5450.90"
+          }
+        ]
+      }
+    },
+    {
       "key": "Chrome/126 Windows/10 x86",
       "title": "Chrome/126 Windows/10 x86",
       "ua": {
@@ -276,6 +346,76 @@
           {
             "brand": "Chromium",
             "version": "126.0.5249.91"
+          }
+        ]
+      }
+    },
+    {
+      "key": "Chrome/124 Android/12 Xiaomi 13",
+      "title": "Chrome/124 Android/12 Xiaomi 13",
+      "ua": {
+        "userAgent": "Mozilla/5.0 (Linux; Android 12; Xiaomi 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+        "appVersion": "5.0 (Linux; Android 12; Xiaomi 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+        "platform": "Linux arm64"
+      },
+      "uaData": {
+        "arch": "arm",
+        "bitness": "64",
+        "mobile": true,
+        "model": "Xiaomi 13",
+        "platform": "Android",
+        "platformVersion": "12",
+        "formFactors": [
+          "Mobile"
+        ],
+        "uaFullVersion": "124.0.5367.92",
+        "versions": [
+          {
+            "brand": "Google Chrome",
+            "version": "124.0.5367.92"
+          },
+          {
+            "brand": "Not?A_Brand",
+            "version": "99.0.0.0"
+          },
+          {
+            "brand": "Chromium",
+            "version": "124.0.5367.92"
+          }
+        ]
+      }
+    },
+    {
+      "key": "Chrome/121 Linux/5.15 x64",
+      "title": "Chrome/121 Linux/5.15 x64",
+      "ua": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        "appVersion": "5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        "platform": "Linux x86_64"
+      },
+      "uaData": {
+        "arch": "x86",
+        "bitness": "64",
+        "mobile": false,
+        "model": "",
+        "platform": "Linux",
+        "platformVersion": "5.15.0",
+        "formFactors": [
+          "Desktop"
+        ],
+        "uaFullVersion": "121.0.5122.75",
+        "versions": [
+          {
+            "brand": "Google Chrome",
+            "version": "121.0.5122.75"
+          },
+          {
+            "brand": "Not?A_Brand",
+            "version": "99.0.0.0"
+          },
+          {
+            "brand": "Chromium",
+            "version": "121.0.5122.75"
           }
         ]
       }
