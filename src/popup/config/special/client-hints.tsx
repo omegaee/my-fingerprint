@@ -188,9 +188,7 @@ const ModeView = ({ mode, defaultValues }: {
 
   const onChange = (v: OptionType) => {
     if (v === HookType.default || v === HookType.value) {
-      if (v === HookType.value) {
-        mode.setValue({ ...defaultValues })
-      }
+      mode.setValue({ ...defaultValues })
       mode.setType(v);
     } else {
       const preset = localPreset?.find(item => item.key === v);

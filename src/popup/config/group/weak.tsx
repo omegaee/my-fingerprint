@@ -11,6 +11,7 @@ import { getBrowserInfo } from "@/utils/browser"
 import { selectStatusDotStyles as dotStyles } from "../styles"
 import { useShallow } from "zustand/shallow"
 import ClientHintsConfigItem from "../special/client-hints"
+import GPUInfoConfigItem from "../special/gpu-info"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const baseValueTypes = [...baseTypes, HookType.value]
@@ -30,18 +31,6 @@ export const WeakFpConfigGroup = memo(() => {
   const fp = storage.config?.fp
 
   const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
-
-  const gpuInfo = useMemo<GpuInfo>(() => {
-    const cvs = document.createElement('canvas')
-    const gl = cvs.getContext("webgl2") ?? cvs.getContext("webgl")
-    if (!gl) return {};
-    const ex = gl.getExtension('WEBGL_debug_renderer_info')
-    if (!ex) return {};
-    return {
-      vendor: gl.getParameter(ex.UNMASKED_VENDOR_WEBGL),
-      renderer: gl.getParameter(ex.UNMASKED_RENDERER_WEBGL),
-    }
-  }, [])
 
   return fp ? <div key={storage.version}>
     {browserInfo.name !== 'firefox' && <ClientHintsConfigItem />}
@@ -78,41 +67,7 @@ export const WeakFpConfigGroup = memo(() => {
     </HookModeContent>
 
     {/* gpuInfo */}
-    <HookModeContent
-      mode={fp.normal.gpuInfo}
-      types={valueTypes}
-      parser={{
-        toInput: (v) => v ?? gpuInfo,
-        toValue: (v) => {
-          if (!v.vendor?.trim()) v.vendor = gpuInfo.vendor;
-          if (!v.renderer?.trim()) v.renderer = gpuInfo.renderer;
-          return v;
-        },
-      }}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.gpuInfo')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.gpuInfo')} />} />}
-      >
-        {select}
-        {mode.isValue && <>
-          <Form.Item label={t('item.label.glVendor')}>
-            <Input
-              value={mode.input.vendor}
-              onChange={({ target }) => mode.setInput({ ...mode.input, vendor: target.value })}
-            />
-          </Form.Item>
-          <Form.Item label={t('item.label.glRenderer')}>
-            <Input
-              value={mode.input.renderer}
-              onChange={({ target }) => mode.setInput({ ...mode.input, renderer: target.value })}
-            />
-          </Form.Item>
-        </>}
-      </ConfigItemY>}
-    </HookModeContent>
+    <GPUInfoConfigItem />
 
     {/* screen size */}
     <HookModeContent

@@ -10,6 +10,11 @@ export type ClientHintsOption = ClientHintsInfo & {
   title: I18nString
 }
 
+export type GpuInfoOption = GpuInfo & {
+  key: string
+  title: I18nString
+}
+
 export const LocalApi = {
   timezone: async () => {
     const url = chrome.runtime.getURL('settings/timezone.json')
@@ -22,4 +27,10 @@ export const LocalApi = {
     return appFetchJson(url)
       .then(v => v.chromium as ClientHintsOption[])
   },
+
+  gpuInfo: async () => {
+    const url = chrome.runtime.getURL('settings/gpu-info.json')
+    return appFetchJson(url)
+      .then(v => v.gpuInfo as GpuInfoOption[])
+  }
 }

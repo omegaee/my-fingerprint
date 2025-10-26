@@ -1,0 +1,88 @@
+{
+  "gpuInfo": [
+    {
+      "key": "RTX 3060 D3D11",
+      "title": "RTX 3060 D3D11",
+      "vendor": "Google Inc. (NVIDIA)",
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Laptop GPU (0x00002560) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "GTX 1650 D3D11",
+      "title": "GTX 1650 D3D11",
+      "vendor": "Google Inc. (NVIDIA)",
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 (0x00001F93) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "Intel UHD Graphics 620 D3D11",
+      "title": "Intel UHD Graphics 620 D3D11",
+      "vendor": "Google Inc. (Intel)",
+      "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00003EA0) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "AMD Radeon RX 580 D3D11",
+      "title": "AMD Radeon RX 580 D3D11",
+      "vendor": "Google Inc. (AMD)",
+      "renderer": "ANGLE (AMD, Radeon RX 580 Series (0x000067DF) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "Apple M1 Metal",
+      "title": "Apple M1 Metal",
+      "vendor": "Google Inc.",
+      "renderer": "ANGLE (Apple, Apple M1, Metal)"
+    },
+    {
+      "key": "Intel Iris Xe D3D11",
+      "title": "Intel Iris Xe D3D11",
+      "vendor": "Google Inc. (Intel)",
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "NVIDIA RTX 4090 Vulkan",
+      "title": "NVIDIA RTX 4090 Vulkan",
+      "vendor": "Google Inc. (NVIDIA)",
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x000027B6) Vulkan 1.3.236)"
+    },
+    {
+      "key": "RTX 3080 D3D11",
+      "title": "RTX 3080 D3D11",
+      "vendor": "Google Inc. (NVIDIA)",
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002202) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "Intel HD Graphics 530 D3D11",
+      "title": "Intel HD Graphics 530 D3D11",
+      "vendor": "Google Inc. (Intel)",
+      "renderer": "ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "AMD Radeon Vega 8 D3D11",
+      "title": "AMD Radeon Vega 8 D3D11",
+      "vendor": "Google Inc. (AMD)",
+      "renderer": "ANGLE (AMD, AMD Radeon Vega 8 Graphics (0x000015D8) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "NVIDIA Quadro P1000 D3D11",
+      "title": "NVIDIA Quadro P1000 D3D11",
+      "vendor": "Google Inc. (NVIDIA)",
+      "renderer": "ANGLE (NVIDIA, NVIDIA Quadro P1000 (0x00001CB1) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "key": "Apple M2 Metal",
+      "title": "Apple M2 Metal",
+      "vendor": "Google Inc.",
+      "renderer": "ANGLE (Apple, Apple M2, Metal)"
+    },
+    {
+      "key": "Intel Arc A750 Vulkan",
+      "title": "Intel Arc A750 Vulkan",
+      "vendor": "Google Inc. (Intel)",
+      "renderer": "ANGLE (Intel, Intel Arc A750 Graphics (0x0000A770) Vulkan 1.3.250)"
+    },
+    {
+      "key": "AMD Radeon RX 7900 XTX Vulkan",
+      "title": "AMD Radeon RX 7900 XTX Vulkan",
+      "vendor": "Google Inc. (AMD)",
+      "renderer": "ANGLE (AMD, AMD Radeon RX 7900 XTX (0x0000747F) Vulkan 1.3.250)"
+    }
+  ]
+}
