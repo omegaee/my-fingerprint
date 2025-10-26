@@ -155,7 +155,7 @@ const ModeView = ({ mode, defaultValues }: {
       .then((data) => {
         setLocalPreset(data)
       }).catch((e) => {
-        console.log(e)
+        console.warn(e)
       })
   }, [isOpen])
 

@@ -8,14 +8,11 @@ import { Form, Input, InputNumber, Select, Spin } from "antd"
 import { ConfigItemY, HookModeContent } from "../item"
 import { selectStatusDotStyles as dotStyles } from "../styles"
 import { sharedAsync } from "@/utils/timer"
-import { LocalApi, type TimeZoneInfoOption } from "@/api/local"
-import { useI18n } from "@/utils/hooks"
+import { LocalApi, type TimeZoneOption } from "@/api/local"
+import { HookModeHandler, useI18n } from "@/utils/hooks"
 
+type ModeHandler = HookModeHandler<TimeZoneInfo, TimeZoneInfo>
 type OptionType = (string & {}) | HookType
-
-type TimeZoneInfoValue = TimeZoneInfo & {
-  key?: string
-}
 
 const getCurrentTimeZoneInfo = (): TimeZoneInfo => {
   const opts = Intl.DateTimeFormat().resolvedOptions()
@@ -25,22 +22,49 @@ const getCurrentTimeZoneInfo = (): TimeZoneInfo => {
     offset: new Date().getTimezoneOffset() / -60
   }
 }
-const currentTz = getCurrentTimeZoneInfo()
 
-const getLocalTimezones = sharedAsync(async () => {
-  return LocalApi.timezone()
-})
+const fetchTimezones = sharedAsync(LocalApi.timezone)
 
 export const TimeZoneConfigItem = () => {
-  const { t, i18n, asLang } = useI18n()
-  const [localTimezones, setLocalTimezones] = useState<TimeZoneInfoOption[]>()
-
   const config = useStorageStore((state) => state.config)
   const fp = config?.fp
 
+  const currentTz = useMemo(() => getCurrentTimeZoneInfo(), [])
+
+  return !fp ? <Spin indicator={<LoadingOutlined spin />} /> : <>
+    <HookModeContent<TimeZoneInfo, TimeZoneInfo>
+      isMakeSelect={false}
+      mode={fp.other.timezone}
+      parser={{
+        toInput: value => value ?? { ...currentTz },
+        toValue: (input) => input,
+      }}
+    >{(mode) => <ModeView mode={mode} defaultValues={currentTz} />}
+    </HookModeContent>
+  </>
+}
+
+const ModeView = ({ mode, defaultValues }: {
+  mode: ModeHandler
+  defaultValues: TimeZoneInfo
+}) => {
+  const { t, i18n, asLang } = useI18n()
+  const [isOpen, setIsOpen] = useState(false)
+  const [localPreset, setLocalPreset] = useState<TimeZoneOption[]>([])
+
+  const presetKey = (mode.value as any)?.key;
+  const input = mode.input;
+
   useEffect(() => {
-    getLocalTimezones().then(setLocalTimezones)
-  }, [])
+    if (!isOpen || localPreset.length != 0) return;
+    console.log(111);
+    
+    fetchTimezones()
+      .then(setLocalPreset)
+      .catch((e) => {
+        console.warn(e)
+      })
+  }, [isOpen])
 
   const options = useMemo(() => {
     return [
@@ -58,87 +82,78 @@ export const TimeZoneConfigItem = () => {
           },
         ],
       },
-      localTimezones && {
+      localPreset && {
         label: <span>{t('g.preset')}</span>,
         title: 'preset',
-        options: localTimezones.map((tz) => ({
+        options: localPreset.map((tz) => ({
           value: tz.key,
           label: `(${tz.offset >= 0 ? '+' : ''}${tz.offset}) ${asLang(tz.title)}`,
         })),
       },
     ].filter(v => !!v)
-  }, [i18n.language, localTimezones])
+  }, [i18n.language, localPreset])
 
-  const findTzByKey = (key: string) => {
-    return localTimezones?.find(v => v.key === key)
+  const onChange = (v: OptionType) => {
+    if (v === HookType.default || v === HookType.value) {
+      mode.setValue({ ...defaultValues })
+      mode.setType(v);
+    } else {
+      const preset = localPreset?.find(item => item.key === v);
+      if (preset) {
+        const { title, ...rest } = preset;
+        mode.setValue(rest)
+      }
+      mode.setType(HookType.value);
+    }
   }
 
-  return fp ? <>
-    <HookModeContent<TimeZoneInfoValue, TimeZoneInfoValue>
-      isMakeSelect={false}
-      mode={fp.other.timezone}
-      parser={{
-        toInput: v => v ?? { ...currentTz },
-        toValue(v) {
-          v.offset ??= currentTz.offset
-          v.zone ||= currentTz.zone
-          v.locale ||= currentTz.locale
-          return v
-        },
-      }}
-    >{(mode) =>
-      <ConfigItemY
-        label={t('item.title.timezone')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<Markdown>{t('item.desc.timezone')}</Markdown>} />}
-      >
-        <Select<OptionType>
-          className={dotStyles.base}
-          options={options}
-          value={mode.input.key || mode.type}
-          onChange={(v) => {
-            if (v === HookType.default || v === HookType.value) {
-              mode.setType(v);
-              mode.setInput({ ...currentTz });
-            } else {
-              const tz = findTzByKey(v as string);
-              mode.setType(HookType.value);
-              if (tz) {
-                const { title, ...rest } = tz
-                mode.setInput(rest);
-              } else {
-                mode.setInput({ ...currentTz });
-              }
-            }
+  return <ConfigItemY
+    label={t('item.title.timezone')}
+    className={mode.isDefault ? '' : dotStyles.success}
+    endContent={<TipIcon.Question content={<Markdown>{t('item.desc.timezone')}</Markdown>} />}
+  >
+    <Select<OptionType>
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className={dotStyles.base}
+      options={options}
+      value={presetKey || mode.type}
+      onChange={onChange}
+    />
+    {(mode.isValue && !presetKey) && <>
+      <Form.Item label={t('item.sub.tz.offset')}>
+        <InputNumber
+          min={-12} max={12}
+          placeholder={`${defaultValues.offset}`}
+          value={mode.input.offset}
+          onChange={(offset) => {
+            input.offset = offset ?? defaultValues.offset
+            mode.updateValue()
           }}
         />
-        {mode.isValue && <>
-          <Form.Item label={t('item.sub.tz.offset')}>
-            <InputNumber
-              disabled={!!mode.input.key}
-              min={-12} max={12}
-              value={mode.input.offset}
-              onChange={(offset) => mode.setInput({ ...mode.input, offset: offset ?? currentTz.offset })}
-            />
-          </Form.Item>
-          <Form.Item label={t('item.sub.tz.locale')}>
-            <Input
-              disabled={!!mode.input.key}
-              value={mode.input.locale}
-              onChange={({ target }) => mode.setInput({ ...mode.input, locale: target.value })}
-            />
-          </Form.Item>
-          <Form.Item label={t('item.sub.tz.zone')}>
-            <Input
-              disabled={!!mode.input.key}
-              value={mode.input.zone}
-              onChange={({ target }) => mode.setInput({ ...mode.input, zone: target.value })}
-            />
-          </Form.Item>
-        </>}
-      </ConfigItemY>}
-    </HookModeContent>
-  </> : <Spin indicator={<LoadingOutlined spin />} />
+      </Form.Item>
+      <Form.Item label={t('item.sub.tz.locale')}>
+        <Input
+          placeholder={defaultValues.locale}
+          value={mode.input.locale}
+          onChange={({ target }) => {
+            input.locale = target.value || defaultValues.locale;
+            mode.updateValue()
+          }}
+        />
+      </Form.Item>
+      <Form.Item label={t('item.sub.tz.zone')}>
+        <Input
+          placeholder={defaultValues.zone}
+          value={mode.input.zone}
+          onChange={({ target }) => {
+            input.zone = target.value || defaultValues.zone;
+            mode.updateValue()
+          }}
+        />
+      </Form.Item>
+    </>}
+  </ConfigItemY>
 }
 
 export default TimeZoneConfigItem
