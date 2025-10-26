@@ -1,6 +1,5 @@
 import { HookType } from '@/types/enum'
 import { type HookTask } from "./core";
-import { genRandomVersionUserAgent } from "@/utils/equipment";
 import { pick, seededRandom } from '@/utils/base';
 import {
   notify,
@@ -56,11 +55,28 @@ export const hookTasks: HookTask[] = [
         'appendChild', 'insertBefore', 'replaceChild'
       ], {
         apply(target: any, thisArg: Object, args: any) {
-          const res = Reflect.apply(target, thisArg, args)
           const node = args[0]
+
+          let iframes: HTMLCollection | undefined;
+          if (node) {
+            if (node.getElementsByTagName) {
+              iframes = node.getElementsByTagName('iframe')
+            } else if (node.querySelectorAll) {
+              iframes = node.querySelectorAll('iframe')
+            }
+          }
+
+          const res = Reflect.apply(target, thisArg, args)
+
           if (node?.tagName === 'IFRAME') {
             notify('other.iframe')
             hookIframe(node as HTMLIFrameElement)
+          }
+          if (iframes) {
+            for (const iframe of iframes) {
+              notify('other.iframe')
+              hookIframe(iframe as HTMLIFrameElement)
+            }
           }
           return res
         }
