@@ -376,7 +376,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.audio.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useProxy }) => {
+    onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
       const seed = useSeed(conf.fp.other.audio)
       if (seed == null) return;
 
@@ -391,8 +391,8 @@ export const hookTasks: HookTask[] = [
           const step = data.length > 2000 ? 100 : 20;
           for (let i = 0; i < data.length; i += step) {
             const v = data[i]
-            if (v !== 0 && Math.abs(v) > 1e-6) {
-              data[i] += seededRandom(seed + i) * 1e-6;
+            if (v !== 0 && Math.abs(v) > 1e-7) {
+              data[i] += seededRandom(seed + i) * 1e-7;
             }
           }
 
@@ -405,7 +405,6 @@ export const hookTasks: HookTask[] = [
         'copyFromChannel', 'copyToChannel',
       ], {
         apply: (target, thisArg: AudioBuffer, args: any) => {
-          notify('strong.audio')
           const channel = args[1]
           if (channel != null) {
             thisArg.getChannelData(channel)
@@ -413,6 +412,15 @@ export const hookTasks: HookTask[] = [
           return target.apply(thisArg, args)
         }
       })
+
+      const dcNoise = seededRandom(seed) * 1e-7;
+      useGetterProxy(win.DynamicsCompressorNode.prototype, 'reduction', (_, getter) => ({
+        apply(target, thisArg: DOMRect, args: any) {
+          notify('strong.audio')
+          const res = getter.call(thisArg);
+          return typeof res === 'number' ? res + dcNoise : res;
+        }
+      }))
 
     },
   },

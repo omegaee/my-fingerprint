@@ -60,8 +60,8 @@ export const StrongFpConfigGroup = memo(() => {
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.audio')}
-        className={mode.isDefault ? '' : dotStyles.warning}
-        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.audio')} />} />}
+        className={mode.isDefault ? '' : dotStyles.success}
+        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.audio')} />} />}
       >
         {select}
       </ConfigItemY>}
