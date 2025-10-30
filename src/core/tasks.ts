@@ -415,7 +415,7 @@ export const hookTasks: HookTask[] = [
 
       const dcNoise = seededRandom(seed) * 1e-7;
       useGetterProxy(win.DynamicsCompressorNode.prototype, 'reduction', (_, getter) => ({
-        apply(target, thisArg: DOMRect, args: any) {
+        apply(target, thisArg, args: any) {
           notify('strong.audio')
           const res = getter.call(thisArg);
           return typeof res === 'number' ? res + dcNoise : res;
