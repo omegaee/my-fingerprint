@@ -380,18 +380,39 @@ export const hookTasks: HookTask[] = [
       const seed = useSeed(conf.fp.other.audio)
       if (seed == null) return;
 
-      const noise = seededRandom(seed, 1, 0)
-      useProxy(win.OfflineAudioContext.prototype, 'createDynamicsCompressor', {
-        apply: (target, thisArg: OfflineAudioContext, args: Parameters<typeof OfflineAudioContext.prototype.createDynamicsCompressor>) => {
+      const mem = new WeakSet()
+
+      useProxy(win.AudioBuffer.prototype, 'getChannelData', {
+        apply: (target, thisArg: AudioBuffer, args: Parameters<typeof AudioBuffer.prototype.getChannelData>) => {
           notify('strong.audio')
-          const compressor = target.apply(thisArg, args)
-          const gain = thisArg.createGain()
-          gain.gain.value = noise * 0.001
-          compressor.connect(gain)
-          gain.connect(thisArg.destination)
-          return compressor
+          const data = target.apply(thisArg, args)
+          if (mem.has(data)) return data;
+
+          const step = data.length > 2000 ? 100 : 20;
+          for (let i = 0; i < data.length; i += step) {
+            const v = data[i]
+            if (v !== 0 && Math.abs(v) > 1e-6) {
+              data[i] += seededRandom(seed + i) * 1e-6;
+            }
+          }
+
+          mem.add(data)
+          return data;
         }
-      });
+      })
+
+      useProxy(win.AudioBuffer.prototype, [
+        'copyFromChannel', 'copyToChannel',
+      ], {
+        apply: (target, thisArg: AudioBuffer, args: any) => {
+          notify('strong.audio')
+          const channel = args[1]
+          if (channel != null) {
+            thisArg.getChannelData(channel)
+          }
+          return target.apply(thisArg, args)
+        }
+      })
 
     },
   },
