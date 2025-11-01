@@ -76,8 +76,9 @@ A lightweight, zero-disruption browser extension built on Manifest V3.
 
 💡 Extension store updates may lag behind GitHub due to review delays.
 
-- [Edge](https://microsoftedge.microsoft.com/addons/detail/mikeajonghdjobhfokpleagjockmmgdk)  
-- [Firefox](https://addons.mozilla.org/firefox/addon/my-fingerprint/)  
+- [Edge](https://microsoftedge.microsoft.com/addons/detail/mikeajonghdjobhfokpleagjockmmgdk)
+- [Firefox](https://addons.mozilla.org/firefox/addon/my-fingerprint/)
+- [Firefox for Android](https://addons.mozilla.org/android/addon/my-fingerprint/)
 - Chrome: Not yet available. Please use manual installation.
 
 ### 📦 Manual Installation

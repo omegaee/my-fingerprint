@@ -79,6 +79,7 @@
 
 - [Edge](https://microsoftedge.microsoft.com/addons/detail/mikeajonghdjobhfokpleagjockmmgdk)
 - [Firefox](https://addons.mozilla.org/firefox/addon/my-fingerprint/)
+- [Firefox for Android](https://addons.mozilla.org/android/addon/my-fingerprint/)
 - Chrome: 尚未上架，可通过手动安装使用
 
 ### 📦 手动安装
