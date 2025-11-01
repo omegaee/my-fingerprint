@@ -19,7 +19,7 @@ export const hookTasks: HookTask[] = [
    * 静态iframe注入
    */
   {
-    onEnable: ({ win, hookIframe }) => {
+    onEnable: ({ win, hookWindow }) => {
       // 监听DOM初始化
       const observer = new MutationObserver((mutations) => {
         // if (mutations.length == 1) return;
@@ -27,7 +27,7 @@ export const hookTasks: HookTask[] = [
           for (const node of mutation.addedNodes) {
             if (node.nodeName === 'IFRAME') {
               notify('other.iframe')
-              hookIframe(node as HTMLIFrameElement)
+              hookWindow((node as HTMLIFrameElement)?.contentWindow)
             }
           }
         }
@@ -49,7 +49,29 @@ export const hookTasks: HookTask[] = [
    * 动态iframe注入
    */
   {
-    onEnable: ({ win, hookIframe, useProxy }) => {
+    onEnable: ({ win, hookWindow, useProxy, useGetterProxy }) => {
+
+      useGetterProxy(win.HTMLIFrameElement.prototype, 'contentWindow', {
+        apply(target, thisArg: HTMLIFrameElement, args: any) {
+          const w = Reflect.apply(target, thisArg, args);
+          if (w) {
+            notify('other.iframe')
+            hookWindow(w)
+          }
+          return w;
+        }
+      });
+
+      useGetterProxy(win.Document.prototype, 'defaultView', {
+        apply(target, thisArg: Document, args: any) {
+          const w = Reflect.apply(target, thisArg, args);
+          if (w) {
+            notify('other.iframe')
+            hookWindow(w)
+          }
+          return w;
+        }
+      });
 
       useProxy(win.Node.prototype, [
         'appendChild', 'insertBefore', 'replaceChild'
@@ -70,12 +92,12 @@ export const hookTasks: HookTask[] = [
 
           if (node?.tagName === 'IFRAME') {
             notify('other.iframe')
-            hookIframe(node as HTMLIFrameElement)
+            hookWindow((node as HTMLIFrameElement)?.contentWindow)
           }
           if (iframes) {
             for (const iframe of iframes) {
               notify('other.iframe')
-              hookIframe(iframe as HTMLIFrameElement)
+              hookWindow((iframe as HTMLIFrameElement)?.contentWindow)
             }
           }
           return res

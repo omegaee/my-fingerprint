@@ -336,9 +336,10 @@ export class FingerprintContext {
   /**
    * hook iframe
    */
-  public hookIframe = (iframe: HTMLIFrameElement) => {
+  public hookWindow = (w?: Window | null) => {
+    if (!w) return;
     try {
-      new FingerprintContext(iframe.contentWindow as any, this)
+      new FingerprintContext(w as any, this)
     } catch (_) { }
   }
 
