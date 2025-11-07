@@ -118,10 +118,18 @@ const mergeStorage = (src: LocalStorageConfig, dst?: DeepPartial<LocalStorageCon
     // @ts-ignore
     const srcValue = src[key];
     if (key in dst) {
+      const dstValue = (dst as any)[key];
+
+      if (dstValue === null) {
+        delete (dst as any)[key];
+        continue;
+      }
+
       if (key === 'value') continue;
+      
       if (typeof srcValue === 'object' && !Array.isArray(srcValue)) {
         // @ts-ignore
-        mergeStorage(srcValue, dst[key]);
+        mergeStorage(srcValue, dstValue);
       }
     } else {
       // @ts-ignore

@@ -32,7 +32,12 @@ export const useHookMode = <V, I>(mode?: HookMode<V>, parser?: {
     isDefault: type === HookType.default,
     isValue: type === HookType.value,
     setType: (type: HookType) => {
-      if (mode) mode.type = type;
+      if (mode) {
+        if (type !== HookType.value) {
+          (mode as any).value = null;
+        }
+        (mode as any).type = type;
+      }
       setType(type)
     },
     setInput: (input: I) => {

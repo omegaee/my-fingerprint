@@ -34,12 +34,11 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
 
   const proxyConfig = (config: LocalStorageConfig) => {
     return deepProxy(config, {
-      set(target, key, value) {
-        // @ts-ignore
-        target[key] = value
+      set(target, key, value, receiver) {
+        const res = Reflect.set(target, key, value, receiver);
         saveConfig()
-        return true
-      }
+        return res;
+      },
     });
   }
 

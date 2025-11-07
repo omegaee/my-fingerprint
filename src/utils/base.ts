@@ -204,6 +204,7 @@ export const subversionRandom = (
 export const deepProxy = <T>(obj: T, handler: ProxyHandler<any>, seen = new WeakMap<any>()): T => {
   if (seen.has(obj)) { return seen.get(obj) }
   const proxy = new Proxy(obj, {
+    ...handler,
     get(target, property, receiver) {
       const value = target[property];
       if (typeof value === 'object' && value !== null) {
@@ -211,7 +212,6 @@ export const deepProxy = <T>(obj: T, handler: ProxyHandler<any>, seen = new Weak
       }
       return handler.get ? handler.get(target, property, receiver) : value;
     },
-    set: handler.set,
   });
   seen.set(obj, proxy);
   return proxy;
