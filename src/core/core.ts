@@ -24,7 +24,10 @@ type SeedInfo = {
 type ContextOptions = Pick<FingerprintContext, 'info' | 'conf'> & Partial<FingerprintContext>
 
 export class FingerprintContext {
-  public win: Window & typeof globalThis
+  public gthis: Window & WorkerGlobalScope & typeof globalThis
+  public win?: Window & typeof globalThis
+  public worker?: WorkerGlobalScope & typeof globalThis
+
   public info: WindowStorage
   public seed: SeedInfo
   public conf: LocalStorageConfig
@@ -32,6 +35,8 @@ export class FingerprintContext {
   /// hook存储
   public myProxy: WeakSet<object>;
   public otherProxy: WeakSet<object>;
+
+  public args: Record<string, any>;
 
   /// hook索引
   public symbol: {
@@ -269,27 +274,57 @@ export class FingerprintContext {
     }
   }
 
-  public constructor(win: Window & typeof globalThis, opt: ContextOptions) {
+  // public constructor(win: Window & typeof globalThis, opt: ContextOptions) {
+  //   const { info, conf } = opt;
+
+  //   if (!win) throw new Error('win is required');
+  //   if (win === window.top) {
+  //     if (info.hooked) throw new Error('win is already hooked');
+  //     info.hooked = true;
+  //   } else {
+  //     let hooked: boolean = false
+  //     try {
+  //       // @ts-ignore
+  //       hooked = win[WIN_KEY]
+  //     } catch (_) {
+  //       throw new Error('unable to access cross source');
+  //     }
+  //     if (hooked) throw new Error('win is already hooked');
+  //     // @ts-ignore
+  //     win[WIN_KEY] = true;
+  //   }
+
+  //   this.win = win
+  //   this.info = info
+  //   this.conf = conf
+
+  //   this.myProxy = opt.myProxy ?? new WeakSet()
+  //   this.otherProxy = opt.otherProxy ?? new WeakSet()
+  //   this.seed = opt.seed ?? {
+  //     page: info.seed,
+  //     domain: Math.floor(seededRandom(info.host, Number.MAX_SAFE_INTEGER, 1)),
+  //     browser: conf.seed.browser ?? genRandomSeed(),
+  //     global: conf.seed.global ?? genRandomSeed(),
+  //   }
+  //   this.symbol = opt.symbol ?? {
+  //     own: Symbol('OwnProperty'),
+  //     raw: Symbol('RawValue'),
+  //     reflect: Symbol('Reflect'),
+  //   }
+
+  //   this.hookContent()
+
+  //   if (win !== window.top) {
+  //     notifyIframeOrigin(win.location.origin)
+  //   }
+  // }
+
+  private constructor(gthis: any, opt: ContextOptions) {
+    if (!gthis) throw new Error('gthis is required');
+
     const { info, conf } = opt;
 
-    if (!win) throw new Error('win is required');
-    if (win === window.top) {
-      if (info.hooked) throw new Error('win is already hooked');
-      info.hooked = true;
-    } else {
-      let hooked: boolean = false
-      try {
-        // @ts-ignore
-        hooked = win[WIN_KEY]
-      } catch (_) {
-        throw new Error('unable to access cross source');
-      }
-      if (hooked) throw new Error('win is already hooked');
-      // @ts-ignore
-      win[WIN_KEY] = true;
-    }
-
-    this.win = win
+    this.gthis = gthis
     this.info = info
     this.conf = conf
 
@@ -307,11 +342,50 @@ export class FingerprintContext {
       reflect: Symbol('Reflect'),
     }
 
+    this.args = opt.args ?? {}
+
+    if (typeof window !== "undefined") {
+      this.win = gthis
+    } else if (typeof self !== "undefined") {
+      this.worker = gthis
+    }
+
     this.hookContent()
+  }
+
+  public static hookWindow = (win: Window & typeof globalThis, opt: ContextOptions) => {
+    if (!win) throw new Error('win is required');
+
+    const { info } = opt;
+
+    if (win === window.top) {
+      if (info.hooked) throw new Error('win is already hooked');
+      info.hooked = true;
+    } else {
+      let hooked: boolean = false
+      try {
+        // @ts-ignore
+        hooked = win[WIN_KEY]
+      } catch (_) {
+        throw new Error('unable to access cross source');
+      }
+      if (hooked) throw new Error('win is already hooked');
+      // @ts-ignore
+      win[WIN_KEY] = true;
+    }
+
+    const ctx = new FingerprintContext(win, opt);
 
     if (win !== window.top) {
-      notifyIframeOrigin(win.location.origin)
+      notifyIframeOrigin(win.location.origin);
     }
+    return ctx;
+  }
+
+  public static hookWorker = (worker: any, opt: ContextOptions) => {
+    if (!worker) return;
+    const ctx = new FingerprintContext(worker, opt);
+    return ctx;
   }
 
   /**
@@ -341,6 +415,17 @@ export class FingerprintContext {
     try {
       new FingerprintContext(w as any, this)
     } catch (_) { }
+  }
+
+  public makeScript = () => {
+    const fun: (args: any) => string = this.args?.fun;
+    if (!fun || typeof fun !== 'function') return;
+    const options = JSON.stringify({
+      info: this.info,
+      conf: this.conf,
+      seed: this.seed,
+    })
+    return `${fun.toString()};${fun.name}({options:${options}});`;
   }
 
 }

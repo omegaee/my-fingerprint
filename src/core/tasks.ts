@@ -20,6 +20,8 @@ export const hookTasks: HookTask[] = [
    */
   {
     onEnable: ({ win, hookWindow }) => {
+      if (!win) return;
+
       // 监听DOM初始化
       const observer = new MutationObserver((mutations) => {
         // if (mutations.length == 1) return;
@@ -50,6 +52,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     onEnable: ({ win, hookWindow, useProxy, useGetterProxy }) => {
+      if (!win) return;
 
       useGetterProxy(win.HTMLIFrameElement.prototype, 'contentWindow', {
         apply(target, thisArg: HTMLIFrameElement, args: any) {
@@ -108,21 +111,77 @@ export const hookTasks: HookTask[] = [
   },
 
   /**
+   * Worker
+   */
+  {
+    onEnable: ({ win, useProxy, makeScript }) => {
+      if (!win) return;
+
+      function createScriptUrl(url: string | URL) {
+        const script = makeScript()
+        if (script) {
+          const code = `(async function() {
+  const _code = await fetch('${url}').then(v=>v.text()).catch((e)=>console.warn(e.message));
+  console.log('加载成功!...')
+  if (_code) {(()=>{${script}})();new Function(_code)();new Function('console.log(this)')();}
+})()
+`
+          const blob = new Blob([code], { type: 'application/javascript' });
+          return URL.createObjectURL(blob);
+        }
+        return url;
+      }
+
+      {
+        const handler = {
+          construct(target: any, args: any, newTarget: any) {
+            notify('other.worker')
+            const url = args[0];
+            if (url) {
+              args[0] = createScriptUrl(url);
+            }
+            return Reflect.construct(target, args, newTarget) as Worker;
+          }
+        }
+
+        useProxy(win, 'Worker', handler);
+
+        // TODO: SharedWorker似乎会丢失消息？
+        // useProxy(win, 'SharedWorker', handler);
+      }
+
+      // TODO: ServiceWorker不支持blobUrl
+      // {
+      //   useProxy(win.ServiceWorkerContainer.prototype, 'register', {
+      //     apply(target, thisArg: ServiceWorkerContainer, args) {
+      //       const url = args[0];
+      //       if (url) {
+      //         args[0] = createScriptUrl(url);
+      //       }
+      //       return Reflect.apply(target, thisArg, args);
+      //     }
+      //   })
+      // }
+    }
+  },
+
+  /**
    * Navigator
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.navigator)),
     onEnable: (ctx) => {
-      const { win, conf, info, symbol, useSeed, useHookMode, useGetterProxy, newProxy } = ctx;
+      const { gthis, conf, symbol, useHookMode, useGetterProxy } = ctx;
       const fps = conf.fp.navigator;
 
-      (win.navigator as any)[symbol.own] = getOwnProperties(win.navigator);
+      (gthis.navigator as any)[symbol.own] = getOwnProperties(gthis.navigator);
+      const prototype = (gthis.Navigator ?? gthis.WorkerNavigator).prototype;
 
       /* userAgent & userAgentData */
       const uaInfo = useHookMode(fps.clientHints).value;
       if (uaInfo != null) {
         if (uaInfo.ua != null) {
-          useGetterProxy([win.Navigator.prototype, win.navigator], [
+          useGetterProxy([prototype, gthis.navigator], [
             'userAgent', 'appVersion', 'platform',
           ], (key, getter) => {
             const value = uaInfo.ua[key]
@@ -136,7 +195,7 @@ export const hookTasks: HookTask[] = [
           })
         }
         if (uaInfo.uaData != null) {
-          useGetterProxy([win.Navigator.prototype, win.navigator], ('userAgentData' as any), (_, getter) => ({
+          useGetterProxy([prototype, gthis.navigator], ('userAgentData' as any), (_, getter) => ({
             apply(target, thisArg: Navigator, args: any) {
               notify('weak.userAgentData')
               const result = getter.call(thisArg)
@@ -147,7 +206,7 @@ export const hookTasks: HookTask[] = [
       }
 
       /* other */
-      useGetterProxy([win.Navigator.prototype, win.navigator], [
+      useGetterProxy([prototype, gthis.navigator], [
         'languages', 'hardwareConcurrency',
       ], (key, getter) => {
         const value: any = useHookMode(fps[key] as any).value
@@ -162,7 +221,7 @@ export const hookTasks: HookTask[] = [
 
       {
         const value = useHookMode(fps.languages).value?.[0]
-        value != null && useGetterProxy([win.Navigator.prototype, win.navigator], 'language', {
+        value != null && useGetterProxy([prototype, gthis.navigator], 'language', {
           apply(target, thisArg: Navigator, args: any) {
             notify('weak.languages')
             return value;
@@ -178,6 +237,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.screen)),
     onEnable: ({ win, conf, symbol, useHookMode, useGetterProxy }) => {
+      if (!win) return;
+
       const fps = conf.fp.screen;
       const ws = win.screen;
 
@@ -240,6 +301,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useProxy }) => {
+      if (!win) return;
+
       /* getContext */
       useProxy(win.HTMLCanvasElement.prototype, 'getContext', {
         apply: (target, thisArg, args: Parameters<typeof HTMLCanvasElement.prototype.getContext>) => {
@@ -274,6 +337,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useProxy }) => {
+      if (!win) return;
+
       /* Image */
       {
         const seed = useSeed(conf.fp.other.webgl)
@@ -316,6 +381,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf, isDefault }) => !isDefault(conf.fp.normal.gpuInfo),
     onEnable: ({ win, conf, useHookMode, useProxy }) => {
+      if (!win) return;
+
       const fps = conf.fp.normal
 
       let ex: WEBGL_debug_renderer_info | null
@@ -355,6 +422,7 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf, isDefault }) => !isDefault([conf.fp.other.canvas, conf.fp.other.webgl]),
     onEnable: ({ win, conf, useSeed, useProxy, useRaw }) => {
+      if (!win) return;
 
       const seedCanvas = useSeed(conf.fp.other.canvas)
       const seedWebgl = useSeed(conf.fp.other.webgl)
@@ -399,6 +467,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.audio.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
+      if (!win) return;
+
       const seed = useSeed(conf.fp.other.audio)
       if (seed == null) return;
 
@@ -454,6 +524,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
     onEnable: ({ win, conf, useHookMode, useProxy }) => {
+      if (!win) return;
+
       const tzValue = useHookMode(conf.fp.other.timezone).value
       if (!tzValue) return;
 
@@ -561,6 +633,7 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.webrtc.type !== HookType.default,
     onEnable: ({ win, useDefine }) => {
+      if (!win) return;
 
       useDefine([win.Navigator.prototype, win.navigator], 'mediaDevices', {
         get() { return null }
@@ -602,6 +675,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
+      if (!win) return;
+
       const seed = useSeed(conf.fp.other.font)
       if (seed == null) return;
 
@@ -642,6 +717,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.webgpu.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useDefine, useProxy, newProxy }) => {
+      if (!win) return;
+
       const seed = useSeed(conf.fp.other.webgpu)
       if (seed == null) return;
 
@@ -743,6 +820,8 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.domRect.type !== HookType.default,
     onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
+      if (!win) return;
+
       const seed = useSeed(conf.fp.other.domRect)
       if (seed == null) return;
 
@@ -799,7 +878,7 @@ export const hookTasks: HookTask[] = [
    * .ownProperties
    */
   {
-    onEnable: ({ win, symbol, useProxy }) => {
+    onEnable: ({ gthis, symbol, useProxy }) => {
       {
         /* multi */
         const makeHandler = (type: keyof HookOwnProperties) => ({
@@ -812,10 +891,10 @@ export const hookTasks: HookTask[] = [
             return target.apply(self, args as any)
           }
         })
-        useProxy(win.Object, 'getOwnPropertyNames', makeHandler('names'))
-        useProxy(win.Object, 'getOwnPropertySymbols', makeHandler('symbols'))
-        useProxy(win.Object, 'getOwnPropertyDescriptors', makeHandler('descriptors'))
-        useProxy(win.Reflect, 'ownKeys', makeHandler('keys'))
+        useProxy(gthis.Object, 'getOwnPropertyNames', makeHandler('names'))
+        useProxy(gthis.Object, 'getOwnPropertySymbols', makeHandler('symbols'))
+        useProxy(gthis.Object, 'getOwnPropertyDescriptors', makeHandler('descriptors'))
+        useProxy(gthis.Reflect, 'ownKeys', makeHandler('keys'))
       }
       {
         /* one */
@@ -829,8 +908,8 @@ export const hookTasks: HookTask[] = [
             return target.apply(self, args as any)
           }
         }
-        useProxy(win.Object, 'getOwnPropertyDescriptor', handler)
-        useProxy(win.Reflect, 'getOwnPropertyDescriptor', handler)
+        useProxy(gthis.Object, 'getOwnPropertyDescriptor', handler)
+        useProxy(gthis.Reflect, 'getOwnPropertyDescriptor', handler)
       }
     }
   },
@@ -839,8 +918,8 @@ export const hookTasks: HookTask[] = [
    * .setPrototypeOf
    */
   {
-    onEnable: ({ win, symbol, hasRaw, useProxy }) => {
-      useProxy(win.Reflect, 'setPrototypeOf', {
+    onEnable: ({ gthis, symbol, hasRaw, useProxy }) => {
+      useProxy(gthis.Reflect, 'setPrototypeOf', {
         apply(target: any, self: any, args: any[]) {
           const src = args[0]
           const dst = args[1]
@@ -860,8 +939,7 @@ export const hookTasks: HookTask[] = [
    * .toString
    */
   {
-    onEnable: ({ win, info, symbol, myProxy, otherProxy, useProxy }) => {
-
+    onEnable: ({ gthis, info, symbol, myProxy, otherProxy, useProxy }) => {
       function isRealFunction(obj: any) {
         const target = Function.prototype.toString
         let proto = obj;
@@ -873,7 +951,7 @@ export const hookTasks: HookTask[] = [
         return false;
       }
 
-      useProxy(win.Function.prototype, 'toString', {
+      useProxy(gthis.Function.prototype, 'toString', {
         apply(target: any, self: any, args: any[]) {
           try {
             if (self != null && myProxy.has(self)) {
@@ -903,8 +981,8 @@ export const hookTasks: HookTask[] = [
    * Proxy
    */
   {
-    onEnable: ({ win, otherProxy, useProxy }) => {
-      useProxy(win, 'Proxy', {
+    onEnable: ({ gthis, otherProxy, useProxy }) => {
+      useProxy(gthis, 'Proxy', {
         construct(target, args, newTarget) {
           const v = Reflect.construct(target, args, newTarget)
           otherProxy.add(v)

@@ -1,5 +1,4 @@
-import { hashNumberFromString, seededRandom, subversionRandom } from "@/utils/base";
-import { brandRandom } from "@/utils/equipment";
+import { hashNumberFromString, seededRandom } from "@/utils/base";
 import { sendToWindow } from "@/utils/message";
 import { debounce } from "@/utils/timer";
 import type { FingerprintContext } from "./core";
@@ -14,12 +13,13 @@ let iframeNoticePool: Record<string, number> = {}
  * 记录指纹数量
  */
 export const notify = (key: string) => {
+  if (typeof window === 'undefined') return;
   fpNoticePool[key] = (fpNoticePool[key] ?? 0) + 1
   sendFpRecord()
 }
 
 const sendFpRecord = debounce(() => {
-  sendToWindow(window.top ?? window, {
+  sendToWindow((globalThis.top ?? globalThis) as any, {
     type: 'notice.push.fp',
     data: fpNoticePool,
   })
