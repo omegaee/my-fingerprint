@@ -122,7 +122,6 @@ export const hookTasks: HookTask[] = [
         if (script) {
           const code = `(async function() {
   const _code = await fetch('${url}').then(v=>v.text()).catch((e)=>console.warn(e.message));
-  console.log('加载成功!...')
   if (_code) {(()=>{${script}})();new Function(_code)();new Function('console.log(this)')();}
 })()
 `
