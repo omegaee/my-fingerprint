@@ -119,46 +119,46 @@ export const hookTasks: HookTask[] = [
 
       const blobMap = new Map<string, Blob>();
 
-      {
-        useProxy(win.URL, 'createObjectURL', {
-          apply(target, thisArg: URL, args: any) {
-            const blob = args[0]
-            if (blob instanceof Blob) {
-              const url = Reflect.apply(target, thisArg, args);
-              blobMap.set(url, blob);
-              return url;
-            }
-            return Reflect.apply(target, thisArg, args)
+      useProxy(win.URL, 'createObjectURL', {
+        apply(target, thisArg: URL, args: any) {
+          const blob = args[0]
+          if (blob instanceof Blob) {
+            const url = Reflect.apply(target, thisArg, args);
+            blobMap.set(url, blob);
+            return url;
           }
-        })
+          return Reflect.apply(target, thisArg, args)
+        }
+      })
 
-        useProxy(win.URL, 'revokeObjectURL', {
-          apply(target, thisArg: URL, args: any) {
-            const url = args[0]
-            blobMap.delete(url)
-            return Reflect.apply(target, thisArg, args)
-          }
-        })
-      }
+      useProxy(win.URL, 'revokeObjectURL', {
+        apply(target, thisArg: URL, args: any) {
+          const url = args[0]
+          blobMap.delete(url)
+          return Reflect.apply(target, thisArg, args)
+        }
+      })
 
       function createScriptUrl(url: string | URL) {
+        const injected = makeScript();
+        if (injected == null) return url;
+
         if (url.toString().startsWith('blob:')) {
           const blobScript = blobMap.get(url.toString());
-          if (blobScript == null) return url;
-
-          const injected = makeScript();
-          if (injected == null) return url;
-
-          // const code = `(async function() {
-          //   const _code = await fetch('${url}').then(v=>v.text()).catch((e)=>console.warn(e.message));
-          //   if (_code) {(()=>{${script}})();new Function(_code)();new Function('console.log(this)')();}
-          // })()
-          // `
+          if (blobScript) {
+            const blob = new Blob([
+              `(function(){${injected}})();`, blobScript,
+            ], { type: 'application/javascript' });
+            return URL.createObjectURL(blob);
+          }
+        } else {
+          const code = `fetch('${url}').then(v=>v.text()).then(v=>{new Function(v)();}).catch(e=>console.warn(e.message));`
           const blob = new Blob([
-            `(function(){${injected}})();`, blobScript,
+            `(function(){${injected}})();`, code,
           ], { type: 'application/javascript' });
           return URL.createObjectURL(blob);
         }
+
         return url;
       }
 
@@ -173,7 +173,6 @@ export const hookTasks: HookTask[] = [
             return Reflect.construct(target, args, newTarget) as Worker;
           }
         }
-
         useProxy(win, 'Worker', handler);
         useProxy(win, 'SharedWorker', handler);
       }
