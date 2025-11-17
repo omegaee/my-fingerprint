@@ -550,13 +550,11 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
-    onEnable: ({ win, conf, useHookMode, useProxy }) => {
-      if (!win) return;
-
+    onEnable: ({ gthis, conf, useHookMode, useProxy }) => {
       const tzValue = useHookMode(conf.fp.other.timezone).value
       if (!tzValue) return;
 
-      const _DateTimeFormat = win.Intl.DateTimeFormat;
+      const _DateTimeFormat = gthis.Intl.DateTimeFormat;
 
       type TimeParts = Partial<Record<keyof Intl.DateTimeFormatPartTypesRegistry, string>>
       const getStandardDateTimeParts = (date: Date): TimeParts | null => {
@@ -585,7 +583,7 @@ export const hookTasks: HookTask[] = [
       }
 
       /* DateTimeFormat */
-      useProxy(win.Intl, 'DateTimeFormat', {
+      useProxy(gthis.Intl, 'DateTimeFormat', {
         construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
           notify('weak.timezone')
           args[0] = args[0] ?? tzValue.locale
@@ -602,7 +600,7 @@ export const hookTasks: HookTask[] = [
 
 
       /* Date */
-      useProxy(win, 'Date', {
+      useProxy(gthis, 'Date', {
         apply: (target, thisArg: Date, args: Parameters<typeof Date>) => {
           return new target(...args).toString()
         }
@@ -625,7 +623,7 @@ export const hookTasks: HookTask[] = [
             return ps && `${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
           },
         }
-        useProxy(win.Date.prototype,
+        useProxy(gthis.Date.prototype,
           Object.keys(tasks) as (keyof Date)[],
           (key) => {
             const task = tasks[key]
@@ -640,7 +638,7 @@ export const hookTasks: HookTask[] = [
       }
 
       /* toLocaleString */
-      useProxy(win.Date.prototype, [
+      useProxy(gthis.Date.prototype, [
         'toLocaleString', 'toLocaleDateString', 'toLocaleTimeString'
       ], {
         apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
