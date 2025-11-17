@@ -19,7 +19,7 @@ export const hookTasks: HookTask[] = [
    * 静态iframe注入
    */
   {
-    onEnable: ({ win, hookWindow }) => {
+    onEnable: ({ win, hookTarget }) => {
       if (!win) return;
 
       // 监听DOM初始化
@@ -29,7 +29,7 @@ export const hookTasks: HookTask[] = [
           for (const node of mutation.addedNodes) {
             if (node.nodeName === 'IFRAME') {
               notify('other.iframe')
-              hookWindow((node as HTMLIFrameElement)?.contentWindow)
+              hookTarget(node)
             }
           }
         }
@@ -51,7 +51,7 @@ export const hookTasks: HookTask[] = [
    * 动态iframe注入
    */
   {
-    onEnable: ({ win, hookWindow, useProxy, useGetterProxy }) => {
+    onEnable: ({ win, hookTarget, useProxy, useGetterProxy }) => {
       if (!win) return;
 
       useGetterProxy(win.HTMLIFrameElement.prototype, 'contentWindow', {
@@ -59,7 +59,7 @@ export const hookTasks: HookTask[] = [
           const w = Reflect.apply(target, thisArg, args);
           if (w) {
             notify('other.iframe')
-            hookWindow(w)
+            hookTarget(w)
           }
           return w;
         }
@@ -70,7 +70,7 @@ export const hookTasks: HookTask[] = [
           const w = Reflect.apply(target, thisArg, args);
           if (w) {
             notify('other.iframe')
-            hookWindow(w)
+            hookTarget(w)
           }
           return w;
         }
@@ -95,12 +95,12 @@ export const hookTasks: HookTask[] = [
 
           if (node?.tagName === 'IFRAME') {
             notify('other.iframe')
-            hookWindow((node as HTMLIFrameElement)?.contentWindow)
+            hookTarget(node)
           }
           if (iframes) {
             for (const iframe of iframes) {
               notify('other.iframe')
-              hookWindow((iframe as HTMLIFrameElement)?.contentWindow)
+              hookTarget(iframe)
             }
           }
           return res

@@ -350,10 +350,10 @@ export class FingerprintContext {
       this.worker = gthis
     }
 
-    this.hookContent()
+    this.runHook()
   }
 
-  public static hookWindow = (win: Window & typeof globalThis, opt: ContextOptions) => {
+  public static hookWindow = (win: Window, opt: ContextOptions) => {
     if (!win) throw new Error('win is required');
 
     const { info } = opt;
@@ -398,7 +398,7 @@ export class FingerprintContext {
   /**
    * hook内容
    */
-  public hookContent() {
+  private runHook() {
     if (!this.isEnable()) return;
     for (const task of hookTasks) {
       if (!task.condition || task.condition(this) === true) {
@@ -408,12 +408,16 @@ export class FingerprintContext {
   }
 
   /**
-   * hook iframe
+   * hook target
    */
-  public hookWindow = (w?: Window | null) => {
-    if (!w) return;
+  public hookTarget = (target?: Window | HTMLIFrameElement | Node | null) => {
+    if (!target) return;
     try {
-      new FingerprintContext(w as any, this)
+      if (target instanceof HTMLIFrameElement) {
+        target.contentWindow && FingerprintContext.hookWindow(target.contentWindow, this)
+      } else if (target instanceof Window) {
+        FingerprintContext.hookWindow(target, this)
+      }
     } catch (_) { }
   }
 
