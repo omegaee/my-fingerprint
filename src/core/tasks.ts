@@ -117,15 +117,46 @@ export const hookTasks: HookTask[] = [
     onEnable: ({ win, useProxy, makeScript }) => {
       if (!win) return;
 
+      const blobMap = new Map<string, Blob>();
+
+      {
+        useProxy(win.URL, 'createObjectURL', {
+          apply(target, thisArg: URL, args: any) {
+            const blob = args[0]
+            if (blob instanceof Blob) {
+              const url = Reflect.apply(target, thisArg, args);
+              blobMap.set(url, blob);
+              return url;
+            }
+            return Reflect.apply(target, thisArg, args)
+          }
+        })
+
+        useProxy(win.URL, 'revokeObjectURL', {
+          apply(target, thisArg: URL, args: any) {
+            const url = args[0]
+            blobMap.delete(url)
+            return Reflect.apply(target, thisArg, args)
+          }
+        })
+      }
+
       function createScriptUrl(url: string | URL) {
-        const script = makeScript()
-        if (script) {
-          const code = `(async function() {
-  const _code = await fetch('${url}').then(v=>v.text()).catch((e)=>console.warn(e.message));
-  if (_code) {(()=>{${script}})();new Function(_code)();new Function('console.log(this)')();}
-})()
-`
-          const blob = new Blob([code], { type: 'application/javascript' });
+        if (url.toString().startsWith('blob:')) {
+          const blobScript = blobMap.get(url.toString());
+          if (blobScript == null) return url;
+
+          const injected = makeScript();
+          if (injected == null) return url;
+
+          // const code = `(async function() {
+          //   const _code = await fetch('${url}').then(v=>v.text()).catch((e)=>console.warn(e.message));
+          //   if (_code) {(()=>{${script}})();new Function(_code)();new Function('console.log(this)')();}
+          // })()
+          // `
+          const blob = new Blob([
+            `(function(){${injected}})();`, blobScript,
+          ], { type: 'application/javascript' });
           return URL.createObjectURL(blob);
         }
         return url;
@@ -144,9 +175,7 @@ export const hookTasks: HookTask[] = [
         }
 
         useProxy(win, 'Worker', handler);
-
-        // TODO: SharedWorker似乎会丢失消息？
-        // useProxy(win, 'SharedWorker', handler);
+        useProxy(win, 'SharedWorker', handler);
       }
 
       // TODO: ServiceWorker不支持blobUrl
