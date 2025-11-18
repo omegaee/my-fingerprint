@@ -968,35 +968,8 @@ export const hookTasks: HookTask[] = [
           }
         });
       }
-      // {
-      //   /* multi */
-      //   const makeHandler = (type: keyof HookOwnProperties) => ({
-      //     apply(target: any, self: any, args: any[]) {
-      //       const src = args[0]
-      //       if (src != null && typeof src === 'object') {
-      //         const own: HookOwnProperties | undefined = src[symbol.disown]
-      //         if (own) return own[type];
-      //       }
-      //       return target.apply(self, args as any)
-      //     }
-      //   })
-      //   useProxy(gthis.Object, 'getOwnPropertyNames', makeHandler('names'))
-      //   useProxy(gthis.Object, 'getOwnPropertySymbols', makeHandler('symbols'))
-      //   useProxy(gthis.Object, 'getOwnPropertyDescriptors', makeHandler('descriptors'))
-      //   useProxy(gthis.Reflect, 'ownKeys', makeHandler('keys'))
-      // }
+      
       {
-        /* one */
-        // const handler = {
-        //   apply(target: any, self: any, args: any[]) {
-        //     const src = args[0]
-        //     if (src != null && typeof src === 'object') {
-        //       const own: HookOwnProperties | undefined = src[symbol.disown]
-        //       if (own) return own.descriptors?.[args[1]];
-        //     }
-        //     return target.apply(self, args as any)
-        //   }
-        // }
         const handler = {
           apply(target: any, thisArg: any, args: any[]) {
             const obj = args[0];
