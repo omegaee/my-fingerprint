@@ -40,7 +40,7 @@ export class FingerprintContext {
 
   /// hook索引
   public symbol: {
-    own: symbol;
+    disown: symbol;
     raw: symbol;
     reflect: symbol;
   };
@@ -225,6 +225,21 @@ export class FingerprintContext {
   }
 
   /**
+   * 隐藏拥有属性
+   */
+  public useDisownKeys = <T>(src: T, keys: (keyof T)[]) => {
+    if (src == null || typeof src !== 'object') return;
+    const s = (src as any)[this.symbol.disown];
+    if (s && s instanceof Set) {
+      for (const k of keys) {
+        s.add(k)
+      }
+    } else {
+      (src as any)[this.symbol.disown] = new Set(keys);
+    }
+  }
+
+  /**
    * 获取指定项的种子
    */
   public useSeed = (mode?: HookMode) => {
@@ -337,7 +352,7 @@ export class FingerprintContext {
       global: conf.seed.global ?? genRandomSeed(),
     }
     this.symbol = opt.symbol ?? {
-      own: Symbol('OwnProperty'),
+      disown: Symbol('DisownProperty'),
       raw: Symbol('RawValue'),
       reflect: Symbol('Reflect'),
     }

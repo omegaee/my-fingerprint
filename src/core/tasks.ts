@@ -5,7 +5,6 @@ import {
   notify,
   drawNoise,
   drawNoiseToWebgl,
-  getOwnProperties,
   proxyUserAgentData,
   randomCanvasNoise,
   randomFontNoise,
@@ -198,10 +197,13 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.navigator)),
     onEnable: (ctx) => {
-      const { gthis, conf, symbol, useHookMode, useGetterProxy } = ctx;
+      const { gthis, conf, useDisownKeys, useHookMode, useGetterProxy } = ctx;
       const fps = conf.fp.navigator;
 
-      (gthis.navigator as any)[symbol.own] = getOwnProperties(gthis.navigator);
+      useDisownKeys(gthis.navigator, [
+        'userAgent', 'appVersion', 'platform', 'userAgentData' as any, 'language', 'languages', 'hardwareConcurrency',
+      ]);
+
       const prototype = (gthis.Navigator ?? gthis.WorkerNavigator).prototype;
 
       /* userAgent & userAgentData */
@@ -263,13 +265,15 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(Object.values(conf.fp.screen)),
-    onEnable: ({ win, conf, symbol, useHookMode, useGetterProxy }) => {
+    onEnable: ({ win, conf, useDisownKeys, useHookMode, useGetterProxy }) => {
       if (!win) return;
 
       const fps = conf.fp.screen;
       const ws = win.screen;
 
-      (win.screen as any)[symbol.own] = getOwnProperties(win.screen);
+      useDisownKeys(win.screen, [
+        'colorDepth', 'pixelDepth', 'width', 'height', 'availWidth', 'availHeight',
+      ]);
 
       /* Screen Depth */
       const depth = useHookMode(fps.depth).value
@@ -657,21 +661,24 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.webrtc.type !== HookType.default,
-    onEnable: ({ win, useDefine }) => {
+    onEnable: ({ win, useDisownKeys, useDefine }) => {
       if (!win) return;
 
-      useDefine([win.Navigator.prototype, win.navigator], 'mediaDevices', {
-        get() { return null }
-      });
-
-      [
-        'getUserMedia',
-        'mozGetUserMedia',
-        'webkitGetUserMedia'
-      ].forEach((key) => {
-        // @ts-ignore
-        if (win.Navigator.prototype[key]) win.Navigator.prototype[key] = undefined;
-      });
+      {
+        const keys: any = [
+          'mediaDevices', 'getUserMedia', 'mozGetUserMedia', 'webkitGetUserMedia',
+        ]
+        useDisownKeys(win.navigator, keys);
+        useDisownKeys(win.Navigator.prototype, keys);
+        useDefine([win.Navigator.prototype, win.navigator], keys, {
+          value: undefined,
+          enumerable: false,
+        });
+        useDefine(win.Navigator.prototype, keys, {
+          value: undefined,
+          enumerable: false,
+        });
+      }
 
       [
         'RTCDataChannel',
@@ -904,33 +911,104 @@ export const hookTasks: HookTask[] = [
    */
   {
     onEnable: ({ gthis, symbol, useProxy }) => {
+      const symbolSet = new Set(Object.values(symbol))
+
       {
-        /* multi */
-        const makeHandler = (type: keyof HookOwnProperties) => ({
-          apply(target: any, self: any, args: any[]) {
-            const src = args[0]
-            if (src != null && typeof src === 'object') {
-              const own: HookOwnProperties | undefined = src[symbol.own]
-              if (own) return own[type];
+        useProxy(gthis.Object, 'getOwnPropertyNames', {
+          apply(target, thisArg, args) {
+            const res = Reflect.apply(target, thisArg, args) as string[];
+            if (res) {
+              const disown = args[0]?.[symbol.disown];
+              if (disown && disown instanceof Set) {
+                return res.filter((v) => !disown.has(v));
+              }
             }
-            return target.apply(self, args as any)
+            return res;
           }
-        })
-        useProxy(gthis.Object, 'getOwnPropertyNames', makeHandler('names'))
-        useProxy(gthis.Object, 'getOwnPropertySymbols', makeHandler('symbols'))
-        useProxy(gthis.Object, 'getOwnPropertyDescriptors', makeHandler('descriptors'))
-        useProxy(gthis.Reflect, 'ownKeys', makeHandler('keys'))
+        });
+
+        useProxy(gthis.Object, 'getOwnPropertyDescriptors', {
+          apply(target, thisArg, args) {
+            const res = Reflect.apply(target, thisArg, args);
+            if (res) {
+              for (let v of symbolSet) {
+                delete res[v];
+              }
+
+              const disown = args[0]?.[symbol.disown];
+              if (disown && disown instanceof Set) {
+                for (let v of disown) {
+                  delete res[v];
+                }
+              }
+            }
+            return res;
+          }
+        });
+
+        useProxy(gthis.Object, 'getOwnPropertySymbols', {
+          apply(target, thisArg, args) {
+            const res = Reflect.apply(target, thisArg, args) as symbol[];
+            return res?.filter((v) => !symbolSet.has(v));
+          }
+        });
+
+        useProxy(gthis.Reflect, 'ownKeys', {
+          apply(target, thisArg, args) {
+            const res = Reflect.apply(target, thisArg, args) as (string | symbol)[];
+            if (res) {
+              const disown = args[0]?.[symbol.disown];
+              if (disown && disown instanceof Set) {
+                return res.filter((v) => typeof v === 'symbol' ? !symbolSet.has(v) : !disown.has(v));
+              } else {
+                return res.filter((v: any) => !symbolSet.has(v));
+              }
+            }
+            return res;
+          }
+        });
       }
+      // {
+      //   /* multi */
+      //   const makeHandler = (type: keyof HookOwnProperties) => ({
+      //     apply(target: any, self: any, args: any[]) {
+      //       const src = args[0]
+      //       if (src != null && typeof src === 'object') {
+      //         const own: HookOwnProperties | undefined = src[symbol.disown]
+      //         if (own) return own[type];
+      //       }
+      //       return target.apply(self, args as any)
+      //     }
+      //   })
+      //   useProxy(gthis.Object, 'getOwnPropertyNames', makeHandler('names'))
+      //   useProxy(gthis.Object, 'getOwnPropertySymbols', makeHandler('symbols'))
+      //   useProxy(gthis.Object, 'getOwnPropertyDescriptors', makeHandler('descriptors'))
+      //   useProxy(gthis.Reflect, 'ownKeys', makeHandler('keys'))
+      // }
       {
         /* one */
+        // const handler = {
+        //   apply(target: any, self: any, args: any[]) {
+        //     const src = args[0]
+        //     if (src != null && typeof src === 'object') {
+        //       const own: HookOwnProperties | undefined = src[symbol.disown]
+        //       if (own) return own.descriptors?.[args[1]];
+        //     }
+        //     return target.apply(self, args as any)
+        //   }
+        // }
         const handler = {
-          apply(target: any, self: any, args: any[]) {
-            const src = args[0]
-            if (src != null && typeof src === 'object') {
-              const own: HookOwnProperties | undefined = src[symbol.own]
-              if (own) return own.descriptors?.[args[1]];
+          apply(target: any, thisArg: any, args: any[]) {
+            const obj = args[0];
+            const key = args[1];
+            if (key != null && typeof obj === 'object') {
+              if (symbolSet.has(key)) return undefined;
+              const disown = obj[symbol.disown];
+              if (disown && disown instanceof Set) {
+                if (disown.has(key)) return undefined;
+              }
             }
-            return target.apply(self, args as any)
+            return Reflect.apply(target, thisArg, args);
           }
         }
         useProxy(gthis.Object, 'getOwnPropertyDescriptor', handler)
