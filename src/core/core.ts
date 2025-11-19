@@ -428,10 +428,13 @@ export class FingerprintContext {
   public hookTarget = (target?: Window | HTMLIFrameElement | Node | null) => {
     if (!target) return;
     try {
-      if (target instanceof HTMLIFrameElement) {
-        target.contentWindow && FingerprintContext.hookWindow(target.contentWindow, this)
-      } else if (target instanceof Window) {
-        FingerprintContext.hookWindow(target, this)
+      const _t: any = target;
+      if (_t === _t.window) {
+        FingerprintContext.hookWindow(_t, this);
+      }
+      const cw = _t.contentWindow
+      if (cw && cw === cw.window) {
+        FingerprintContext.hookWindow(cw, this)
       }
     } catch (_) { }
   }
