@@ -289,51 +289,6 @@ export class FingerprintContext {
     }
   }
 
-  // public constructor(win: Window & typeof globalThis, opt: ContextOptions) {
-  //   const { info, conf } = opt;
-
-  //   if (!win) throw new Error('win is required');
-  //   if (win === window.top) {
-  //     if (info.hooked) throw new Error('win is already hooked');
-  //     info.hooked = true;
-  //   } else {
-  //     let hooked: boolean = false
-  //     try {
-  //       // @ts-ignore
-  //       hooked = win[WIN_KEY]
-  //     } catch (_) {
-  //       throw new Error('unable to access cross source');
-  //     }
-  //     if (hooked) throw new Error('win is already hooked');
-  //     // @ts-ignore
-  //     win[WIN_KEY] = true;
-  //   }
-
-  //   this.win = win
-  //   this.info = info
-  //   this.conf = conf
-
-  //   this.myProxy = opt.myProxy ?? new WeakSet()
-  //   this.otherProxy = opt.otherProxy ?? new WeakSet()
-  //   this.seed = opt.seed ?? {
-  //     page: info.seed,
-  //     domain: Math.floor(seededRandom(info.host, Number.MAX_SAFE_INTEGER, 1)),
-  //     browser: conf.seed.browser ?? genRandomSeed(),
-  //     global: conf.seed.global ?? genRandomSeed(),
-  //   }
-  //   this.symbol = opt.symbol ?? {
-  //     own: Symbol('OwnProperty'),
-  //     raw: Symbol('RawValue'),
-  //     reflect: Symbol('Reflect'),
-  //   }
-
-  //   this.hookContent()
-
-  //   if (win !== window.top) {
-  //     notifyIframeOrigin(win.location.origin)
-  //   }
-  // }
-
   private constructor(gthis: any, opt: ContextOptions) {
     if (!gthis) throw new Error('gthis is required');
 
