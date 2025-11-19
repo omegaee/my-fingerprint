@@ -17,7 +17,7 @@ export default defineConfig({
       inputFilePath: 'src/core/index.ts',
       outputFilePath: 'src/core/output.js',
       functionName: 'coreInject',
-      params: '_local',
+      params: '_args',
     }),
     react(),
     crx({
