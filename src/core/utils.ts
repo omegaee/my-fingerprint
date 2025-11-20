@@ -117,13 +117,13 @@ const pixelCopy = (src: U8Array, dst: U8Array, index: number) => {
 /**
  * 在2d画布绘制噪音
  */
-export const drawNoise = (
-  rawFunc: typeof CanvasRenderingContext2D.prototype.getImageData,
+export const drawNoiseTo2d = (
+  { useRaw }: FingerprintContext,
   noise: number[],
-  ctx: CanvasRenderingContext2D,
+  target: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
   sx: number, sy: number, sw: number, sh: number, settings?: ImageDataSettings
 ) => {
-  const imageData = rawFunc.call(ctx, sx, sy, sw, sh, settings)
+  const imageData = useRaw(target.getImageData).call(target, sx, sy, sw, sh, settings)
 
   let noiseIndex = 0;
   let isChanged = false
@@ -162,7 +162,7 @@ export const drawNoise = (
   }
 
   if (isChanged) {
-    ctx.putImageData(imageData, sx, sy)
+    target.putImageData(imageData, sx, sy)
   }
 
   return imageData

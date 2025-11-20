@@ -3,7 +3,7 @@ import { type HookTask } from "./core";
 import { pick, seededRandom } from '@/utils/base';
 import {
   notify,
-  drawNoise,
+  drawNoiseTo2d,
   drawNoiseToWebgl,
   proxyUserAgentData,
   randomCanvasNoise,
@@ -331,7 +331,8 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useProxy }) => {
+    onEnable: (ctx) => {
+      const { win, conf, useSeed, useProxy } = ctx;
       if (!win) return;
 
       /* getContext */
@@ -354,7 +355,7 @@ export const hookTasks: HookTask[] = [
           useProxy(win.CanvasRenderingContext2D.prototype, 'getImageData', {
             apply: (target, thisArg: CanvasRenderingContext2D, args: Parameters<typeof CanvasRenderingContext2D.prototype.getImageData>) => {
               notify('strong.canvas')
-              return drawNoise(target, noise, thisArg, ...args);
+              return drawNoiseTo2d(ctx, noise, thisArg, ...args);
             }
           })
         }
@@ -448,46 +449,51 @@ export const hookTasks: HookTask[] = [
   },
 
   /**
-   * toDataURL
+   * toDataURL, convertToBlob
    */
   {
     condition: ({ conf, isDefault }) => !isDefault([conf.fp.other.canvas, conf.fp.other.webgl]),
-    onEnable: ({ win, conf, useSeed, useProxy, useRaw }) => {
-      if (!win) return;
+    onEnable: (ctx) => {
+      const { gthis, win, conf, useSeed, useProxy } = ctx;
 
-      const seedCanvas = useSeed(conf.fp.other.canvas)
-      const seedWebgl = useSeed(conf.fp.other.webgl)
-      const noiseCanvas = seedCanvas == null ? null : randomCanvasNoise(seedCanvas)
-      const noiseWebgl = seedWebgl == null ? null : randomWebglNoise(seedWebgl)
+      const seedCanvas = useSeed(conf.fp.other.canvas);
+      const seedWebgl = useSeed(conf.fp.other.webgl);
 
-      useProxy(win.HTMLCanvasElement.prototype, 'toDataURL', {
-        apply: (target, thisArg: HTMLCanvasElement, args: Parameters<typeof HTMLCanvasElement.prototype.toDataURL>) => {
+      const noiseCanvas = seedCanvas == null ? null : randomCanvasNoise(seedCanvas);
+      const noiseWebgl = seedWebgl == null ? null : randomWebglNoise(seedWebgl);
+
+      const handler = {
+        apply: (target: Function, thisArg: OffscreenCanvas | HTMLCanvasElement, args: any) => {
           /* 2d */
           if (noiseCanvas) {
-            const ctx = thisArg.getContext('2d');
-            if (ctx) {
-              notify('strong.canvas')
-              drawNoise(
-                useRaw(win.CanvasRenderingContext2D.prototype.getImageData),
-                noiseCanvas, ctx,
+            const c2d = thisArg.getContext('2d');
+            if (c2d) {
+              notify('strong.canvas');
+              drawNoiseTo2d(
+                ctx, noiseCanvas, c2d as any,
                 0, 0, thisArg.width, thisArg.height
-              )
-              return target.apply(thisArg, args);
+              );
+              return Reflect.apply(target, thisArg, args);
             }
           }
           /* webgl */
           if (noiseWebgl) {
-            const gl = thisArg.getContext('webgl') ?? thisArg.getContext('webgl2')
+            const gl = thisArg.getContext('webgl') ?? thisArg.getContext('webgl2');
             if (gl) {
-              notify('strong.webgl')
-              noiseWebgl && drawNoiseToWebgl(gl as any, noiseWebgl)
-              return target.apply(thisArg, args);
+              notify('strong.webgl');
+              drawNoiseToWebgl(gl as any, noiseWebgl);
+              return Reflect.apply(target, thisArg, args);
             }
           }
-          return target.apply(thisArg, args);
+          return Reflect.apply(target, thisArg, args);
         }
-      })
+      }
 
+      useProxy(gthis.OffscreenCanvas.prototype, 'convertToBlob', handler);
+
+      if (win) {
+        useProxy(win.HTMLCanvasElement.prototype, 'toDataURL', handler);
+      }
     },
   },
 
@@ -968,7 +974,7 @@ export const hookTasks: HookTask[] = [
           }
         });
       }
-      
+
       {
         const handler = {
           apply(target: any, thisArg: any, args: any[]) {
