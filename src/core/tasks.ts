@@ -403,9 +403,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(conf.fp.normal.gpuInfo),
-    onEnable: ({ win, conf, useHookMode, useProxy }) => {
-      if (!win) return;
-
+    onEnable: ({ gthis, conf, useHookMode, useProxy }) => {
       const fps = conf.fp.normal
 
       let ex: WEBGL_debug_renderer_info | null
@@ -433,8 +431,8 @@ export const hookTasks: HookTask[] = [
             return target.apply(thisArg, args);
           }
         }
-        useProxy(win.WebGLRenderingContext.prototype, 'getParameter', handler)
-        useProxy(win.WebGL2RenderingContext.prototype, 'getParameter', handler)
+        useProxy(gthis.WebGLRenderingContext.prototype, 'getParameter', handler);
+        useProxy(gthis.WebGL2RenderingContext.prototype, 'getParameter', handler);
       }
     }
   },
