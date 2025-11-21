@@ -27,7 +27,6 @@ export const hookTasks: HookTask[] = [
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
             if (node.nodeName === 'IFRAME') {
-              notify('other.iframe')
               hookTarget(node)
             }
           }
@@ -56,10 +55,7 @@ export const hookTasks: HookTask[] = [
       useGetterProxy(win.HTMLIFrameElement.prototype, 'contentWindow', {
         apply(target, thisArg: HTMLIFrameElement, args: any) {
           const w = Reflect.apply(target, thisArg, args);
-          if (w) {
-            notify('other.iframe')
-            hookTarget(w)
-          }
+          if (w) hookTarget(w);
           return w;
         }
       });
@@ -67,10 +63,7 @@ export const hookTasks: HookTask[] = [
       useGetterProxy(win.Document.prototype, 'defaultView', {
         apply(target, thisArg: Document, args: any) {
           const w = Reflect.apply(target, thisArg, args);
-          if (w) {
-            notify('other.iframe')
-            hookTarget(w)
-          }
+          if (w) hookTarget(w);
           return w;
         }
       });
@@ -93,12 +86,10 @@ export const hookTasks: HookTask[] = [
           const res = Reflect.apply(target, thisArg, args)
 
           if (node?.tagName === 'IFRAME') {
-            notify('other.iframe')
             hookTarget(node)
           }
           if (iframes) {
             for (const iframe of iframes) {
-              notify('other.iframe')
               hookTarget(iframe)
             }
           }
@@ -492,7 +483,7 @@ export const hookTasks: HookTask[] = [
       useProxy(gthis.OffscreenCanvas.prototype, 'convertToBlob', handler);
 
       if (win) {
-        useProxy(win.HTMLCanvasElement.prototype, 'toDataURL', handler);
+        useProxy(win.HTMLCanvasElement.prototype, ['toDataURL', 'toBlob'], handler);
       }
     },
   },

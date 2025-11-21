@@ -2,7 +2,7 @@ import { HookType } from '@/types/enum'
 import { seededRandom } from "@/utils/base";
 import { genRandomSeed } from "../utils/base";
 import { hookTasks } from "./tasks";
-import { notifyIframeOrigin } from './utils';
+import { notify, notifyIframeOrigin } from './utils';
 
 export type HookTask = {
   // 条件，为空则默认为true
@@ -347,6 +347,7 @@ export class FingerprintContext {
     const ctx = new FingerprintContext(win, opt);
 
     if (win !== window.top) {
+      notify('other.iframe')
       notifyIframeOrigin(win.location.origin);
     }
     return ctx;
