@@ -538,7 +538,7 @@ export const hookTasks: HookTask[] = [
         apply(target, thisArg, args: any) {
           notify('strong.audio')
           const res = getter.call(thisArg);
-          return typeof res === 'number' ? res + dcNoise : res;
+          return (typeof res === 'number' && res !== 0) ? res + dcNoise : res;
         }
       }))
 
