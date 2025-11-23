@@ -69,18 +69,22 @@ export const hookTasks: HookTask[] = [
         }
       }
 
-      const pnKeys = ['append', 'prepend', 'replaceChildren'] as any
+      const nKeys = ['appendChild', 'insertBefore', 'replaceChild'] as const
+      const pnKeys = ['append', 'prepend', 'replaceChildren'] as const
 
-      useProxy(win.Node.prototype, [
-        'appendChild', 'insertBefore', 'replaceChild',
-      ], handler);
       useProxy(win.Element.prototype, [
-        ...pnKeys,
-        'before', 'after', 'replaceWith', 'insertAdjacentElement', 'insertAdjacentHTML',
+        ...nKeys, ...pnKeys, 'insertAdjacentElement', 'insertAdjacentHTML',
+        'before', 'after', 'replaceWith', 'setHTMLUnsafe',
       ], handler);
-      useProxy(win.Document.prototype, pnKeys, handler);
-      useProxy(win.DocumentFragment.prototype, pnKeys, handler);
+      useProxy(win.Document.prototype, [
+        ...nKeys, ...pnKeys,
+      ], handler);
+      useProxy(win.ShadowRoot.prototype, [
+        ...nKeys, ...pnKeys, 'setHTMLUnsafe',
+      ], handler);
+
       useSetterProxy(win.Element.prototype, ['innerHTML', 'outerHTML'], handler);
+      useSetterProxy(win.ShadowRoot.prototype, ['innerHTML'], handler);
     }
   },
 
@@ -137,19 +141,26 @@ export const hookTasks: HookTask[] = [
       }
 
       {
-        const handler = {
+        const makeHandler = (name: string) => ({
           construct(target: any, args: any, newTarget: any) {
-            notify('other.worker')
+            notify('other.worker.' + name)
             const url = args[0];
             if (url) {
               args[0] = createScriptUrl(url);
             }
             return Reflect.construct(target, args, newTarget) as Worker;
           }
-        }
-        useProxy(win, 'Worker', handler);
-        useProxy(win, 'SharedWorker', handler);
+        })
+        useProxy(win, 'Worker', makeHandler('web'));
+        useProxy(win, 'SharedWorker', makeHandler('shared'));
       }
+
+      useProxy(win.ServiceWorkerContainer.prototype, 'register', {
+        apply(target, thisArg, args) {
+          notify('other.worker.service')
+          return Reflect.apply(target, thisArg, args);
+        }
+      });
 
     }
   },
