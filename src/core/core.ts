@@ -224,6 +224,27 @@ export class FingerprintContext {
     })
   }
 
+  public useSetterProxy = <
+    T extends object,
+    K extends keyof T,
+    H extends ProxyHandler<() => any>,
+    W = any,
+  >(
+    target: T | [T, W],
+    key: K | K[],
+    handler: H | ((key: K, setter: (v: any) => any) => H | void)
+  ) => {
+    this.useDefine(target, key, (_k, desc) => {
+      const setter = desc.set
+      if (!setter) return;
+      const _handler = typeof handler === 'function' ? handler(_k, setter) : handler
+      if (!_handler) return;
+      return {
+        set: this.newProxy(setter, _handler)
+      }
+    })
+  }
+
   /**
    * 隐藏拥有属性
    */
@@ -386,11 +407,11 @@ export class FingerprintContext {
     try {
       const _t: any = target;
       if (_t === _t.window) {
-        FingerprintContext.hookWindow(_t, this);
+        return FingerprintContext.hookWindow(_t, this);
       }
       const cw = _t.contentWindow
       if (cw && cw === cw.window) {
-        FingerprintContext.hookWindow(cw, this)
+        return FingerprintContext.hookWindow(cw, this)
       }
     } catch (_) { }
   }

@@ -49,55 +49,39 @@ export const hookTasks: HookTask[] = [
    * 动态iframe注入
    */
   {
-    onEnable: ({ win, hookTarget, useProxy, useGetterProxy }) => {
+    onEnable: ({ win, hookTarget, useProxy, useSetterProxy }) => {
       if (!win) return;
 
-      useGetterProxy(win.HTMLIFrameElement.prototype, 'contentWindow', {
-        apply(target, thisArg: HTMLIFrameElement, args: any) {
-          const w = Reflect.apply(target, thisArg, args);
-          if (w) hookTarget(w);
-          return w;
-        }
-      });
+      const mem = new WeakSet()
 
-      useGetterProxy(win.Document.prototype, 'defaultView', {
-        apply(target, thisArg: Document, args: any) {
-          const w = Reflect.apply(target, thisArg, args);
-          if (w) hookTarget(w);
-          return w;
+      const handler = {
+        apply(target: any, thisArg: any, args: any) {
+          const res: any = Reflect.apply(target, thisArg, args);
+          const fs = thisArg.getElementsByTagName ?
+            thisArg.getElementsByTagName('iframe') :
+            thisArg.querySelectorAll?.('iframe');
+          if (fs) {
+            for (const f of fs) {
+              !mem.has(f) && hookTarget(f) && mem.add(f);
+            }
+          }
+          return res;
         }
-      });
+      }
+
+      const pnKeys = ['append', 'prepend', 'replaceChildren'] as any
 
       useProxy(win.Node.prototype, [
-        'appendChild', 'insertBefore', 'replaceChild'
-      ], {
-        apply(target: any, thisArg: Object, args: any) {
-          const node = args[0]
-
-          let iframes: HTMLCollection | undefined;
-          if (node) {
-            if (node.getElementsByTagName) {
-              iframes = node.getElementsByTagName('iframe')
-            } else if (node.querySelectorAll) {
-              iframes = node.querySelectorAll('iframe')
-            }
-          }
-
-          const res = Reflect.apply(target, thisArg, args)
-
-          if (node?.tagName === 'IFRAME') {
-            hookTarget(node)
-          }
-          if (iframes) {
-            for (const iframe of iframes) {
-              hookTarget(iframe)
-            }
-          }
-          return res
-        }
-      });
-
-    },
+        'appendChild', 'insertBefore', 'replaceChild',
+      ], handler);
+      useProxy(win.Element.prototype, [
+        ...pnKeys,
+        'before', 'after', 'replaceWith', 'insertAdjacentElement', 'insertAdjacentHTML',
+      ], handler);
+      useProxy(win.Document.prototype, pnKeys, handler);
+      useProxy(win.DocumentFragment.prototype, pnKeys, handler);
+      useSetterProxy(win.Element.prototype, ['innerHTML', 'outerHTML'], handler);
+    }
   },
 
   /**
@@ -167,18 +151,6 @@ export const hookTasks: HookTask[] = [
         useProxy(win, 'SharedWorker', handler);
       }
 
-      // TODO: ServiceWorker不支持blobUrl
-      // {
-      //   useProxy(win.ServiceWorkerContainer.prototype, 'register', {
-      //     apply(target, thisArg: ServiceWorkerContainer, args) {
-      //       const url = args[0];
-      //       if (url) {
-      //         args[0] = createScriptUrl(url);
-      //       }
-      //       return Reflect.apply(target, thisArg, args);
-      //     }
-      //   })
-      // }
     }
   },
 
