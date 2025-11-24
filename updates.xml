@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
+  <app appid="mikeajonghdjobhfokpleagjockmmgdk">
+    <updatecheck 
+      codebase="https://github.com/omegaee/my-fingerprint/releases/download/v2.6.3.1/my-fingerprint-chrome-v2.6.3.1.zip" 
+      version="2.6.3.1" 
+      prodversionmin="102.0" 
+      status='ok' 
+    />
+  </app>
+</gupdate>

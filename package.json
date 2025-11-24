@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "dev:firefox": "vite build -- --firefox --no-minify",
-    "build:firefox": "tsc && vite build -- --firefox"
+    "build:firefox": "tsc && vite build -- --firefox",
+    "sync-version": "node src/scripts/sync-version.js",
+    "release": "npm run sync-version $npm_config_version && npm run build && npm run build:firefox"
   },
   "dependencies": {
     "antd": "^5.18.3",
