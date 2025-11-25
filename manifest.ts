@@ -45,6 +45,7 @@ const VALUES = {
 export const chromeManifest: ManifestV3Export = {
   ...baseManifest,
   minimum_chrome_version: '102',
+  key: "b21lZ2FlZS9teS1maW5nZXJwcmludAo=",
   update_url: 'https://raw.githubusercontent.com/omegaee/my-fingerprint/refs/heads/main/updates.xml',
   permissions: [
     ...VALUES.permissions,
