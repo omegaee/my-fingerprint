@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "dev:firefox": "vite build -- --firefox --no-minify",
-    "build:firefox": "tsc && vite build -- --firefox"
+    "build:firefox": "tsc && vite build -- --firefox",
+    "build:all": "npm run build && npm run build:firefox"
   },
   "dependencies": {
     "antd": "^5.18.3",

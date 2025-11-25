@@ -2,7 +2,7 @@ import { ManifestV3Export } from "@crxjs/vite-plugin"
 
 const baseManifest: ManifestV3Export = {
   manifest_version: 3,
-  version: '2.6.3',
+  version: '2.6.3.1',
   name: 'My Fingerprint',
   default_locale: 'en',
   description: '__MSG_ext_desc__',
@@ -45,6 +45,8 @@ const VALUES = {
 export const chromeManifest: ManifestV3Export = {
   ...baseManifest,
   minimum_chrome_version: '102',
+  key: "b21lZ2FlZS9teS1maW5nZXJwcmludAo=",
+  update_url: 'https://raw.githubusercontent.com/omegaee/my-fingerprint/refs/heads/main/updates.xml',
   permissions: [
     ...VALUES.permissions,
     ...VALUES.optional_permissions,
