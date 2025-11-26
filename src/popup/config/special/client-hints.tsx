@@ -203,7 +203,7 @@ const ModeView = ({ mode, defaultValues }: {
   return <ConfigItemY
     label={t('item.title.clientHints')}
     className={cn(!mode.isDefault && dotStyles.warning)}
-    endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.clientHints', { joinArrays: '\n\n' })} />} />}
+    endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.clientHints', { joinArrays: '\n\n' })} />} />}
   >
     <Select<OptionType>
       open={isOpen}

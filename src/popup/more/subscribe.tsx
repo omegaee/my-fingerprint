@@ -63,7 +63,7 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
   }
 
   return <section className={className}>
-    <div className="mx-2 flex justify-center items-center gap-1">
+    <div className="flex justify-center items-center gap-1">
       <Input
         placeholder="config.json"
         value={input}

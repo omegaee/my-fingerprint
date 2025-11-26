@@ -75,10 +75,7 @@ export const StrongFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.webrtc')}
         className={mode.isDefault ? '' : dotStyles.warning}
-        endContent={<TipIcon.Question content={<ConfigDesc
-          tags={unstableTag}
-          desc={t('item.desc.webrtc', { joinArrays: '\n\n' })}
-        />} />}
+        endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.webrtc', { joinArrays: '\n\n' })} />} />}
       >
         {select}
       </ConfigItemY>}
@@ -120,7 +117,7 @@ export const StrongFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.domRect')}
         className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.domRect')} />} />}
+        endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.domRect')} />} />}
       >
         {select}
       </ConfigItemY>}

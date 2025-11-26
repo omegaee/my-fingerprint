@@ -33,8 +33,6 @@ export const WeakFpConfigGroup = memo(() => {
   const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
 
   return fp ? <div key={storage.version}>
-    {browserInfo.name !== 'firefox' && <ClientHintsConfigItem />}
-
     <TimeZoneConfigItem />
 
     {/* languages */}
@@ -52,8 +50,8 @@ export const WeakFpConfigGroup = memo(() => {
     >{(mode, { select }) =>
       <ConfigItemY
         label={t('item.title.languages')}
-        className={mode.isDefault ? '' : dotStyles.warning}
-        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.languages', { joinArrays: '\n\n' })} />} />}
+        className={mode.isDefault ? '' : dotStyles.success}
+        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.languages', { joinArrays: '\n\n' })} />} />}
       >
         {select}
         {mode.isValue && <>
@@ -65,6 +63,8 @@ export const WeakFpConfigGroup = memo(() => {
         </>}
       </ConfigItemY>}
     </HookModeContent>
+
+    {browserInfo.name !== 'firefox' && <ClientHintsConfigItem />}
 
     {/* gpuInfo */}
     <GPUInfoConfigItem />
@@ -86,7 +86,7 @@ export const WeakFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.size')}
         className={mode.isDefault ? '' : dotStyles.warning}
-        endContent={<TipIcon.Question content={<ConfigDesc tags={unstableTag} desc={t('item.desc.size')} />} />}
+        endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.size')} />} />}
       >
         {select}
         {mode.isValue && <>
@@ -129,7 +129,7 @@ export const WeakFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.depth')}
         className={mode.isDefault ? '' : dotStyles.error}
-        endContent={<TipIcon.Question content={<ConfigDesc tags={deprecatedTag} desc={t('item.desc.depth')} />} />}
+        endContent={<TipIcon.Question color='danger' content={<ConfigDesc tags={deprecatedTag} desc={t('item.desc.depth')} />} />}
       >
         {select}
         {mode.isValue && <>
@@ -168,7 +168,7 @@ export const WeakFpConfigGroup = memo(() => {
       <ConfigItemY
         label={t('item.title.hardwareConcurrency')}
         className={mode.isDefault ? '' : dotStyles.error}
-        endContent={<TipIcon.Question content={<ConfigDesc tags={deprecatedTag} desc={t('item.desc.hardwareConcurrency')} />} />}
+        endContent={<TipIcon.Question color='danger' content={<ConfigDesc tags={deprecatedTag} desc={t('item.desc.hardwareConcurrency')} />} />}
       >
         {select}
         {mode.isValue && <>

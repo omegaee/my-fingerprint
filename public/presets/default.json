@@ -22,7 +22,7 @@
           "type": 0
         },
         "canvas": {
-          "type": 3
+          "type": 2
         },
         "domRect": {
           "type": 0
@@ -34,7 +34,7 @@
           "type": 0
         },
         "webgl": {
-          "type": 3
+          "type": 2
         },
         "webgpu": {
           "type": 0
