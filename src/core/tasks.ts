@@ -361,23 +361,6 @@ export const hookTasks: HookTask[] = [
           useProxy(win.WebGL2RenderingContext.prototype, 'readPixels', handler)
         }
       }
-      /* Report: Supported Extensions */
-      {
-        const seed = useSeed(conf.fp.other.webgl)
-        if (seed != null) {
-          const noise = seededRandom(seed, 1, 0)
-          const handler = {
-            apply: (target: any, thisArg: WebGLRenderingContext, args: any) => {
-              notify('strong.webgl')
-              const res = target.apply(thisArg, args);
-              res?.push?.('EXT_' + noise);
-              return res;
-            }
-          }
-          useProxy(win.WebGLRenderingContext.prototype, 'getSupportedExtensions', handler)
-          useProxy(win.WebGL2RenderingContext.prototype, 'getSupportedExtensions', handler)
-        }
-      }
     },
   },
 

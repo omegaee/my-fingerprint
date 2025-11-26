@@ -1,15 +1,21 @@
 /**
- * 线性同余，根据seed产生随机数
+ * 根据seed产生随机数
+ * mulberry32
  */
 export const seededRandom = function (seed: number | string, max: number = 1, min: number = 0): number {
-  if (typeof seed === 'string') {
-    seed = hashNumberFromString(seed);
+  return makeSeededRandom(seed, max, min)();
+}
+
+export function makeSeededRandom(_seed: number | string, max: number = 1, min: number = 0): () => number {
+  let seed = typeof _seed === 'string' ? hashNumberFromString(_seed) : _seed;
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    const rnd = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return min + rnd * (max - min);
   }
-  const mod = 233280;
-  seed = (seed * 9301 + 49297) % mod;
-  if (seed < 0) seed += mod; // 确保 seed 为正数
-  const rnd = seed / mod;
-  return min + rnd * (max - min);
 }
 
 /**

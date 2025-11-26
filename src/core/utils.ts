@@ -1,4 +1,4 @@
-import { hashNumberFromString, seededRandom } from "@/utils/base";
+import { hashNumberFromString, makeSeededRandom, seededRandom } from "@/utils/base";
 import { sendToWindow } from "@/utils/message";
 import { debounce } from "@/utils/timer";
 import type { FingerprintContext } from "./core";
@@ -51,18 +51,24 @@ const sendIframeRecord = debounce(() => {
  * 随机canvas噪音
  */
 export const randomCanvasNoise = (seed: number) => {
+  const rand = makeSeededRandom(seed, 255, 0)
   const noise: number[] = []
   for (let i = 0; i < 10; i++) {
-    noise.push(Math.floor(seededRandom(seed++, 255, 0)))
+    noise.push(Math.floor(rand()))
   }
   return noise
 }
 
 /**
- * 获取[x, y]，区间[-1, 1]
+ * 获取[x, y, ...]，区间[-1, 1]
  */
-export const randomWebglNoise = (seed: number): [number, number] => {
-  return [seededRandom(seed, 1, -1), seededRandom(seed + 1, 1, -1)]
+export const randomWebglNoise = (seed: number): number[] => {
+  const rand = makeSeededRandom(seed, 1, -1)
+  const ps = []
+  for (let i = 0; i < 20; i++) {
+    ps.push(rand())
+  }
+  return ps;
 }
 
 /**
@@ -233,7 +239,7 @@ export const proxyUserAgentData = (ctx: FingerprintContext, rawValue: any, proxy
  * 在webgl上下文绘制噪音点
  * @param noisePosition 区间[-1, 1]
  */
-export const drawNoiseToWebgl = (gl: WebGLRenderingContext | WebGL2RenderingContext, noisePosition: [number, number]) => {
+export const drawNoiseToWebgl = (gl: WebGLRenderingContext | WebGL2RenderingContext, noisePosition: number[]) => {
   const vertexShaderSource = `attribute vec4 noise;void main() {gl_Position = noise;gl_PointSize = 0.001;}`;
   const fragmentShaderSource = `void main() {gl_FragColor = vec4(0.0, 0.0, 0.0, 0.01);}`;
 
