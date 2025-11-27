@@ -12,22 +12,21 @@ export type MoreViewProps = {
 export const MoreView = ({ }: MoreViewProps) => {
   const [t] = useTranslation()
 
-  return <div className="h-full overflow-y-auto no-scrollbar">
-    <div className="mb-3">
-      <Divider rootClassName="!mt-0 !mb-3" orientation='center'>{t('label.config-file')}</Divider>
+  return <div className="h-full overflow-y-auto no-scrollbar flex flex-col gap-2">
+    <div className="p-2 bg-[--ant-color-bg-container] rounded-lg">
+      <h3 className="mb-3 text-center text-sm">{t('label.config-file')}</h3>
       <MoreConfigView className="flex flex-wrap justify-center items-center gap-2" />
     </div>
-    <div className="my-3">
-      <Divider rootClassName="!my-3" orientation='center'>
-        <div className="flex justify-center items-center gap-2">
-          {t('label.subscribe')}
-          <TipIcon.Question content={<Md>{t('desc.subscribe', { joinArrays: '\n\n' })}</Md>} />
-        </div>
-      </Divider>
+    <div className="p-2 bg-[--ant-color-bg-container] rounded-lg">
+      <div className="mb-3 flex justify-center items-center gap-2">
+        <h3 className="text-sm">{t('label.subscribe')}</h3>
+        <TipIcon.Question content={<Md>{t('desc.subscribe', { joinArrays: '\n\n' })}</Md>} />
+      </div>
       <SubscribeView />
     </div>
-    <div className="mt-3">
-      <Divider rootClassName="!mb-3" orientation='center'>{t('label.preset-panel')}</Divider>
+    <div className="p-2 bg-[--ant-color-bg-container] rounded-lg">
+      <h3 className="mb-2 text-center text-sm">{t('label.preset-panel')}</h3>
+      <Divider className="m-0" />
       <PresetPanel />
     </div>
   </div>

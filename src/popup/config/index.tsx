@@ -39,7 +39,7 @@ export const FConfig = () => {
 
   return <Collapse
     size='small'
-    className="h-full bg-transparent overflow-auto no-scrollbar"
+    className="h-full bg-[--ant-layout-body-bg] overflow-auto no-scrollbar"
     bordered={false}
     accordion
     items={items} />
