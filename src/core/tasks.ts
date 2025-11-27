@@ -301,7 +301,7 @@ export const hookTasks: HookTask[] = [
   },
 
   /**
-   * Canvas
+   * Canvas 2d
    */
   {
     condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
@@ -338,13 +338,11 @@ export const hookTasks: HookTask[] = [
   },
 
   /**
-   * Webgl
+   * Canvas Webgl
    */
   {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useProxy }) => {
-      if (!win) return;
-
+    onEnable: ({ gthis, conf, useSeed, useProxy }) => {
       /* Image */
       {
         const seed = useSeed(conf.fp.other.webgl)
@@ -357,15 +355,15 @@ export const hookTasks: HookTask[] = [
               return target.apply(thisArg, args as any);
             }
           }
-          useProxy(win.WebGLRenderingContext.prototype, 'readPixels', handler)
-          useProxy(win.WebGL2RenderingContext.prototype, 'readPixels', handler)
+          useProxy(gthis.WebGLRenderingContext.prototype, 'readPixels', handler)
+          useProxy(gthis.WebGL2RenderingContext.prototype, 'readPixels', handler)
         }
       }
     },
   },
 
   /**
-   * Webgl参数信息
+   * Canvas Webgl参数信息
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(conf.fp.normal.gpuInfo),
@@ -404,7 +402,7 @@ export const hookTasks: HookTask[] = [
   },
 
   /**
-   * toDataURL, convertToBlob
+   * Canvas Base
    */
   {
     condition: ({ conf, isDefault }) => !isDefault([conf.fp.other.canvas, conf.fp.other.webgl]),
