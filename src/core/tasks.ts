@@ -120,10 +120,10 @@ export const hookTasks: HookTask[] = [
       })
 
       function createScriptUrl(url: string | URL) {
-        const injected = makeScript();
-        if (injected == null) return url;
-
         if (url.toString().startsWith('blob:')) {
+          const injected = makeScript();
+          if (injected == null) return url;
+
           const blobScript = blobMap.get(url.toString());
           if (blobScript) {
             const blob = new Blob([
@@ -131,14 +131,7 @@ export const hookTasks: HookTask[] = [
             ], { type: 'application/javascript' });
             return URL.createObjectURL(blob);
           }
-        } else {
-          const code = `fetch('${url}').then(v=>v.text()).then(v=>{new Function(v)();}).catch(e=>console.warn(e.message));`
-          const blob = new Blob([
-            `(function(){${injected}})();`, code,
-          ], { type: 'application/javascript' });
-          return URL.createObjectURL(blob);
         }
-
         return url;
       }
 
