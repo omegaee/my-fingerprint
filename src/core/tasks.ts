@@ -60,7 +60,7 @@ export const hookTasks: HookTask[] = [
           const fs = thisArg.getElementsByTagName ?
             thisArg.getElementsByTagName('iframe') :
             thisArg.querySelectorAll?.('iframe');
-          if (fs) {
+          if (fs?.length) {
             for (const f of fs) {
               !mem.has(f) && hookTarget(f) && mem.add(f);
             }
@@ -69,18 +69,20 @@ export const hookTasks: HookTask[] = [
         }
       }
 
-      const nKeys = ['appendChild', 'insertBefore', 'replaceChild'] as const
       const pnKeys = ['append', 'prepend', 'replaceChildren'] as const
 
+      useProxy(win.Node.prototype, [
+        'appendChild', 'insertBefore', 'replaceChild'
+      ], handler);
       useProxy(win.Element.prototype, [
-        ...nKeys, ...pnKeys, 'insertAdjacentElement', 'insertAdjacentHTML',
+        ...pnKeys, 'insertAdjacentElement', 'insertAdjacentHTML',
         'before', 'after', 'replaceWith', 'setHTMLUnsafe',
       ], handler);
       useProxy(win.Document.prototype, [
-        ...nKeys, ...pnKeys,
+        ...pnKeys,
       ], handler);
       useProxy(win.ShadowRoot.prototype, [
-        ...nKeys, ...pnKeys, 'setHTMLUnsafe',
+        ...pnKeys, 'setHTMLUnsafe',
       ], handler);
 
       useSetterProxy(win.Element.prototype, ['innerHTML', 'outerHTML'], handler);
