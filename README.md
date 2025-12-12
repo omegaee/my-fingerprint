@@ -4,14 +4,18 @@
 
 <hr/>
 
-<h1 align="center">My Fingerprint</h1>
+<h1 align="center"><strong>My Fingerprint</strong></h1>
 
 <p align="center">
+<strong>
 保护你的浏览器指纹，提升隐私安全。支持 <code>Chrome</code>、<code>Edge</code>、<code>Firefox</code>。
+</strong>
 </p>
 
 <p align="center">
+<strong>
 轻量、零干扰的浏览器扩展，基于 Manifest V3 构建。
+</strong>
 </p>
 
 
@@ -29,6 +33,18 @@
   <img alt="License" src="https://img.shields.io/github/license/omegaee/my-fingerprint?style=flat">
 </a>
 </p>
+
+---
+
+## 💖 Sponsors
+
+<a href="https://www.thordata.com/?ls=github&lk=My Fingerprint">
+  <img
+    src="./docs/sponsors/thordata.png"
+    alt="Thordata：可靠且经济高效的代理服务提供商。一键采集公网数据，为企业和开发者提供稳定、高效且合规的全球代理 IP 服务。注册获得1GB住宅代理免费试用和 2000 次免费 SERP API 调用。" 
+    width="400"
+  />
+</a>
 
 ---
 
