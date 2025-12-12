@@ -4,7 +4,7 @@
 
 <hr/>
 
-<h1 align="center"><strong>My Fingerprint</strong></h1>
+<h1 align="center">My Fingerprint</h1>
 
 <br/>
 
