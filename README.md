@@ -6,14 +6,21 @@
 
 <h1 align="center">My Fingerprint</h1>
 
+<br/>
+
 <p align="center">
+<strong>
 保护你的浏览器指纹，提升隐私安全。支持 <code>Chrome</code>、<code>Edge</code>、<code>Firefox</code>。
+</strong>
 </p>
 
 <p align="center">
+<strong>
 轻量、零干扰的浏览器扩展，基于 Manifest V3 构建。
+</strong>
 </p>
 
+<br/>
 
 <p align="center">
 <a href="https://github.com/omegaee/my-fingerprint/releases">
@@ -29,6 +36,33 @@
   <img alt="License" src="https://img.shields.io/github/license/omegaee/my-fingerprint?style=flat">
 </a>
 </p>
+
+<p align="center">
+  <a href="https://microsoftedge.microsoft.com/addons/detail/mikeajonghdjobhfokpleagjockmmgdk">
+    <img src="https://img.shields.io/badge/Edge-Addon-blue?logo=microsoftedge" alt="Edge Addon" />
+  </a>
+  <a href="https://addons.mozilla.org/firefox/addon/my-fingerprint/">
+    <img src="https://img.shields.io/badge/Firefox-Addon-orange?logo=firefox" alt="Firefox Addon" />
+  </a>
+  <a href="https://addons.mozilla.org/android/addon/my-fingerprint/">
+    <img src="https://img.shields.io/badge/Firefox%20for%20Android-Addon-orange?logo=firefoxbrowser" alt="Firefox for Android Addon" />
+  </a>
+  <img src="https://img.shields.io/badge/Chrome-Manual%20Install-lightgrey?logo=googlechrome" alt="Chrome Manual Install" />
+</p>
+
+---
+
+## 💖 赞助商
+
+<a href="https://www.thordata.com/?ls=github&lk=My%20Fingerprint">
+  <img
+    src="./docs/sponsors/thordata.png"
+    alt="Thordata：可靠且经济高效的代理服务提供商。一键采集公网数据，为企业和开发者提供稳定、高效且合规的全球代理 IP 服务。注册获得1GB住宅代理免费试用和 2000 次免费 SERP API 调用。" 
+    width="450"
+  />
+</a>
+
+**感谢 [Thordata](https://www.thordata.com/?ls=github&lk=My%20Fingerprint) 的赞助支持**
 
 ---
 
