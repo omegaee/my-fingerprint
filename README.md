@@ -52,7 +52,7 @@
 
 ---
 
-## 💖 Sponsors
+## 💖 赞助商
 
 <a href="https://www.thordata.com/?ls=github&lk=My%20Fingerprint">
   <img
