@@ -54,13 +54,15 @@
 
 ## 💖 Sponsors
 
-<a href="https://www.thordata.com/?ls=github&lk=My Fingerprint">
+<a href="https://www.thordata.com/?ls=github&lk=My%20Fingerprint">
   <img
     src="./docs/sponsors/thordata.png"
     alt="Thordata：可靠且经济高效的代理服务提供商。一键采集公网数据，为企业和开发者提供稳定、高效且合规的全球代理 IP 服务。注册获得1GB住宅代理免费试用和 2000 次免费 SERP API 调用。" 
     width="450"
   />
 </a>
+
+**感谢 [Thordata](https://www.thordata.com/?ls=github&lk=My%20Fingerprint) 的赞助支持**
 
 ---
 
