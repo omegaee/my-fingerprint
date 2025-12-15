@@ -50,6 +50,16 @@
   <img src="https://img.shields.io/badge/Chrome-Manual%20Install-lightgrey?logo=googlechrome" alt="Chrome Manual Install" />
 </p>
 
+<p align="center">
+<a href="./docs/supporters.zh.md">
+  <img src="https://img.shields.io/badge/%E5%BE%AE%E4%BF%A1%E8%B5%9E%E8%B5%8F-%E6%94%AF%E6%8C%81%E4%BD%9C%E8%80%85-07C160?style=for-the-badge&logo=wechat" alt="微信赞赏支持作者" />
+</a>
+&nbsp;
+<a href="https://ko-fi.com/omegaee">
+  <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi" />
+</a>
+</p>
+
 ---
 
 ## 💖 赞助商
@@ -203,7 +213,8 @@ npm run dev:firefox  # Firefox
 ## 💝 支持一下 <a id="support"></a>
 
 - 如果你觉得项目有帮助，请点个 Star ⭐
-- 微信赞赏支持也欢迎！[微信赞赏入口](./docs/supporters.zh.md)
+- [微信赞赏-支持作者](./docs/supporters.zh.md)
+- [Support me on Ko-fi](https://ko-fi.com/omegaee)
 
 ## 📜 声明 <a id="disclaimer"></a>
 
