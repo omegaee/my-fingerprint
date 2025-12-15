@@ -50,6 +50,12 @@ A lightweight, zero-disruption browser extension built on Manifest V3.
   <img src="https://img.shields.io/badge/Chrome-Manual%20Install-lightgrey?logo=googlechrome" alt="Chrome Manual Install" />
 </p>
 
+<p align="center">
+<a href="https://ko-fi.com/omegaee">
+  <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi" />
+</a>
+</p>
+
 ---
 
 ## 💖 Sponsors
@@ -198,9 +204,9 @@ npm run dev:firefox  # Firefox
 
 ## 💝 Support <a id="support"></a>
 
-- Submit feedback via Issues or Pull Requests
 - If you find this project helpful, give it a ⭐
 - Your feedback helps make this project better. Every star counts!
+- [Support me on Ko-fi](https://ko-fi.com/omegaee)
 
 ## 📜 Disclaimer <a id="disclaimer"></a>
 
