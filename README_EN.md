@@ -60,15 +60,26 @@ A lightweight, zero-disruption browser extension built on Manifest V3.
 
 ## 💖 Sponsors
 
+<table>
+<tr>
+<td style="width:420px">
 <a href="https://www.thordata.com/?ls=github&lk=My%20Fingerprint">
   <img
     src="./docs/sponsors/thordata.png"
-    alt="Thordata: A reliable and cost‑effective proxy service provider. With one‑click access to public web data, it offers enterprises and developers stable, efficient, and compliant global proxy IP services. Sign up to receive a free trial of 1GB residential proxy traffic and 2,000 free SERP API calls." 
-    width="450"
+    alt="Thordata is a reliable and cost-effective proxy service provider. Sign up to receive 1GB of residential proxy and 2,000 serp‑api calls for free." 
+    width="420"
   />
 </a>
-
-**Sponsored by [Thordata](https://www.thordata.com/?ls=github&lk=My%20Fingerprint)**
+</td>
+</tr>
+<tr>
+<td style="width:420px" align="center">
+<small>
+<a href="https://www.thordata.com/?ls=github&lk=My%20Fingerprint">Thordata</a> is a reliable and cost-effective proxy service provider. Sign up to receive 1GB of residential proxy and 2,000 serp‑api calls for free.
+</small>
+</td>
+</tr>
+</table>
 
 ---
 
