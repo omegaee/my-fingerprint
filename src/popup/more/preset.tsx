@@ -54,7 +54,7 @@ const PresetPanel = ({ }: {
     if (!preset) return;
     importStorage(preset)
       .then(() => message.success(t('tip.ok.config-import')))
-      .catch((err) => message.error(`${t('tip.err.config-import')}: ${err}`))
+      .catch((err) => message.warning(`${t('tip.err.config-import')}: ${err}`))
   }
 
   const infoProps = useMemo(() => {

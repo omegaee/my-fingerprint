@@ -91,7 +91,7 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
 
     /* 导入为空 */
     if (!isImported) {
-      throw 'tip.err.import-empty'
+      throw 'Content is empty'
     }
   }
 

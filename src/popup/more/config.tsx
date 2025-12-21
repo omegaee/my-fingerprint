@@ -34,7 +34,7 @@ export const MoreConfigView = ({ className }: MoreConfigViewProps) => {
           const conf = JSON.parse(text)
           importStorage(conf)
             .then(() => message.success(t('tip.ok.config-import')))
-            .catch((err) => message.error(`${t('tip.err.config-import')}: ${err}`))
+            .catch((err) => message.warning(`${t('tip.err.config-import')}: ${err}`))
         } catch (err) {
           message.error(`${t('tip.err.config-parse')}: ${err}`)
         }
