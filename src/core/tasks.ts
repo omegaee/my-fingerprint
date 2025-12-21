@@ -805,58 +805,48 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.domRect.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
+    onEnable: ({ win, conf, useSeed, useProxy }) => {
       if (!win) return;
 
       const seed = useSeed(conf.fp.other.domRect)
       if (seed == null) return;
 
-      const mine = new WeakSet<DOMRect>()
-
-      useProxy(win, [
-        'DOMRect', 'DOMRectReadOnly'
-      ], {
-        construct(target, args, newTarget) {
-          const res = Reflect.construct(target, args, newTarget)
-          mine.add(res)
-          return res;
-        }
-      })
+      const noise = seededRandom(seed, 1e-6, -1e-6);
 
       {
-        const noise = seededRandom(seed, 1e-6, -1e-6);
-        useGetterProxy(win.DOMRect.prototype, [
-          'x', 'y', 'width', 'height'
-        ], (_, getter) => ({
-          apply(target, thisArg: DOMRect, args: any) {
+        const handler = {
+          apply(target: () => DOMRect, thisArg: any, args: any) {
             notify('strong.domRect')
-            const res = getter.call(thisArg);
-            if (mine.has(thisArg)) return res;
-            return res + noise;
+            const rect = Reflect.apply(target, thisArg, args);
+            if (rect) {
+              if (rect.x !== 0) rect.x += noise;
+              if (rect.width !== 0) rect.width += noise;
+            }
+            return rect;
           }
-        }))
+        }
+        useProxy(win.Element.prototype, 'getBoundingClientRect', handler)
+        useProxy(win.Range.prototype, 'getBoundingClientRect', handler)
       }
 
       {
-        const hook = (key: keyof DOMRectReadOnly, toResult: (rect: DOMRectReadOnly) => number) => {
-          useGetterProxy(win.DOMRectReadOnly.prototype, key, () => ({
-            apply(target, thisArg: DOMRectReadOnly, args: any) {
-              return toResult(thisArg)
+        const handler = {
+          apply(target: () => DOMRectList, thisArg: any, args: any) {
+            notify('strong.domRect')
+            const rlist = Reflect.apply(target, thisArg, args);
+            if (rlist) {
+              for (let i = 0; i < rlist.length; i++) {
+                const rect = rlist[i];
+                if (rect.x !== 0) rect.x += noise;
+                if (rect.width !== 0) rect.width += noise;
+              }
             }
-          }))
+            return rlist;
+          }
         }
-        hook('top', rect => rect.y)
-        hook('left', rect => rect.x)
-        hook('bottom', rect => rect.y + rect.height)
-        hook('right', rect => rect.x + rect.width)
+        useProxy(win.Element.prototype, 'getClientRects', handler)
+        useProxy(win.Range.prototype, 'getClientRects', handler)
       }
-
-      useProxy(win.DOMRectReadOnly.prototype, 'toJSON', {
-        apply(target, thisArg: DOMRectReadOnly, args: any) {
-          notify('strong.domRect')
-          return pick(thisArg, ['x', 'y', 'width', 'height', 'bottom', 'left', 'right', 'top']);
-        }
-      })
     }
   },
 
