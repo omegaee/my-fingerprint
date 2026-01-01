@@ -23,11 +23,8 @@ const getNewVersion = async () => {
  * 初次启动扩展时触发（浏览器更新、扩展更新触发）
  */
 chrome.runtime.onInstalled.addListener(({ reason }) => {
-  if (
-    reason === chrome.runtime.OnInstalledReason.INSTALL ||
-    reason === chrome.runtime.OnInstalledReason.UPDATE
-  ) {
-    initLocalStorage().then(() => reRegisterScript())
+  if (reason === "install" || reason === "update") {
+    initLocalStorage()
     reBrowserSeed()
   }
 });
@@ -36,7 +33,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-  initLocalStorage().then(() => reRegisterScript())
+  initLocalStorage()
   reBrowserSeed()
 });
 
@@ -47,7 +44,6 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
   switch (msg?.type) {
     case 'config.set': {
       updateLocalConfig(msg.config).then((data) => {
-        reRegisterScript()
         if (msg.result) sendResponse<'config.set'>(data);
       })
       return msg.result;
@@ -66,9 +62,8 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       return true
     }
     case 'whitelist.update': {
-      const fun = () => reRegisterScript()
-      if (msg.clean) cleanLocalWhitelist().then(fun);
-      if (msg.data) updateLocalWhitelist(msg.data).then(fun);
+      if (msg.clean) cleanLocalWhitelist();
+      if (msg.data) updateLocalWhitelist(msg.data);
       return false;
     }
     case 'version.latest': {

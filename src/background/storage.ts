@@ -2,7 +2,7 @@ import { genRandomSeed, existParentDomain } from "@/utils/base";
 import { debounce, sharedAsync } from "@/utils/timer";
 import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
-import { hasUserScripts } from "./script";
+import { hasUserScripts, reRegisterScript } from "./script";
 
 let mContent: LocalStorageContent | undefined
 
@@ -126,7 +126,7 @@ const mergeStorage = (src: LocalStorageConfig, dst?: DeepPartial<LocalStorageCon
       }
 
       if (key === 'value') continue;
-      
+
       if (typeof srcValue === 'object' && !Array.isArray(srcValue)) {
         // @ts-ignore
         mergeStorage(srcValue, dstValue);
@@ -161,6 +161,7 @@ export const initLocalStorage = sharedAsync(async () => {
   }
   mContent = genStorageContent(_storage)
   chrome.storage.local.set(_storage).then(() => {
+    reRegisterScript()
     reRequestHeader()
     applySubscribeStorage()
   })
@@ -235,6 +236,7 @@ export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>)
   const [storage] = await getLocalStorage()
   storage.config = mergeStorage(storage.config, config)
   saveLocalConfig(storage.config)
+  reRegisterScript()
   reRequestHeader()
   return storage.config
 }
@@ -247,6 +249,7 @@ export const updateLocalWhitelist = async (data: { add?: string[], del?: string[
   data.del?.length && data.del.forEach(v => remove(v))
   data.add?.length && data.add.forEach(v => add(v))
   saveLocalWhitelist(storage.whitelist)
+  reRegisterScript()
   reRequestHeader()
   return storage.whitelist
 }
@@ -258,6 +261,7 @@ export const cleanLocalWhitelist = async () => {
   const [storage, { clean }] = await getLocalStorage()
   clean()
   saveLocalWhitelist(storage.whitelist)
+  reRegisterScript()
   reRequestHeader()
 }
 
