@@ -194,6 +194,9 @@ npm run dev:firefox  # Firefox
 
 ## ❓ FAQ <a id="faq"></a>
 
+**Q: What should I do if the extension doesn't work properly or some pages behave abnormally?**  
+> A: Try enabling **Fast Injection Mode** in the script settings to improve compatibility. For abnormal pages, you can either **add them to the whitelist** or apply the **Known Issues List** from the configuration presets to resolve common problems.
+
 **Q: Why do I need this extension?**
 > A: Browser fingerprints can be used for cross-site tracking, compromising user privacy. This extension disguises key fingerprint data to reduce the risk of identification and tracking.
 
@@ -208,9 +211,6 @@ npm run dev:firefox  # Firefox
 
 **Q: What's the difference between strong and weak fingerprints?**
 > A: Strong fingerprints are highly unique and often used for precise tracking—modifying them greatly enhances privacy. Weak fingerprints have low uniqueness and are usually safe to leave unchanged to maintain compatibility.
-
-**Q: What should I do if the extension doesn't work properly or some pages behave abnormally?**  
-> A: Try enabling **Fast Injection Mode** in the script settings to improve compatibility. For abnormal pages, you can either **add them to the whitelist** or apply the **Known Issues List** from the configuration presets to resolve common problems.
 
 
 ## 💝 Support <a id="support"></a>
