@@ -512,6 +512,9 @@ export const hookTasks: HookTask[] = [
       const tzValue = useHookMode(conf.fp.other.timezone).value
       if (!tzValue) return;
 
+      const localOffsetMs = new Date().getTimezoneOffset() * 60000;
+      const utcOffsetMs = tzValue.offset * 60 * 60 * 1000;
+
       const _DateTimeFormat = gthis.Intl.DateTimeFormat;
 
       type TimeParts = Partial<Record<keyof Intl.DateTimeFormatPartTypesRegistry, string>>
@@ -556,11 +559,18 @@ export const hookTasks: HookTask[] = [
         },
       })
 
-
       /* Date */
       useProxy(gthis, 'Date', {
+        construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
+          const raw: Date = Reflect.construct(target, args, newTarget);
+          if (typeof args[0] === 'string' && args[0].includes('/')) {
+            notify('weak.timezone')
+            return Reflect.construct(target, [raw.getTime() - localOffsetMs - utcOffsetMs], newTarget);
+          }
+          return raw;
+        },
         apply: (target, thisArg: Date, args: Parameters<typeof Date>) => {
-          return new target(...args).toString()
+          return Reflect.construct(target, args).toString()
         }
       })
 
