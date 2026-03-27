@@ -22,8 +22,10 @@ jobs:
 
       - run: npm ci
       - run: npx update-browserslist-db@latest
-      - run: npm run build:all
-      - run: npm run build:all
+      - name: Build output.js
+        run: npm run build:all || true
+      - name: Build all
+        run: npm run build:all
 
       - name: Package artifacts
         run: |
