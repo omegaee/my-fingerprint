@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "v*"
+    branches:
+      - main
+      - ci/*
 
 permissions:
   contents: write
