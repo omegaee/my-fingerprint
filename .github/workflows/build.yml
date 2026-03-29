@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - "v*"
-    branches:
-      - main
-      - ci/*
 
 permissions:
   contents: write
@@ -20,46 +17,27 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
 
       - run: npm ci
       - run: npx update-browserslist-db@latest
+      - name: Build output.js
+        run: npm run build:all || true
+      - name: Build all
+        run: npm run build:all
 
-      - name: Build Chrome 
-        run: npm run build || npm run build
-
-      - name: Build Firefox
-        run: npm run build:firefox || npm run build:firefox
-
-      - name: Package Chrome artifacts
+      - name: Package artifacts
         run: |
-          cd dist
-          # Chrome
-          zip -r ../my-fingerprint-chrome-${{ github.ref_name }}.zip .
-          # Chrome Webstore
-          jq 'del(.key, .update_url)' manifest.json > manifest.tmp.json && mv manifest.tmp.json manifest.json
-          zip -r ../my-fingerprint-chrome-webstore-${{ github.ref_name }}.zip .
-          cd ..
-
-      - name: Package Firefox artifacts
-        run: |
-          cd dist-firefox && zip -r ../my-fingerprint-firefox-${{ github.ref_name }}.zip . && cd ..
-
-      - name: Upload internal artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: store-uploads
-          path: |
-            my-fingerprint-chrome-webstore-${{ github.ref_name }}.zip
-            my-fingerprint-firefox-${{ github.ref_name }}.zip
+          cd dist && zip -r ../my-fingerprint-chrome-${{ github.ref_name }}.zip . && cd ..
+          cd dist-firefox && zip -r ../my-fingerprint-firefox-${{ github.ref_name }}.xpi . && cd ..
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           generate_release_notes: true
-          draft: true
           files: |
             my-fingerprint-chrome-${{ github.ref_name }}.zip
+            my-fingerprint-firefox-${{ github.ref_name }}.xpi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
