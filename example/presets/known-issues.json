@@ -1,3 +1,5 @@
 {
-  "whitelist": []
+  "whitelist": [
+    "challenges.cloudflare.com"
+  ]
 }
