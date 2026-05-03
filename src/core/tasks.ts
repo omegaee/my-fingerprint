@@ -153,7 +153,7 @@ export const hookTasks: HookTask[] = [
             notify('other.worker.' + name)
             const url = args[0];
 
-            if (win.TrustedTypePolicy && url instanceof win.TrustedTypePolicy && tsURLLookup) {
+            if (win.TrustedScriptURL && url instanceof win.TrustedScriptURL && tsURLLookup) {
               const ttp = tsURLLookup.get(url);
               if (ttp) {
                 args[0] = ttp.createScriptURL(
