@@ -80,6 +80,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
           font: { type: HookType.default },
           webgpu: { type: HookType.default },
           domRect: { type: HookType.default },
+          serviceWorker: { type: HookType.default },
         },
       },
       action: {

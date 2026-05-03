@@ -123,6 +123,20 @@ export const StrongFpConfigGroup = memo(() => {
       </ConfigItemY>}
     </HookModeContent>
 
+    <HookModeContent
+      mode={fp.other.serviceWorker}
+      types={disabledTypes}
+      selectClassName={dotStyles.base}
+    >{(mode, { select }) =>
+      <ConfigItemY
+        label={t('item.title.serviceWorker')}
+        className={mode.isDefault ? '' : dotStyles.warning}
+        endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.serviceWorker', { joinArrays: '\n\n' })} />} />}
+      >
+        {select}
+      </ConfigItemY>}
+    </HookModeContent>
+
   </div> : <Spin indicator={<LoadingOutlined spin />} />
 })
 

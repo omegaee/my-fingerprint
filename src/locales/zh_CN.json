@@ -81,6 +81,7 @@
       "webgpu": "WebGPU指纹",
       "gpuInfo": "图形驱动信息",
       "domRect": "DOMRect指纹",
+      "serviceWorker": "Service Worker 接口",
       "e-language": "语言",
       "theme": "主题",
       "seed": "全局种子",
@@ -115,6 +116,10 @@
       "fonts": "Fonts字体指纹，通过检测字体支持情况获取设备特征。",
       "webgpu": "WebGPU指纹，通过设备图形处理参数差异获取设备特征。",
       "domRect": "DOMRect指纹，通过测量元素位置和尺寸差异获取设备特征。",
+      "serviceWorker": [
+        "禁用后, 阻止网站注册 Service Worker, 防止网站通过 Service Worker 获取设备信息。",
+        "禁用后, 可能会导致某些网站异常行为或无法正常工作。"
+      ],
       "e-language": "语言",
       "theme": "主题",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",

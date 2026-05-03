@@ -1,6 +1,6 @@
 import { HookType } from '@/types/enum'
 import { type HookTask } from "./core";
-import { pick, seededRandom } from '@/utils/base';
+import { seededRandom } from '@/utils/base';
 import {
   notify,
   drawNoiseTo2d,
@@ -94,7 +94,7 @@ export const hookTasks: HookTask[] = [
    * Worker
    */
   {
-    onEnable: ({ win, useProxy, makeScript }) => {
+    onEnable: ({ win, conf, useProxy, makeScript }) => {
       if (!win) return;
 
       const blobMap = new Map<string, Blob>();
@@ -171,13 +171,20 @@ export const hookTasks: HookTask[] = [
         useProxy(win, 'SharedWorker', makeHandler('shared'));
       }
 
-      useProxy(win.ServiceWorkerContainer.prototype, 'register', {
-        apply(target, thisArg, args) {
-          notify('other.worker.service')
-          return Reflect.apply(target, thisArg, args);
-        }
-      });
-
+      {
+        const isDisabled = conf.fp.other.serviceWorker.type === HookType.disabled;
+        useProxy(win.ServiceWorkerContainer.prototype, 'register', {
+          apply(target, thisArg, args) {
+            notify('other.worker.service')
+            if (isDisabled) {
+              return Promise.reject(
+                new DOMException("Service workers are disabled", "SecurityError")
+              );
+            }
+            return Reflect.apply(target, thisArg, args);
+          }
+        });
+      }
     }
   },
 

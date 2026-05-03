@@ -41,6 +41,9 @@
         },
         "webrtc": {
           "type": 0
+        },
+        "serviceWorker": {
+          "type": 0
         }
       },
       "screen": {

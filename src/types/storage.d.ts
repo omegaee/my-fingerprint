@@ -54,6 +54,7 @@ type HookFingerprint = {
     font: DefaultHookMode | RandomHookMode
     webgpu: DefaultHookMode | RandomHookMode
     domRect: DefaultHookMode | RandomHookMode
+    serviceWorker: DefaultHookMode | DisableHookMode
   }
 }
 
