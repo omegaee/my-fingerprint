@@ -792,7 +792,7 @@ export const hookTasks: HookTask[] = [
                 args[0].colorAttachments[0].clearValue = _clearValue;
               } catch (e) { }
             }
-            return target.apply(self, args);
+            return Reflect.apply(target, self, args);
           }
         })
       }
@@ -824,7 +824,7 @@ export const hookTasks: HookTask[] = [
                 // args[2] = _data;
               } catch (e) { }
             }
-            return target.apply(self, args);
+            return Reflect.apply(target, self, args);
           }
         })
       }
