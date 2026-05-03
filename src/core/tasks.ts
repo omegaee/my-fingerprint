@@ -119,7 +119,19 @@ export const hookTasks: HookTask[] = [
         }
       })
 
-      function createScriptUrl(url: string | URL) {
+      let tsURLLookup: WeakMap<TrustedScriptURL, TrustedTypePolicy>
+      if (win.TrustedTypePolicy) {
+        tsURLLookup = new WeakMap()
+        useProxy(win.TrustedTypePolicy.prototype, 'createScriptURL', {
+          apply(target, thisArg: TrustedTypePolicy, args: any) {
+            const res = Reflect.apply(target, thisArg, args);
+            tsURLLookup.set(res, thisArg);
+            return res;
+          }
+        })
+      }
+
+      function createScriptUrl(url: string) {
         if (url.toString().startsWith('blob:')) {
           const injected = makeScript();
           if (injected == null) return url;
@@ -140,9 +152,18 @@ export const hookTasks: HookTask[] = [
           construct(target: any, args: any, newTarget: any) {
             notify('other.worker.' + name)
             const url = args[0];
-            if (url) {
-              args[0] = createScriptUrl(url);
+
+            if (win.TrustedTypePolicy && url instanceof win.TrustedTypePolicy && tsURLLookup) {
+              const ttp = tsURLLookup.get(url);
+              if (ttp) {
+                args[0] = ttp.createScriptURL(
+                  createScriptUrl(url.toString())
+                );
+              }
+            } else if (typeof url === 'string' || url instanceof URL) {
+              args[0] = createScriptUrl(url.toString());
             }
+
             return Reflect.construct(target, args, newTarget) as Worker;
           }
         })
