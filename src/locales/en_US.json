@@ -81,6 +81,7 @@
       "webgpu": "WebGPU Fingerprint",
       "gpuInfo": "Graphics Driver",
       "domRect": "DOMRect Fingerprint",
+      "serviceWorker": "Service Worker Interface",
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed",
@@ -105,12 +106,16 @@
       "audio": "Audio fingerprinting identifies your device through unique patterns in audio signal processing.",
       "webgl": "WebGL fingerprinting captures device characteristics based on variations in 3D rendering behavior.",
       "webrtc": [
-        "Block websites from accessing your real IP address via WebRTC—especially useful when using a proxy. Helps prevent IP leaks.",
-        "Disabling this may cause certain websites to malfunction or behave unexpectedly."
+        "When disabled, websites are prevented from obtaining your real IP address via WebRTC (especially when using a proxy). When enabled, it helps prevent IP leaks.",
+        "When disabled, some websites may behave abnormally or fail to function properly."
       ],
       "fonts": "Font fingerprinting reveals device details by checking which fonts are supported and how they’re rendered.",
       "webgpu": "WebGPU fingerprinting extracts device information by analyzing differences in GPU processing capabilities.",
       "domRect": "DOMRect fingerprinting gathers device data by measuring variations in element positioning and dimensions.",
+      "serviceWorker": [
+        "When disabled, websites are prevented from registering Service Workers, blocking them from using Service Workers to collect device information.",
+        "When disabled, some websites may behave abnormally or fail to function properly."
+      ],
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
