@@ -542,33 +542,47 @@ export const hookTasks: HookTask[] = [
 
       const localOffsetMs = new Date().getTimezoneOffset() * 60000;
       const utcOffsetMs = tzValue.offset * 60 * 60 * 1000;
+      const diffMs = utcOffsetMs + localOffsetMs;
 
+      const _Date = gthis.Date;
       const _DateTimeFormat = gthis.Intl.DateTimeFormat;
 
+      const dtFormatter = new _DateTimeFormat('en-US', {
+        timeZone: tzValue.zone ?? 'Asia/Shanghai',
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        fractionalSecondDigits: 3,
+        hour12: false,
+        timeZoneName: 'longOffset',
+      })
+
+      const weekdayShortToNumeric: Record<string, number> = {
+        Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+      };
+
+      const monthShortToNumeric: Record<string, number> = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      };
+
       type TimeParts = Partial<Record<keyof Intl.DateTimeFormatPartTypesRegistry, string>>
-      const getStandardDateTimeParts = (date: Date): TimeParts | null => {
-        const formatter = new _DateTimeFormat('en-US', {
-          timeZone: tzValue.zone ?? 'Asia/Shanghai',
-          weekday: 'short',
-          month: 'short',
-          day: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          fractionalSecondDigits: 3,
-          hour12: false,
-          timeZoneName: 'longOffset',
-        })
+
+      const getParts = (date: Date): TimeParts | undefined => {
         try {
-          const parst = formatter.formatToParts(date)
-          return parst.reduce((acc: TimeParts, cur) => {
+          const plist = dtFormatter.formatToParts(date)
+          return plist.reduce((acc: TimeParts, cur) => {
             acc[cur.type] = cur.value
             return acc
           }, {})
-        } catch (e) {
-          return null
-        }
+        } catch (e) { }
+      }
+
+      function isNumeric(v: any) {
+        return !isNaN(v) && !isNaN(parseFloat(v));
       }
 
       /* DateTimeFormat */
@@ -589,12 +603,17 @@ export const hookTasks: HookTask[] = [
 
       /* Date */
       useProxy(gthis, 'Date', {
-        construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
-          const raw: Date = Reflect.construct(target, args, newTarget);
+        construct: (target, args, newTarget) => {
+          notify('weak.timezone')
+          const raw = Reflect.construct(target, args, newTarget);
+
           if (typeof args[0] === 'string' && args[0].includes('/')) {
-            notify('weak.timezone')
-            return Reflect.construct(target, [raw.getTime() - localOffsetMs - utcOffsetMs], newTarget);
+            return Reflect.construct(target, [raw.getTime() - diffMs], newTarget);
           }
+          if (args[1] != null && isNumeric(args[1])) {
+            return Reflect.construct(target, [raw.getTime() - diffMs], newTarget);
+          }
+
           return raw;
         },
         apply: (target, thisArg: Date, args: Parameters<typeof Date>) => {
@@ -602,36 +621,59 @@ export const hookTasks: HookTask[] = [
         }
       })
 
-      /* getTimezoneOffset & toString */
+      /* Date getter */
       {
-        const tasks: { [key in keyof Date]?: (thisArg: Date) => any } = {
-          'getTimezoneOffset': (_) => tzValue.offset * -60,
-          'toString': (thisArg) => {
-            const ps = getStandardDateTimeParts(thisArg)
-            return ps && `${ps.weekday} ${ps.month} ${ps.day} ${ps.year} ${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
-          },
-          'toDateString': (thisArg) => {
-            const ps = getStandardDateTimeParts(thisArg)
-            return ps && `${ps.weekday} ${ps.month} ${ps.day} ${ps.year}`
-          },
-          'toTimeString': (thisArg) => {
-            const ps = getStandardDateTimeParts(thisArg)
-            return ps && `${ps.hour}:${ps.minute}:${ps.second} ${ps.timeZoneName?.replace(':', '')}`
-          },
+        type DateHandler = (parts: TimeParts, date: Date) => any
+
+        const tasks: { [key in keyof Date]?: DateHandler } = {
+          'getTimezoneOffset': () => tzValue.offset * -60,
+          'toString': (p) => `${p.weekday} ${p.month} ${p.day?.padStart(2, '0')} ${p.year} ${p.hour?.padStart(2, '0')}:${p.minute?.padStart(2, '0')}:${p.second?.padStart(2, '0')} ${p.timeZoneName?.replace(':', '')}`,
+          'toDateString': (p) => `${p.weekday} ${p.month} ${p.day?.padStart(2, '0')} ${p.year}`,
+          'toTimeString': (p) => `${p.hour?.padStart(2, '0')}:${p.minute?.padStart(2, '0')}:${p.second?.padStart(2, '0')} ${p.timeZoneName?.replace(':', '')}`,
+          'getHours': (p) => parseInt(p.hour ?? '0'),
+          'getMinutes': (p) => parseInt(p.minute ?? '0'),
+          'getSeconds': (p) => parseInt(p.second ?? '0'),
+          'getFullYear': (p) => parseInt(p.year ?? '0'),
+          'getDate': (p) => parseInt(p.day ?? '0'),
+          'getMonth': (p) => monthShortToNumeric[p.month ?? ''] ?? 0,
+          'getDay': (p) => weekdayShortToNumeric[p.weekday ?? ''] ?? 0,
         }
-        useProxy(gthis.Date.prototype,
-          Object.keys(tasks) as (keyof Date)[],
+
+        useProxy(gthis.Date.prototype, Object.keys(tasks) as (keyof Date)[],
           (key) => {
             const task = tasks[key]
             return task && {
               apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toString>) => {
                 notify('weak.timezone')
-                const result = task(thisArg)
-                return result == null ? target.apply(thisArg, args) : result
+                const parts = getParts(thisArg)
+                if (parts) {
+                  const res = task(parts, thisArg)
+                  if (res != null) return res;
+                }
+                return Reflect.apply(target, thisArg, args)
               }
             }
           })
       }
+
+      /* Date setter */
+      useProxy(gthis.Date.prototype,
+        ['setFullYear', 'setMonth', 'setDate', 'setHours', 'setMinutes', 'setSeconds'],
+        {
+          apply(target: any, thisArg: Date, args: any[]) {
+            notify('weak.timezone');
+
+            // to system
+            const localDate = new _Date(thisArg.getTime() + diffMs);
+            // set
+            target.apply(localDate, args);
+            // to custom
+            const timeMs = localDate.getTime() - diffMs;
+            thisArg.setTime(timeMs);
+
+            return timeMs;
+          }
+        })
 
       /* toLocaleString */
       useProxy(gthis.Date.prototype, [
@@ -644,7 +686,6 @@ export const hookTasks: HookTask[] = [
           return target.apply(thisArg, args);
         }
       })
-
     },
   },
 
