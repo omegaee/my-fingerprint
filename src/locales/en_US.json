@@ -126,7 +126,7 @@
         "- `Chrome 138+` Enable the **Allow running user scripts** option on the extension details page, no Developer Mode required",
         "- `Chrome 120+` Enable Developer Mode",
         "**Edge Enable Conditions**",
-        "- `Chrome 140+` Enable the **Allow user scripts** option on the extension details page, no Developer Mode required",
+        "- `Edge 140+` Enable the **Allow user scripts** option on the extension details page, no Developer Mode required",
         "- `Edge 120+` Enable Developer Mode",
         "**Firefox Enable Conditions**",
         "- `Firefox 136+` Authorization allowed"
