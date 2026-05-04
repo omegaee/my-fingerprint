@@ -39,6 +39,7 @@ function Application() {
       deleteWhitelist: state.deleteWhitelist,
     }
   }))
+  const isShowConfigBadge = !config?.action.fastInject;
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
@@ -111,7 +112,7 @@ function Application() {
         children: <NoticePanel tab={tab} />,
       },
       {
-        label: t('e.config'),
+        label: <Badge dot={isShowConfigBadge}>{t('e.config')}</Badge>,
         children: <FConfig />,
       },
       {

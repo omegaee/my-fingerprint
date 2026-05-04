@@ -13,27 +13,28 @@ const triggerColor: Record<Color, string> = {
 }
 
 export type TipIconProps = {
-  icon?: React.ReactNode
+  isIconOnly?: boolean
   color?: Color
   className?: string
   style?: React.CSSProperties
+  children?: React.ReactNode
 } & PopoverProps
 
-export const TipIcon = ({ icon, color = 'default', className, style, ...props }: TipIconProps) => {
+export const TipIcon = ({ isIconOnly, color = 'default', className, style, children, ...props }: TipIconProps) => {
   return <Popover rootClassName="[&_.ant-popover-inner]:p-2" {...props}>
     <div
       className={cn(
-        'size-[22px] flex justify-center items-center rounded duration-300 text-default-600 hover:text-default-900',
-        // 'bg-[--ant-color-bg-text-hover] hover:bg-[--ant-color-bg-text-active] text-[--ant-color-text-secondary] hover:text-[--ant-color-text]',
+        'flex justify-center items-center rounded duration-300 text-default-600 hover:text-default-900 select-none',
+        isIconOnly && 'size-[22px]',
         triggerColor[color],
         className
       )}
-      style={style}>{icon}</div>
+      style={style}>{children}</div>
   </Popover>
 }
 
 TipIcon.Question = ({ content, ...props }: Omit<TipIconProps, 'icon'>) => {
-  return <TipIcon icon={<QuestionOutlined />} content={content} {...props} />
+  return <TipIcon isIconOnly content={content} {...props} ><QuestionOutlined /></TipIcon>
 }
 
 export default TipIcon

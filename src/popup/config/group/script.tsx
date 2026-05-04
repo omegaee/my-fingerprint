@@ -1,11 +1,11 @@
 import { useStorageStore } from "@/popup/stores/storage"
-import { memo, useEffect, useState } from "react"
+import { memo, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import TipIcon from "@/components/data/tip-icon"
 import { genRandomSeed, hashNumberFromString } from "@/utils/base"
-import { App, Button, Input, Spin, Switch, Tooltip } from "antd"
+import { App, Badge, Button, Input, Spin, Switch, Tooltip } from "antd"
 import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
-import { requestPermission } from "@/utils/browser"
+import { getBrowserInfo, requestPermission } from "@/utils/browser"
 import { ConfigDesc, ConfigItemX, ConfigItemY } from "../item"
 import { sendToBackground } from "@/utils/message"
 import { useShallow } from "zustand/shallow"
@@ -24,6 +24,10 @@ export const ScriptConfigGroup = memo(() => {
     config: s.config,
     version: s.version,
   })))
+
+  const isShowBadge = !config?.action.fastInject;
+
+  const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
 
   useEffect(() => {
     if (!config) return;
@@ -95,14 +99,11 @@ export const ScriptConfigGroup = memo(() => {
     </ConfigItemY>
 
     <ConfigItemX
-      label={t('item.title.inject.mode')}
-      endContent={<TipIcon.Question content={<ConfigDesc tags={nsImportTag} desc={t('item.desc.inject-mode', { joinArrays: '\n\n' })} />} />}
+      label={<Badge dot={isShowBadge}>{t('item.title.fast-inject')}</Badge>}
+      endContent={<TipIcon.Question content={<ConfigDesc tags={nsImportTag} desc={t('item.desc.fast-inject', { joinArrays: '\n\n' })} />} />}
     >
       <Switch
         className="[&_.ant-switch-inner>span]:font-bold"
-        title={t('item.title.inject.mode')}
-        checkedChildren={t('item.title.inject.fast')}
-        unCheckedChildren={t('item.title.inject.compat')}
         value={fastInject}
         onChange={async (v) => {
           await requestPermission('userScripts')

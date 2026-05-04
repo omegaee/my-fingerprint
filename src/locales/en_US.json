@@ -84,11 +84,7 @@
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed",
-      "inject": {
-        "mode": "Inject Mode",
-        "fast": "Fast Mode",
-        "compat": "Compat Mode"
-      }
+      "fast-inject": "Fast Inject Mode"
     },
     "desc": {
       "clientHints": [
@@ -118,13 +114,17 @@
       "e-language": "Language",
       "theme": "Theme",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
-      "inject-mode": [
-        "Enable for faster script injection (requires browser support); disable to use compatibility mode.",
-        "Prerequisites: ",
-        "`chrome 138+` Enable the **Allow script injection** option on the extension details page",
-        "`chrome 120+` Enable Developer Mode",
-        "`edge 120+` Enable Developer Mode",
-        "`firefox 136+` Allow Permission"
+      "fast-inject": [
+        "When enabled, a faster script injection method will be used, requiring browser support; when disabled, compatibility mode is applied.",
+        "---",
+        "**Chrome Enable Conditions**",
+        "- `Chrome 138+` Enable the **Allow running user scripts** option on the extension details page, no Developer Mode required",
+        "- `Chrome 120+` Enable Developer Mode",
+        "**Edge Enable Conditions**",
+        "- `Chrome 140+` Enable the **Allow user scripts** option on the extension details page, no Developer Mode required",
+        "- `Edge 120+` Enable Developer Mode",
+        "**Firefox Enable Conditions**",
+        "- `Firefox 136+` Authorization allowed"
       ]
     },
     "theme": {
@@ -173,7 +173,7 @@
       "import-empty": "Import Config is Empty",
       "subscribe-test": "Subscription Test Failed",
       "subscribe": "Subscription Failed",
-      "ns-fast-inject": "Failed to enable, please check the config documentation"
+      "ns-fast-inject": "Enable failed, please view the \"?\" option description"
     },
     "if": {
       "remove-parent-domain": "Whether to remove its parent domain",

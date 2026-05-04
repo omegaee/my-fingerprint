@@ -1,4 +1,4 @@
-import { Collapse, Typography, type CollapseProps } from "antd"
+import { Badge, Collapse, Typography, type CollapseProps } from "antd"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import WeakFpConfigGroup from "./group/weak"
@@ -6,11 +6,16 @@ import StrongFpConfigGroup from "./group/strong"
 import PrefsConfigGroup from "./group/prefs"
 import ScriptConfigGroup from "./group/script"
 import { usePrefsStore } from "../stores/prefs"
+import { useShallow } from "zustand/shallow"
+import { useStorageStore } from "../stores/storage"
 
 export const FConfig = () => {
   const [t, i18n] = useTranslation()
 
   const prefs = usePrefsStore()
+  const { config } = useStorageStore(useShallow((state) => ({ config: state.config })))
+
+  const isShowScriptBadge = !config?.action.fastInject;
 
   const items = useMemo<CollapseProps['items']>(() => {
     return [
@@ -23,7 +28,9 @@ export const FConfig = () => {
         children: <WeakFpConfigGroup />,
       },
       {
-        label: <Typography.Text className="font-bold">{t('label.config.script')}</Typography.Text>,
+        label: <Badge dot={isShowScriptBadge}>
+          <Typography.Text className="font-bold">{t('label.config.script')}</Typography.Text>
+        </Badge>,
         children: <ScriptConfigGroup />,
       },
       {
