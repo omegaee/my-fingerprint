@@ -5,7 +5,7 @@
  */
 export const debounce = function <T extends (...args: any) => any>(func: T, wait?: number): (...args: Parameters<T>) => void {
   wait = wait || 300;
-  let timeout: NodeJS.Timeout;
+  let timeout: number;
   return function (...args: any[]) {
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
@@ -19,7 +19,7 @@ export const debounce = function <T extends (...args: any) => any>(func: T, wait
  */
 export const debounceByFirstArg = function <T extends (key: any, ...args: any[]) => any>(func: T, wait?: number): (...args: Parameters<T>) => void {
   wait = wait || 300;
-  const timers = new Map<any, NodeJS.Timeout>();
+  const timers = new Map<any, number>();
   return function (key: any, ...args: any[]) {
     if (timers.has(key)) clearTimeout(timers.get(key)!);
     timers.set(key, setTimeout(() => {

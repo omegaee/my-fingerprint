@@ -10,7 +10,7 @@ const sendToBackground: BackgroundMessage.Sender = (message) => {
 
 const debounce = function <T extends (...args: any) => any>(func: T, wait?: number): (...args: Parameters<T>) => void {
   wait = wait || 300;
-  let timeout: NodeJS.Timeout;
+  let timeout: number;
   return function (...args: any[]) {
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
