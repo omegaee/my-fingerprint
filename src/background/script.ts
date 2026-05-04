@@ -1,4 +1,4 @@
-import { getLocalStorage } from "./storage";
+import { getLocalStorage, updateLocalConfig } from "./storage";
 import { coreInject } from "@/core/output";
 
 // // @ts-ignore
@@ -9,24 +9,35 @@ let mScriptCode: string | undefined = undefined
 
 export const hasUserScripts = () => {
   try {
-    return !!chrome.userScripts
+    if (chrome.userScripts) {
+      chrome.userScripts.getScripts();
+      return true;
+    }
+    return false;
   } catch (_) {
     return false
   }
 }
 
 /**
- * 是否使用快速注入模式
+ * 确保 FastInject 配置正确，返回是否启用
  */
-export const isFastInject = (storage: LocalStorage) => {
-  return storage.config.action.fastInject && hasUserScripts();
+export const ensureFastInject = (storage: LocalStorage) => {
+  if (!hasUserScripts()) {
+    if (storage.config.action.fastInject) {
+      // 若配置不同步则更新
+      updateLocalConfig({ action: { fastInject: false } })
+    }
+    return false;
+  }
+  return storage.config.action.fastInject;
 }
 
 /**
  * 注入脚本（兼容模式）
  */
 export const injectScript = async (tabId: number, storage: LocalStorage) => {
-  if (!storage.config.enable || isFastInject(storage)) return;
+  if (!storage.config.enable || ensureFastInject(storage)) return;
   /* 注入脚本 */
   await chrome.scripting.executeScript({
     target: {
@@ -53,7 +64,7 @@ const getRegScriptCode = (storage: LocalStorage) => {
  */
 export const reRegisterScript = async () => {
   const [storage] = await getLocalStorage()
-  if (!isFastInject(storage)) return;
+  if (!ensureFastInject(storage)) return;
 
   if (storage.config.enable) {
     const scripts: chrome.userScripts.RegisteredUserScript[] = [{
