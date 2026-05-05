@@ -124,7 +124,7 @@ function Application() {
         children: <MoreView />,
       }
     ].map((item, index) => ({ ...item, key: String(index) }))
-  }, [i18n.language, tab])
+  }, [i18n.language, tab, isShowConfigBadge])
 
   return (
     <Layout className="overflow-y-auto no-scrollbar p-2 w-80 flex flex-col">

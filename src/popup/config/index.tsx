@@ -42,7 +42,7 @@ export const FConfig = () => {
       key,
       className: 'mb-2 last:mb-0 py-1 !border-0 bg-[--ant-color-bg-container] !rounded-md',
     })) as CollapseProps['items']
-  }, [i18n.language, prefs.theme])
+  }, [i18n.language, prefs.theme, isShowScriptBadge])
 
   return <Collapse
     size='small'
