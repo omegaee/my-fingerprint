@@ -30,7 +30,7 @@ function Application() {
 
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
-  const { config, whitelist, addWhitelist, deleteWhitelist } = useStorageStore(useShallow((state) => {
+  const { config, whitelist, addWhitelist, deleteWhitelist} = useStorageStore(useShallow((state) => {
     state.config ?? state.loadStorage()
     return {
       config: state.config,
@@ -64,6 +64,8 @@ function Application() {
       setWhitelistMode('self')
     } else if (existParentDomain(whitelist, hostname)) {
       setWhitelistMode('sub')
+    } else {
+      setWhitelistMode('none')
     }
   }, [whitelist, hostname])
 
@@ -145,7 +147,7 @@ function Application() {
       <section className="flex items-stretch gap-2">
 
         {/* 白名单开关 */}
-        <section className="grow flex flex-col items-center gap-1">
+        <section className="flex-1 min-w-0 flex flex-col items-center gap-1">
           <Popconfirm
             disabled={whitelistMode !== 'sub'}
             title={t('tip.if.remove-parent-domain')}
@@ -153,27 +155,34 @@ function Application() {
             onConfirm={switchWhitelist}
             okText={t('g.confirm')}
             cancelText={t('g.cancel')}
-            okType='danger' >
-            <Button type={whitelistMode !== 'none' ? 'primary' : 'default'}
+            okType='danger'>
+            <Button 
+              type={whitelistMode !== 'none' ? 'primary' : 'default'}
               danger={!hostname}
-              className="font-mono font-bold"
-              style={{ width: '100%' }}
-              onClick={whitelistMode !== 'sub' ? switchWhitelist : undefined} >
-              {hostname ?? t('tip.label.not-support-whitelist')}
+              className="font-mono font-bold truncate w-full"
+              title={hostname ?? t('tip.label.not-support-whitelist')}
+              onClick={whitelistMode !== 'sub' ? switchWhitelist : undefined}>
+              <span className="truncate block max-w-full">
+                {hostname ?? t('tip.label.not-support-whitelist')}
+              </span>
             </Button>
           </Popconfirm>
           <Typography.Text className="text-[13px]">{whitelistMode !== 'none' ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
         </section>
 
-        {/* 插件开关 */}
-        <section className="flex flex-col items-center gap-1">
-          <Button type={enabled ? 'primary' : 'default'} className="font-bold" onClick={switchEnable}>
-            {enabled ? t('g.enabled') : t('g.disabled')}
+        {/* 插件开关 - 固定宽度 */}
+        <section className="shrink-0 flex flex-col items-center gap-1">
+          <Button 
+            type={enabled ? 'primary' : 'default'} 
+            className="font-bold truncate w-20"
+            title={enabled ? t('g.enabled') : t('g.disabled')}
+            onClick={switchEnable}>
+            <span className="truncate">
+              {enabled ? t('g.enabled') : t('g.disabled')}
+            </span>
           </Button>
-          {/* <Switch value={enabled} onChange={setEnabled} /> */}
           <Typography.Text className="text-[13px]">{enabled ? t('e.enabled') : t('e.disabled')}</Typography.Text>
         </section>
-
       </section>
 
       <Divider style={{ margin: '8px 0 0 0' }} />
