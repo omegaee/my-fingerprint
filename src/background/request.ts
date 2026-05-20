@@ -1,6 +1,7 @@
 import { getBrowser } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
 import { HookType } from '@/types/enum'
+import { existParentDomain } from "@/utils/base"
 import { isDefaultMode } from "@/utils/storage"
 
 type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
@@ -16,6 +17,7 @@ const MEMORY = {
   lang: undefined as Pair<string, readonly RuleHeader[]> | undefined,
   exIds: undefined as Set<number> | undefined,
   whitelistSet: undefined as Set<string> | undefined,
+  blacklistSet: undefined as Set<string> | undefined,
 }
 
 const isHookNetRequest = (storage: LocalStorage) => {
@@ -168,10 +170,16 @@ const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonl
   return res;
 }
 
-const checkWhitelistDiff = ({ whitelist }: LocalStorage, singal: RuleSignal) => {
-  const mem = MEMORY.whitelistSet
-  if (!mem || mem.size !== whitelist.length || whitelist.some((v) => !mem.has(v))) {
+const checkListDiff = ({ whitelist, blacklist }: LocalStorage, singal: RuleSignal) => {
+  const whitelistMem = MEMORY.whitelistSet
+  if (!whitelistMem || whitelistMem.size !== whitelist.length || whitelist.some((v) => !whitelistMem.has(v))) {
     MEMORY.whitelistSet = new Set(whitelist)
+    singal.isUpdate = true
+  }
+
+  const blacklistMem = MEMORY.blacklistSet
+  if (!blacklistMem || blacklistMem.size !== blacklist.length || blacklist.some((v) => !blacklistMem.has(v))) {
+    MEMORY.blacklistSet = new Set(blacklist)
     singal.isUpdate = true
   }
 }
@@ -200,7 +208,7 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
   const uaRules = MEMORY.browser === 'firefox' ? [] : await genUaRules(storage, singal)
   const langRules = genLanguageRules(storage, singal)
   const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
-  checkWhitelistDiff(storage, singal)
+  checkListDiff(storage, singal)
 
   if (singal.isUpdate) {
     const rules = [
@@ -210,12 +218,15 @@ export const reRequestHeader = async (excludeTabIds?: number | number[], passTab
     if (rules.length === 0) {
       return await removeRules()
     }
+
+    const excludedInitiatorDomains = storage.whitelist.filter((domain) => !existParentDomain(storage.blacklist, domain))
+
     return await chrome.declarativeNetRequest.updateSessionRules({
       removeRuleIds: [UA_NET_RULE_ID],
       addRules: [{
         id: UA_NET_RULE_ID,
         condition: {
-          excludedInitiatorDomains: [...storage.whitelist],
+          excludedInitiatorDomains,
           resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
           excludedTabIds: [...exTabIds],
         },

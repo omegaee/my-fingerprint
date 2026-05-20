@@ -22,6 +22,13 @@ declare namespace BackgroundMessage {
     }
     clean?: boolean
   } | {
+    type: 'blacklist.update'
+    data?: {
+      add?: string[]
+      del?: string[]
+    }
+    clean?: boolean
+  } | {
     type: 'version.latest'
     $?: string
   } | {
