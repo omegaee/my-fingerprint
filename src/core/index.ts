@@ -16,8 +16,10 @@ const args = _args;
 
     const hook = (win: Window & typeof globalThis, data: WindowStorage | undefined) => {
       if (!data) return;
-      if (existParentDomain(storage.whitelist, data.host)) return;
-      if (win.location.hostname !== data.host && existParentDomain(storage.whitelist, win.location.hostname)) return;
+      if (!existParentDomain(storage.blacklist, data.host) && existParentDomain(storage.whitelist, data.host)) return;
+      if (win.location.hostname !== data.host
+        && !existParentDomain(storage.blacklist, win.location.hostname)
+        && existParentDomain(storage.whitelist, win.location.hostname)) return;
       try {
         FingerprintContext.hookWindow(win, {
           info: data,

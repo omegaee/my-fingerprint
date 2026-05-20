@@ -7,6 +7,7 @@ type State = {
   storage?: LocalStorage
   config?: LocalStorageConfig  // Proxy
   whitelist?: string[]
+  blacklist?: string[]
   version: number
 }
 
@@ -18,6 +19,9 @@ type Actions = {
   addWhitelist: (list: string | string[]) => void
   deleteWhitelist: (list: string | string[]) => void
   cleanWhitelist: () => void
+  addBlacklist: (list: string | string[]) => void
+  deleteBlacklist: (list: string | string[]) => void
+  cleanBlacklist: () => void
 }
 
 export const useStorageStore = create<State & Actions>(((set, get) => {
@@ -47,6 +51,7 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
       storage,
       config: proxyConfig(storage.config),
       whitelist: storage.whitelist,
+      blacklist: storage.blacklist,
       version: get().version + 1,
     })
   }
@@ -89,6 +94,12 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
       isImported = true
     }
 
+    /* 导入黑名单 */
+    if (ss.blacklist?.length) {
+      addBlacklist(ss.blacklist)
+      isImported = true
+    }
+
     /* 导入为空 */
     if (!isImported) {
       throw 'Content is empty'
@@ -124,6 +135,35 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     })
   }
 
+  const addBlacklist = (list: string | string[]) => {
+    const storage = get().storage
+    if (!storage) return;
+    if (!Array.isArray(list)) list = [list];
+    const blacklist = [...storage.blacklist]
+    const del: string[] = []
+    for (const item of list) {
+      const url = tryUrl('http://' + item)
+      if (!url) continue;
+      for (const domain of selectChildDomains(blacklist, url.hostname)) {
+        const index = blacklist.indexOf(domain)
+        if (index !== -1) {
+          blacklist.splice(index, 1)
+          del.push(domain)
+        }
+      }
+      blacklist.push(url.hostname)
+    }
+    storage.blacklist = blacklist
+    set({ blacklist: storage.blacklist })
+    sendToBackground({
+      type: 'blacklist.update',
+      data: {
+        add: list,
+        del,
+      },
+    })
+  }
+
   const deleteWhitelist = (list: string | string[]) => {
     const storage = get().storage
     if (!storage) return;
@@ -145,6 +185,27 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     })
   }
 
+  const deleteBlacklist = (list: string | string[]) => {
+    const storage = get().storage
+    if (!storage) return;
+    if (!Array.isArray(list)) list = [list];
+    const blacklist = [...storage.blacklist]
+    for (const item of list) {
+      const url = tryUrl('http://' + item)
+      if (!url) continue;
+      const index = blacklist.indexOf(url.hostname)
+      index !== -1 && blacklist.splice(index, 1)
+    }
+    storage.blacklist = blacklist
+    set({ blacklist: storage.blacklist })
+    sendToBackground({
+      type: 'blacklist.update',
+      data: {
+        del: list,
+      },
+    })
+  }
+
   const cleanWhitelist = () => {
     const storage = get().storage
     if (!storage) return;
@@ -156,10 +217,22 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     })
   }
 
+  const cleanBlacklist = () => {
+    const storage = get().storage
+    if (!storage) return;
+    storage.blacklist = []
+    set({ blacklist: storage.blacklist })
+    sendToBackground({
+      type: 'blacklist.update',
+      clean: true,
+    })
+  }
+
   return {
     storage: undefined,
     config: undefined,
     whitelist: undefined,
+    blacklist: undefined,
     version: 0,
 
     syncLoadStorage,
@@ -169,5 +242,8 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     addWhitelist,
     deleteWhitelist,
     cleanWhitelist,
+    addBlacklist,
+    deleteBlacklist,
+    cleanBlacklist,
   }
 }))

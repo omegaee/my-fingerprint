@@ -1,4 +1,4 @@
-import { applySubscribeStorage, cleanLocalWhitelist, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
+import { applySubscribeStorage, cleanLocalBlacklist, cleanLocalWhitelist, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalBlacklist, updateLocalWhitelist } from "./storage";
 import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
@@ -66,6 +66,11 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       if (msg.data) updateLocalWhitelist(msg.data);
       return false;
     }
+    case 'blacklist.update': {
+      if (msg.clean) cleanLocalBlacklist();
+      if (msg.data) updateLocalBlacklist(msg.data);
+      return false;
+    }
     case 'version.latest': {
       getNewVersion().then((version) => {
         sendResponse<'version.latest'>(version)
@@ -97,7 +102,7 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
-    const [storage, { match }] = await getLocalStorage()
+    const [storage, { match }, { match: matchBlacklist }] = await getLocalStorage()
 
     // 兼容模式注入，内部判断是否需要注入
     injectScript(tabId, storage)
@@ -105,7 +110,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     const _url = tab.url ? tryUrl(tab.url) : undefined
     if (!_url?.hostname) return;
 
-    if (match(_url.hostname)) {
+    if (matchBlacklist(_url.hostname)) {
+      reRequestHeader(undefined, tabId)
+    } else if (match(_url.hostname)) {
       reRequestHeader(tabId)
       setBadgeWhitelist(tabId)
     } else {
