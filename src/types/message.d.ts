@@ -8,26 +8,13 @@ declare namespace BackgroundMessage {
   type Event = {
     type: 'config.set'
     config: DeepPartial<LocalStorageConfig>
-    result?: boolean
-    $: LocalStorageConfig
   } | {
     type: 'config.subscribe'
     url?: string
     $?: LocalStorage
   } | {
-    type: 'whitelist.update'
-    data?: {
-      add?: string[]
-      del?: string[]
-    }
-    clean?: boolean
-  } | {
-    type: 'blacklist.update'
-    data?: {
-      add?: string[]
-      del?: string[]
-    }
-    clean?: boolean
+    type: 'policies.set'
+    policies: LocalStoragePolicies
   } | {
     type: 'version.latest'
     $?: string

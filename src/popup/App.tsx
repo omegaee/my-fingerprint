@@ -4,47 +4,33 @@ import { useTranslation } from "react-i18next"
 
 import {
   GithubOutlined,
-  CheckOutlined,
-  CloseOutlined,
 } from '@ant-design/icons';
 
 import FConfig from "./config"
-import WhitelistView from "./whitelist"
-import BlacklistView from "./blacklist"
-
 import { compareVersions, tryUrl, existParentDomain, selectParentDomains } from "@/utils/base"
-import { useStorageStore } from "./stores/storage";
+import { useStorageStore } from "./stores/storage2";
 import MoreView from "./more";
-import { useShallow } from "zustand/shallow";
 import { sendToBackground } from "@/utils/message";
 import { NoticePanel } from "./record";
+import PoliciesView from "./policies";
 
 function Application() {
   const [t, i18n] = useTranslation()
-  const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
   const [hostname, setHostname] = useState<string>()
-  const [whitelistMode, setWhitelistMode] = useState<'none' | 'self' | 'sub'>('none')
-  const [blacklistMode, setBlacklistMode] = useState<'none' | 'self' | 'sub'>('none')
+  const [domainMode, setDomainMode] = useState<'none' | 'self' | 'sub'>('none')
   const [hasNewVersion, setHasNewVersion] = useState(false)
 
   const [messageApi, contextHolder] = message.useMessage();
 
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
-  const { config, whitelist, blacklist, addWhitelist, deleteWhitelist, addBlacklist, deleteBlacklist } = useStorageStore(useShallow((state) => {
-    state.config ?? state.loadStorage()
-    return {
-      config: state.config,
-      whitelist: state.whitelist,
-      blacklist: state.blacklist,
-      addWhitelist: state.addWhitelist,
-      deleteWhitelist: state.deleteWhitelist,
-      addBlacklist: state.addBlacklist,
-      deleteBlacklist: state.deleteBlacklist,
-    }
-  }))
+  const { config, policies, loadStorage, saveConfig, savePolicies } = useStorageStore()
   const isShowConfigBadge = !config?.action.fastInject;
+
+  useEffect(() => {
+    loadStorage();
+  }, [])
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
@@ -64,80 +50,52 @@ function Application() {
   }, [])
 
   useEffect(() => {
-    if (!whitelist || !hostname) return;
-    if (whitelist.includes(hostname)) {
-      setWhitelistMode('self')
-    } else if (existParentDomain(whitelist, hostname)) {
-      setWhitelistMode('sub')
-    } else {
-      setWhitelistMode('none')
-    }
-  }, [whitelist, hostname])
+    if (!policies || !hostname) return;
 
-  useEffect(() => {
-    if (!blacklist || !hostname) return;
-    if (blacklist.includes(hostname)) {
-      setBlacklistMode('self')
-    } else if (existParentDomain(blacklist, hostname)) {
-      setBlacklistMode('sub')
+    const list = policies.isBlacklistMode ? policies.blacklist : policies.whitelist;
+    if (list.includes(hostname)) {
+      setDomainMode('self')
+    } else if (existParentDomain(list, hostname)) {
+      setDomainMode('sub')
     } else {
-      setBlacklistMode('none')
+      setDomainMode('none')
     }
-  }, [blacklist, hostname])
-
-  useEffect(() => {
-    if (!config) return
-    setEnabled(config.enable)
-  }, [config])
+  }, [policies, hostname])
 
   const switchEnable = () => {
-    if (enabled) {
-      sendToBackground({
-        type: 'config.set',
-        config: { enable: false },
-      })
-      setEnabled(false)
-    } else {
-      sendToBackground({
-        type: 'config.set',
-        config: { enable: true },
-      })
-      setEnabled(true)
-    }
+    if (!config) return;
+    config.enable = !config.enable
+    saveConfig()
   }
 
-  const switchWhitelist = () => {
-    if (!hostname || !whitelist) return;
-    if (whitelistMode === 'none') {
+  const switchSiteList = () => {
+    if (!policies || !hostname) return;
+
+    const list = policies.isBlacklistMode ? policies.blacklist : policies.whitelist;
+    if (domainMode === 'none') {
       /* 添加白名单 */
-      addWhitelist(hostname)
-      setWhitelistMode('self')
-    } else if (whitelistMode === 'self') {
+      list.push(hostname)
+      setDomainMode('self')
+    } else if (domainMode === 'self') {
       /* 移除自身 */
-      deleteWhitelist(hostname)
-      setWhitelistMode('none')
-    } else if (whitelistMode === 'sub') {
+      const idx = list.indexOf(hostname);
+      if (idx !== -1) {
+        list.splice(idx, 1);
+      }
+      setDomainMode('none')
+    } else if (domainMode === 'sub') {
       /* 移除父域名 */
-      deleteWhitelist(selectParentDomains(whitelist, hostname))
-      setWhitelistMode('none')
+      const domains = selectParentDomains(list, hostname)
+      for (const domain of domains) {
+        const idx = list.indexOf(domain);
+        if (idx !== -1) {
+          list.splice(idx, 1);
+        }
+      }
+      setDomainMode('none')
     }
-  }
 
-  const switchBlacklist = () => {
-    if (!hostname || !blacklist) return;
-    if (blacklistMode === 'none') {
-      /* 添加黑名单 */
-      addBlacklist(hostname)
-      setBlacklistMode('self')
-    } else if (blacklistMode === 'self') {
-      /* 移除自身 */
-      deleteBlacklist(hostname)
-      setBlacklistMode('none')
-    } else if (blacklistMode === 'sub') {
-      /* 移除父域名 */
-      deleteBlacklist(selectParentDomains(blacklist, hostname))
-      setBlacklistMode('none')
-    }
+    savePolicies()
   }
 
   const tabItems = useMemo<TabsProps['items']>(() => {
@@ -152,11 +110,7 @@ function Application() {
       },
       {
         label: t('e.whitelist'),
-        children: <WhitelistView msgApi={messageApi} />,
-      },
-      {
-        label: t('e.blacklist'),
-        children: <BlacklistView msgApi={messageApi} />,
+        children: <PoliciesView msgApi={messageApi} />,
       },
       {
         label: t('e.more'),
@@ -185,63 +139,39 @@ function Application() {
         {/* 白名单开关 */}
         <section className="flex-1 min-w-0 flex flex-col items-center gap-1">
           <Popconfirm
-            disabled={whitelistMode !== 'sub'}
+            disabled={domainMode !== 'sub'}
             title={t('tip.if.remove-parent-domain')}
             placement='bottom'
-            onConfirm={switchWhitelist}
+            onConfirm={switchSiteList}
             okText={t('g.confirm')}
             cancelText={t('g.cancel')}
             okType='danger'>
-            <Button 
-              type={whitelistMode !== 'none' ? 'primary' : 'default'}
+            <Button
+              type={domainMode !== 'none' ? 'primary' : 'default'}
               danger={!hostname}
               className="font-mono font-bold truncate w-full"
               title={hostname ?? t('tip.label.not-support-whitelist')}
-              onClick={whitelistMode !== 'sub' ? switchWhitelist : undefined}>
+              onClick={domainMode !== 'sub' ? switchSiteList : undefined}>
               <span className="truncate block max-w-full">
                 {hostname ?? t('tip.label.not-support-whitelist')}
               </span>
             </Button>
           </Popconfirm>
-          <Typography.Text className="text-[13px]">{whitelistMode !== 'none' ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
-        </section>
-
-        {/* 黑名单开关 */}
-        <section className="flex-1 min-w-0 flex flex-col items-center gap-1">
-          <Popconfirm
-            disabled={blacklistMode !== 'sub'}
-            title={t('tip.if.remove-parent-domain')}
-            placement='bottom'
-            onConfirm={switchBlacklist}
-            okText={t('g.confirm')}
-            cancelText={t('g.cancel')}
-            okType='danger'>
-            <Button 
-              type={blacklistMode !== 'none' ? 'primary' : 'default'}
-              danger={!hostname}
-              className="font-mono font-bold truncate w-full"
-              title={hostname ?? t('tip.label.not-support-whitelist')}
-              onClick={blacklistMode !== 'sub' ? switchBlacklist : undefined}>
-              <span className="truncate block max-w-full">
-                {hostname ?? t('tip.label.not-support-whitelist')}
-              </span>
-            </Button>
-          </Popconfirm>
-          <Typography.Text className="text-[13px]">{blacklistMode !== 'none' ? t('e.blacklist-in') : t('e.blacklist-click-in')}</Typography.Text>
+          <Typography.Text className="text-[13px]">{domainMode !== 'none' ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
         </section>
 
         {/* 插件开关 - 固定宽度 */}
         <section className="shrink-0 flex flex-col items-center gap-1">
-          <Button 
-            type={enabled ? 'primary' : 'default'} 
+          <Button
+            type={config?.enable ? 'primary' : 'default'}
             className="font-bold truncate w-20"
-            title={enabled ? t('g.enabled') : t('g.disabled')}
+            title={config?.enable ? t('g.enabled') : t('g.disabled')}
             onClick={switchEnable}>
             <span className="truncate">
-              {enabled ? t('g.enabled') : t('g.disabled')}
+              {config?.enable ? t('g.enabled') : t('g.disabled')}
             </span>
           </Button>
-          <Typography.Text className="text-[13px]">{enabled ? t('e.enabled') : t('e.disabled')}</Typography.Text>
+          <Typography.Text className="text-[13px]">{config?.enable ? t('e.enabled') : t('e.disabled')}</Typography.Text>
         </section>
       </section>
 

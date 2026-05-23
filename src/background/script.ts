@@ -1,4 +1,4 @@
-import { getLocalStorage, updateLocalConfig } from "./storage";
+import { getLocalStorage, updateContext } from "./storage";
 import { coreInject } from "@/core/output";
 
 // // @ts-ignore
@@ -26,7 +26,7 @@ export const ensureFastInject = (storage: LocalStorage) => {
   if (!hasUserScripts()) {
     if (storage.config.action.fastInject) {
       // 若配置不同步则更新
-      updateLocalConfig({ action: { fastInject: false } })
+      updateContext({ config: { action: { fastInject: false } } })
     }
     return false;
   }
@@ -63,7 +63,7 @@ const getRegScriptCode = (storage: LocalStorage) => {
  * 注册脚本（快速注入模式）
  */
 export const reRegisterScript = async () => {
-  const [storage] = await getLocalStorage()
+  const { storage } = await getLocalStorage()
   if (!ensureFastInject(storage)) return;
 
   if (storage.config.enable) {

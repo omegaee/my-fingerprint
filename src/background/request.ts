@@ -1,23 +1,17 @@
 import { getBrowser } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
 import { HookType } from '@/types/enum'
-import { existParentDomain } from "@/utils/base"
 import { isDefaultMode } from "@/utils/storage"
 
 type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
-type RuleSignal = {
-  isUpdate: boolean
-}
 
 const UA_NET_RULE_ID = 1
 
 const MEMORY = {
   browser: getBrowser(navigator.userAgent),
-  ua: undefined as Pair<string, readonly RuleHeader[]> | undefined,
-  lang: undefined as Pair<string, readonly RuleHeader[]> | undefined,
-  exIds: undefined as Set<number> | undefined,
-  whitelistSet: undefined as Set<string> | undefined,
-  blacklistSet: undefined as Set<string> | undefined,
+  configNonce: 0,
+  includeTabIds: undefined as number[] | undefined,
+  excludeTabIds: undefined as number[] | undefined,
 }
 
 const isHookNetRequest = (storage: LocalStorage) => {
@@ -28,75 +22,8 @@ const isHookNetRequest = (storage: LocalStorage) => {
   ])
 }
 
-/**
- * 获取已排除的tabID
- */
-const getExcludeTabIds = async (singal: RuleSignal, excludeIds?: number | number[], passIds?: number | number[]) => {
-  if (!MEMORY.exIds) {
-    const rules = await chrome.declarativeNetRequest.getSessionRules()
-    MEMORY.exIds = new Set(rules[0]?.condition?.excludedTabIds)
-  }
-
-  if (excludeIds !== undefined) {
-    if (Array.isArray(excludeIds)) {
-      for (const excludeTabId of excludeIds) {
-        if (!MEMORY.exIds.has(excludeTabId)) {
-          MEMORY.exIds.add(excludeTabId)
-          singal.isUpdate = true
-        }
-      }
-    } else {
-      if (!MEMORY.exIds.has(excludeIds)) {
-        MEMORY.exIds.add(excludeIds)
-        singal.isUpdate = true
-      }
-    }
-  }
-
-  if (passIds !== undefined) {
-    if (Array.isArray(passIds)) {
-      for (const passTabId of passIds) {
-        if (MEMORY.exIds.has(passTabId)) {
-          MEMORY.exIds.delete(passTabId)
-          singal.isUpdate = true
-        }
-      }
-    } else {
-      if (MEMORY.exIds.has(passIds)) {
-        MEMORY.exIds.delete(passIds)
-        singal.isUpdate = true
-      }
-    }
-  }
-
-  return MEMORY.exIds
-}
-
-/**
- * 获取seed
- */
-const getSeedByMode = (config: LocalStorageConfig, mode: HookMode) => {
-  switch (mode?.type) {
-    case HookType.browser:
-      return config.seed.browser
-    case HookType.global:
-      return config.seed.global
-    default:
-      return undefined
-  }
-}
-
-const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise<readonly RuleHeader[]> => {
+const genUaRules = async ({ config }: LocalStorage): Promise<readonly RuleHeader[]> => {
   const uaMode = config.fp.navigator.clientHints
-
-  const modeValue = (uaMode as any).value;
-  const modeValueStr = typeof modeValue === 'object' ? JSON.stringify(modeValue) : modeValue;
-
-  const key = `${uaMode.type}:${modeValueStr}`
-  const mem = MEMORY.lang
-  if (mem && mem[0] === key) return mem[1];
-
-  singal.isUpdate = true;
 
   if (uaMode.type !== HookType.value) return [];
 
@@ -131,21 +58,11 @@ const genUaRules = async ({ config }: LocalStorage, singal: RuleSignal): Promise
     makeRule("Sec-Ch-Ua-Full-Version-List", fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
   ].filter(Boolean) as RuleHeader[]
 
-  MEMORY.ua = [key, res]
   return res;
 }
 
-const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonly RuleHeader[] => {
+const genLanguageRules = ({ config }: LocalStorage): readonly RuleHeader[] => {
   const langsMode = config.fp.navigator.languages
-
-  const modeValue = (langsMode as any).value;
-  const modeValueStr = typeof modeValue === 'object' ? JSON.stringify(modeValue) : modeValue;
-
-  const key = `${langsMode.type}:${modeValueStr}`
-  const mem = MEMORY.lang
-  if (mem && mem[0] === key) return mem[1];
-
-  singal.isUpdate = true;
 
   if (langsMode.type !== HookType.value) return [];
 
@@ -166,22 +83,7 @@ const genLanguageRules = ({ config }: LocalStorage, singal: RuleSignal): readonl
     })
   }
 
-  MEMORY.lang = [key, res]
   return res;
-}
-
-const checkListDiff = ({ whitelist, blacklist }: LocalStorage, singal: RuleSignal) => {
-  const whitelistMem = MEMORY.whitelistSet
-  if (!whitelistMem || whitelistMem.size !== whitelist.length || whitelist.some((v) => !whitelistMem.has(v))) {
-    MEMORY.whitelistSet = new Set(whitelist)
-    singal.isUpdate = true
-  }
-
-  const blacklistMem = MEMORY.blacklistSet
-  if (!blacklistMem || blacklistMem.size !== blacklist.length || blacklist.some((v) => !blacklistMem.has(v))) {
-    MEMORY.blacklistSet = new Set(blacklist)
-    singal.isUpdate = true
-  }
 }
 
 /**
@@ -196,45 +98,77 @@ const removeRules = async () => {
 /**
  * 刷新请求头
  */
-export const reRequestHeader = async (excludeTabIds?: number | number[], passTabIds?: number | number[]) => {
-  const [storage] = await getLocalStorage()
+export const reRequestHeader = async (excludeTabId?: number, includeTabId?: number) => {
+  const { storage, configNonce } = await getLocalStorage()
 
   if (!storage.config.enable || !isHookNetRequest(storage)) {
     return await removeRules()
   }
 
-  const singal: RuleSignal = { isUpdate: false }
+  const srs = await chrome.declarativeNetRequest.getSessionRules()
 
-  const uaRules = MEMORY.browser === 'firefox' ? [] : await genUaRules(storage, singal)
-  const langRules = genLanguageRules(storage, singal)
-  const exTabIds = await getExcludeTabIds(singal, excludeTabIds, passTabIds)
-  checkListDiff(storage, singal)
-
-  if (singal.isUpdate) {
-    const rules = [
+  /* 构建 Rules */
+  let rules: RuleHeader[] | undefined;
+  if (MEMORY.configNonce === configNonce) {
+    rules = srs[0]?.action?.requestHeaders
+  } else {
+    MEMORY.configNonce = configNonce
+    const uaRules = MEMORY.browser === 'firefox' ? [] : await genUaRules(storage)
+    const langRules = genLanguageRules(storage)
+    rules = [
       ...uaRules,
       ...langRules,
     ]
-    if (rules.length === 0) {
-      return await removeRules()
+  }
+
+  if (!rules || rules.length === 0) {
+    return await removeRules()
+  }
+
+  /* 构建 Condition */
+  let condition: chrome.declarativeNetRequest.RuleCondition;
+  if (storage.policies.isBlacklistMode) {
+    /* 黑名单模式 */
+    if (!MEMORY.includeTabIds) {
+      MEMORY.includeTabIds = srs[0]?.condition?.tabIds ?? []
+    }
+    if (includeTabId != null) {
+      MEMORY.includeTabIds.push(includeTabId)
+      MEMORY.includeTabIds = [...new Set(MEMORY.includeTabIds)]
     }
 
-    const excludedInitiatorDomains = storage.whitelist.filter((domain) => !existParentDomain(storage.blacklist, domain))
+    condition = {
+      resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+      initiatorDomains: [...storage.policies.blacklist],
+      tabIds: [...MEMORY.includeTabIds],
+    }
+  } else {
+    /* 白名单模式 */
+    if (!MEMORY.excludeTabIds) {
+      MEMORY.excludeTabIds = srs[0]?.condition?.tabIds ?? []
+    }
+    if (excludeTabId != null) {
+      MEMORY.excludeTabIds.push(excludeTabId)
+      MEMORY.excludeTabIds = [...new Set(MEMORY.excludeTabIds)]
+    }
 
-    return await chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: [UA_NET_RULE_ID],
-      addRules: [{
-        id: UA_NET_RULE_ID,
-        condition: {
-          excludedInitiatorDomains,
-          resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-          excludedTabIds: [...exTabIds],
-        },
-        action: {
-          type: "modifyHeaders" as any,
-          requestHeaders: rules,
-        },
-      }]
-    }).catch(() => { })
+    condition = {
+      resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
+      excludedInitiatorDomains: [...storage.policies.whitelist],
+      excludedTabIds: [...MEMORY.excludeTabIds],
+    }
   }
+
+  /* 更新 SessionRules */
+  await chrome.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: [UA_NET_RULE_ID],
+    addRules: [{
+      id: UA_NET_RULE_ID,
+      condition,
+      action: {
+        type: "modifyHeaders" as any,
+        requestHeaders: rules,
+      },
+    }]
+  }).catch(() => { })
 }

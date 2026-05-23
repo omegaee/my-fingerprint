@@ -1,8 +1,7 @@
 type LocalStorage = {
   version: string
   config: LocalStorageConfig  // 配置
-  whitelist: string[]  // 白名单
-  blacklist: string[]  // 强制启用域名（黑名单）
+  policies: LocalStoragePolicies  // 策略
 }
 
 type LocalStorageConfig = {
@@ -31,6 +30,12 @@ type LocalStorageConfig = {
     language: string
     theme: 'system' | 'light' | 'dark'
   }
+}
+
+type LocalStoragePolicies = {
+  whitelist: string[]
+  blacklist: string[]
+  isBlacklistMode: boolean  // 是否使用黑名单模式
 }
 
 type HookFingerprint = {
