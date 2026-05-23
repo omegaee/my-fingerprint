@@ -64,7 +64,7 @@ type HookFingerprint = {
   }
 }
 
-type HookFingerprintKey = keyof HookFingerprint['navigator'] | keyof HookFingerprint['screen'] | keyof HookFingerprint['other']
+type HookFingerprintKey = keyof HookFingerprint['navigator'] | keyof HookFingerprint['screen'] | keyof HookFingerprint['other'] | keyof HookFingerprint['normal']
 
 type WindowStorage = {
   url: string

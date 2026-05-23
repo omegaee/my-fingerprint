@@ -1,17 +1,13 @@
-import { useStorageStore } from "@/popup/stores/storage"
-import TipIcon from "@/components/data/tip-icon"
-import Markdown from "react-markdown"
 import { useEffect, useMemo, useState } from "react"
 import { HookType } from '@/types/enum'
-import { LoadingOutlined } from '@ant-design/icons'
-import { Form, Input, InputNumber, Select, Spin } from "antd"
-import { ConfigItemY, HookModeContent } from "../item"
+import { Form, Input, InputNumber, Select } from "antd"
 import { selectStatusDotStyles as dotStyles } from "../styles"
 import { sharedAsync } from "@/utils/timer"
 import { LocalApi, type TimeZoneOption } from "@/api/local"
-import { HookModeHandler, useI18n } from "@/utils/hooks"
+import { useI18n } from "@/utils/hooks"
+import { useHookMode } from "../context"
+import { HookModeCustom } from "../ui"
 
-type ModeHandler = HookModeHandler<TimeZoneInfo, TimeZoneInfo>
 type OptionType = (string & {}) | HookType
 
 const getCurrentTimeZoneInfo = (): TimeZoneInfo => {
@@ -25,40 +21,17 @@ const getCurrentTimeZoneInfo = (): TimeZoneInfo => {
 
 const fetchTimezones = sharedAsync(LocalApi.timezone)
 
-export const TimeZoneConfigItem = () => {
-  const config = useStorageStore((state) => state.config)
-  const fp = config?.fp
-
-  const currentTz = useMemo(() => getCurrentTimeZoneInfo(), [])
-
-  return !fp ? <Spin indicator={<LoadingOutlined spin />} /> : <>
-    <HookModeContent<TimeZoneInfo, TimeZoneInfo>
-      isMakeSelect={false}
-      mode={fp.other.timezone}
-      parser={{
-        toInput: value => value ?? { ...currentTz },
-        toValue: (input) => input,
-      }}
-    >{(mode) => <ModeView mode={mode} defaultValues={currentTz} />}
-    </HookModeContent>
-  </>
-}
-
-const ModeView = ({ mode, defaultValues }: {
-  mode: ModeHandler
-  defaultValues: TimeZoneInfo
-}) => {
+const TimeZoneConfigItem = ({ }: {}) => {
   const { t, i18n, asLang } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
   const [localPreset, setLocalPreset] = useState<TimeZoneOption[]>([])
 
-  const presetKey = (mode.value as any)?.key;
-  const input = mode.input;
+  const { mode, value: modeValue = {}, setType, setValue } = useHookMode()
+
+  const currentTz = useMemo(() => getCurrentTimeZoneInfo(), [])
 
   useEffect(() => {
     if (!isOpen || localPreset.length != 0) return;
-    console.log(111);
-    
     fetchTimezones()
       .then(setLocalPreset)
       .catch((e) => {
@@ -94,66 +67,62 @@ const ModeView = ({ mode, defaultValues }: {
   }, [i18n.language, localPreset])
 
   const onChange = (v: OptionType) => {
-    if (v === HookType.default || v === HookType.value) {
-      mode.setValue({ ...defaultValues })
-      mode.setType(v);
+    if (v === HookType.default) {
+      setType(HookType.default)
+    } else if (v === HookType.value) {
+      setValue({ ...currentTz })
     } else {
       const preset = localPreset?.find(item => item.key === v);
       if (preset) {
         const { title, ...rest } = preset;
-        mode.setValue(rest)
+        setValue(rest)
       }
-      mode.setType(HookType.value);
     }
   }
 
-  return <ConfigItemY
-    label={t('item.title.timezone')}
-    className={mode.isDefault ? '' : dotStyles.success}
-    endContent={<TipIcon.Question content={<Markdown>{t('item.desc.timezone')}</Markdown>} />}
-  >
+  return <>
     <Select<OptionType>
       open={isOpen}
       onOpenChange={setIsOpen}
       className={dotStyles.base}
       options={options}
-      value={presetKey || mode.type}
+      value={modeValue.key || mode.type}
       onChange={onChange}
     />
-    {(mode.isValue && !presetKey) && <>
+    <HookModeCustom>
       <Form.Item label={t('item.sub.tz.offset')}>
         <InputNumber
           min={-12} max={12}
-          placeholder={`${defaultValues.offset}`}
-          value={mode.input.offset}
-          onChange={(offset) => {
-            input.offset = offset ?? defaultValues.offset
-            mode.updateValue()
-          }}
+          placeholder={`${currentTz.offset}`}
+          defaultValue={modeValue.offset ?? currentTz.offset}
+          onChange={(offset) => setValue({
+            ...modeValue,
+            offset: offset ?? currentTz.offset
+          })}
         />
       </Form.Item>
       <Form.Item label={t('item.sub.tz.locale')}>
         <Input
-          placeholder={defaultValues.locale}
-          value={mode.input.locale}
-          onChange={({ target }) => {
-            input.locale = target.value || defaultValues.locale;
-            mode.updateValue()
-          }}
+          placeholder={currentTz.locale}
+          defaultValue={modeValue.locale ?? currentTz.locale}
+          onChange={({ target }) => setValue({
+            ...modeValue,
+            locale: target.value || currentTz.locale
+          })}
         />
       </Form.Item>
       <Form.Item label={t('item.sub.tz.zone')}>
         <Input
-          placeholder={defaultValues.zone}
-          value={mode.input.zone}
-          onChange={({ target }) => {
-            input.zone = target.value || defaultValues.zone;
-            mode.updateValue()
-          }}
+          placeholder={currentTz.zone}
+          defaultValue={modeValue.zone ?? currentTz.zone}
+          onChange={({ target }) => setValue({
+            ...modeValue,
+            zone: target.value || currentTz.zone
+          })}
         />
       </Form.Item>
-    </>}
-  </ConfigItemY>
+    </HookModeCustom>
+  </>
 }
 
 export default TimeZoneConfigItem

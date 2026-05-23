@@ -1,23 +1,18 @@
-import { useStorageStore } from "@/popup/stores/storage"
-import { ConfigDesc, ConfigItemY, HookModeContent } from "../item"
 import { selectStatusDotStyles as dotStyles } from "../styles"
-import TipIcon from "@/components/data/tip-icon"
 import { useTranslation } from "react-i18next"
 import { Button, Checkbox, Collapse, CollapseProps, Input, Select, Spin, Tooltip } from "antd"
 import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
-import { HookModeHandler, useI18n } from "@/utils/hooks"
-import { cn } from "@/utils/style"
+import { useI18n } from "@/utils/hooks"
 import { useEffect, useMemo, useState } from "react"
 import { HookType } from '@/types/enum'
 import { sharedAsync } from "@/utils/timer"
 import { ClientHintsOption, LocalApi } from "@/api/local"
-
-const unstableTag = ['unstable']
+import { HookModeCustom } from "../ui"
+import { useHookMode } from "../context"
 
 const userAgentData: any = (navigator as any).userAgentData;
 
 type OptionType = (string & {}) | HookType
-type ModeHandler = HookModeHandler<ClientHintsInfo, UserAgentInput>
 
 type UserAgentInput = {
   ua: ClientHintsInfo['ua']
@@ -69,11 +64,16 @@ const getUaData = async () => {
 
 const fetchClientHints = sharedAsync(LocalApi.clientHints)
 
+/**
+ * 配置模块
+ */
 const ClientHintsConfigItem = ({ }: {}) => {
+  const { t, i18n, asLang } = useI18n()
+  const [isOpen, setIsOpen] = useState(false)
+  const [localPreset, setLocalPreset] = useState<ClientHintsOption[]>([])
   const [uaInfo, setUaInfo] = useState<ClientHintsInfo>()
 
-  const config = useStorageStore((state) => state.config)
-  const fp = config?.fp
+  const { mode, value: modeValue = {}, setType, setValue } = useHookMode()
 
   useEffect(() => {
     getUaData().then(data => {
@@ -98,56 +98,6 @@ const ClientHintsConfigItem = ({ }: {}) => {
       })
     });
   }, [])
-
-  if (!userAgentData) {
-    return <></>
-  }
-
-  return (fp && uaInfo) ? <>
-    <HookModeContent<ClientHintsInfo, UserAgentInput>
-      isMakeSelect={false}
-      mode={fp.navigator.clientHints}
-      parser={{
-        toInput: (value) => {
-          const input = value ?? { ...uaInfo }
-          return {
-            ua: input.ua,
-            uaData: {
-              ...input.uaData,
-              formFactors: input.uaData.formFactors.join(', '),
-              versions: versionsToStr(input.uaData.versions),
-            }
-          }
-        },
-        toValue: (input) => {
-          const formFactors = formFactorsToArr(input.uaData.formFactors);
-          const versions = versionsToArr(input.uaData.versions);
-          return {
-            ua: input.ua,
-            uaData: {
-              ...input.uaData,
-              formFactors: formFactors.length ? formFactors : [...uaInfo.uaData.formFactors],
-              versions: versions.length ? versions : [...uaInfo.uaData.versions],
-            }
-          }
-        },
-      }}
-    >{(mode) => <ModeView mode={mode} defaultValues={uaInfo} />}</HookModeContent>
-  </> : <Spin indicator={<LoadingOutlined spin />} />
-}
-
-/**
- * 配置模块
- */
-const ModeView = ({ mode, defaultValues }: {
-  mode: ModeHandler
-  defaultValues: ClientHintsInfo
-}) => {
-  const { t, i18n, asLang } = useI18n()
-  const [isOpen, setIsOpen] = useState(false)
-  const [localPreset, setLocalPreset] = useState<ClientHintsOption[]>([])
-
-  const presetKey = (mode.value as any)?.key;
 
   useEffect(() => {
     if (!isOpen || localPreset.length != 0) return;
@@ -187,53 +137,56 @@ const ModeView = ({ mode, defaultValues }: {
   }, [i18n.language, localPreset])
 
   const onChange = (v: OptionType) => {
-    if (v === HookType.default || v === HookType.value) {
-      mode.setValue({ ...defaultValues })
-      mode.setType(v);
+    if (v === HookType.default) {
+      setType(HookType.default)
+    } else if (v === HookType.value) {
+      setValue({ ...uaInfo })
     } else {
       const preset = localPreset?.find(item => item.key === v);
       if (preset) {
         const { title, ...rest } = preset;
-        mode.setValue(rest)
+        setValue(rest)
       }
-      mode.setType(HookType.value);
     }
   }
 
-  return <ConfigItemY
-    label={t('item.title.clientHints')}
-    className={cn(!mode.isDefault && dotStyles.warning)}
-    endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.clientHints', { joinArrays: '\n\n' })} />} />}
-  >
+  if (!userAgentData) {
+    return <></>
+  }
+
+  return <>
     <Select<OptionType>
       open={isOpen}
       onOpenChange={setIsOpen}
       className={dotStyles.base}
       options={options}
-      value={presetKey || mode.type}
+      value={modeValue.key || mode.type}
       onChange={onChange}
     />
-    {(mode.isValue && !presetKey) && <ConfigContentView mode={mode} defaultValues={defaultValues} />}
-  </ConfigItemY>
+    <HookModeCustom>
+      {uaInfo ? <ConfigContentView defaultValues={uaInfo} /> : <Spin indicator={<LoadingOutlined spin />} />}
+    </HookModeCustom>
+  </>
 }
 
 /**
  * 配置组
  */
-const ConfigContentView = ({ mode, defaultValues }: {
-  mode: HookModeHandler<ClientHintsInfo, UserAgentInput>
+const ConfigContentView = ({ defaultValues }: {
   defaultValues: ClientHintsInfo
 }) => {
+  const { value: modeValue = {}, setValue, version } = useHookMode()
+
   const resetUserAgent = () => {
-    mode.setValue({
+    setValue({
       ua: { ...defaultValues.ua },
-      uaData: mode.value.uaData,
+      uaData: modeValue.uaData,
     })
   }
 
   const resetUserAgentData = () => {
-    mode.setValue({
-      ua: mode.value.ua,
+    setValue({
+      ua: modeValue.ua,
       uaData: { ...defaultValues.uaData },
     })
   }
@@ -242,19 +195,19 @@ const ConfigContentView = ({ mode, defaultValues }: {
     {
       key: '1',
       label: 'UserAgent',
-      children: <UserAgentView mode={mode} defaultValues={defaultValues} />,
+      children: <UserAgentView defaultValues={defaultValues} />,
       extra: <ResetButton onPress={resetUserAgent} />,
     },
     {
       key: '2',
       label: 'UserAgentData',
-      children: <UserAgentDataView mode={mode} defaultValues={defaultValues} />,
+      children: <UserAgentDataView defaultValues={defaultValues} />,
       extra: <ResetButton onPress={resetUserAgentData} />,
     },
   ].map((v) => ({
     ...v,
     className: 'mb-2 last:mb-0 bg-default-100 !border-none !rounded [&_.ant-collapse-content]:bg-default-100',
-  })), [mode]);
+  })), [version]);
 
   return <div>
     <Collapse
@@ -284,134 +237,169 @@ const ResetButton = ({ onPress }: {
   </Tooltip>
 }
 
-const UserAgentView = ({ mode, defaultValues }: {
-  mode: HookModeHandler<ClientHintsInfo, UserAgentInput>
+const UserAgentView = ({ defaultValues }: {
   defaultValues: ClientHintsInfo
 }) => {
+  const { value, setValue } = useHookMode()
+
   const raw = defaultValues.ua;
-  const data = mode.input.ua;
+  const data = value?.ua ?? {};
 
   return <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2 items-center [&>label]:text-right">
     <label>userAgent</label>
     <Input
       placeholder={raw.userAgent}
-      value={data.userAgent}
-      onInput={({ target }: any) => {
-        data.userAgent = target.value || raw.userAgent;
-        mode.updateValue()
-      }}
+      defaultValue={data.userAgent ?? raw.userAgent}
+      onInput={({ target }: any) => setValue({
+        ...value,
+        ua: {
+          ...data,
+          userAgent: target.value || raw.userAgent,
+        }
+      })}
     />
 
     <label>appVersion</label>
     <Input
       placeholder={raw.appVersion}
-      value={data.appVersion}
-      onInput={({ target }: any) => {
-        data.appVersion = target.value || raw.appVersion;
-        mode.updateValue()
-      }}
+      defaultValue={data.appVersion ?? raw.appVersion}
+      onInput={({ target }: any) => setValue({
+        ...value,
+        ua: {
+          ...data,
+          appVersion: target.value || raw.appVersion,
+        }
+      })}
     />
 
     <label>platform</label>
     <Input
       placeholder={raw.platform}
-      value={data.platform}
-      onInput={({ target }: any) => {
-        data.platform = target.value || raw.platform;
-        mode.updateValue()
-      }}
+      defaultValue={data.platform ?? raw.platform}
+      onInput={({ target }: any) => setValue({
+        ...value,
+        ua: {
+          ...data,
+          platform: target.value || raw.platform,
+        }
+      })}
     />
   </div>
 }
 
-const UserAgentDataView = ({ mode, defaultValues }: {
-  mode: HookModeHandler<ClientHintsInfo, UserAgentInput>
+const UserAgentDataView = ({ defaultValues }: {
   defaultValues: ClientHintsInfo
 }) => {
+  const { value, setValue } = useHookMode()
+
   const raw = defaultValues.uaData;
-  const data = mode.input.uaData;
+  const data = value?.uaData ?? {};
 
   return <div className="flex flex-col gap-1">
     <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2 items-center [&>label]:text-right">
       <label>mobile</label>
       <div>
         <Checkbox
-          checked={data.mobile}
-          onChange={({ target }: any) => {
-            data.mobile = target.checked
-            mode.updateValue()
-          }}
+          defaultChecked={data.mobile ?? raw.mobile}
+          onChange={({ target }: any) => setValue({
+            ...value,
+            uaData: {
+              ...data,
+              mobile: target.checked,
+            }
+          })}
         />
       </div>
 
       <label>arch</label>
       <Input
         placeholder={raw.arch}
-        value={data.arch}
-        onInput={({ target }: any) => {
-          data.arch = target.value || raw.arch;
-          mode.updateValue()
-        }}
+        defaultValue={data.arch ?? raw.arch}
+        onInput={({ target }: any) => setValue({
+          ...value,
+          uaData: {
+            ...data,
+            arch: target.value || raw.arch,
+          }
+        })}
       />
 
       <label>bitness</label>
       <Input
         placeholder={raw.bitness}
-        value={data.bitness}
-        onInput={({ target }: any) => {
-          data.bitness = target.value || raw.bitness;
-          mode.updateValue()
-        }}
+        defaultValue={data.bitness ?? raw.bitness}
+        onInput={({ target }: any) => setValue({
+          ...value,
+          uaData: {
+            ...data,
+            bitness: target.value || raw.bitness,
+          }
+        })}
       />
 
       <label>platform</label>
       <Input
         placeholder={raw.platform}
-        value={data.platform}
-        onInput={({ target }: any) => {
-          data.platform = target.value || raw.platform;
-          mode.updateValue()
-        }}
+        defaultValue={data.platform ?? raw.platform}
+        onInput={({ target }: any) => setValue({
+          ...value,
+          uaData: {
+            ...data,
+            platform: target.value || raw.platform,
+          }
+        })}
       />
 
       <label>platformVersion</label>
       <Input
         placeholder={raw.platformVersion}
-        value={data.platformVersion}
-        onInput={({ target }: any) => {
-          data.platformVersion = target.value || raw.platformVersion;
-          mode.updateValue()
-        }}
+        defaultValue={data.platformVersion ?? raw.platformVersion}
+        onInput={({ target }: any) => setValue({
+          ...value,
+          uaData: {
+            ...data,
+            platformVersion: target.value || raw.platformVersion,
+          }
+        })}
       />
 
       <label>model</label>
       <Input
         placeholder={raw.model}
-        value={data.model}
-        onInput={({ target }: any) => {
-          data.model = target.value || raw.model;
-          mode.updateValue()
-        }}
+        defaultValue={data.model ?? raw.model}
+        onInput={({ target }: any) => setValue({
+          ...value,
+          uaData: {
+            ...data,
+            model: target.value || raw.model,
+          }
+        })}
       />
 
       <label>formFactors</label>
       <Input
         placeholder={raw.formFactors.join(', ')}
-        value={data.formFactors}
-        onInput={({ target }: any) => {
-          data.formFactors = target.value;
-          mode.updateValue()
-        }}
+        defaultValue={data.formFactors ?? raw.formFactors}
+        onInput={({ target }: any) => setValue({
+          ...value,
+          uaData: {
+            ...data,
+            formFactors: target.value,
+          }
+        })}
       />
 
       <label>uaFullVersion</label>
       <Input
         placeholder={raw.uaFullVersion}
-        value={data.uaFullVersion}
-        onInput={({ target }: any) => {
-          data.uaFullVersion = target.value || raw.uaFullVersion;
-          mode.updateValue()
-        }}
+        defaultValue={data.uaFullVersion ?? raw.uaFullVersion}
+        onInput={({ target }: any) => setValue({
+          ...value,
+          uaData: {
+            ...data,
+            uaFullVersion: target.value || raw.uaFullVersion,
+          }
+        })}
       />
     </div>
 
@@ -424,11 +412,14 @@ const UserAgentDataView = ({ mode, defaultValues }: {
           maxRows: 3,
         }}
         placeholder={versionsToStr(raw.versions)}
-        value={data.versions}
-        onInput={({ target }: any) => {
-          data.versions = target.value;
-          mode.updateValue()
-        }}
+        defaultValue={data.uaFullVersion ? versionsToStr(data.uaFullVersion) : versionsToStr(raw.versions)}
+        onInput={({ target }: any) => setValue({
+          ...value,
+          uaData: {
+            ...data,
+            versions: target.value,
+          }
+        })}
       />
     </div>
   </div>

@@ -1,28 +1,24 @@
 import { type GpuInfoOption, LocalApi } from "@/api/local"
-import { useStorageStore } from "@/popup/stores/storage"
-import { type HookModeHandler, useI18n } from "@/utils/hooks"
+import { useI18n } from "@/utils/hooks"
 import { sharedAsync } from "@/utils/timer"
-import { Form, Input, Select, Spin } from "antd"
+import { Form, Input, Select } from "antd"
 import { useEffect, useMemo, useState } from "react"
-import { LoadingOutlined } from '@ant-design/icons'
-import { ConfigDesc, ConfigItemY, HookModeContent } from "../item"
 import { selectStatusDotStyles as dotStyles } from "../styles"
-import { cn } from "@/utils/style"
-import TipIcon from "@/components/data/tip-icon"
 import { useTranslation } from "react-i18next"
 import { HookType } from '@/types/enum'
+import { useHookMode } from "../context"
+import { HookModeCustom } from "../ui"
 
-type ModeHandler = HookModeHandler<GpuInfo, GpuInfo>
 type OptionType = (string & {}) | HookType
-
-const unstableTag = ['unstable']
 
 const fetchGPUInfo = sharedAsync(LocalApi.gpuInfo)
 
-const GPUInfoConfigItem = ({ }: {
-}) => {
-  const config = useStorageStore((state) => state.config)
-  const fp = config?.fp
+const GPUInfoConfigItem = ({ }: {}) => {
+  const { t, i18n, asLang } = useI18n()
+  const [isOpen, setIsOpen] = useState(false)
+  const [localPreset, setLocalPreset] = useState<GpuInfoOption[]>([])
+
+  const { mode, value: modeValue = {}, setType, setValue } = useHookMode()
 
   const gpuInfo = useMemo<GpuInfo>(() => {
     const cvs = document.createElement('canvas')
@@ -35,28 +31,6 @@ const GPUInfoConfigItem = ({ }: {
       renderer: gl.getParameter(ex.UNMASKED_RENDERER_WEBGL),
     }
   }, [])
-
-  return !fp ?
-    <Spin indicator={<LoadingOutlined spin />} /> :
-    <HookModeContent<GpuInfo, GpuInfo>
-      isMakeSelect={false}
-      mode={fp.normal.gpuInfo}
-      parser={{
-        toInput: (value) => value ?? { ...gpuInfo },
-        toValue: (input) => input,
-      }}
-    >{(mode) => <ModeView mode={mode} defaultValues={gpuInfo} />}</HookModeContent>
-}
-
-const ModeView = ({ mode, defaultValues }: {
-  mode: ModeHandler
-  defaultValues: GpuInfo
-}) => {
-  const { t, i18n, asLang } = useI18n()
-  const [isOpen, setIsOpen] = useState(false)
-  const [localPreset, setLocalPreset] = useState<GpuInfoOption[]>([])
-
-  const presetKey = (mode.value as any)?.key;
 
   useEffect(() => {
     if (!isOpen || localPreset.length != 0) return;
@@ -96,60 +70,57 @@ const ModeView = ({ mode, defaultValues }: {
   }, [i18n.language, localPreset])
 
   const onChange = (v: OptionType) => {
-    if (v === HookType.default || v === HookType.value) {
-      mode.setValue({ ...defaultValues })
-      mode.setType(v);
+    if (v === HookType.default) {
+      setType(HookType.default)
+    } else if (v === HookType.value) {
+      setValue({ ...gpuInfo })
     } else {
       const preset = localPreset?.find(item => item.key === v);
       if (preset) {
         const { title, ...rest } = preset;
-        mode.setValue(rest)
+        setValue(rest)
       }
-      mode.setType(HookType.value);
     }
   }
 
-  return <ConfigItemY
-    label={t('item.title.gpuInfo')}
-    className={cn(!mode.isDefault && dotStyles.warning)}
-    endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.gpuInfo', { joinArrays: '\n\n' })} />} />}
-  >
+  return <>
     <Select<OptionType>
       open={isOpen}
       onOpenChange={setIsOpen}
       className={dotStyles.base}
       options={options}
-      value={presetKey || mode.type}
+      value={modeValue.key || mode.type}
       onChange={onChange}
     />
-    {(mode.isValue && !presetKey) && <CustomView mode={mode} defaultValues={defaultValues} />}
-  </ConfigItemY>
+    <HookModeCustom>
+      <CustomView defaultValues={gpuInfo} />
+    </HookModeCustom>
+  </>
 }
 
-const CustomView = ({ mode, defaultValues }: {
-  mode: ModeHandler
+const CustomView = ({ defaultValues }: {
   defaultValues: GpuInfo
 }) => {
   const { t } = useTranslation()
-  const input = mode.input;
+  const { value: modeValue = {}, setValue } = useHookMode()
 
   return <div>
     <Form.Item label={t('item.label.glVendor')}>
       <Input
-        value={mode.input.vendor}
-        onChange={({ target }) => {
-          input.vendor = target.value || defaultValues.vendor;
-          mode.updateValue()
-        }}
+        defaultValue={modeValue.vendor ?? defaultValues.vendor}
+        onChange={({ target }) => setValue({
+          ...modeValue,
+          vendor: target.value || defaultValues.vendor
+        })}
       />
     </Form.Item>
     <Form.Item label={t('item.label.glRenderer')}>
       <Input
-        value={mode.input.renderer}
-        onChange={({ target }) => {
-          input.renderer = target.value || defaultValues.renderer;
-          mode.updateValue()
-        }}
+        defaultValue={modeValue.renderer ?? defaultValues.renderer}
+        onChange={({ target }) => setValue({
+          ...modeValue,
+          renderer: target.value || defaultValues.renderer
+        })}
       />
     </Form.Item>
   </div>
