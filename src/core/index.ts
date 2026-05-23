@@ -11,6 +11,9 @@ const args = _args;
 // ------------
 (() => {
   if (typeof window !== "undefined") {
+    // @ts-ignore
+    args.fun = args.fun ?? coreInject;
+    args.storage = args.storage ?? args;
     const storage: LocalStorage = args.storage;
     if (!window || !storage) return;
 
