@@ -2,7 +2,7 @@ type LocalStorage = {
   version: string
   config: LocalStorageConfig  // 配置
   whitelist: string[]  // 白名单
-  blacklist: string[]  // 强制启用域名
+  blacklist: string[]  // 强制启用域名（黑名单）
 }
 
 type LocalStorageConfig = {
