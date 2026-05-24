@@ -1,4 +1,4 @@
-import { useStorageStore } from "@/popup/stores/storage2"
+import { useStorageStore } from "@/popup/stores/storage"
 import { HookType } from '@/types/enum'
 import { memo } from "react"
 import { Spin } from "antd"

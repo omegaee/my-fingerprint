@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { useStorageStore } from "../stores/storage2"
+import { useStorageStore } from "../stores/storage"
 import { App, Button, Input, Tooltip } from "antd"
 import { ApiOutlined, CheckOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";

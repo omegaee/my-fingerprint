@@ -8,7 +8,7 @@ import {
 
 import FConfig from "./config"
 import { compareVersions, tryUrl, existParentDomain, selectParentDomains } from "@/utils/base"
-import { useStorageStore } from "./stores/storage2";
+import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
 import { sendToBackground } from "@/utils/message";
 import { NoticePanel } from "./record";

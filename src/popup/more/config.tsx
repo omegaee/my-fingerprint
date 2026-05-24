@@ -5,7 +5,7 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/shallow";
-import { useStorageStore } from "../stores/storage2";
+import { useStorageStore } from "../stores/storage";
 import VariablePopconfirm from "@/components/feedback/var-popconfirm";
 
 export type MoreConfigViewProps = {

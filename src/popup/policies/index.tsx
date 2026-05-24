@@ -9,7 +9,7 @@ import {
 import WhitelistItem from "./item";
 import { type MessageInstance } from "antd/es/message/interface";
 import { useTranslation } from "react-i18next";
-import { useStorageStore } from "../stores/storage2";
+import { useStorageStore } from "../stores/storage";
 import { useShallow } from "zustand/shallow";
 import { existParentDomain, existChildDomain } from "@/utils/base";
 

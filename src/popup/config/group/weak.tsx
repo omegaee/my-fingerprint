@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react"
-import { useStorageStore } from "@/popup/stores/storage2"
+import { useStorageStore } from "@/popup/stores/storage"
 import { HookType } from '@/types/enum'
 import { Form, Input, InputNumber, Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'

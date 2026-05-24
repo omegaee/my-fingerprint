@@ -1,6 +1,6 @@
 import { createHookContext } from "@/utils/context";
 import { useState } from "react";
-import { useStorageStore } from "../stores/storage2";
+import { useStorageStore } from "../stores/storage";
 import { useShallow } from "zustand/shallow";
 import { HookType } from "@/types/enum";
 

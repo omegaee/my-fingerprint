@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { useStorageStore } from "@/popup/stores/storage2"
+import { useStorageStore } from "@/popup/stores/storage"
 import TipIcon from "@/components/data/tip-icon"
 import { memo, useMemo } from "react";
 import { Select, Spin } from "antd";

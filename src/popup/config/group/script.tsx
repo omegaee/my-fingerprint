@@ -1,4 +1,4 @@
-import { useStorageStore } from "@/popup/stores/storage2"
+import { useStorageStore } from "@/popup/stores/storage"
 import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import TipIcon from "@/components/data/tip-icon"

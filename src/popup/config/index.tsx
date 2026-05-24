@@ -7,7 +7,7 @@ import PrefsConfigGroup from "./group/prefs"
 import ScriptConfigGroup from "./group/script"
 import { usePrefsStore } from "../stores/prefs"
 import { useShallow } from "zustand/shallow"
-import { useStorageStore } from "../stores/storage2"
+import { useStorageStore } from "../stores/storage"
 
 export const FConfig = () => {
   const [t, i18n] = useTranslation()

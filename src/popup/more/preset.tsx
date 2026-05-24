@@ -4,7 +4,7 @@ import { App, Button, Divider, Popconfirm, Spin, Tag } from "antd"
 import { useEffect, useMemo, useState } from "react"
 import { LoadingOutlined } from '@ant-design/icons'
 import { useShallow } from "zustand/shallow"
-import { useStorageStore } from "../stores/storage2"
+import { useStorageStore } from "../stores/storage"
 import { useI18n } from "@/utils/hooks"
 
 type PresetItem = {
