@@ -15,6 +15,8 @@ type LocalStorageContext = {
   policiesNonce: number
 }
 
+const randNonce = () => Math.floor(Math.random() * 1e9);
+
 /**
  * 格式化LocalStorage
  */
@@ -22,8 +24,8 @@ const genStorageContent = (storage: LocalStorage): LocalStorageContext => ({
   storage,
   whitelistHelper: new SiteListHelper(storage, 'whitelist'),
   blacklistHelper: new SiteListHelper(storage, 'blacklist'),
-  configNonce: Math.floor(Math.random() * 1e9),
-  policiesNonce: Math.floor(Math.random() * 1e9),
+  configNonce: randNonce(),
+  policiesNonce: randNonce(),
 })
 
 /**
@@ -87,6 +89,8 @@ export const genDefaultLocalStorage = (): LocalStorage => {
   }
 }
 
+
+
 /**
  * 合并存储（dst覆盖src，合并到dst）
  * 会修改dst
@@ -127,6 +131,41 @@ const mergeStorage = (src: LocalStorageConfig, dst?: DeepPartial<LocalStorageCon
   return dst;
 }
 
+function deepMerge<T>(target: T, source: DeepPartial<T>): T {
+  if (typeof target !== "object" || target === null) return source as T;
+  if (typeof source !== "object" || source === null) return target;
+
+  // 如果 source 是对象且包含 type 字段，则直接替换
+  if ("type" in (source as any)) {
+    return source as T;
+  }
+
+  const result: any = Array.isArray(target) ? [...target] : { ...target };
+
+  for (const key of Object.keys(source)) {
+    const srcVal = (source as any)[key];
+    const tgtVal = (target as any)[key];
+
+    if (
+      typeof srcVal === "object" &&
+      srcVal !== null &&
+      !Array.isArray(srcVal)
+    ) {
+      // 如果子对象有 type 字段，直接替换
+      if ("type" in srcVal) {
+        result[key] = srcVal;
+      } else {
+        result[key] = deepMerge(tgtVal, srcVal);
+      }
+    } else {
+      result[key] = srcVal;
+    }
+  }
+
+  return result;
+}
+
+
 /**
  * 初始化默认配置
  */
@@ -134,7 +173,9 @@ export const initLocalStorage = sharedAsync(async () => {
   /* init config */
   const _curr = await chrome.storage.local.get() as LocalStorage
   let _new = genDefaultLocalStorage()
-  const _config = mergeStorage(_new.config, _curr.config)
+
+  const _config = deepMerge(_new.config, _curr.config)
+
   /* clear */
   const rem = Object.keys(_curr).filter((key) => !(key in _new))
   if (rem.length) {
@@ -223,10 +264,12 @@ export const saveContextToLocalStorage = debounce(() => {
  * 修改配置
  */
 export const updateContext = async (v: DeepPartial<LocalStorage>) => {
-  const { storage } = await getLocalStorage()
+  const ctx = await getLocalStorage()
+  const storage = ctx.storage
 
   if (v.config) {
-    storage.config = mergeStorage(storage.config, v.config)
+    storage.config = deepMerge(storage.config, v.config)
+    ctx.configNonce = randNonce()
   }
 
   if (v.policies) {
@@ -234,6 +277,9 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
       ...storage.policies,
       ...v.policies,
     }
+    ctx.whitelistHelper = new SiteListHelper(storage, 'whitelist')
+    ctx.blacklistHelper = new SiteListHelper(storage, 'blacklist')
+    ctx.policiesNonce = randNonce()
   }
 
   saveContextToLocalStorage()

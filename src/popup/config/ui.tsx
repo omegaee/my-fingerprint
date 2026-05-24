@@ -39,17 +39,24 @@ const useHookTypeOptions = (types: HookType[]) => {
 /**
  * 选择器
  */
-export const HookModeSelector = ({ types }: {
+export const HookModeSelector = ({ types, defaultValue }: {
   types?: HookType[]
+  defaultValue?: any
 }) => {
-  const { mode, setType } = useHookMode()
+  const { mode, setType, setValue } = useHookMode()
   const options = useHookTypeOptions(types ?? [])
 
   return <Select<HookType>
     className={dotStyles.base}
     options={options}
     value={mode.type}
-    onChange={setType}
+    onChange={(t) => {
+      if (t === HookType.value) {
+        setValue(defaultValue)
+      } else {
+        setType(t)
+      }
+    }}
   />
 }
 

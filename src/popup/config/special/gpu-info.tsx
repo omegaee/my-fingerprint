@@ -93,37 +93,28 @@ const GPUInfoConfigItem = ({ }: {}) => {
       onChange={onChange}
     />
     <HookModeCustom>
-      <CustomView defaultValues={gpuInfo} />
+      <Form.Item label={t('item.label.glVendor')}>
+        <Input
+          value={modeValue.vendor ?? gpuInfo.vendor}
+          onChange={({ target }) => setValue({
+            ...modeValue,
+            key: undefined,
+            vendor: target.value || gpuInfo.vendor
+          })}
+        />
+      </Form.Item>
+      <Form.Item label={t('item.label.glRenderer')}>
+        <Input
+          value={modeValue.renderer ?? gpuInfo.renderer}
+          onChange={({ target }) => setValue({
+            ...modeValue,
+            key: undefined,
+            renderer: target.value || gpuInfo.renderer
+          })}
+        />
+      </Form.Item>
     </HookModeCustom>
   </>
-}
-
-const CustomView = ({ defaultValues }: {
-  defaultValues: GpuInfo
-}) => {
-  const { t } = useTranslation()
-  const { value: modeValue = {}, setValue } = useHookMode()
-
-  return <div>
-    <Form.Item label={t('item.label.glVendor')}>
-      <Input
-        defaultValue={modeValue.vendor ?? defaultValues.vendor}
-        onChange={({ target }) => setValue({
-          ...modeValue,
-          vendor: target.value || defaultValues.vendor
-        })}
-      />
-    </Form.Item>
-    <Form.Item label={t('item.label.glRenderer')}>
-      <Input
-        defaultValue={modeValue.renderer ?? defaultValues.renderer}
-        onChange={({ target }) => setValue({
-          ...modeValue,
-          renderer: target.value || defaultValues.renderer
-        })}
-      />
-    </Form.Item>
-  </div>
 }
 
 export default GPUInfoConfigItem

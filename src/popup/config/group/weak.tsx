@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react"
 import { useStorageStore } from "@/popup/stores/storage2"
 import { HookType } from '@/types/enum'
-import { Form, Input, Spin } from "antd"
+import { Form, Input, InputNumber, Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
 import TimeZoneConfigItem from "../special/timezone"
 import { getBrowserInfo } from "@/utils/browser"
@@ -27,6 +27,7 @@ export const WeakFpConfigGroup = memo(() => {
   const fp = config?.fp
 
   const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
+  const defaultLanguages = navigator.languages.join(',')
 
   return fp ? <div key={String(!!config)}>
     {/* timezone */}
@@ -39,11 +40,11 @@ export const WeakFpConfigGroup = memo(() => {
     {/* languages */}
     <HookModeProvider obj={fp.navigator} name='languages'>
       <HookModeCard color='success' isDescArray>
-        <HookModeSelector types={valueTypes} />
+        <HookModeSelector types={valueTypes} defaultValue={navigator.languages} />
         <HookModeCustom>{({ value, setValue }) => (
           <Input
-            placeholder={navigator.languages.join(',')}
-            defaultValue={value?.join?.(',') ?? ''}
+            placeholder={defaultLanguages}
+            value={value?.join?.(',') ?? defaultLanguages}
             onChange={({ target }) => {
               const list = target.value.split(',').map(v => v.trim()).filter((v) => !!v)
               setValue(list.length ? list : navigator.languages)
@@ -53,6 +54,7 @@ export const WeakFpConfigGroup = memo(() => {
       </HookModeCard>
     </HookModeProvider>
 
+    {/* clientHints */}
     {browserInfo.name !== 'firefox' && (
       <HookModeProvider obj={fp.navigator} name='clientHints'>
         <HookModeCard color='warning' isDescArray tags={unstableTag}>
@@ -71,11 +73,14 @@ export const WeakFpConfigGroup = memo(() => {
     {/* screen size */}
     <HookModeProvider obj={fp.screen} name='size'>
       <HookModeCard color='warning' tags={unstableTag}>
-        <HookModeSelector types={baseValueTypes} />
+        <HookModeSelector types={baseValueTypes} defaultValue={{
+          width: screen.width,
+          height: screen.height,
+        }} />
         <HookModeCustom>{({ value, setValue }) => <>
           <Form.Item label='width'>
             <Input
-              defaultValue={value.width ?? screen.width}
+              value={value.width ?? screen.width}
               onChange={({ target }) => setValue({
                 ...value,
                 width: target.value ? parseInt(target.value) : undefined,
@@ -84,7 +89,7 @@ export const WeakFpConfigGroup = memo(() => {
           </Form.Item>
           <Form.Item label='height'>
             <Input
-              defaultValue={value.height ?? screen.height}
+              value={value.height ?? screen.height}
               onChange={({ target }) => setValue({
                 ...value,
                 height: target.value ? parseInt(target.value) : undefined,
@@ -98,11 +103,14 @@ export const WeakFpConfigGroup = memo(() => {
     {/* screen colorDepth */}
     <HookModeProvider obj={fp.screen} name='depth'>
       <HookModeCard color='error' tags={deprecatedTag}>
-        <HookModeSelector types={valueTypes} />
+        <HookModeSelector types={valueTypes} defaultValue={{
+          colorDepth: screen.colorDepth,
+          pixelDepth: screen.pixelDepth,
+        }} />
         <HookModeCustom>{({ value, setValue }) => <>
           <Form.Item label='colorDepth'>
             <Input
-              defaultValue={value.colorDepth ?? screen.colorDepth}
+              value={value.colorDepth ?? screen.colorDepth}
               onChange={({ target }) => setValue({
                 ...value,
                 colorDepth: target.value ? parseInt(target.value) : undefined,
@@ -111,7 +119,7 @@ export const WeakFpConfigGroup = memo(() => {
           </Form.Item>
           <Form.Item label='pixelDepth'>
             <Input
-              defaultValue={value.pixelDepth ?? screen.pixelDepth}
+              value={value.pixelDepth ?? screen.pixelDepth}
               onChange={({ target }) => setValue({
                 ...value,
                 pixelDepth: target.value ? parseInt(target.value) : undefined,
@@ -125,12 +133,13 @@ export const WeakFpConfigGroup = memo(() => {
     {/* navigator hardwareConcurrency */}
     <HookModeProvider obj={fp.navigator} name='hardwareConcurrency'>
       <HookModeCard color='error' tags={deprecatedTag}>
-        <HookModeSelector types={valueTypes} />
-        <HookModeCustom>{({ setValue }) => (
-          <Input
+        <HookModeSelector types={valueTypes} defaultValue={navigator.hardwareConcurrency} />
+        <HookModeCustom>{({ value, setValue }) => (
+          <InputNumber
+            min={0}
             placeholder={String(navigator.hardwareConcurrency)}
-            defaultValue={String(navigator.hardwareConcurrency)}
-            onChange={({ target }) => setValue(target.value)}
+            value={value ?? navigator.hardwareConcurrency}
+            onChange={(v) => setValue(v)}
           />
         )}</HookModeCustom>
       </HookModeCard>

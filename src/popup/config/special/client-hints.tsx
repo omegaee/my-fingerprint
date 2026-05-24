@@ -44,6 +44,11 @@ const formFactorsToArr = (v?: string) => {
   return v.split(',').map(v => v.trim()).filter(Boolean)
 }
 
+const formFactorsToStr = (v?: any[]) => {
+  if (!v) return '';
+  return v.join(', ')
+}
+
 const getUaData = async () => {
   if (userAgentData) {
     const data = await userAgentData.getHighEntropyValues([
@@ -154,7 +159,7 @@ const ClientHintsConfigItem = ({ }: {}) => {
     return <></>
   }
 
-  return <>
+  return uaInfo ? <>
     <Select<OptionType>
       open={isOpen}
       onOpenChange={setIsOpen}
@@ -164,9 +169,9 @@ const ClientHintsConfigItem = ({ }: {}) => {
       onChange={onChange}
     />
     <HookModeCustom>
-      {uaInfo ? <ConfigContentView defaultValues={uaInfo} /> : <Spin indicator={<LoadingOutlined spin />} />}
+      <ConfigContentView defaultValues={uaInfo} />
     </HookModeCustom>
-  </>
+  </> : <Spin indicator={<LoadingOutlined spin />} />
 }
 
 /**
@@ -179,6 +184,7 @@ const ConfigContentView = ({ defaultValues }: {
 
   const resetUserAgent = () => {
     setValue({
+      key: undefined,
       ua: { ...defaultValues.ua },
       uaData: modeValue.uaData,
     })
@@ -186,6 +192,7 @@ const ConfigContentView = ({ defaultValues }: {
 
   const resetUserAgentData = () => {
     setValue({
+      key: undefined,
       ua: modeValue.ua,
       uaData: { ...defaultValues.uaData },
     })
@@ -240,49 +247,45 @@ const ResetButton = ({ onPress }: {
 const UserAgentView = ({ defaultValues }: {
   defaultValues: ClientHintsInfo
 }) => {
-  const { value, setValue } = useHookMode()
+  const { value, update: _update } = useHookMode()
 
   const raw = defaultValues.ua;
-  const data = value?.ua ?? {};
+  const data = value?.ua;
 
-  return <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2 items-center [&>label]:text-right">
+  const update = () => {
+    value.key = undefined;
+    _update();
+  }
+
+  return data && <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2 items-center [&>label]:text-right">
     <label>userAgent</label>
     <Input
       placeholder={raw.userAgent}
-      defaultValue={data.userAgent ?? raw.userAgent}
-      onInput={({ target }: any) => setValue({
-        ...value,
-        ua: {
-          ...data,
-          userAgent: target.value || raw.userAgent,
-        }
-      })}
+      value={data.userAgent ?? raw.userAgent}
+      onInput={({ target }: any) => {
+        data.userAgent = target.value || raw.userAgent;
+        update();
+      }}
     />
 
     <label>appVersion</label>
     <Input
       placeholder={raw.appVersion}
-      defaultValue={data.appVersion ?? raw.appVersion}
-      onInput={({ target }: any) => setValue({
-        ...value,
-        ua: {
-          ...data,
-          appVersion: target.value || raw.appVersion,
-        }
-      })}
+      value={data.appVersion ?? raw.appVersion}
+      onInput={({ target }: any) => {
+        data.appVersion = target.value || raw.appVersion;
+        update();
+      }}
     />
 
     <label>platform</label>
     <Input
       placeholder={raw.platform}
-      defaultValue={data.platform ?? raw.platform}
-      onInput={({ target }: any) => setValue({
-        ...value,
-        ua: {
-          ...data,
-          platform: target.value || raw.platform,
-        }
-      })}
+      value={data.platform ?? raw.platform}
+      onInput={({ target }: any) => {
+        data.platform = target.value || raw.platform;
+        update();
+      }}
     />
   </div>
 }
@@ -290,116 +293,97 @@ const UserAgentView = ({ defaultValues }: {
 const UserAgentDataView = ({ defaultValues }: {
   defaultValues: ClientHintsInfo
 }) => {
-  const { value, setValue } = useHookMode()
+  const { value, update: _update } = useHookMode()
 
   const raw = defaultValues.uaData;
-  const data = value?.uaData ?? {};
+  const data = value?.uaData;
 
-  return <div className="flex flex-col gap-1">
+  const update = () => {
+    value.key = undefined;
+    _update();
+  }
+
+  return data && <div className="flex flex-col gap-1">
     <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2 items-center [&>label]:text-right">
       <label>mobile</label>
       <div>
         <Checkbox
-          defaultChecked={data.mobile ?? raw.mobile}
-          onChange={({ target }: any) => setValue({
-            ...value,
-            uaData: {
-              ...data,
-              mobile: target.checked,
-            }
-          })}
+          checked={data.mobile ?? raw.mobile}
+          onChange={({ target }: any) => {
+            data.mobile = target.checked;
+            update();
+          }}
         />
       </div>
 
       <label>arch</label>
       <Input
         placeholder={raw.arch}
-        defaultValue={data.arch ?? raw.arch}
-        onInput={({ target }: any) => setValue({
-          ...value,
-          uaData: {
-            ...data,
-            arch: target.value || raw.arch,
-          }
-        })}
+        value={data.arch ?? raw.arch}
+        onInput={({ target }: any) => {
+          data.arch = target.value || raw.arch;
+          update();
+        }}
       />
 
       <label>bitness</label>
       <Input
         placeholder={raw.bitness}
-        defaultValue={data.bitness ?? raw.bitness}
-        onInput={({ target }: any) => setValue({
-          ...value,
-          uaData: {
-            ...data,
-            bitness: target.value || raw.bitness,
-          }
-        })}
+        value={data.bitness ?? raw.bitness}
+        onInput={({ target }: any) => {
+          data.bitness = target.value || raw.bitness;
+          update();
+        }}
       />
 
       <label>platform</label>
       <Input
         placeholder={raw.platform}
-        defaultValue={data.platform ?? raw.platform}
-        onInput={({ target }: any) => setValue({
-          ...value,
-          uaData: {
-            ...data,
-            platform: target.value || raw.platform,
-          }
-        })}
+        value={data.platform ?? raw.platform}
+        onInput={({ target }: any) => {
+          data.platform = target.value || raw.platform;
+          update();
+        }}
       />
 
       <label>platformVersion</label>
       <Input
         placeholder={raw.platformVersion}
-        defaultValue={data.platformVersion ?? raw.platformVersion}
-        onInput={({ target }: any) => setValue({
-          ...value,
-          uaData: {
-            ...data,
-            platformVersion: target.value || raw.platformVersion,
-          }
-        })}
+        value={data.platformVersion ?? raw.platformVersion}
+        onInput={({ target }: any) => {
+          data.platformVersion = target.value || raw.platformVersion;
+          update();
+        }}
       />
 
       <label>model</label>
       <Input
         placeholder={raw.model}
-        defaultValue={data.model ?? raw.model}
-        onInput={({ target }: any) => setValue({
-          ...value,
-          uaData: {
-            ...data,
-            model: target.value || raw.model,
-          }
-        })}
+        value={data.model ?? raw.model}
+        onInput={({ target }: any) => {
+          data.model = target.value || raw.model;
+          update();
+        }}
       />
 
       <label>formFactors</label>
       <Input
-        placeholder={raw.formFactors.join(', ')}
-        defaultValue={data.formFactors ?? raw.formFactors}
-        onInput={({ target }: any) => setValue({
-          ...value,
-          uaData: {
-            ...data,
-            formFactors: target.value,
-          }
-        })}
+        placeholder={formFactorsToStr(raw.formFactors)}
+        value={data.formFactors ? formFactorsToStr(data.formFactors) : formFactorsToStr(raw.formFactors)}
+        onInput={({ target }: any) => {
+          data.formFactors = formFactorsToArr(target.value);
+          update();
+        }}
       />
 
       <label>uaFullVersion</label>
       <Input
         placeholder={raw.uaFullVersion}
-        defaultValue={data.uaFullVersion ?? raw.uaFullVersion}
-        onInput={({ target }: any) => setValue({
-          ...value,
-          uaData: {
-            ...data,
-            uaFullVersion: target.value || raw.uaFullVersion,
-          }
-        })}
+        value={data.uaFullVersion ?? raw.uaFullVersion}
+        onInput={({ target }: any) => {
+          data.uaFullVersion = target.value || raw.uaFullVersion;
+          update();
+        }}
       />
     </div>
 
@@ -412,14 +396,11 @@ const UserAgentDataView = ({ defaultValues }: {
           maxRows: 3,
         }}
         placeholder={versionsToStr(raw.versions)}
-        defaultValue={data.uaFullVersion ? versionsToStr(data.uaFullVersion) : versionsToStr(raw.versions)}
-        onInput={({ target }: any) => setValue({
-          ...value,
-          uaData: {
-            ...data,
-            versions: target.value,
-          }
-        })}
+        value={data.versions ? versionsToStr(data.versions) : versionsToStr(raw.versions)}
+        onInput={({ target }: any) => {
+          data.versions = versionsToArr(target.value);
+          update();
+        }}
       />
     </div>
   </div>

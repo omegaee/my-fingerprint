@@ -94,9 +94,10 @@ const TimeZoneConfigItem = ({ }: {}) => {
         <InputNumber
           min={-12} max={12}
           placeholder={`${currentTz.offset}`}
-          defaultValue={modeValue.offset ?? currentTz.offset}
+          value={modeValue.offset ?? currentTz.offset}
           onChange={(offset) => setValue({
             ...modeValue,
+            key: undefined,
             offset: offset ?? currentTz.offset
           })}
         />
@@ -104,9 +105,10 @@ const TimeZoneConfigItem = ({ }: {}) => {
       <Form.Item label={t('item.sub.tz.locale')}>
         <Input
           placeholder={currentTz.locale}
-          defaultValue={modeValue.locale ?? currentTz.locale}
+          value={modeValue.locale ?? currentTz.locale}
           onChange={({ target }) => setValue({
             ...modeValue,
+            key: undefined,
             locale: target.value || currentTz.locale
           })}
         />
@@ -117,6 +119,7 @@ const TimeZoneConfigItem = ({ }: {}) => {
           defaultValue={modeValue.zone ?? currentTz.zone}
           onChange={({ target }) => setValue({
             ...modeValue,
+            key: undefined,
             zone: target.value || currentTz.zone
           })}
         />

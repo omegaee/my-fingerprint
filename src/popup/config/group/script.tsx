@@ -82,7 +82,7 @@ export const ScriptConfigGroup = memo(() => {
       <div className="flex gap-1">
         <Input
           className="grow"
-          defaultValue={config.seed.global}
+          value={config.seed.global}
           onInput={({ target }: any) => onSetGlobalSeed(target.value)}
         />
         <Tooltip title={t('g.random')}>
@@ -100,7 +100,7 @@ export const ScriptConfigGroup = memo(() => {
     >
       <Switch
         className="[&_.ant-switch-inner>span]:font-bold"
-        defaultChecked={config.action.fastInject}
+        checked={config.action.fastInject}
         onChange={async (v) => {
           await requestPermission('userScripts')
           onSetFastInject(v)
