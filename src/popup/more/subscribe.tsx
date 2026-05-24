@@ -50,8 +50,6 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
     fetch(url)
       .then(v => v.json())
       .then(async (v) => {
-        console.log(url, v);
-        
         await importStorage(v)
         message.success(t('tip.ok.subscribe'))
       })

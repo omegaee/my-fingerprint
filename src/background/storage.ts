@@ -223,8 +223,6 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
     ctx.whitelistHelper = new SiteListHelper(storage.policies.whitelist)
     ctx.blacklistHelper = new SiteListHelper(storage.policies.blacklist)
     ctx.policiesNonce = randNonce()
-
-    console.log(storage.policies);
   }
 
   saveContextToLocalStorage()
