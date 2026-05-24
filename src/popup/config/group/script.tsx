@@ -1,11 +1,11 @@
 import { useStorageStore } from "@/popup/stores/storage"
-import { memo, useEffect, useMemo, useState } from "react"
+import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import TipIcon from "@/components/data/tip-icon"
 import { genRandomSeed, hashNumberFromString } from "@/utils/base"
 import { App, Badge, Button, Input, Spin, Switch, Tooltip } from "antd"
 import { LoadingOutlined, RedoOutlined } from '@ant-design/icons'
-import { getBrowserInfo, requestPermission } from "@/utils/browser"
+import { requestPermission } from "@/utils/browser"
 import { ConfigDesc, ConfigItemX, ConfigItemY } from "../item"
 import { sendToBackground } from "@/utils/message"
 import { useShallow } from "zustand/shallow"
@@ -15,38 +15,29 @@ const nsImportTag = ['unsupport-import']
 
 export const ScriptConfigGroup = memo(() => {
   const [t] = useTranslation()
-  const [fastInject, setFastInject] = useState(false)
-  const [globalSeed, setGlobalSeed] = useState('')
 
   const { message } = App.useApp()
 
-  const { config, version } = useStorageStore(useShallow((s) => ({
-    config: s.config,
+  const { config, saveConfig } = useStorageStore(useShallow((s) => ({
     version: s.version,
+    config: s.config,
+    saveConfig: s.saveConfig,
   })))
 
   const isShowBadge = !config?.action.fastInject;
-
-  const browserInfo = useMemo(() => getBrowserInfo(navigator.userAgent), [])
-
-  useEffect(() => {
-    if (!config) return;
-    setGlobalSeed(config.input.globalSeed)
-    setFastInject(config.action.fastInject)
-  }, [config])
 
   /**
    * set global seed
    */
   const onSetGlobalSeed = (value: string) => {
     if (!config) return;
+
     if (value === '') {
-      setGlobalSeed('')
       config.seed.global = 0
       config.input.globalSeed = ''
       return;
     }
-    setGlobalSeed(value)
+
     config.input.globalSeed = value
     const _value = Number(value)
     if (isNaN(_value)) {
@@ -54,6 +45,8 @@ export const ScriptConfigGroup = memo(() => {
     } else {
       config.seed.global = _value
     }
+
+    saveConfig()
   }
 
   /**
@@ -61,7 +54,8 @@ export const ScriptConfigGroup = memo(() => {
    */
   const onSetFastInject = async (checked: boolean) => {
     if (!config) return;
-    /* 尝试启用 */
+
+    /* try */
     if (checked === true) {
       if (await sendToBackground({
         type: 'api.check',
@@ -71,14 +65,16 @@ export const ScriptConfigGroup = memo(() => {
         return;
       }
     }
+
     /* set */
-    setFastInject(checked)
     if (config.action.fastInject !== checked) {
       config.action.fastInject = checked
     }
+
+    saveConfig()
   }
 
-  return config ? <div key={version}>
+  return config ? <div key={String(!!config)}>
     <ConfigItemY
       label={t('item.title.seed')}
       endContent={<TipIcon.Question content={<Md>{t('item.desc.seed')}</Md>} />}
@@ -86,7 +82,7 @@ export const ScriptConfigGroup = memo(() => {
       <div className="flex gap-1">
         <Input
           className="grow"
-          value={globalSeed}
+          value={config.seed.global}
           onInput={({ target }: any) => onSetGlobalSeed(target.value)}
         />
         <Tooltip title={t('g.random')}>
@@ -104,7 +100,7 @@ export const ScriptConfigGroup = memo(() => {
     >
       <Switch
         className="[&_.ant-switch-inner>span]:font-bold"
-        value={fastInject}
+        checked={config.action.fastInject}
         onChange={async (v) => {
           await requestPermission('userScripts')
           onSetFastInject(v)

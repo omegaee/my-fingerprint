@@ -19,10 +19,7 @@
   "e": {
     "enabled": "Extension Enabled",
     "disabled": "Extension Disabled",
-    "whitelist": "Whitelist",
-    "whitelist-in": "In Whitelist",
-    "whitelist-not": "Not In Whitelist",
-    "whitelist-click-in": "Click To Whitelist",
+    "policies": "Site Policies",
     "record": "Record",
     "config": "Config",
     "seed": "Seed",
@@ -49,7 +46,17 @@
       "strong": "Strong",
       "other": "Other"
     },
-    "preset-panel": "Preset Panel"
+    "preset-panel": "Preset Panel",
+    "whitelist": {
+      "in": "In Whitelist",
+      "not": "Not In Whitelist",
+      "click-in": "Click To Whitelist"
+    },
+    "blacklist": {
+      "in": "In Blacklist",
+      "not": "Not In Blacklist",
+      "click-in": "Click To Blacklist"
+    }
   },
   "type": {
     "default": "Default",
@@ -77,7 +84,7 @@
       "audio": "Audio Fingerprint",
       "webgl": "WebGL Fingerprint",
       "webrtc": "WebRTC Interface",
-      "fonts": "Fonts Fingerprint",
+      "font": "Fonts Fingerprint",
       "webgpu": "WebGPU Fingerprint",
       "gpuInfo": "Graphics Driver",
       "domRect": "DOMRect Fingerprint",
@@ -109,7 +116,7 @@
         "When disabled, websites are prevented from obtaining your real IP address via WebRTC (especially when using a proxy). When enabled, it helps prevent IP leaks.",
         "When disabled, some websites may behave abnormally or fail to function properly."
       ],
-      "fonts": "Font fingerprinting reveals device details by checking which fonts are supported and how they’re rendered.",
+      "font": "Font fingerprinting reveals device details by checking which fonts are supported and how they’re rendered.",
       "webgpu": "WebGPU fingerprinting extracts device information by analyzing differences in GPU processing capabilities.",
       "domRect": "DOMRect fingerprinting gathers device data by measuring variations in element positioning and dimensions.",
       "serviceWorker": [
@@ -150,7 +157,7 @@
   },
   "tip": {
     "label": {
-      "not-support-whitelist": "Not Supported",
+      "not-support-tab": "Not Supported",
       "no-auth-required": "No Auth Required",
       "json": "Json Format",
       "subscribe-save": "Save and Subscribe",

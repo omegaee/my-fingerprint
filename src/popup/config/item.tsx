@@ -1,6 +1,5 @@
 import { Md } from "@/components/data/markdown"
-import { useHookMode, useHookTypeOptions } from "@/utils/hooks"
-import { Divider, Select, Tag, type SelectProps } from "antd"
+import { Divider, Tag } from "antd"
 import { tagColors } from "./styles"
 import { useTranslation } from "react-i18next"
 
@@ -69,37 +68,4 @@ export const ConfigDesc = ({ desc, tags }: {
     </>}
     <Md>{desc}</Md>
   </>
-}
-
-/**
- * @param types 选择器可选类型
- * @param isMakeSelect 是否生成选择器
- */
-type HookModeItemProps<V, I,> = {
-  mode?: HookMode<V>
-  parser?: Parameters<typeof useHookMode<V, I>>[1]
-  types?: HookType[]
-  isMakeSelect?: boolean
-  selectClassName?: string
-  children: (
-    mode: ReturnType<typeof useHookMode<V, I>>,
-    params: {
-      options: SelectProps['options']
-      select: React.ReactNode
-    }
-  ) => React.ReactNode
-}
-
-export const HookModeContent = <V, I,>({ mode, parser, types, isMakeSelect = true, selectClassName, children }: HookModeItemProps<V, I>) => {
-  const hookMode = useHookMode<V, I>(mode, parser)
-  const options = useHookTypeOptions(types ?? [])
-
-  const select = isMakeSelect && <Select<HookType>
-    className={selectClassName}
-    options={options}
-    value={hookMode.type}
-    onChange={hookMode.setType}
-  />
-
-  return <>{children(hookMode, { options, select })}</>
 }

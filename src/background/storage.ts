@@ -1,48 +1,32 @@
-import { genRandomSeed, existParentDomain } from "@/utils/base";
+import { genRandomSeed } from "@/utils/base";
 import { debounce, sharedAsync } from "@/utils/timer";
 import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
 import { hasUserScripts, reRegisterScript } from "./script";
+import { SiteListHelper } from "./policies";
 
-let mContent: LocalStorageContent | undefined
+let mContent: LocalStorageContext | undefined
 
-type LocalStorageWhitelist = {
-  match: (v: string) => boolean
-  add: (v: string) => void
-  remove: (v: string) => void
-  clean: () => void
-}
-
-type LocalStorageContent = [
-  LocalStorage,
-  LocalStorageWhitelist,
-] & {
+type LocalStorageContext = {
   storage: LocalStorage
-  whitelist: LocalStorageWhitelist
+  whitelistHelper: SiteListHelper
+  blacklistHelper: SiteListHelper
+  configNonce: number
+  policiesNonce: number
 }
+
+const randNonce = () => Math.floor(Math.random() * 1e9);
 
 /**
  * 格式化LocalStorage
  */
-const genStorageContent = (storage: LocalStorage): LocalStorageContent => ({
+const genStorageContent = (storage: LocalStorage): LocalStorageContext => ({
   storage,
-  whitelist: {
-    match: (v: string) => existParentDomain(storage.whitelist, v),
-    add(v: string) {
-      storage.whitelist.push(v)
-    },
-    remove(v: string) {
-      const index = storage.whitelist.indexOf(v)
-      index !== -1 && storage.whitelist.splice(index, 1)
-    },
-    clean() {
-      storage.whitelist = []
-    }
-  },
-  [Symbol.iterator]() {
-    return Object.values(this)[Symbol.iterator]();
-  },
-} as LocalStorageContent)
+  whitelistHelper: new SiteListHelper(storage.policies.whitelist),
+  blacklistHelper: new SiteListHelper(storage.policies.blacklist),
+  configNonce: randNonce(),
+  policiesNonce: randNonce(),
+})
 
 /**
  * 生成默认配置
@@ -97,7 +81,11 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         theme: 'system',
       },
     },
-    whitelist: []
+    policies: {
+      whitelist: [],
+      blacklist: [],
+      isBlacklistMode: false,
+    },
   }
 }
 
@@ -105,41 +93,40 @@ export const genDefaultLocalStorage = (): LocalStorage => {
  * 合并存储（dst覆盖src，合并到dst）
  * 会修改dst
  */
-const mergeStorage = (src: LocalStorageConfig, dst?: DeepPartial<LocalStorageConfig>): LocalStorageConfig => {
-  if (!dst) return src;
-  for (const key in dst) {
-    if (key === 'value') continue;
-    // @ts-ignore
-    if (!(key in src)) {
-      // @ts-ignore
-      delete dst[key];
-    }
+function deepMerge<T>(target: T, source: DeepPartial<T>): T {
+  if (typeof target !== "object" || target === null) return source as T;
+  if (typeof source !== "object" || source === null) return target;
+
+  // 如果 source 是对象且包含 type 字段，则直接替换
+  if ("type" in (source as any)) {
+    return source as T;
   }
-  for (const key in src) {
-    // @ts-ignore
-    const srcValue = src[key];
-    if (key in dst) {
-      const dstValue = (dst as any)[key];
 
-      if (dstValue === null) {
-        delete (dst as any)[key];
-        continue;
-      }
+  const result: any = Array.isArray(target) ? [...target] : { ...target };
 
-      if (key === 'value') continue;
+  for (const key of Object.keys(source)) {
+    const srcVal = (source as any)[key];
+    const tgtVal = (target as any)[key];
 
-      if (typeof srcValue === 'object' && !Array.isArray(srcValue)) {
-        // @ts-ignore
-        mergeStorage(srcValue, dstValue);
+    if (
+      typeof srcVal === "object" &&
+      srcVal !== null &&
+      !Array.isArray(srcVal)
+    ) {
+      // 如果子对象有 type 字段，直接替换
+      if ("type" in srcVal) {
+        result[key] = srcVal;
+      } else {
+        result[key] = deepMerge(tgtVal, srcVal);
       }
     } else {
-      // @ts-ignore
-      dst[key] = srcValue;
+      result[key] = srcVal;
     }
   }
-  // @ts-ignore
-  return dst;
+
+  return result;
 }
+
 
 /**
  * 初始化默认配置
@@ -148,7 +135,9 @@ export const initLocalStorage = sharedAsync(async () => {
   /* init config */
   const _curr = await chrome.storage.local.get() as LocalStorage
   let _new = genDefaultLocalStorage()
-  const _config = mergeStorage(_new.config, _curr.config)
+
+  const _config = deepMerge(_new.config, _curr.config)
+
   /* clear */
   const rem = Object.keys(_curr).filter((key) => !(key in _new))
   if (rem.length) {
@@ -158,7 +147,11 @@ export const initLocalStorage = sharedAsync(async () => {
   const _storage: LocalStorage = {
     version: _new.version,
     config: _config,
-    whitelist: _curr.whitelist ?? _new.whitelist,
+    policies: {
+      whitelist: _curr.policies?.whitelist ?? _new.policies.whitelist,
+      blacklist: _curr.policies?.blacklist ?? _new.policies.blacklist,
+      isBlacklistMode: _curr.policies?.isBlacklistMode ?? _new.policies.isBlacklistMode,
+    },
   }
   mContent = genStorageContent(_storage)
   chrome.storage.local.set(_storage).then(() => {
@@ -173,7 +166,7 @@ export const initLocalStorage = sharedAsync(async () => {
  * 从url中拉取配置
  */
 export const applySubscribeStorage = async () => {
-  const [storage, { match }] = await getLocalStorage();
+  const { storage } = await getLocalStorage();
 
   let url = storage.config.subscribe.url.trim()
   if (url === '') return true;
@@ -185,19 +178,9 @@ export const applySubscribeStorage = async () => {
     .catch(e => console.warn('Pull config failed: ' + e))
 
   if (!data) return false;
+
   /* 加载配置 */
-  if (data.config && Object.keys(data.config).length) {
-    // 移除不支持的配置
-    delete data.config.prefs;
-    delete data.config.action?.fastInject;
-    // 更新配置
-    await updateLocalConfig(data.config)
-  }
-  /* 加载白名单 */
-  if (data.whitelist?.length) {
-    const wlist = data.whitelist.filter(v => !match(v))  // 去重
-    if (wlist.length) await updateLocalWhitelist({ add: wlist });
-  }
+  await importContext(data)
   return true;
 }
 
@@ -215,63 +198,111 @@ export const getLocalStorage = async () => {
 /**
  * 存储配置
  */
-export const saveLocalConfig = debounce((config: LocalStorageConfig) => {
-  chrome.storage.local.set({ config })
-}, 500)
-
-/**
- * 存储白名单
- */
-export const saveLocalWhitelist = debounce((whitelist: string[] | Set<string>) => {
-  if (whitelist instanceof Set) {
-    chrome.storage.local.set({ whitelist: [...whitelist] })
-  } else {
-    chrome.storage.local.set({ whitelist })
-  }
+export const saveContextToLocalStorage = debounce(() => {
+  if (!mContent) return;
+  chrome.storage.local.set(mContent.storage)
 }, 500)
 
 /**
  * 修改配置
  */
-export const updateLocalConfig = async (config: DeepPartial<LocalStorageConfig>) => {
-  const [storage] = await getLocalStorage()
-  storage.config = mergeStorage(storage.config, config)
-  saveLocalConfig(storage.config)
+export const updateContext = async (v: DeepPartial<LocalStorage>) => {
+  const ctx = await getLocalStorage()
+  const storage = ctx.storage
+
+  if (v.config) {
+    storage.config = deepMerge(storage.config, v.config)
+    ctx.configNonce = randNonce()
+  }
+
+  if (v.policies) {
+    storage.policies = {
+      ...storage.policies,
+      ...v.policies,
+    }
+    ctx.whitelistHelper = new SiteListHelper(storage.policies.whitelist)
+    ctx.blacklistHelper = new SiteListHelper(storage.policies.blacklist)
+    ctx.policiesNonce = randNonce()
+
+    console.log(storage.policies);
+  }
+
+  saveContextToLocalStorage()
+
   reRegisterScript()
   reRequestHeader()
-  return storage.config
+
+  return storage
 }
 
 /**
- * 修改白名单
+ * 导入配置
  */
-export const updateLocalWhitelist = async (data: { add?: string[], del?: string[] }) => {
-  const [storage, { add, remove }] = await getLocalStorage()
-  data.del?.length && data.del.forEach(v => remove(v))
-  data.add?.length && data.add.forEach(v => add(v))
-  saveLocalWhitelist(storage.whitelist)
-  reRegisterScript()
-  reRequestHeader()
-  return storage.whitelist
-}
+export const importContext = async (data: DeepPartial<LocalStorage>) => {
+  const ctx = await getLocalStorage();
+  const { storage, whitelistHelper, blacklistHelper } = ctx;
 
-/**
- * 清理白名单
- */
-export const cleanLocalWhitelist = async () => {
-  const [storage, { clean }] = await getLocalStorage()
-  clean()
-  saveLocalWhitelist(storage.whitelist)
-  reRegisterScript()
-  reRequestHeader()
+  let isUpdate = false
+
+  if (data.config) {
+    delete data.config.prefs;
+    delete data.config.action?.fastInject;
+    await updateContext({ config: data.config })
+
+    ctx.configNonce = randNonce()
+    isUpdate = true
+  }
+
+  const ps = data.policies
+
+  const wlist = [
+    ...(ps?.whitelist ?? []),
+    ...((data as any).whitelist ?? []),
+  ];
+  if (wlist?.length) {
+    whitelistHelper.addList(wlist);
+
+    ctx.policiesNonce = randNonce()
+    isUpdate = true
+  }
+
+  const blist = [
+    ...(ps?.blacklist ?? []),
+    ...((data as any).blacklist ?? []),
+  ];
+  if (blist?.length) {
+    blacklistHelper.addList(blist);
+
+    ctx.policiesNonce = randNonce()
+    isUpdate = true
+  }
+
+  if (ps?.isBlacklistMode != null && storage.policies.isBlacklistMode !== ps.isBlacklistMode) {
+    await updateContext({
+      policies: {
+        isBlacklistMode: ps.isBlacklistMode
+      }
+    })
+
+    ctx.policiesNonce = randNonce()
+    isUpdate = true
+  }
+
+  if (isUpdate) {
+    saveContextToLocalStorage()
+    reRegisterScript()
+    reRequestHeader()
+  }
+
+  return storage;
 }
 
 /**
  * 刷新浏览器种子
  */
 export const reBrowserSeed = async () => {
-  const [storage] = await getLocalStorage()
+  const { storage } = await getLocalStorage()
   storage.config.seed.browser = genRandomSeed()
-  saveLocalConfig(storage.config)
+  saveContextToLocalStorage()
   reRequestHeader()
 }

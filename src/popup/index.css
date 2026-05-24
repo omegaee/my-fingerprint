@@ -146,3 +146,21 @@
   list-style-type: decimal;
   list-style-position: outside;
 }
+
+/* Ensure truncation works inside Ant Design Buttons in popup */
+.ant-btn.truncate,
+.ant-btn .truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ant-btn.truncate > span,
+.ant-btn .truncate > span {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

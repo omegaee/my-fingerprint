@@ -16,31 +16,30 @@ export const MoreConfigView = ({ className }: MoreConfigViewProps) => {
   const [t] = useTranslation()
   const { message } = App.useApp()
 
-  const { storage, importStorage } = useStorageStore(useShallow((state) => ({
-    storage: state.storage,
-    importStorage: state.importStorage
+  const { storage, importStorage } = useStorageStore(useShallow((s) => ({
+    storage: s.storage,
+    importStorage: s.importStorage
   })))
 
   const clipboardExport = () => {
     navigator.clipboard.writeText(JSON.stringify(storage, null, 2))
       .then(() => message.success(t('tip.ok.config-export')))
-      .catch((err) => message.error(`${t('tip.err.config-export')}: ${err}`))
+      .catch((err) => message.error(`${t('tip.err.config-export')}: ${err?.message}`))
   }
 
   const clipboardImport = () => {
     navigator.clipboard.readText()
-      .then((text) => {
-        try {
-          const conf = JSON.parse(text)
-          importStorage(conf)
-            .then(() => message.success(t('tip.ok.config-import')))
-            .catch((err) => message.warning(`${t('tip.err.config-import')}: ${err}`))
-        } catch (err) {
-          message.error(`${t('tip.err.config-parse')}: ${err}`)
+      .then(async (text) => {
+        const data = JSON.parse(text)
+        if (typeof data !== 'object') {
+          throw new Error('Not an object')
         }
+
+        await importStorage(data);
+        message.success(t('tip.ok.config-import'));
       })
       .catch((err) => {
-        message.error(`${t('tip.err.config-parse')}: ${err}`)
+        message.error(`${t('tip.err.config-import')}: ${err?.message}`)
       })
   }
 

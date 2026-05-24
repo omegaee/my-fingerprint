@@ -1,13 +1,11 @@
 import { useStorageStore } from "@/popup/stores/storage"
-import { useTranslation } from "react-i18next"
 import { HookType } from '@/types/enum'
 import { memo } from "react"
 import { Spin } from "antd"
 import { LoadingOutlined } from '@ant-design/icons'
-import { ConfigDesc, ConfigItemY, HookModeContent } from "../item"
-import TipIcon from "@/components/data/tip-icon"
-import { selectStatusDotStyles as dotStyles } from "../styles"
 import { useShallow } from "zustand/shallow"
+import { HookModeProvider } from "../context"
+import { HookModeCard, HookModeSelector } from "../ui"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
 const disabledTypes = [HookType.default, HookType.disabled]
@@ -15,127 +13,61 @@ const disabledTypes = [HookType.default, HookType.disabled]
 const unstableTag = ['unstable']
 
 export const StrongFpConfigGroup = memo(() => {
-  const [t] = useTranslation()
-
-  const storage = useStorageStore(useShallow((s) => ({
+  const { config } = useStorageStore(useShallow((s) => ({
     config: s.config,
     version: s.version,
   })))
-  const fp = storage.config?.fp
+  const fp = config?.fp
 
-  return fp ? <div key={storage.version}>
+  return fp ? <div key={String(!!config)}>
 
-    <HookModeContent
-      mode={fp.other.canvas}
-      types={baseTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.canvas')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.canvas')} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
+    <HookModeProvider obj={fp.other} name='canvas'>
+      <HookModeCard color='success'>
+        <HookModeSelector types={baseTypes} />
+      </HookModeCard>
+    </HookModeProvider>
 
-    <HookModeContent
-      mode={fp.other.webgl}
-      types={baseTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.webgl')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.webgl')} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
+    <HookModeProvider obj={fp.other} name='webgl'>
+      <HookModeCard color='success'>
+        <HookModeSelector types={baseTypes} />
+      </HookModeCard>
+    </HookModeProvider>
 
-    <HookModeContent
-      mode={fp.other.audio}
-      types={baseTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.audio')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.audio')} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
+    <HookModeProvider obj={fp.other} name='audio'>
+      <HookModeCard color='success'>
+        <HookModeSelector types={baseTypes} />
+      </HookModeCard>
+    </HookModeProvider>
 
-    <HookModeContent
-      mode={fp.other.webrtc}
-      types={disabledTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.webrtc')}
-        className={mode.isDefault ? '' : dotStyles.warning}
-        endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.webrtc', { joinArrays: '\n\n' })} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
+    <HookModeProvider obj={fp.other} name='webrtc'>
+      <HookModeCard color='warning' isDescArray tags={unstableTag}>
+        <HookModeSelector types={disabledTypes} />
+      </HookModeCard>
+    </HookModeProvider>
 
-    <HookModeContent
-      mode={fp.other.webgpu}
-      types={baseTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.webgpu')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.webgpu')} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
+    <HookModeProvider obj={fp.other} name='webgpu'>
+      <HookModeCard color='success'>
+        <HookModeSelector types={baseTypes} />
+      </HookModeCard>
+    </HookModeProvider>
 
-    <HookModeContent
-      mode={fp.other.font}
-      types={baseTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.fonts')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.fonts')} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
+    <HookModeProvider obj={fp.other} name='font'>
+      <HookModeCard color='success'>
+        <HookModeSelector types={baseTypes} />
+      </HookModeCard>
+    </HookModeProvider>
 
-    <HookModeContent
-      mode={fp.other.domRect}
-      types={baseTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.domRect')}
-        className={mode.isDefault ? '' : dotStyles.success}
-        endContent={<TipIcon.Question content={<ConfigDesc desc={t('item.desc.domRect')} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
+    <HookModeProvider obj={fp.other} name='domRect'>
+      <HookModeCard color='success'>
+        <HookModeSelector types={baseTypes} />
+      </HookModeCard>
+    </HookModeProvider>
 
-    <HookModeContent
-      mode={fp.other.serviceWorker}
-      types={disabledTypes}
-      selectClassName={dotStyles.base}
-    >{(mode, { select }) =>
-      <ConfigItemY
-        label={t('item.title.serviceWorker')}
-        className={mode.isDefault ? '' : dotStyles.warning}
-        endContent={<TipIcon.Question color='warning' content={<ConfigDesc tags={unstableTag} desc={t('item.desc.serviceWorker', { joinArrays: '\n\n' })} />} />}
-      >
-        {select}
-      </ConfigItemY>}
-    </HookModeContent>
+    <HookModeProvider obj={fp.other} name='serviceWorker'>
+      <HookModeCard color='warning' isDescArray tags={unstableTag}>
+        <HookModeSelector types={disabledTypes} />
+      </HookModeCard>
+    </HookModeProvider>
 
   </div> : <Spin indicator={<LoadingOutlined spin />} />
 })

@@ -37,8 +37,8 @@ const PresetPanel = ({ }: {
   const [onlinePresets, setOnlinePresets] = useState<PresetItem[]>()
   const [selectedKey, setSelectedKey] = useState<string>()
 
-  const { importStorage } = useStorageStore(useShallow((state) => ({
-    importStorage: state.importStorage
+  const { importStorage } = useStorageStore(useShallow((s) => ({
+    importStorage: s.importStorage
   })))
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const PresetPanel = ({ }: {
     if (!preset) return;
     importStorage(preset)
       .then(() => message.success(t('tip.ok.config-import')))
-      .catch((err) => message.warning(`${t('tip.err.config-import')}: ${err}`))
+      .catch((err) => message.warning(`${t('tip.err.config-import')}: ${err?.message}`))
   }
 
   const infoProps = useMemo(() => {
@@ -172,7 +172,6 @@ const PresetInfoView = ({ mode, item, onApply }: {
           <Tag>{t('g.' + mode)}</Tag>
           {preset.version && <Tag>v{preset.version}</Tag>}
           {preset.version != null && manifest.version !== preset.version && <Tag color='error'>{t('tip.label.version-mismatch')}</Tag>}
-          {!preset.config && preset.whitelist?.length && <Tag color='cyan'>{t('tag.only-whitelist')}</Tag>}
         </div>
         <p className="font-bold">{asLang(item.name) ?? 'null'}</p>
         <p>{asLang(item.description) ?? 'null'}</p>

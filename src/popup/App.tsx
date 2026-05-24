@@ -4,42 +4,35 @@ import { useTranslation } from "react-i18next"
 
 import {
   GithubOutlined,
-  CheckOutlined,
-  CloseOutlined,
 } from '@ant-design/icons';
 
 import FConfig from "./config"
-import WhitelistView from "./whitelist"
-
 import { compareVersions, tryUrl, existParentDomain, selectParentDomains } from "@/utils/base"
 import { useStorageStore } from "./stores/storage";
 import MoreView from "./more";
-import { useShallow } from "zustand/shallow";
 import { sendToBackground } from "@/utils/message";
 import { NoticePanel } from "./record";
+import PoliciesView from "./policies";
 
 function Application() {
   const [t, i18n] = useTranslation()
-  const [enabled, setEnabled] = useState(false)
   const [tab, setTab] = useState<chrome.tabs.Tab>()
   const [hostname, setHostname] = useState<string>()
-  const [whitelistMode, setWhitelistMode] = useState<'none' | 'self' | 'sub'>('none')
+  const [domainMode, setDomainMode] = useState<'none' | 'self' | 'sub'>('none')
   const [hasNewVersion, setHasNewVersion] = useState(false)
 
   const [messageApi, contextHolder] = message.useMessage();
 
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
-  const { config, whitelist, addWhitelist, deleteWhitelist } = useStorageStore(useShallow((state) => {
-    state.config ?? state.loadStorage()
-    return {
-      config: state.config,
-      whitelist: state.whitelist,
-      addWhitelist: state.addWhitelist,
-      deleteWhitelist: state.deleteWhitelist,
-    }
-  }))
+  const { version, config, policies, loadStorage, saveConfig, savePolicies } = useStorageStore()
+
   const isShowConfigBadge = !config?.action.fastInject;
+  const policyMode = policies?.isBlacklistMode ? 'blacklist' : 'whitelist';
+
+  useEffect(() => {
+    loadStorage();
+  }, [])
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
@@ -58,51 +51,56 @@ function Application() {
     })
   }, [])
 
-  useEffect(() => {
-    if (!whitelist || !hostname) return;
-    if (whitelist.includes(hostname)) {
-      setWhitelistMode('self')
-    } else if (existParentDomain(whitelist, hostname)) {
-      setWhitelistMode('sub')
-    }
-  }, [whitelist, hostname])
+  const siteList = useMemo(() => {
+    if (!policies) return [];
+    return policies.isBlacklistMode ? policies.blacklist : policies.whitelist
+  }, [version, policies])
 
   useEffect(() => {
-    if (!config) return
-    setEnabled(config.enable)
-  }, [config])
+    if (!policies || !hostname) return;
+
+    if (siteList.includes(hostname)) {
+      setDomainMode('self')
+    } else if (existParentDomain(siteList, hostname)) {
+      setDomainMode('sub')
+    } else {
+      setDomainMode('none')
+    }
+  }, [version, policies, hostname])
 
   const switchEnable = () => {
-    if (enabled) {
-      sendToBackground({
-        type: 'config.set',
-        config: { enable: false },
-      })
-      setEnabled(false)
-    } else {
-      sendToBackground({
-        type: 'config.set',
-        config: { enable: true },
-      })
-      setEnabled(true)
-    }
+    if (!config) return;
+    config.enable = !config.enable
+    saveConfig()
   }
 
-  const switchWhitelist = () => {
-    if (!hostname || !whitelist) return;
-    if (whitelistMode === 'none') {
-      /* 添加白名单 */
-      addWhitelist(hostname)
-      setWhitelistMode('self')
-    } else if (whitelistMode === 'self') {
+  const switchSiteList = () => {
+    if (!policies || !hostname) return;
+
+    if (domainMode === 'none') {
+      /* 添加名单 */
+      siteList.push(hostname)
+      setDomainMode('self')
+    } else if (domainMode === 'self') {
       /* 移除自身 */
-      deleteWhitelist(hostname)
-      setWhitelistMode('none')
-    } else if (whitelistMode === 'sub') {
+      const idx = siteList.indexOf(hostname);
+      if (idx !== -1) {
+        siteList.splice(idx, 1);
+      }
+      setDomainMode('none')
+    } else if (domainMode === 'sub') {
       /* 移除父域名 */
-      deleteWhitelist(selectParentDomains(whitelist, hostname))
-      setWhitelistMode('none')
+      const domains = selectParentDomains(siteList, hostname)
+      for (const domain of domains) {
+        const idx = siteList.indexOf(domain);
+        if (idx !== -1) {
+          siteList.splice(idx, 1);
+        }
+      }
+      setDomainMode('none')
     }
+
+    savePolicies()
   }
 
   const tabItems = useMemo<TabsProps['items']>(() => {
@@ -116,8 +114,8 @@ function Application() {
         children: <FConfig />,
       },
       {
-        label: t('e.whitelist'),
-        children: <WhitelistView msgApi={messageApi} />,
+        label: t('e.policies'),
+        children: <PoliciesView msgApi={messageApi} />,
       },
       {
         label: t('e.more'),
@@ -143,37 +141,43 @@ function Application() {
       <Divider style={{ margin: '8px 0' }} />
 
       <section className="flex items-stretch gap-2">
-
         {/* 白名单开关 */}
-        <section className="grow flex flex-col items-center gap-1">
+        <section className="flex-1 min-w-0 flex flex-col items-center gap-1">
           <Popconfirm
-            disabled={whitelistMode !== 'sub'}
+            disabled={domainMode !== 'sub'}
             title={t('tip.if.remove-parent-domain')}
             placement='bottom'
-            onConfirm={switchWhitelist}
+            onConfirm={switchSiteList}
             okText={t('g.confirm')}
             cancelText={t('g.cancel')}
-            okType='danger' >
-            <Button type={whitelistMode !== 'none' ? 'primary' : 'default'}
+            okType='danger'>
+            <Button
+              type={domainMode !== 'none' ? 'primary' : 'default'}
               danger={!hostname}
-              className="font-mono font-bold"
-              style={{ width: '100%' }}
-              onClick={whitelistMode !== 'sub' ? switchWhitelist : undefined} >
-              {hostname ?? t('tip.label.not-support-whitelist')}
+              className="font-mono font-bold truncate w-full"
+              title={hostname ?? t('tip.label.not-support-tab')}
+              onClick={domainMode !== 'sub' ? switchSiteList : undefined}>
+              <span className="truncate block max-w-full">
+                {hostname ?? t('tip.label.not-support-tab')}
+              </span>
             </Button>
           </Popconfirm>
-          <Typography.Text className="text-[13px]">{whitelistMode !== 'none' ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
+          <Typography.Text className="text-[13px]">{domainMode !== 'none' ? t(`label.${policyMode}.in`) : t(`label.${policyMode}.click-in`)}</Typography.Text>
         </section>
 
-        {/* 插件开关 */}
-        <section className="flex flex-col items-center gap-1">
-          <Button type={enabled ? 'primary' : 'default'} className="font-bold" onClick={switchEnable}>
-            {enabled ? t('g.enabled') : t('g.disabled')}
+        {/* 插件开关 - 固定宽度 */}
+        <section className="shrink-0 flex flex-col items-center gap-1">
+          <Button
+            type={config?.enable ? 'primary' : 'default'}
+            className="font-bold truncate w-20"
+            title={config?.enable ? t('g.enabled') : t('g.disabled')}
+            onClick={switchEnable}>
+            <span className="truncate">
+              {config?.enable ? t('g.enabled') : t('g.disabled')}
+            </span>
           </Button>
-          {/* <Switch value={enabled} onChange={setEnabled} /> */}
-          <Typography.Text className="text-[13px]">{enabled ? t('e.enabled') : t('e.disabled')}</Typography.Text>
+          <Typography.Text className="text-[13px]">{config?.enable ? t('e.enabled') : t('e.disabled')}</Typography.Text>
         </section>
-
       </section>
 
       <Divider style={{ margin: '8px 0 0 0' }} />

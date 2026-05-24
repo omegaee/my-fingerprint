@@ -1,7 +1,7 @@
 type LocalStorage = {
   version: string
   config: LocalStorageConfig  // 配置
-  whitelist: string[]  // 白名单
+  policies: LocalStoragePolicies  // 策略
 }
 
 type LocalStorageConfig = {
@@ -32,6 +32,12 @@ type LocalStorageConfig = {
   }
 }
 
+type LocalStoragePolicies = {
+  whitelist: string[]
+  blacklist: string[]
+  isBlacklistMode: boolean  // 是否使用黑名单模式
+}
+
 type HookFingerprint = {
   navigator: {
     clientHints: DefaultHookMode | ValueHookMode<ClientHintsInfo>
@@ -58,7 +64,7 @@ type HookFingerprint = {
   }
 }
 
-type HookFingerprintKey = keyof HookFingerprint['navigator'] | keyof HookFingerprint['screen'] | keyof HookFingerprint['other']
+type HookFingerprintKey = keyof HookFingerprint['navigator'] | keyof HookFingerprint['screen'] | keyof HookFingerprint['other'] | keyof HookFingerprint['normal']
 
 type WindowStorage = {
   url: string

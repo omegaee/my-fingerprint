@@ -1,4 +1,4 @@
-import { applySubscribeStorage, cleanLocalWhitelist, getLocalStorage, initLocalStorage, reBrowserSeed, updateLocalConfig, updateLocalWhitelist } from "./storage";
+import { applySubscribeStorage, getLocalStorage, importContext, initLocalStorage, reBrowserSeed, updateContext } from "./storage";
 import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
@@ -42,29 +42,30 @@ chrome.runtime.onStartup.addListener(() => {
  */
 chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
   switch (msg?.type) {
-    case 'config.set': {
-      updateLocalConfig(msg.config).then((data) => {
-        if (msg.result) sendResponse<'config.set'>(data);
-      })
-      return msg.result;
-    }
-    case 'config.subscribe': {
-      const fun = async () => {
-        if (msg.url != null) await updateLocalConfig({ subscribe: { url: msg.url.trim() } });
-        if (await applySubscribeStorage()) {
-          const [storage] = await getLocalStorage()
-          sendResponse<'config.subscribe'>(storage)
-        } else {
-          sendResponse<'config.subscribe'>(undefined)
-        }
+    case 'storage.import': {
+      if (!msg.storage) {
+        sendResponse<'storage.import'>({
+          ok: false,
+          message: 'message storage is empty'
+        })
+        return false
       }
-      fun()
+
+      importContext(msg.storage).then((storage) => {
+        sendResponse<'storage.import'>({
+          ok: true,
+          storage,
+        })
+      })
       return true
     }
-    case 'whitelist.update': {
-      if (msg.clean) cleanLocalWhitelist();
-      if (msg.data) updateLocalWhitelist(msg.data);
-      return false;
+    case 'config.set': {
+      updateContext({ config: msg.config })
+      return false
+    }
+    case 'policies.set': {
+      updateContext({ policies: msg.policies })
+      return false
     }
     case 'version.latest': {
       getNewVersion().then((version) => {
@@ -97,7 +98,7 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
-    const [storage, { match }] = await getLocalStorage()
+    const { storage, whitelistHelper, blacklistHelper } = await getLocalStorage()
 
     // 兼容模式注入，内部判断是否需要注入
     injectScript(tabId, storage)
@@ -105,11 +106,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     const _url = tab.url ? tryUrl(tab.url) : undefined
     if (!_url?.hostname) return;
 
-    if (match(_url.hostname)) {
-      reRequestHeader(tabId)
-      setBadgeWhitelist(tabId)
+    if (storage.policies.isBlacklistMode) {
+      if (blacklistHelper.match(_url.hostname)) {
+        reRequestHeader(undefined, tabId)
+      }
     } else {
-      reRequestHeader(undefined, tabId)
+      if (whitelistHelper.match(_url.hostname)) {
+        reRequestHeader(tabId)
+        setBadgeWhitelist(tabId)
+      }
     }
   }
 });
