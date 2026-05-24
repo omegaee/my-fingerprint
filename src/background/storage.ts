@@ -89,48 +89,10 @@ export const genDefaultLocalStorage = (): LocalStorage => {
   }
 }
 
-
-
 /**
  * 合并存储（dst覆盖src，合并到dst）
  * 会修改dst
  */
-const mergeStorage = (src: LocalStorageConfig, dst?: DeepPartial<LocalStorageConfig>): LocalStorageConfig => {
-  if (!dst) return src;
-  for (const key in dst) {
-    if (key === 'value') continue;
-    // @ts-ignore
-    if (!(key in src)) {
-      // @ts-ignore
-      delete dst[key];
-    }
-  }
-  for (const key in src) {
-    // @ts-ignore
-    const srcValue = src[key];
-    if (key in dst) {
-      const dstValue = (dst as any)[key];
-
-      if (dstValue === null) {
-        delete (dst as any)[key];
-        continue;
-      }
-
-      if (key === 'value') continue;
-
-      if (typeof srcValue === 'object' && !Array.isArray(srcValue)) {
-        // @ts-ignore
-        mergeStorage(srcValue, dstValue);
-      }
-    } else {
-      // @ts-ignore
-      dst[key] = srcValue;
-    }
-  }
-  // @ts-ignore
-  return dst;
-}
-
 function deepMerge<T>(target: T, source: DeepPartial<T>): T {
   if (typeof target !== "object" || target === null) return source as T;
   if (typeof source !== "object" || source === null) return target;
@@ -204,7 +166,7 @@ export const initLocalStorage = sharedAsync(async () => {
  * 从url中拉取配置
  */
 export const applySubscribeStorage = async () => {
-  const { storage, whitelistHelper, blacklistHelper } = await getLocalStorage();
+  const { storage } = await getLocalStorage();
 
   let url = storage.config.subscribe.url.trim()
   if (url === '') return true;
@@ -218,26 +180,7 @@ export const applySubscribeStorage = async () => {
   if (!data) return false;
 
   /* 加载配置 */
-  if (data.config && Object.keys(data.config).length) {
-    // 移除不支持的配置
-    delete data.config.prefs;
-    delete data.config.action?.fastInject;
-
-    await updateContext({ config: data.config })
-  }
-
-  /* 加载策略 */
-  const ps = data.policies
-  if (ps) {
-    if (ps.whitelist?.length) {
-      whitelistHelper.addList(ps.whitelist)
-    }
-    if (ps.blacklist?.length) {
-      blacklistHelper.addList(ps.blacklist)
-    }
-  }
-
-  saveContextToLocalStorage();
+  await importContext(data)
   return true;
 }
 
@@ -288,6 +231,43 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
   reRequestHeader()
 
   return storage
+}
+
+/**
+ * 导入配置
+ */
+export const importContext = async (data: DeepPartial<LocalStorage>) => {
+  const { storage, whitelistHelper, blacklistHelper } = await getLocalStorage();
+
+  if (data.config) {
+    delete data.config.prefs;
+    delete data.config.action?.fastInject;
+    await updateContext({ config: data.config })
+  }
+
+  const ps = data.policies
+
+  const wlist = [
+    ...(ps?.whitelist ?? []),
+    ...((data as any).whitelist ?? []),
+  ];
+  if (wlist?.length) whitelistHelper.addList(wlist);
+
+  const blist = [
+    ...(ps?.blacklist ?? []),
+    ...((data as any).blacklist ?? []),
+  ];
+  if (blist?.length) blacklistHelper.addList(blist);
+
+  if (ps?.isBlacklistMode != null && storage.policies.isBlacklistMode !== ps.isBlacklistMode) {
+    await updateContext({
+      policies: {
+        isBlacklistMode: ps.isBlacklistMode
+      }
+    })
+  }
+
+  return storage;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { applySubscribeStorage, getLocalStorage, initLocalStorage, reBrowserSeed, updateContext } from "./storage";
+import { applySubscribeStorage, getLocalStorage, importContext, initLocalStorage, reBrowserSeed, updateContext } from "./storage";
 import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
@@ -42,22 +42,26 @@ chrome.runtime.onStartup.addListener(() => {
  */
 chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
   switch (msg?.type) {
+    case 'storage.import': {
+      if (!msg.storage) {
+        sendResponse<'storage.import'>({
+          ok: false,
+          message: 'message storage is empty'
+        })
+        return false
+      }
+
+      importContext(msg.storage).then((storage) => {
+        sendResponse<'storage.import'>({
+          ok: true,
+          storage,
+        })
+      })
+      return true
+    }
     case 'config.set': {
       updateContext({ config: msg.config })
       return false
-    }
-    case 'config.subscribe': {
-      const fun = async () => {
-        if (msg.url != null) await updateContext({ config: { subscribe: { url: msg.url.trim() } } });
-        if (await applySubscribeStorage()) {
-          const { storage } = await getLocalStorage()
-          sendResponse<'config.subscribe'>(storage)
-        } else {
-          sendResponse<'config.subscribe'>(undefined)
-        }
-      }
-      fun()
-      return true
     }
     case 'policies.set': {
       const policies = msg.policies

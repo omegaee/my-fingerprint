@@ -6,12 +6,17 @@ declare namespace BackgroundMessage {
    * 事件
    */
   type Event = {
+    type: 'storage.import'
+    storage: DeepPartial<LocalStorage>
+    $: {
+      ok: boolean
+      messageKey?: string
+      message?: string
+      storage?: LocalStorage
+    }
+  } | {
     type: 'config.set'
     config: DeepPartial<LocalStorageConfig>
-  } | {
-    type: 'config.subscribe'
-    url?: string
-    $?: LocalStorage
   } | {
     type: 'policies.set'
     policies: LocalStoragePolicies
