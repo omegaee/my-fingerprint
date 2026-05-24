@@ -25,8 +25,10 @@ function Application() {
 
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
-  const { config, policies, loadStorage, saveConfig, savePolicies } = useStorageStore()
+  const { version, config, policies, loadStorage, saveConfig, savePolicies } = useStorageStore()
+
   const isShowConfigBadge = !config?.action.fastInject;
+  const policyMode = policies?.isBlacklistMode ? 'blacklist' : 'whitelist';
 
   useEffect(() => {
     loadStorage();
@@ -49,18 +51,22 @@ function Application() {
     })
   }, [])
 
+  const siteList = useMemo(() => {
+    if (!policies) return [];
+    return policies.isBlacklistMode ? policies.blacklist : policies.whitelist
+  }, [version, policies])
+
   useEffect(() => {
     if (!policies || !hostname) return;
 
-    const list = policies.isBlacklistMode ? policies.blacklist : policies.whitelist;
-    if (list.includes(hostname)) {
+    if (siteList.includes(hostname)) {
       setDomainMode('self')
-    } else if (existParentDomain(list, hostname)) {
+    } else if (existParentDomain(siteList, hostname)) {
       setDomainMode('sub')
     } else {
       setDomainMode('none')
     }
-  }, [policies, hostname])
+  }, [version, policies, hostname])
 
   const switchEnable = () => {
     if (!config) return;
@@ -71,25 +77,24 @@ function Application() {
   const switchSiteList = () => {
     if (!policies || !hostname) return;
 
-    const list = policies.isBlacklistMode ? policies.blacklist : policies.whitelist;
     if (domainMode === 'none') {
-      /* 添加白名单 */
-      list.push(hostname)
+      /* 添加名单 */
+      siteList.push(hostname)
       setDomainMode('self')
     } else if (domainMode === 'self') {
       /* 移除自身 */
-      const idx = list.indexOf(hostname);
+      const idx = siteList.indexOf(hostname);
       if (idx !== -1) {
-        list.splice(idx, 1);
+        siteList.splice(idx, 1);
       }
       setDomainMode('none')
     } else if (domainMode === 'sub') {
       /* 移除父域名 */
-      const domains = selectParentDomains(list, hostname)
+      const domains = selectParentDomains(siteList, hostname)
       for (const domain of domains) {
-        const idx = list.indexOf(domain);
+        const idx = siteList.indexOf(domain);
         if (idx !== -1) {
-          list.splice(idx, 1);
+          siteList.splice(idx, 1);
         }
       }
       setDomainMode('none')
@@ -109,7 +114,7 @@ function Application() {
         children: <FConfig />,
       },
       {
-        label: t('e.whitelist'),
+        label: t('e.policies'),
         children: <PoliciesView msgApi={messageApi} />,
       },
       {
@@ -150,14 +155,14 @@ function Application() {
               type={domainMode !== 'none' ? 'primary' : 'default'}
               danger={!hostname}
               className="font-mono font-bold truncate w-full"
-              title={hostname ?? t('tip.label.not-support-whitelist')}
+              title={hostname ?? t('tip.label.not-support-tab')}
               onClick={domainMode !== 'sub' ? switchSiteList : undefined}>
               <span className="truncate block max-w-full">
-                {hostname ?? t('tip.label.not-support-whitelist')}
+                {hostname ?? t('tip.label.not-support-tab')}
               </span>
             </Button>
           </Popconfirm>
-          <Typography.Text className="text-[13px]">{domainMode !== 'none' ? t('e.whitelist-in') : t('e.whitelist-click-in')}</Typography.Text>
+          <Typography.Text className="text-[13px]">{domainMode !== 'none' ? t(`label.${policyMode}.in`) : t(`label.${policyMode}.click-in`)}</Typography.Text>
         </section>
 
         {/* 插件开关 - 固定宽度 */}

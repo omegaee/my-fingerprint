@@ -22,8 +22,8 @@ const randNonce = () => Math.floor(Math.random() * 1e9);
  */
 const genStorageContent = (storage: LocalStorage): LocalStorageContext => ({
   storage,
-  whitelistHelper: new SiteListHelper(storage, 'whitelist'),
-  blacklistHelper: new SiteListHelper(storage, 'blacklist'),
+  whitelistHelper: new SiteListHelper(storage.policies.whitelist),
+  blacklistHelper: new SiteListHelper(storage.policies.blacklist),
   configNonce: randNonce(),
   policiesNonce: randNonce(),
 })
@@ -220,9 +220,11 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
       ...storage.policies,
       ...v.policies,
     }
-    ctx.whitelistHelper = new SiteListHelper(storage, 'whitelist')
-    ctx.blacklistHelper = new SiteListHelper(storage, 'blacklist')
+    ctx.whitelistHelper = new SiteListHelper(storage.policies.whitelist)
+    ctx.blacklistHelper = new SiteListHelper(storage.policies.blacklist)
     ctx.policiesNonce = randNonce()
+
+    console.log(storage.policies);
   }
 
   saveContextToLocalStorage()
@@ -237,12 +239,18 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
  * 导入配置
  */
 export const importContext = async (data: DeepPartial<LocalStorage>) => {
-  const { storage, whitelistHelper, blacklistHelper } = await getLocalStorage();
+  const ctx = await getLocalStorage();
+  const { storage, whitelistHelper, blacklistHelper } = ctx;
+
+  let isUpdate = false
 
   if (data.config) {
     delete data.config.prefs;
     delete data.config.action?.fastInject;
     await updateContext({ config: data.config })
+
+    ctx.configNonce = randNonce()
+    isUpdate = true
   }
 
   const ps = data.policies
@@ -251,13 +259,23 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
     ...(ps?.whitelist ?? []),
     ...((data as any).whitelist ?? []),
   ];
-  if (wlist?.length) whitelistHelper.addList(wlist);
+  if (wlist?.length) {
+    whitelistHelper.addList(wlist);
+
+    ctx.policiesNonce = randNonce()
+    isUpdate = true
+  }
 
   const blist = [
     ...(ps?.blacklist ?? []),
     ...((data as any).blacklist ?? []),
   ];
-  if (blist?.length) blacklistHelper.addList(blist);
+  if (blist?.length) {
+    blacklistHelper.addList(blist);
+
+    ctx.policiesNonce = randNonce()
+    isUpdate = true
+  }
 
   if (ps?.isBlacklistMode != null && storage.policies.isBlacklistMode !== ps.isBlacklistMode) {
     await updateContext({
@@ -265,6 +283,15 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
         isBlacklistMode: ps.isBlacklistMode
       }
     })
+
+    ctx.policiesNonce = randNonce()
+    isUpdate = true
+  }
+
+  if (isUpdate) {
+    saveContextToLocalStorage()
+    reRegisterScript()
+    reRequestHeader()
   }
 
   return storage;

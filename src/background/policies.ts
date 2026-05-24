@@ -5,20 +5,10 @@ import { existParentDomain } from "@/utils/base";
  * 同步更新 Context 内容
  */
 export class SiteListHelper {
-  private storage: LocalStorage
-  private mode: 'whitelist' | 'blacklist'
-
   private siteList: string[]
 
-  constructor(storage: LocalStorage, mode: 'whitelist' | 'blacklist') {
-    this.storage = storage;
-    this.mode = mode;
-
-    this.siteList = storage.policies[mode];
-    if (!this.siteList) {
-      this.siteList = [];
-      storage.policies[mode] = this.siteList;
-    }
+  constructor(list: string[]) {
+    this.siteList = list;
   }
 
   public get() {
@@ -48,12 +38,7 @@ export class SiteListHelper {
     }
   }
 
-  public set(v: string[]) {
-    this.siteList = v;
-    this.storage.policies[this.mode] = this.siteList;
-  }
-
   public clean() {
-    this.siteList = [];
+    this.siteList.length = 0;
   }
 }

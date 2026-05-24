@@ -64,18 +64,7 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       return false
     }
     case 'policies.set': {
-      const policies = msg.policies
-      getLocalStorage().then(({ storage, whitelistHelper, blacklistHelper }) => {
-        whitelistHelper.set(policies.whitelist);
-        blacklistHelper.set(policies.blacklist);
-        if (storage.policies.isBlacklistMode !== policies.isBlacklistMode) {
-          updateContext({
-            policies: {
-              isBlacklistMode: policies.isBlacklistMode
-            }
-          })
-        }
-      })
+      updateContext({ policies: msg.policies })
       return false
     }
     case 'version.latest': {
