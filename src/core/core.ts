@@ -417,8 +417,11 @@ export class FingerprintContext {
   }
 
   public makeScript = () => {
+    if (!this.args?.fun) return;
+
     const fun: (args: any) => string = this.args?.fun;
     if (!fun || typeof fun !== 'function') return;
+
     const options = JSON.stringify({
       info: this.info,
       conf: this.conf,

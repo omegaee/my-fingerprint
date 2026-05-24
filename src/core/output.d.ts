@@ -1,1 +1,4 @@
-export const coreInject: (_local: LocalStorage) => void
+export const coreInject: (args: {
+  storage: LocalStorage
+  fun?: () => void
+}) => void

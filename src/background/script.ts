@@ -46,7 +46,7 @@ export const injectScript = async (tabId: number, storage: LocalStorage) => {
     },
     world: 'MAIN',
     injectImmediately: true,
-    args: [storage],
+    args: [{ storage }],
     func: coreInject,
   }).catch(() => { })
 }
