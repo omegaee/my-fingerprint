@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { useStorageStore } from "@/popup/stores/storage"
+import { useStorageStore } from "@/popup/stores/storage2"
 import TipIcon from "@/components/data/tip-icon"
 import { memo, useMemo } from "react";
 import { Select, Spin } from "antd";
@@ -24,9 +24,10 @@ const nsImportTag = ['unsupport-import']
 export const PrefsConfigGroup = memo(() => {
   const [t, i18n] = useTranslation()
 
-  const { config, version } = useStorageStore(useShallow((s) => ({
-    config: s.config,
+  const { config, saveConfig } = useStorageStore(useShallow((s) => ({
     version: s.version,
+    config: s.config,
+    saveConfig: s.saveConfig,
   })))
 
   const prefs = usePrefsStore()
@@ -44,7 +45,7 @@ export const PrefsConfigGroup = memo(() => {
     }
   ], [i18n.language])
 
-  return config ? <div key={version}>
+  return config ? <div key={String(!!config)}>
 
     <ConfigItemY
       label={t('item.title.e-language')}
@@ -55,6 +56,7 @@ export const PrefsConfigGroup = memo(() => {
         value={prefs.language}
         onChange={(value) => {
           config.prefs.language = value
+          saveConfig()
           prefs.setLanguage(value)
         }}
       />
@@ -69,6 +71,7 @@ export const PrefsConfigGroup = memo(() => {
         value={prefs.theme}
         onChange={(value) => {
           config.prefs.theme = value
+          saveConfig()
           prefs.setTheme(value)
         }}
       />
