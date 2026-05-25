@@ -70,7 +70,7 @@ export const reRegisterScript = async () => {
   const { storage } = await getLocalStorage()
   if (!ensureFastInject(storage)) return;
 
-  logger.debug('injectScript in fast mode:', storage);
+  logger.debug('update injectScript in fast mode:', storage);
   if (storage.config.enable) {
     const scripts: chrome.userScripts.RegisteredUserScript[] = [{
       id: REG_ID,

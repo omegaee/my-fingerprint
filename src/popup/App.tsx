@@ -14,6 +14,8 @@ import { sendToBackground } from "@/utils/message";
 import { NoticePanel } from "./record";
 import PoliciesView from "./policies";
 
+import { logManager } from '@/utils/log';
+
 function Application() {
   const [t, i18n] = useTranslation()
   const [tab, setTab] = useState<chrome.tabs.Tab>()
@@ -26,6 +28,9 @@ function Application() {
   const manifest = useMemo<chrome.runtime.Manifest>(() => chrome.runtime.getManifest(), [])
 
   const { version, config, policies, loadStorage, saveConfig, savePolicies } = useStorageStore()
+
+  const logLevel = config?.prefs.logLevel;
+  logLevel && logManager.setLevel(logLevel);
 
   const isShowConfigBadge = !config?.action.fastInject;
   const policyMode = policies?.isBlacklistMode ? 'blacklist' : 'whitelist';

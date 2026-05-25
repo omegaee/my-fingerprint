@@ -5,6 +5,8 @@ import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
 
+getLocalStorage().then(({ storage }) => logManager.setLevel(storage.config.prefs.logLevel));
+
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 let newVersion: string | undefined
@@ -68,6 +70,8 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
     }
     case 'config.set': {
       updateContext({ config: msg.config })
+      const logLevel = msg?.config?.prefs?.logLevel;
+      logLevel && logManager.setLevel(logLevel);
       return false
     }
     case 'policies.set': {

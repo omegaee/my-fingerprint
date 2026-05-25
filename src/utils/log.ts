@@ -164,15 +164,16 @@ class Logger {
 /** 管理所有创建的日志，方便统一调整它们的日志等级 */
 class LogManager {
   private loggers: Logger[] = [];
+  /** 当前插件设置的日志等级 */
+  private current_level: LogLevel = LogLevel.INFO;
 
   /** 创建一个新的 Logger 实例，默认输出 INFO 日志，并添加到管理器中。
    *
    * @param prefix 通常是文件路径，或者模块、功能的名称
    */
   createLogger(prefix: string, level = LogLevel.INFO): Logger {
+    level = Math.max(level, this.current_level);
     const logger = new Logger(level, prefix);
-    // TODO: 后续应该将这么修改为 LogLevel.INFO
-    logger.setLevel(LogLevel.DEBUG);
     this.loggers.push(logger);
     return logger;
   }
@@ -187,7 +188,16 @@ class LogManager {
   /** 设置所有 Logger 实例的日志等级 */
   setLevel(level: LogLevel | LogLevelString) {
     const v = typeof level === "string" ? LogLevel[level] : level;
+    this.current_level = v;
     this.loggers.forEach((logger) => logger.setLevel(v));
+  }
+
+  getLevel(): LogLevel {
+    return this.current_level;
+  }
+
+  getLevelString(): LogLevelString {
+    return LogLevel[this.current_level] as LogLevelString;
   }
 }
 

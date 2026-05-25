@@ -13,6 +13,17 @@ const args = _args;
 // script entry
 // ------------
 (() => {
+  const logLevel = args?.storage?.config?.prefs?.logLevel as LogLevelString | undefined;
+
+  if (logLevel) {
+    if (logLevel !== "INFO") {
+      logger.info("set logLevel", logLevel);
+      logManager.setLevel(logLevel);
+    }
+  } else {
+    logger.warn("get logLevel from storage failed");
+  }
+
   logger.debug("coreInject args", args);
 
   if (typeof window !== "undefined") {
