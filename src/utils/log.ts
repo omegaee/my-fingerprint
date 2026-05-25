@@ -54,16 +54,15 @@ const ScopeMap: Record<string, ScriptScope> = {
  *
  * 因为脚本会注入到网站的不同上下文中，如 worker 等等，需要标识它们，以便区分日志来源。
  */
-function getScriptScope(): ScriptScope {
-  // 此处不能使用 window 哟
-  const name = Reflect.get(globalThis, Symbol.toStringTag);
+function getScriptScope(global: any = globalThis): ScriptScope {
+  const name = Reflect.get(global, Symbol.toStringTag);
   if (!name) {
     return "Window";
   }
 
   let scope = ScopeMap[name];
   // @ts-ignore
-  if (scope === "Window" && globalThis !== globalThis.top) {
+  if (scope === "Window" && global !== global.top) {
     scope = "IFrame";
   }
 
@@ -91,7 +90,7 @@ class Logger {
   /** 输出脚本所在作用域的样式，竹青色 */
   private static readonly scopeStyle = "color: #789262";
   /** 当前脚本所在的作用域 */
-  private static readonly scope = getScriptScope();
+  private scope = getScriptScope();
   /** 不同日志等级使用对应的日志输出方法 */
   private static readonly LogMethodMap: Record<
     LogLevel,
@@ -117,6 +116,10 @@ class Logger {
     return this.level;
   }
 
+  setScope(global: any) {
+    this.scope = getScriptScope(global);
+  }
+
   /** 输出特定等级的日志 */
   private logLevel(level: LogLevel, args: unknown[]) {
     // 当【日志级别 >= 当前设置级别的日志】才输出
@@ -127,7 +130,7 @@ class Logger {
     const log = Logger.LogMethodMap[level];
 
     log(
-      `%c${timestamp} %c[${Logger.extensionName}] %c@${Logger.scope} - %c${levelName} %c[${this.prefix}]`,
+      `%c${timestamp} %c[${Logger.extensionName}] %c@${this.scope} - %c${levelName} %c[${this.prefix}]`,
       Logger.timestampStyle,
       Logger.prefixStyle,
       Logger.scopeStyle,
@@ -170,7 +173,6 @@ class LogManager {
     const logger = new Logger(level, prefix);
     // TODO: 后续应该将这么修改为 LogLevel.INFO
     logger.setLevel(LogLevel.DEBUG);
-    logger.warn("dev mode, init logger with DEBUG Level, remove me!");
     this.loggers.push(logger);
     return logger;
   }

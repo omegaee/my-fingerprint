@@ -5,8 +5,6 @@ import { hookTasks } from "./tasks";
 import { notify, notifyIframeOrigin } from './utils';
 import { logManager } from '@/utils/log';
 
-const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
-
 export type HookTask = {
   // 条件，为空则默认为true
   condition?: (ctx: FingerprintContext) => boolean | undefined
@@ -27,6 +25,8 @@ type SeedInfo = {
 type ContextOptions = Pick<FingerprintContext, 'info' | 'conf'> & Partial<FingerprintContext>
 
 export class FingerprintContext {
+  /** 不同上下文有不同的日志 */
+  private logger = logManager.createLogger("FingerprintContext");
   public gthis: Window & WorkerGlobalScope & typeof globalThis
   public win?: Window & typeof globalThis
   public worker?: WorkerGlobalScope & typeof globalThis
@@ -316,8 +316,6 @@ export class FingerprintContext {
   private constructor(gthis: any, opt: ContextOptions) {
     if (!gthis) throw new Error('gthis is required');
 
-    logger.debug("init FingerprintContext with options", opt);
-
     const { info, conf } = opt;
 
     this.gthis = gthis
@@ -346,7 +344,12 @@ export class FingerprintContext {
       this.worker = gthis
     }
 
+    this.logger.setScope(gthis);
+    this.logger.debug("init with options", opt);
+
     this.runHook()
+
+    this.logger.info("init done");
   }
 
   public static hookWindow = (win: Window, opt: ContextOptions) => {
