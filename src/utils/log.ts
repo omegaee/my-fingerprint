@@ -96,12 +96,12 @@ class Logger {
     LogLevel,
     (...args: unknown[]) => void
   > = {
-    [LogLevel.DEBUG]: log,
-    [LogLevel.INFO]: log,
-    [LogLevel.WARN]: warn,
-    [LogLevel.ERROR]: error,
-    [LogLevel.NONE]: () => {},
-  };
+      [LogLevel.DEBUG]: log,
+      [LogLevel.INFO]: log,
+      [LogLevel.WARN]: warn,
+      [LogLevel.ERROR]: error,
+      [LogLevel.NONE]: () => { },
+    };
 
   constructor(level: LogLevel, prefix: string) {
     this.level = level;
@@ -185,8 +185,9 @@ class LogManager {
   }
 
   /** 设置所有 Logger 实例的日志等级 */
-  setLevel(level: LogLevel) {
-    this.loggers.forEach((logger) => logger.setLevel(level));
+  setLevel(level: LogLevel | LogLevelString) {
+    const v = typeof level === "string" ? LogLevel[level] : level;
+    this.loggers.forEach((logger) => logger.setLevel(v));
   }
 }
 

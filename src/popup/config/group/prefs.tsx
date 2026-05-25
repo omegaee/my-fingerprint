@@ -19,6 +19,14 @@ const LANG_OPTIONS = [
   }
 ]
 
+const LOG_LEVEL_OPTIONS = [
+  { label: '1 - DEBUG', value: 'DEBUG' },
+  { label: '2 - INFO', value: 'INFO' },
+  { label: '3 - WARN', value: 'WARN' },
+  { label: '4 - ERROR', value: 'ERROR' },
+  { label: '5 - NONE', value: 'NONE' }
+]
+
 const nsImportTag = ['unsupport-import']
 
 export const PrefsConfigGroup = memo(() => {
@@ -73,6 +81,21 @@ export const PrefsConfigGroup = memo(() => {
           config.prefs.theme = value
           saveConfig()
           prefs.setTheme(value)
+        }}
+      />
+    </ConfigItemY>
+
+    <ConfigItemY
+      label={t('item.title.log-level')}
+      endContent={<TipIcon.Question content={<ConfigDesc tags={nsImportTag} desc={t('item.desc.log-level')} />} />}
+    >
+      <Select
+        options={LOG_LEVEL_OPTIONS}
+        value={prefs.logLevel || 'info'}
+        onChange={(value) => {
+          config.prefs.logLevel = value
+          saveConfig()
+          prefs.setLogLevel(value)
         }}
       />
     </ConfigItemY>

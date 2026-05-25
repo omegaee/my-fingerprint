@@ -94,6 +94,7 @@
       "serviceWorker": "Service Worker 接口",
       "e-language": "语言",
       "theme": "主题",
+      "log-level": "日志",
       "seed": "全局种子",
       "fast-inject": "快速注入模式"
     },
@@ -128,6 +129,7 @@
       ],
       "e-language": "语言",
       "theme": "主题",
+      "log-level": "只输出不小于当前等级的日志",
       "seed": "全局种子，作用于 **根据全局种子随机值** 选项",
       "fast-inject": [
         "开启后，会使用更快速的脚本注入方式，需要浏览器支持；关闭则为兼容模式",
