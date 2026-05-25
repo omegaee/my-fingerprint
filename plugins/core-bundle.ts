@@ -18,7 +18,7 @@ type CoreBundleOptions = {
 
 export const coreBundle = (options: CoreBundleOptions): Plugin => ({
   name: 'core-bundle',
-  async buildStart() {
+  async configResolved() {
     await bundle(options);
   },
   configureServer(server) {
