@@ -2,6 +2,9 @@ import { FingerprintContext, WIN_KEY } from "./core";
 import { genRandomSeed, existParentDomain } from "@/utils/base";
 import { getBrowser } from "@/utils/equipment";
 import { sendToWindow } from "@/utils/message";
+import { logManager } from '@/utils/log';
+
+const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 // @ts-ignore
 const args = _args;
@@ -10,6 +13,8 @@ const args = _args;
 // script entry
 // ------------
 (() => {
+  logger.debug("coreInject args", args);
+
   if (typeof window !== "undefined") {
     // @ts-ignore
     if (!args.fun && typeof coreInject === 'function') args.fun = coreInject;

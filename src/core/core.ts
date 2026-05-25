@@ -3,6 +3,9 @@ import { seededRandom } from "@/utils/base";
 import { genRandomSeed } from "../utils/base";
 import { hookTasks } from "./tasks";
 import { notify, notifyIframeOrigin } from './utils';
+import { logManager } from '@/utils/log';
+
+const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 export type HookTask = {
   // 条件，为空则默认为true
@@ -312,6 +315,8 @@ export class FingerprintContext {
 
   private constructor(gthis: any, opt: ContextOptions) {
     if (!gthis) throw new Error('gthis is required');
+
+    logger.debug("init FingerprintContext with options", opt);
 
     const { info, conf } = opt;
 

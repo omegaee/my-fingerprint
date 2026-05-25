@@ -7,6 +7,8 @@ import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 
+import genLogPrefix from './gen-log-prefix';
+
 type CoreBundleOptions = {
   inputFilePath: string
   outputFilePath: string
@@ -32,6 +34,7 @@ async function bundle({ inputFilePath, outputFilePath, functionName, params }: C
   const bundle = await rollup({
     input: inputFilePath,
     plugins: [
+      genLogPrefix("__LOG_PREFIX_FILE_PATH__"),
       resolve(),
       commonjs(),
       typescript({
