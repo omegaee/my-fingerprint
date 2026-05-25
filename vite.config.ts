@@ -4,6 +4,8 @@ import { resolve } from 'path'
 import { crx } from "@crxjs/vite-plugin"
 import { firefoxManifest, chromeManifest } from './manifest'
 import { coreBundle } from "./plugins/core-bundle";
+import genLogPrefix from "./plugins/gen-log-prefix";
+
 // import { type ManifestV3Export } from "@crxjs/vite-plugin"
 
 const args = process.argv
@@ -19,6 +21,7 @@ export default defineConfig({
       functionName: 'coreInject',
       params: '_args',
     }),
+    genLogPrefix("__LOG_PREFIX_FILE_PATH__") as any,
     react(),
     crx({
       browser: isFirefox ? 'firefox' : 'chrome',

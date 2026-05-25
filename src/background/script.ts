@@ -1,5 +1,8 @@
 import { getLocalStorage, updateContext } from "./storage";
 import { coreInject } from "@/core/output";
+import { logManager } from '@/utils/log';
+
+const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 // // @ts-ignore
 // import contentSrc from '@/scripts/content?script&module'
@@ -38,6 +41,7 @@ export const ensureFastInject = (storage: LocalStorage) => {
  */
 export const injectScript = async (tabId: number, storage: LocalStorage) => {
   if (!storage.config.enable || ensureFastInject(storage)) return;
+  logger.debug('injectScript in compatibility mode:', tabId, storage);
   /* 注入脚本 */
   await chrome.scripting.executeScript({
     target: {
@@ -66,6 +70,7 @@ export const reRegisterScript = async () => {
   const { storage } = await getLocalStorage()
   if (!ensureFastInject(storage)) return;
 
+  logger.debug('injectScript in fast mode:', storage);
   if (storage.config.enable) {
     const scripts: chrome.userScripts.RegisteredUserScript[] = [{
       id: REG_ID,
