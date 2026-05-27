@@ -141,9 +141,12 @@ export class FingerprintContext {
       }
     } else {
       /* one */
-      const _handler = typeof handler === 'function' ? handler(key) : handler;
-      if (_handler) {
-        target[key] = this.newProxy(target[key] as any, _handler);
+      const raw = target[key];
+      if (raw && (typeof raw === 'object' || typeof raw === 'function')) {
+        const _handler = typeof handler === 'function' ? handler(key) : handler;
+        if (_handler) {
+          target[key] = this.newProxy(raw, _handler);
+        }
       }
     }
   }
@@ -402,7 +405,11 @@ export class FingerprintContext {
     if (!this.isEnable()) return;
     for (const task of hookTasks) {
       if (!task.condition || task.condition(this) === true) {
-        task.onEnable?.(this)
+        try {
+          task.onEnable?.(this)
+        } catch (e) {
+          this.logger.error(`Hook task error: `, e)
+        }
       }
     }
   }
