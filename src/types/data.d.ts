@@ -80,3 +80,9 @@ type ClientHintsInfo = {
 }
 
 type I18nString = string | Record<string, string>
+
+/** 使用文件路径作为日志前缀时，需要在编译期间进行处理。
+ * 
+ * 这是一个占位符，后期需要配合插件，将其替换成真实的文件路径
+ */
+declare const __LOG_PREFIX_FILE_PATH__: string;

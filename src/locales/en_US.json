@@ -91,6 +91,7 @@
       "serviceWorker": "Service Worker Interface",
       "e-language": "Language",
       "theme": "Theme",
+      "log-level": "Log Level",
       "seed": "Global Seed",
       "fast-inject": "Fast Inject Mode"
     },
@@ -125,6 +126,7 @@
       ],
       "e-language": "Language",
       "theme": "Theme",
+      "log-level": "Only show logs at or above the selected level",
       "seed": "Global Seed, Acts on **Random by Global Seed** Options",
       "fast-inject": [
         "When enabled, a faster script injection method will be used, requiring browser support; when disabled, compatibility mode is applied.",

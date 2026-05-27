@@ -2,6 +2,9 @@ import { getBrowser } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
 import { HookType } from '@/types/enum'
 import { isDefaultMode } from "@/utils/storage"
+import { logManager } from '@/utils/log';
+
+const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
 
@@ -58,6 +61,8 @@ const genUaRules = async ({ config }: LocalStorage): Promise<readonly RuleHeader
     makeRule("Sec-Ch-Ua-Full-Version-List", fullVersionList.map((brand) => `"${brand.brand}";v="${brand.version}"`).join(", ")),
   ].filter(Boolean) as RuleHeader[]
 
+  logger.debug('genUaRules:', res)
+
   return res;
 }
 
@@ -82,6 +87,8 @@ const genLanguageRules = ({ config }: LocalStorage): readonly RuleHeader[] => {
       value: [first, ...rest].join(","),
     })
   }
+
+  logger.debug('genLanguageRules:', res)
 
   return res;
 }
@@ -159,6 +166,8 @@ export const reRequestHeader = async (excludeTabId?: number, includeTabId?: numb
     }
   }
 
+  logger.debug('reRequestHeader', 'rules:', rules, '\ncondition:', condition)
+
   /* 更新 SessionRules */
   await chrome.declarativeNetRequest.updateSessionRules({
     removeRuleIds: [UA_NET_RULE_ID],
@@ -170,5 +179,7 @@ export const reRequestHeader = async (excludeTabId?: number, includeTabId?: numb
         requestHeaders: rules,
       },
     }]
-  }).catch(() => { })
+  }).catch((e) => {
+    logger.error('reRequestHeader updateSessionRules error:', e);
+  })
 }

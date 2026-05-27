@@ -14,6 +14,8 @@ import { sendToBackground } from "@/utils/message";
 import { NoticePanel } from "./record";
 import PoliciesView from "./policies";
 
+import { logManager } from '@/utils/log';
+
 function Application() {
   const [t, i18n] = useTranslation()
   const [tab, setTab] = useState<chrome.tabs.Tab>()
@@ -33,6 +35,13 @@ function Application() {
   useEffect(() => {
     loadStorage();
   }, [])
+
+  useEffect(() => {
+    const level = config?.prefs?.logLevel;
+    if (level) {
+      logManager.setLevel(level);
+    }
+  }, [config?.prefs?.logLevel])
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {

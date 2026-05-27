@@ -7,7 +7,7 @@ type Theme = LocalStorageConfig['prefs']['theme']
 
 type State = {
   theme: Theme
-  language: string
+  language: string,
 }
 
 type Actions = {
@@ -105,7 +105,7 @@ export const usePrefsStore = create<State & Actions>()(
         const lang = getLanguage(language)
         i18n.changeLanguage(lang)
         set({ language: lang })
-      }
+      },
     }
   }, {
     version: 1,
@@ -113,7 +113,7 @@ export const usePrefsStore = create<State & Actions>()(
     storage: createJSONStorage(() => localStorage),
     partialize: (s) => ({
       theme: s.theme,
-      language: s.language
+      language: s.language,
     }) as any,
     onRehydrateStorage: () => (state) => {
       if (!state) return;

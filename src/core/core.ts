@@ -3,6 +3,7 @@ import { seededRandom } from "@/utils/base";
 import { genRandomSeed } from "../utils/base";
 import { hookTasks } from "./tasks";
 import { notify, notifyIframeOrigin } from './utils';
+import { logManager } from '@/utils/log';
 
 export type HookTask = {
   // 条件，为空则默认为true
@@ -24,6 +25,8 @@ type SeedInfo = {
 type ContextOptions = Pick<FingerprintContext, 'info' | 'conf'> & Partial<FingerprintContext>
 
 export class FingerprintContext {
+  /** 不同上下文有不同的日志 */
+  private logger = logManager.createLogger("FingerprintContext");
   public gthis: Window & WorkerGlobalScope & typeof globalThis
   public win?: Window & typeof globalThis
   public worker?: WorkerGlobalScope & typeof globalThis
@@ -341,7 +344,12 @@ export class FingerprintContext {
       this.worker = gthis
     }
 
+    this.logger.setScope(gthis);
+    this.logger.debug("init with options", opt);
+
     this.runHook()
+
+    this.logger.info("init done");
   }
 
   public static hookWindow = (win: Window, opt: ContextOptions) => {

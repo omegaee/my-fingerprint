@@ -4,6 +4,7 @@ import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
 import { hasUserScripts, reRegisterScript } from "./script";
 import { SiteListHelper } from "./policies";
+import { logManager } from "@/utils/log";
 
 let mContent: LocalStorageContext | undefined
 
@@ -79,6 +80,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       prefs: {
         language: navigator.language,
         theme: 'system',
+        logLevel: 'ERROR',
       },
     },
     policies: {
@@ -143,6 +145,7 @@ export const initLocalStorage = sharedAsync(async () => {
   if (rem.length) {
     chrome.storage.local.remove(rem)
   }
+
   /* set */
   const _storage: LocalStorage = {
     version: _new.version,
@@ -153,6 +156,14 @@ export const initLocalStorage = sharedAsync(async () => {
       isBlacklistMode: _curr.policies?.isBlacklistMode ?? _new.policies.isBlacklistMode,
     },
   }
+
+  /** 刷新浏览器种子 */
+  _storage.config.seed.browser = genRandomSeed()
+
+  /** 更新日志等级 */
+  logManager.setLevel(_storage.config.prefs.logLevel)
+
+  /** 其他 */
   mContent = genStorageContent(_storage)
   chrome.storage.local.set(_storage).then(() => {
     reRegisterScript()

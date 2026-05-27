@@ -4,6 +4,8 @@ type LocalStorage = {
   policies: LocalStoragePolicies  // 策略
 }
 
+type LogLevelString = "DEBUG" | "INFO" | "WARN" | "ERROR" | "NONE";
+
 type LocalStorageConfig = {
   enable: boolean
   // 种子
@@ -28,7 +30,8 @@ type LocalStorageConfig = {
   // 其他
   prefs: {
     language: string
-    theme: 'system' | 'light' | 'dark'
+    theme: 'system' | 'light' | 'dark',
+    logLevel: LogLevelString
   }
 }
 
