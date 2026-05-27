@@ -94,7 +94,7 @@
       "serviceWorker": "Service Worker 接口",
       "e-language": "语言",
       "theme": "主题",
-      "log-level": "日志",
+      "log-level": "日志等级",
       "seed": "全局种子",
       "fast-inject": "快速注入模式"
     },

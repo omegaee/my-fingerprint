@@ -13,24 +13,21 @@ const args = _args;
 // script entry
 // ------------
 (() => {
-  const logLevel = args?.storage?.config?.prefs?.logLevel as LogLevelString | undefined;
+  const storage: LocalStorage | undefined = args.storage;
 
-  if (logLevel) {
-    if (logLevel !== "INFO") {
-      logger.info("set logLevel", logLevel);
-      logManager.setLevel(logLevel);
-    }
-  } else {
+  let logLevel = storage?.config?.prefs?.logLevel as LogLevelString | undefined;
+
+  if (!logLevel) {
     logger.warn("get logLevel from storage failed");
+    logLevel = "INFO";
   }
+  logManager.setLevel(logLevel);
 
   logger.debug("coreInject args", args);
 
   if (typeof window !== "undefined") {
     // @ts-ignore
     if (!args.fun && typeof coreInject === 'function') args.fun = coreInject;
-
-    const storage: LocalStorage = args.storage;
     if (!window || !storage) return;
 
     const hook = (win: Window & typeof globalThis, data: WindowStorage | undefined) => {

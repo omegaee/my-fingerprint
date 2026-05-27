@@ -1,11 +1,9 @@
-import { applySubscribeStorage, getLocalStorage, importContext, initLocalStorage, reBrowserSeed, updateContext } from "./storage";
+import { getLocalStorage, importContext, initLocalStorage, updateContext } from "./storage";
 import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
-
-getLocalStorage().then(({ storage }) => logManager.setLevel(storage.config.prefs.logLevel));
 
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
@@ -31,7 +29,6 @@ const getNewVersion = async () => {
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === "install" || reason === "update") {
     initLocalStorage()
-    reBrowserSeed()
   }
 });
 
@@ -40,7 +37,6 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
  */
 chrome.runtime.onStartup.addListener(() => {
   initLocalStorage()
-  reBrowserSeed()
 });
 
 /**

@@ -29,15 +29,19 @@ function Application() {
 
   const { version, config, policies, loadStorage, saveConfig, savePolicies } = useStorageStore()
 
-  const logLevel = config?.prefs.logLevel;
-  logLevel && logManager.setLevel(logLevel);
-
   const isShowConfigBadge = !config?.action.fastInject;
   const policyMode = policies?.isBlacklistMode ? 'blacklist' : 'whitelist';
 
   useEffect(() => {
     loadStorage();
   }, [])
+
+  useEffect(() => {
+    const level = config?.prefs?.logLevel;
+    if (level) {
+      logManager.setLevel(level);
+    }
+  }, [config?.prefs?.logLevel])
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {

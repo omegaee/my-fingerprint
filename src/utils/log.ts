@@ -188,6 +188,7 @@ class LogManager {
   /** 设置所有 Logger 实例的日志等级 */
   setLevel(level: LogLevel | LogLevelString) {
     const v = typeof level === "string" ? LogLevel[level] : level;
+    if (v === this.current_level) return;
     this.current_level = v;
     this.loggers.forEach((logger) => logger.setLevel(v));
   }

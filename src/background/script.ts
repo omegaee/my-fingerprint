@@ -87,6 +87,6 @@ export const reRegisterScript = async () => {
       await chrome.userScripts.register(scripts)
     }
   } else {
-    chrome.userScripts.unregister({ ids: [REG_ID] })
+    chrome.userScripts.unregister({ ids: [REG_ID] }).catch(() => { });
   }
 }

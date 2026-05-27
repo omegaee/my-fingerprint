@@ -7,6 +7,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 import { usePrefsStore } from "@/popup/stores/prefs";
 import { ConfigDesc, ConfigItemY } from "../item";
 import { useShallow } from "zustand/shallow";
+import { logManager } from "@/utils/log";
 
 const LANG_OPTIONS = [
   {
@@ -91,11 +92,11 @@ export const PrefsConfigGroup = memo(() => {
     >
       <Select
         options={LOG_LEVEL_OPTIONS}
-        value={prefs.logLevel || 'info'}
+        value={config.prefs.logLevel}
         onChange={(value) => {
           config.prefs.logLevel = value
           saveConfig()
-          prefs.setLogLevel(value)
+          logManager.setLevel(value);
         }}
       />
     </ConfigItemY>

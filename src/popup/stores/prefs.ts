@@ -2,14 +2,12 @@ import i18n from "@/locales"
 import { theme, type ThemeConfig } from "antd"
 import { create } from "zustand"
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { logManager } from '@/utils/log';
 
 type Theme = LocalStorageConfig['prefs']['theme']
 
 type State = {
   theme: Theme
   language: string,
-  logLevel: LogLevelString,
 }
 
 type Actions = {
@@ -18,9 +16,6 @@ type Actions = {
 
   initLanguage: () => void
   setLanguage: (language: string) => void
-
-  setLogLevel: (logLevel: LogLevelString) => void 
-  getLogLevel: () => LogLevelString
 }
 
 /**
@@ -77,7 +72,6 @@ export const usePrefsStore = create<State & Actions>()(
     return {
       theme: 'system',
       language: getLanguage(navigator.language),
-      logLevel: 'INFO',
 
       getThemeName: (theme?: string) => {
         const t = theme ?? get().theme;
@@ -112,14 +106,6 @@ export const usePrefsStore = create<State & Actions>()(
         i18n.changeLanguage(lang)
         set({ language: lang })
       },
-
-      setLogLevel: (logLevel: LogLevelString) => {
-        logManager.setLevel(logLevel)
-        set({ logLevel })
-      },
-      getLogLevel: () => {
-        return get().logLevel
-      }
     }
   }, {
     version: 1,
@@ -128,7 +114,6 @@ export const usePrefsStore = create<State & Actions>()(
     partialize: (s) => ({
       theme: s.theme,
       language: s.language,
-      logLevel: s.logLevel
     }) as any,
     onRehydrateStorage: () => (state) => {
       if (!state) return;
