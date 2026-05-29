@@ -365,40 +365,39 @@ export const hookTasks: HookTask[] = [
   {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default,
     onEnable: ({ gthis, conf, useSeed, useProxy }) => {
-      {
-        const seed = useSeed(conf.fp.other.webgl)
-        if (seed != null) {
-          const fragColorRegex = /gl_FragColor\s*=\s*([\s\S]+?);/;
+      const seed = useSeed(conf.fp.other.webgl)
+      if (seed != null) {
+        const fragColorRegex = /gl_FragColor\s*=\s*([\s\S]+?);/;
+        const paramRegex = /[,+\-*/()]/;
 
-          const rand = makeSeededRandom(seed, 1e-2, 1e-5);
-          const randFn = () => rand().toFixed(5);
+        const randGen = makeSeededRandom(seed, 1e-2, 1e-5);
+        const randFn = () => randGen().toFixed(5);
 
-          const vecOffset = `vec4(${randFn()},${randFn()},${randFn()},0)`;
+        const vecOffset = `vec4(${randFn()},${randFn()},${randFn()},0)`;
 
-          const handler = {
-            apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
-              notify('strong.webgl')
+        const handler = {
+          apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
+            notify('strong.webgl')
 
-              const source = args[1]
-              if (source && typeof source === 'string') {
-                args[1] = source.replace(fragColorRegex, (match, expr: string) => {
-                  const tokens = expr.split(/[,+\-*/()]/).map(v => v.trim());
-                  const constantCount = tokens.filter(v => !isNaN(parseFloat(v))).length;
+            const source = args[1]
+            if (source && typeof source === 'string') {
+              args[1] = source.replace(fragColorRegex, (match, expr: string) => {
+                const tokens = expr.split(paramRegex).map(v => v.trim());
+                const constantCount = tokens.filter(v => !isNaN(parseFloat(v))).length;
 
-                  if (constantCount >= 3) {
-                    return match;
-                  } else {
-                    return `gl_FragColor = ${vecOffset} + (${expr});`;
-                  }
-                });
-              }
-
-              return Reflect.apply(target, thisArg, args);
+                if (constantCount >= 3) {
+                  return match;
+                } else {
+                  return `gl_FragColor = ${vecOffset} + (${expr});`;
+                }
+              });
             }
+
+            return Reflect.apply(target, thisArg, args);
           }
-          useProxy(gthis.WebGLRenderingContext.prototype, 'shaderSource', handler)
-          useProxy(gthis.WebGL2RenderingContext.prototype, 'shaderSource', handler)
         }
+        useProxy(gthis.WebGLRenderingContext.prototype, 'shaderSource', handler)
+        useProxy(gthis.WebGL2RenderingContext.prototype, 'shaderSource', handler)
       }
     },
   },
