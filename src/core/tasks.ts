@@ -1,10 +1,9 @@
 import { HookType } from '@/types/enum'
 import { type HookTask } from "./core";
-import { seededRandom } from '@/utils/base';
+import { makeSeededRandom, seededRandom } from '@/utils/base';
 import {
   notify,
   drawNoiseTo2d,
-  drawNoiseToWebgl,
   proxyUserAgentData,
   randomCanvasNoise,
   randomFontNoise,
@@ -361,32 +360,50 @@ export const hookTasks: HookTask[] = [
   },
 
   /**
-   * Canvas Webgl
+   * Canvas WebGL
    */
   {
     condition: ({ conf }) => conf.fp.other.webgl.type !== HookType.default,
     onEnable: ({ gthis, conf, useSeed, useProxy }) => {
-      /* Image */
-      {
-        const seed = useSeed(conf.fp.other.webgl)
-        if (seed != null) {
-          const noise = randomWebglNoise(seed)
-          const handler = {
-            apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
-              notify('strong.webgl')
-              drawNoiseToWebgl(thisArg, noise)
-              return target.apply(thisArg, args as any);
+      const seed = useSeed(conf.fp.other.webgl)
+      if (seed != null) {
+        const fragColorRegex = /gl_FragColor\s*=\s*([\s\S]+?);/;
+        const paramRegex = /[,+\-*/()]/;
+
+        const randGen = makeSeededRandom(seed, 1e-2, 1e-5);
+        const randFn = () => randGen().toFixed(5);
+
+        const vecOffset = `vec4(${randFn()},${randFn()},${randFn()},0)`;
+
+        const handler = {
+          apply: (target: any, thisArg: WebGLRenderingContext | WebGL2RenderingContext, args: any) => {
+            notify('strong.webgl')
+
+            const source = args[1]
+            if (source && typeof source === 'string') {
+              args[1] = source.replace(fragColorRegex, (match, expr: string) => {
+                const tokens = expr.split(paramRegex).map(v => v.trim());
+                const constantCount = tokens.filter(v => !isNaN(parseFloat(v))).length;
+
+                if (constantCount >= 3) {
+                  return match;
+                } else {
+                  return `gl_FragColor = ${vecOffset} + (${expr});`;
+                }
+              });
             }
+
+            return Reflect.apply(target, thisArg, args);
           }
-          useProxy(gthis.WebGLRenderingContext.prototype, 'readPixels', handler)
-          useProxy(gthis.WebGL2RenderingContext.prototype, 'readPixels', handler)
         }
+        useProxy(gthis.WebGLRenderingContext.prototype, 'shaderSource', handler)
+        useProxy(gthis.WebGL2RenderingContext.prototype, 'shaderSource', handler)
       }
     },
   },
 
   /**
-   * Canvas Webgl参数信息
+   * WebGL GPU 参数信息
    */
   {
     condition: ({ conf, isDefault }) => !isDefault(conf.fp.normal.gpuInfo),
@@ -428,15 +445,13 @@ export const hookTasks: HookTask[] = [
    * Canvas Base
    */
   {
-    condition: ({ conf, isDefault }) => !isDefault([conf.fp.other.canvas, conf.fp.other.webgl]),
+    condition: ({ conf }) => conf.fp.other.canvas.type !== HookType.default,
     onEnable: (ctx) => {
       const { gthis, win, conf, useSeed, useProxy } = ctx;
 
       const seedCanvas = useSeed(conf.fp.other.canvas);
-      const seedWebgl = useSeed(conf.fp.other.webgl);
 
       const noiseCanvas = seedCanvas == null ? null : randomCanvasNoise(seedCanvas);
-      const noiseWebgl = seedWebgl == null ? null : randomWebglNoise(seedWebgl);
 
       const handler = {
         apply: (target: Function, thisArg: OffscreenCanvas | HTMLCanvasElement, args: any) => {
@@ -449,15 +464,6 @@ export const hookTasks: HookTask[] = [
                 ctx, noiseCanvas, c2d as any,
                 0, 0, thisArg.width, thisArg.height
               );
-              return Reflect.apply(target, thisArg, args);
-            }
-          }
-          /* webgl */
-          if (noiseWebgl) {
-            const gl = thisArg.getContext('webgl') ?? thisArg.getContext('webgl2');
-            if (gl) {
-              notify('strong.webgl');
-              drawNoiseToWebgl(gl as any, noiseWebgl);
               return Reflect.apply(target, thisArg, args);
             }
           }
