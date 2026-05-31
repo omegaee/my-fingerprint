@@ -1,4 +1,11 @@
-import { getLocalStorage, importContext, initLocalStorage, updateContext } from "./storage";
+import {
+  getInjectedStorage,
+  getLocalStorage,
+  getWebRtcStatus,
+  importContext,
+  initLocalStorage,
+  updateContext,
+} from "./storage";
 import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
@@ -80,6 +87,13 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       })
       return true
     }
+    case 'webrtc.status': {
+      getWebRtcStatus().then((status) => {
+        logger.debug('webrtc.status resolved:', status)
+        sendResponse<'webrtc.status'>(status)
+      })
+      return true
+    }
     case 'api.check': {
       if (msg.api === 'userScripts') {
         try {
@@ -107,7 +121,8 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
-    const { storage, whitelistHelper, blacklistHelper } = await getLocalStorage()
+    const { whitelistHelper, blacklistHelper } = await getLocalStorage()
+    const storage = await getInjectedStorage()
 
     logger.debug('chrome.tabs.onUpdated:', tab.title || tab.url || tab.id);
     logger.debug('injectScript with storage:', storage)

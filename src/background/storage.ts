@@ -5,8 +5,15 @@ import { HookType } from '@/types/enum'
 import { hasUserScripts, reRegisterScript } from "./script";
 import { SiteListHelper } from "./policies";
 import { logManager } from "@/utils/log";
+import { getBrowser } from "@/utils/equipment";
+import {
+  applyWebRtcPolicyMode,
+  getInjectedStorageForWebRtc,
+  type WebRtcPolicyState,
+} from "./webrtc-policy";
 
 let mContent: LocalStorageContext | undefined
+const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 type LocalStorageContext = {
   storage: LocalStorage
@@ -14,6 +21,7 @@ type LocalStorageContext = {
   blacklistHelper: SiteListHelper
   configNonce: number
   policiesNonce: number
+  webrtcPolicyState: WebRtcPolicyState
 }
 
 const randNonce = () => Math.floor(Math.random() * 1e9);
@@ -27,7 +35,22 @@ const genStorageContent = (storage: LocalStorage): LocalStorageContext => ({
   blacklistHelper: new SiteListHelper(storage.policies.blacklist),
   configNonce: randNonce(),
   policiesNonce: randNonce(),
+  webrtcPolicyState: 'default',
 })
+
+const getCurrentBrowser = () => getBrowser(navigator.userAgent)
+
+const syncWebRtcPolicyState = async (ctx: LocalStorageContext) => {
+  ctx.webrtcPolicyState = await applyWebRtcPolicyMode({
+    chromeApi: chrome,
+    browser: getCurrentBrowser(),
+    mode: ctx.storage.config.fp.other.webrtc.type,
+  })
+  logger.info('syncWebRtcPolicyState:', {
+    mode: ctx.storage.config.fp.other.webrtc.type,
+    state: ctx.webrtcPolicyState,
+  })
+}
 
 /**
  * 生成默认配置
@@ -165,11 +188,11 @@ export const initLocalStorage = sharedAsync(async () => {
 
   /** 其他 */
   mContent = genStorageContent(_storage)
-  chrome.storage.local.set(_storage).then(() => {
-    reRegisterScript()
-    reRequestHeader()
-    applySubscribeStorage()
-  })
+  await syncWebRtcPolicyState(mContent)
+  await chrome.storage.local.set(_storage)
+  await reRegisterScript()
+  reRequestHeader()
+  void applySubscribeStorage()
   return mContent
 })
 
@@ -206,6 +229,20 @@ export const getLocalStorage = async () => {
   }
 }
 
+export const getInjectedStorage = async () => {
+  const ctx = await getLocalStorage()
+  return getInjectedStorageForWebRtc(ctx.storage, ctx.webrtcPolicyState)
+}
+
+export const getWebRtcStatus = async () => {
+  const ctx = await getLocalStorage()
+  return {
+    state: ctx.webrtcPolicyState,
+    configuredMode: ctx.storage.config.fp.other.webrtc.type,
+    browser: getCurrentBrowser(),
+  }
+}
+
 /**
  * 存储配置
  */
@@ -236,9 +273,10 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
     ctx.policiesNonce = randNonce()
   }
 
+  await syncWebRtcPolicyState(ctx)
   saveContextToLocalStorage()
 
-  reRegisterScript()
+  await reRegisterScript()
   reRequestHeader()
 
   return storage

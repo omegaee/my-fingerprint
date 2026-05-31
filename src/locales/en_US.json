@@ -2,7 +2,7 @@
   "g": {
     "enable": "Enable",
     "disable": "Disable",
-    "enabled": "Enabled",
+    "enabled": "Leak Protection (Recommended)",
     "disabled": "Disabled",
     "preset": "Preset",
     "custom": "Custom",
@@ -114,8 +114,9 @@
       "audio": "Audio fingerprinting identifies your device through unique patterns in audio signal processing.",
       "webgl": "WebGL fingerprinting captures device characteristics based on variations in 3D rendering behavior.",
       "webrtc": [
-        "When disabled, websites are prevented from obtaining your real IP address via WebRTC (especially when using a proxy). When enabled, it helps prevent IP leaks.",
-        "When disabled, some websites may behave abnormally or fail to function properly."
+        "In leak-protection mode, Chrome / Edge first enable Chromium's `disable_non_proxied_udp` policy instead of removing WebRTC entirely.",
+        "When this mode works normally, the WebRTC interface usually still exists, but host / srflx candidates are restricted so local or real egress addresses are not exposed directly; if the policy is unavailable or fails to apply, the extension automatically falls back to disabling WebRTC.",
+        "This mode still depends on a real local proxy environment and only applies to the Chromium route (Chrome / Edge); Firefox does not currently support this path. If your proxy rules send a target to DIRECT, the extension cannot override that direct route."
       ],
       "font": "Font fingerprinting reveals device details by checking which fonts are supported and how they’re rendered.",
       "webgpu": "WebGPU fingerprinting extracts device information by analyzing differences in GPU processing capabilities.",
@@ -140,6 +141,14 @@
         "**Firefox Enable Conditions**",
         "- `Firefox 136+` Authorization allowed"
       ]
+    },
+    "status": {
+      "webrtc": {
+        "default": "Effective state: Browser default",
+        "policy-enabled": "Effective state: Leak protection active",
+        "fallback-disabled": "Effective state: Fell back to disabled",
+        "manual-disabled": "Effective state: Manually disabled"
+      }
     },
     "theme": {
       "system": "System",
