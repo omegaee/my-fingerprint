@@ -1,4 +1,4 @@
-import { getInjectedStorage, updateContext } from "./storage";
+import { getLocalStorage, updateContext } from "./storage";
 import { coreInject } from "@/core/output";
 import { logManager } from '@/utils/log';
 
@@ -67,7 +67,7 @@ const getRegScriptCode = (storage: LocalStorage) => {
  * 注册脚本（快速注入模式）
  */
 export const reRegisterScript = async () => {
-  const storage = await getInjectedStorage()
+  const { storage } = await getLocalStorage()
   if (!ensureFastInject(storage)) return;
 
   logger.debug('update injectScript in fast mode:', storage);

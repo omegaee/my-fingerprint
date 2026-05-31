@@ -2,7 +2,7 @@
   "g": {
     "enable": "Enable",
     "disable": "Disable",
-    "enabled": "Leak Protection (Recommended)",
+    "enabled": "Enabled",
     "disabled": "Disabled",
     "preset": "Preset",
     "custom": "Custom",
@@ -66,7 +66,10 @@
     "domain": "Random by Domain",
     "global": "Random by Global Seed",
     "enabled": "Enabled",
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "webrtc": {
+      "enabled": "Leak Protection (Recommended)"
+    }
   },
   "item": {
     "label": {
@@ -114,9 +117,9 @@
       "audio": "Audio fingerprinting identifies your device through unique patterns in audio signal processing.",
       "webgl": "WebGL fingerprinting captures device characteristics based on variations in 3D rendering behavior.",
       "webrtc": [
-        "In leak-protection mode, Chrome / Edge first enable Chromium's `disable_non_proxied_udp` policy instead of removing WebRTC entirely.",
-        "When this mode works normally, the WebRTC interface usually still exists, but host / srflx candidates are restricted so local or real egress addresses are not exposed directly; if the policy is unavailable or fails to apply, the extension automatically falls back to disabling WebRTC.",
-        "This mode still depends on a real local proxy environment and only applies to the Chromium route (Chrome / Edge); Firefox does not currently support this path. If your proxy rules send a target to DIRECT, the extension cannot override that direct route."
+        "System value: Keep the browser’s default WebRTC behavior without changes.",
+        "Leak‑protection: Try to keep WebRTC working while hiding local or real IP addresses. If the browser cannot apply the policy, the extension will automatically switch to full disable.",
+        "Disable: Turn off WebRTC completely, making all related features unavailable."
       ],
       "font": "Font fingerprinting reveals device details by checking which fonts are supported and how they’re rendered.",
       "webgpu": "WebGPU fingerprinting extracts device information by analyzing differences in GPU processing capabilities.",

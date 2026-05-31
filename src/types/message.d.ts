@@ -24,13 +24,6 @@ declare namespace BackgroundMessage {
     type: 'version.latest'
     $?: string
   } | {
-    type: 'webrtc.status'
-    $: {
-      state: 'default' | 'policy-enabled' | 'fallback-disabled'
-      configuredMode: HookType
-      browser?: BrowserType
-    }
-  } | {
     type: 'api.check'
     api: string
     $: boolean | string

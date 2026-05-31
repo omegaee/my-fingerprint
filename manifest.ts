@@ -28,8 +28,6 @@ const VALUES = {
     'declarativeNetRequest',
     'clipboardRead',
     'clipboardWrite',
-  ] as chrome.runtime.ManifestPermissions[],
-  chrome_only_permissions: [
     'privacy',
   ] as chrome.runtime.ManifestPermissions[],
   optional_permissions: [
@@ -52,7 +50,6 @@ export const chromeManifest: ManifestV3Export = {
   update_url: 'https://raw.githubusercontent.com/omegaee/my-fingerprint/refs/heads/main/updates.xml',
   permissions: [
     ...VALUES.permissions,
-    ...VALUES.chrome_only_permissions,
   ],
   optional_permissions: [
     ...VALUES.optional_permissions,

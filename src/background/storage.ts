@@ -5,15 +5,9 @@ import { HookType } from '@/types/enum'
 import { hasUserScripts, reRegisterScript } from "./script";
 import { SiteListHelper } from "./policies";
 import { logManager } from "@/utils/log";
-import { getBrowser } from "@/utils/equipment";
-import {
-  applyWebRtcPolicyMode,
-  getInjectedStorageForWebRtc,
-  type WebRtcPolicyState,
-} from "./webrtc-policy";
+import { setWebRTCPolicy } from "./privacy";
 
 let mContent: LocalStorageContext | undefined
-const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 type LocalStorageContext = {
   storage: LocalStorage
@@ -21,7 +15,6 @@ type LocalStorageContext = {
   blacklistHelper: SiteListHelper
   configNonce: number
   policiesNonce: number
-  webrtcPolicyState: WebRtcPolicyState
 }
 
 const randNonce = () => Math.floor(Math.random() * 1e9);
@@ -35,22 +28,7 @@ const genStorageContent = (storage: LocalStorage): LocalStorageContext => ({
   blacklistHelper: new SiteListHelper(storage.policies.blacklist),
   configNonce: randNonce(),
   policiesNonce: randNonce(),
-  webrtcPolicyState: 'default',
 })
-
-const getCurrentBrowser = () => getBrowser(navigator.userAgent)
-
-const syncWebRtcPolicyState = async (ctx: LocalStorageContext) => {
-  ctx.webrtcPolicyState = await applyWebRtcPolicyMode({
-    chromeApi: chrome,
-    browser: getCurrentBrowser(),
-    mode: ctx.storage.config.fp.other.webrtc.type,
-  })
-  logger.info('syncWebRtcPolicyState:', {
-    mode: ctx.storage.config.fp.other.webrtc.type,
-    state: ctx.webrtcPolicyState,
-  })
-}
 
 /**
  * 生成默认配置
@@ -188,11 +166,14 @@ export const initLocalStorage = sharedAsync(async () => {
 
   /** 其他 */
   mContent = genStorageContent(_storage)
-  await syncWebRtcPolicyState(mContent)
-  await chrome.storage.local.set(_storage)
-  await reRegisterScript()
-  reRequestHeader()
-  void applySubscribeStorage()
+  chrome.storage.local.set(_storage).then(() => {
+    reRegisterScript()
+    reRequestHeader()
+    applySubscribeStorage()
+  })
+
+  onAfterInit(mContent)
+
   return mContent
 })
 
@@ -229,20 +210,6 @@ export const getLocalStorage = async () => {
   }
 }
 
-export const getInjectedStorage = async () => {
-  const ctx = await getLocalStorage()
-  return getInjectedStorageForWebRtc(ctx.storage, ctx.webrtcPolicyState)
-}
-
-export const getWebRtcStatus = async () => {
-  const ctx = await getLocalStorage()
-  return {
-    state: ctx.webrtcPolicyState,
-    configuredMode: ctx.storage.config.fp.other.webrtc.type,
-    browser: getCurrentBrowser(),
-  }
-}
-
 /**
  * 存储配置
  */
@@ -257,6 +224,8 @@ export const saveContextToLocalStorage = debounce(() => {
 export const updateContext = async (v: DeepPartial<LocalStorage>) => {
   const ctx = await getLocalStorage()
   const storage = ctx.storage
+
+  await onBeforeUpdateContext(ctx, v);
 
   if (v.config) {
     storage.config = deepMerge(storage.config, v.config)
@@ -273,11 +242,7 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
     ctx.policiesNonce = randNonce()
   }
 
-  await syncWebRtcPolicyState(ctx)
-  saveContextToLocalStorage()
-
-  await reRegisterScript()
-  reRequestHeader()
+  onAfterUpdateContext(ctx)
 
   return storage
 }
@@ -289,7 +254,9 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
   const ctx = await getLocalStorage();
   const { storage, whitelistHelper, blacklistHelper } = ctx;
 
-  let isUpdate = false
+  let isUpdate = false;
+
+  await onBeforeUpdateContext(ctx, data);
 
   if (data.config) {
     delete data.config.prefs;
@@ -336,20 +303,53 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
   }
 
   if (isUpdate) {
-    saveContextToLocalStorage()
-    reRegisterScript()
-    reRequestHeader()
+    onAfterUpdateContext(ctx)
   }
 
   return storage;
 }
 
 /**
- * 刷新浏览器种子
+ * 初始化之后执行
  */
-export const reBrowserSeed = async () => {
-  const { storage } = await getLocalStorage()
-  storage.config.seed.browser = genRandomSeed()
+const onAfterInit = async ({ storage }: LocalStorageContext) => {
+  const webrtcMode = storage.config.fp.other.webrtc
+  if (webrtcMode.type === HookType.enabled) {
+    await setWebRTCPolicy({})
+  }
+}
+
+/**
+ * 更新配置前执行
+ * @param obj 新配置
+ */
+const onBeforeUpdateContext = async ({ storage }: LocalStorageContext, obj: DeepPartial<LocalStorage>) => {
+  const logLevel = obj.config?.prefs?.logLevel;
+  if (logLevel && logLevel !== storage.config.prefs.logLevel) {
+    logManager.setLevel(logLevel);
+  }
+
+  /** WebRTC */
+  const webrtcNext = obj.config?.fp?.other?.webrtc;
+  if (webrtcNext && webrtcNext.type !== storage.config.fp.other.webrtc.type) {
+    const fallbackFn = () => {
+      if (webrtcNext.type !== HookType.default) {
+        webrtcNext.type = HookType.disabled;
+      }
+    }
+    if (webrtcNext.type === HookType.enabled) {
+      await setWebRTCPolicy({}).catch(fallbackFn);
+    } else {
+      await setWebRTCPolicy().catch(fallbackFn);
+    }
+  }
+}
+
+/**
+ * 更新配置后执行
+ */
+const onAfterUpdateContext = (_: LocalStorageContext) => {
   saveContextToLocalStorage()
+  reRegisterScript()
   reRequestHeader()
 }

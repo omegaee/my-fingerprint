@@ -1,11 +1,4 @@
-import {
-  getInjectedStorage,
-  getLocalStorage,
-  getWebRtcStatus,
-  importContext,
-  initLocalStorage,
-  updateContext,
-} from "./storage";
+import { getLocalStorage, importContext, initLocalStorage, updateContext } from "./storage";
 import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
@@ -73,8 +66,6 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
     }
     case 'config.set': {
       updateContext({ config: msg.config })
-      const logLevel = msg?.config?.prefs?.logLevel;
-      logLevel && logManager.setLevel(logLevel);
       return false
     }
     case 'policies.set': {
@@ -84,13 +75,6 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
     case 'version.latest': {
       getNewVersion().then((version) => {
         sendResponse<'version.latest'>(version)
-      })
-      return true
-    }
-    case 'webrtc.status': {
-      getWebRtcStatus().then((status) => {
-        logger.debug('webrtc.status resolved:', status)
-        sendResponse<'webrtc.status'>(status)
       })
       return true
     }
@@ -121,8 +105,7 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
-    const { whitelistHelper, blacklistHelper } = await getLocalStorage()
-    const storage = await getInjectedStorage()
+    const { storage, whitelistHelper, blacklistHelper } = await getLocalStorage()
 
     logger.debug('chrome.tabs.onUpdated:', tab.title || tab.url || tab.id);
     logger.debug('injectScript with storage:', storage)

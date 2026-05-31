@@ -68,8 +68,11 @@
     "browser": "每次启动浏览器随机值",
     "domain": "根据访问域名随机值",
     "global": "根据全局种子随机值",
-    "enabled": "防泄露（推荐）",
-    "disabled": "禁用"
+    "enabled": "启用",
+    "disabled": "禁用",
+    "webrtc": {
+      "enabled": "防泄露（推荐）"
+    }
   },
   "item": {
     "label": {
@@ -117,9 +120,9 @@
       "audio": "Audio音频指纹，通过音频信号处理获取设备特征。",
       "webgl": "WebGL指纹，通过图形渲染差异获取设备特征。",
       "webrtc": [
-        "防泄露模式下，Chrome / Edge 会优先启用 Chromium 的 `disable_non_proxied_udp` 策略，而不是直接把 WebRTC 整体关闭。",
-        "在该模式正常生效时，WebRTC 接口通常仍然存在，但 host / srflx candidate 会受到限制，不再直接暴露本地或真实出口地址；若策略不可用或设置失败，扩展会自动回退为禁用 WebRTC。",
-        "该模式依赖你本机真实代理环境，仅适用于 Chromium 路线（Chrome / Edge）；Firefox 目前不支持这一路径。若代理规则把目标命中到 DIRECT，扩展无法覆盖该直连决策。"
+        "- 系统值：保持浏览器默认行为，不做任何修改。",
+        "- 防泄露：尽量保留 WebRTC 功能，但屏蔽可能暴露本机或真实出口 IP 的候选地址。若浏览器不支持该策略，会自动回退为禁用模式。",
+        "- 禁用：彻底关闭 WebRTC，所有相关接口不可用。"
       ],
       "font": "Fonts字体指纹，通过检测字体支持情况获取设备特征。",
       "webgpu": "WebGPU指纹，通过设备图形处理参数差异获取设备特征。",
