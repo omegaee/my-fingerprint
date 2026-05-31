@@ -8,6 +8,7 @@ import { HookModeProvider } from "../context"
 import { HookModeCard, HookModeSelector } from "../ui"
 
 const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global]
+const switchTypes = [HookType.default, HookType.enabled, HookType.disabled]
 const disabledTypes = [HookType.default, HookType.disabled]
 
 const unstableTag = ['unstable']
@@ -41,7 +42,7 @@ export const StrongFpConfigGroup = memo(() => {
 
     <HookModeProvider obj={fp.other} name='webrtc'>
       <HookModeCard color='warning' isDescArray tags={unstableTag}>
-        <HookModeSelector types={disabledTypes} />
+        <HookModeSelector types={switchTypes} />
       </HookModeCard>
     </HookModeProvider>
 

@@ -699,7 +699,7 @@ export const hookTasks: HookTask[] = [
    * Webrtc
    */
   {
-    condition: ({ conf }) => conf.fp.other.webrtc.type !== HookType.default,
+    condition: ({ conf }) => conf.fp.other.webrtc.type === HookType.disabled,
     onEnable: ({ win, useDisownKeys, useDefine }) => {
       if (!win) return;
 
