@@ -59,7 +59,7 @@ type HookFingerprint = {
     canvas: DefaultHookMode | RandomHookMode
     audio: DefaultHookMode | RandomHookMode
     webgl: DefaultHookMode | RandomHookMode
-    webrtc: DefaultHookMode | DisableHookMode
+    webrtc: DefaultHookMode | EnableHookMode | DisableHookMode
     font: DefaultHookMode | RandomHookMode
     webgpu: DefaultHookMode | RandomHookMode
     domRect: DefaultHookMode | RandomHookMode

@@ -67,8 +67,6 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
     }
     case 'config.set': {
       updateContext({ config: msg.config })
-      const logLevel = msg?.config?.prefs?.logLevel;
-      logLevel && logManager.setLevel(logLevel);
       return false
     }
     case 'policies.set': {
