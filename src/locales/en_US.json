@@ -66,7 +66,10 @@
     "domain": "Random by Domain",
     "global": "Random by Global Seed",
     "enabled": "Enabled",
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "webrtc": {
+      "enabled": "Leak Protection (Recommended)"
+    }
   },
   "item": {
     "label": {
@@ -114,8 +117,9 @@
       "audio": "Audio fingerprinting identifies your device through unique patterns in audio signal processing.",
       "webgl": "WebGL fingerprinting captures device characteristics based on variations in 3D rendering behavior.",
       "webrtc": [
-        "When disabled, websites are prevented from obtaining your real IP address via WebRTC (especially when using a proxy). When enabled, it helps prevent IP leaks.",
-        "When disabled, some websites may behave abnormally or fail to function properly."
+        "System value: Keep the browser’s default WebRTC behavior without changes.",
+        "Leak‑protection: Try to keep WebRTC working while hiding local or real IP addresses. If the browser cannot apply the policy, the extension will automatically switch to full disable.",
+        "Disable: Turn off WebRTC completely, making all related features unavailable."
       ],
       "font": "Font fingerprinting reveals device details by checking which fonts are supported and how they’re rendered.",
       "webgpu": "WebGPU fingerprinting extracts device information by analyzing differences in GPU processing capabilities.",
@@ -140,6 +144,14 @@
         "**Firefox Enable Conditions**",
         "- `Firefox 136+` Authorization allowed"
       ]
+    },
+    "status": {
+      "webrtc": {
+        "default": "Effective state: Browser default",
+        "policy-enabled": "Effective state: Leak protection active",
+        "fallback-disabled": "Effective state: Fell back to disabled",
+        "manual-disabled": "Effective state: Manually disabled"
+      }
     },
     "theme": {
       "system": "System",

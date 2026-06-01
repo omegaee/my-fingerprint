@@ -5,6 +5,7 @@ import { HookType } from '@/types/enum'
 import { hasUserScripts, reRegisterScript } from "./script";
 import { SiteListHelper } from "./policies";
 import { logManager } from "@/utils/log";
+import { setWebRTCPolicy } from "./privacy";
 
 let mContent: LocalStorageContext | undefined
 
@@ -170,6 +171,9 @@ export const initLocalStorage = sharedAsync(async () => {
     reRequestHeader()
     applySubscribeStorage()
   })
+
+  onAfterInit(mContent)
+
   return mContent
 })
 
@@ -221,6 +225,8 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
   const ctx = await getLocalStorage()
   const storage = ctx.storage
 
+  await onBeforeUpdateContext(ctx, v);
+
   if (v.config) {
     storage.config = deepMerge(storage.config, v.config)
     ctx.configNonce = randNonce()
@@ -236,10 +242,7 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
     ctx.policiesNonce = randNonce()
   }
 
-  saveContextToLocalStorage()
-
-  reRegisterScript()
-  reRequestHeader()
+  onAfterUpdateContext(ctx)
 
   return storage
 }
@@ -251,7 +254,9 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
   const ctx = await getLocalStorage();
   const { storage, whitelistHelper, blacklistHelper } = ctx;
 
-  let isUpdate = false
+  let isUpdate = false;
+
+  await onBeforeUpdateContext(ctx, data);
 
   if (data.config) {
     delete data.config.prefs;
@@ -298,20 +303,53 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
   }
 
   if (isUpdate) {
-    saveContextToLocalStorage()
-    reRegisterScript()
-    reRequestHeader()
+    onAfterUpdateContext(ctx)
   }
 
   return storage;
 }
 
 /**
- * 刷新浏览器种子
+ * 初始化之后执行
  */
-export const reBrowserSeed = async () => {
-  const { storage } = await getLocalStorage()
-  storage.config.seed.browser = genRandomSeed()
+const onAfterInit = async ({ storage }: LocalStorageContext) => {
+  const webrtcMode = storage.config.fp.other.webrtc
+  if (webrtcMode.type === HookType.enabled) {
+    await setWebRTCPolicy({})
+  }
+}
+
+/**
+ * 更新配置前执行
+ * @param obj 新配置
+ */
+const onBeforeUpdateContext = async ({ storage }: LocalStorageContext, obj: DeepPartial<LocalStorage>) => {
+  const logLevel = obj.config?.prefs?.logLevel;
+  if (logLevel && logLevel !== storage.config.prefs.logLevel) {
+    logManager.setLevel(logLevel);
+  }
+
+  /** WebRTC */
+  const webrtcNext = obj.config?.fp?.other?.webrtc;
+  if (webrtcNext && webrtcNext.type !== storage.config.fp.other.webrtc.type) {
+    const fallbackFn = () => {
+      if (webrtcNext.type !== HookType.default) {
+        webrtcNext.type = HookType.disabled;
+      }
+    }
+    if (webrtcNext.type === HookType.enabled) {
+      await setWebRTCPolicy({}).catch(fallbackFn);
+    } else {
+      await setWebRTCPolicy().catch(fallbackFn);
+    }
+  }
+}
+
+/**
+ * 更新配置后执行
+ */
+const onAfterUpdateContext = (_: LocalStorageContext) => {
   saveContextToLocalStorage()
+  reRegisterScript()
   reRequestHeader()
 }

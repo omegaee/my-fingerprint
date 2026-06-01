@@ -7,8 +7,15 @@ import { ConfigDesc, ConfigItemX, ConfigItemY } from "./item"
 import TipIcon from "@/components/data/tip-icon"
 import { HookType } from '@/types/enum'
 
-const useHookTypeOptions = (types: HookType[]) => {
+const useHookTypeOptions = (types: HookType[], name?: string) => {
   const [t, i18n] = useTranslation()
+
+  const makeLable = (value: HookType) => {
+    const key = 'type.' + HookType[value];
+    const skey = `type.${name}.${HookType[value]}`
+    if (!name) return t(key);
+    return i18n.exists(skey) ? t(skey) : t(key)
+  }
 
   const options = useMemo(() => {
     return [
@@ -19,7 +26,7 @@ const useHookTypeOptions = (types: HookType[]) => {
           .filter(v => v !== HookType.value)
           .map((value) => ({
             value,
-            label: t('type.' + HookType[value]),
+            label: makeLable(value),
           })),
       },
       types.includes(HookType.value) && {
@@ -43,8 +50,8 @@ export const HookModeSelector = ({ types, defaultValue }: {
   types?: HookType[]
   defaultValue?: any
 }) => {
-  const { mode, setType, setValue } = useHookMode()
-  const options = useHookTypeOptions(types ?? [])
+  const { name, mode, setType, setValue } = useHookMode()
+  const options = useHookTypeOptions(types ?? [], name)
 
   return <Select<HookType>
     className={dotStyles.base}
