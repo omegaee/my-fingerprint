@@ -1,23 +1,15 @@
 import { useEffect, useMemo, useState } from "react"
 import { HookType } from '@/types/enum'
-import { Form, Input, InputNumber, Select } from "antd"
+import { Form, Input, Select } from "antd"
 import { selectStatusDotStyles as dotStyles } from "../styles"
 import { sharedAsync } from "@/utils/timer"
 import { LocalApi, type TimeZoneOption } from "@/api/local"
 import { useI18n } from "@/utils/hooks"
 import { useHookMode } from "../context"
 import { HookModeCustom } from "../ui"
+import { isCurrentlyDST, longOffsetToReadable, timeZoneToLongOffset } from "@/utils/timezone"
 
 type OptionType = (string & {}) | HookType
-
-const getCurrentTimeZoneInfo = (): TimeZoneInfo => {
-  const opts = Intl.DateTimeFormat().resolvedOptions()
-  return {
-    locale: opts.locale,
-    zone: opts.timeZone,
-    offset: new Date().getTimezoneOffset() / -60
-  }
-}
 
 const fetchTimezones = sharedAsync(LocalApi.timezone)
 
@@ -25,10 +17,19 @@ const TimeZoneConfigItem = ({ }: {}) => {
   const { t, i18n, asLang } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
   const [localPreset, setLocalPreset] = useState<TimeZoneOption[]>([])
+  const [isInvalid, setIsInvalid] = useState(false)
 
-  const { mode, value: modeValue = {}, setType, setValue } = useHookMode()
+  const { mode, value: modeValue = {}, version, setType, setValue } = useHookMode()
 
-  const currentTz = useMemo(() => getCurrentTimeZoneInfo(), [])
+  const currentTz = useMemo<TimeZoneInfo>(() => ({
+    zone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  }), [])
+
+  useEffect(() => {
+    if (modeValue?.zone) {
+      checkTimeZone(modeValue?.zone)
+    }
+  }, [version])
 
   useEffect(() => {
     if (!isOpen || localPreset.length != 0) return;
@@ -58,10 +59,14 @@ const TimeZoneConfigItem = ({ }: {}) => {
       localPreset && {
         label: <span>{t('g.preset')}</span>,
         title: 'preset',
-        options: localPreset.map((tz) => ({
-          value: tz.key,
-          label: `(${tz.offset >= 0 ? '+' : ''}${tz.offset}) ${asLang(tz.title)}`,
-        })),
+        options: localPreset.map((tz) => {
+          const offset = timeZoneToLongOffset(tz.zone)
+          const isDST = isCurrentlyDST(tz.zone)
+          return {
+            value: tz.key,
+            label: `${asLang(tz.title)} (${offset ? longOffsetToReadable(offset) : 'N/A'}${isDST ? `, ${t('label.timezone.daylight')}` : ''})`,
+          }
+        }),
       },
     ].filter(v => !!v)
   }, [i18n.language, localPreset])
@@ -80,6 +85,15 @@ const TimeZoneConfigItem = ({ }: {}) => {
     }
   }
 
+  const checkTimeZone = (zone: string) => {
+    try {
+      Intl.DateTimeFormat('en-US', { timeZone: zone })
+      setIsInvalid(false)
+    } catch (e) {
+      setIsInvalid(true)
+    }
+  }
+
   return <>
     <Select<OptionType>
       open={isOpen}
@@ -90,39 +104,18 @@ const TimeZoneConfigItem = ({ }: {}) => {
       onChange={onChange}
     />
     <HookModeCustom>
-      <Form.Item label={t('item.sub.tz.offset')}>
-        <InputNumber
-          min={-12} max={12}
-          placeholder={`${currentTz.offset}`}
-          value={modeValue.offset ?? currentTz.offset}
-          onChange={(offset) => setValue({
-            ...modeValue,
-            key: undefined,
-            offset: offset ?? currentTz.offset
-          })}
-        />
-      </Form.Item>
-      <Form.Item label={t('item.sub.tz.locale')}>
-        <Input
-          placeholder={currentTz.locale}
-          value={modeValue.locale ?? currentTz.locale}
-          onChange={({ target }) => setValue({
-            ...modeValue,
-            key: undefined,
-            locale: target.value || currentTz.locale
-          })}
-        />
-      </Form.Item>
       <Form.Item label={t('item.sub.tz.zone')}>
         <Input
+          status={isInvalid ? 'error' : undefined}
           placeholder={currentTz.zone}
-          defaultValue={modeValue.zone ?? currentTz.zone}
+          value={modeValue.zone ?? currentTz.zone}
           onChange={({ target }) => setValue({
             ...modeValue,
             key: undefined,
             zone: target.value || currentTz.zone
           })}
         />
+        {isInvalid && <p className="text-danger-500">{t('item.sub.tz.invalid')}</p>}
       </Form.Item>
     </HookModeCustom>
   </>

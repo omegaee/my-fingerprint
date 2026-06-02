@@ -6,9 +6,7 @@
         "en": "London",
         "zh": "伦敦"
       },
-      "zone": "Europe/London",
-      "locale": "en-GB",
-      "offset": 0
+      "zone": "Europe/London"
     },
     {
       "key": "PAR",
@@ -16,9 +14,7 @@
         "en": "Paris",
         "zh": "巴黎"
       },
-      "zone": "Europe/Paris",
-      "locale": "fr-FR",
-      "offset": 1
+      "zone": "Europe/Paris"
     },
     {
       "key": "BER",
@@ -26,9 +22,7 @@
         "en": "Berlin",
         "zh": "柏林"
       },
-      "zone": "Europe/Berlin",
-      "locale": "de-DE",
-      "offset": 1
+      "zone": "Europe/Berlin"
     },
     {
       "key": "CAI",
@@ -36,9 +30,7 @@
         "en": "Cairo",
         "zh": "开罗"
       },
-      "zone": "Africa/Cairo",
-      "locale": "ar-EG",
-      "offset": 2
+      "zone": "Africa/Cairo"
     },
     {
       "key": "MSK",
@@ -46,9 +38,7 @@
         "en": "Moscow",
         "zh": "莫斯科"
       },
-      "zone": "Europe/Moscow",
-      "locale": "ru-RU",
-      "offset": 3
+      "zone": "Europe/Moscow"
     },
     {
       "key": "DXB",
@@ -56,9 +46,7 @@
         "en": "Dubai",
         "zh": "迪拜"
       },
-      "zone": "Asia/Dubai",
-      "locale": "ar-AE",
-      "offset": 4
+      "zone": "Asia/Dubai"
     },
     {
       "key": "KZ",
@@ -66,9 +54,7 @@
         "en": "Almaty",
         "zh": "阿拉木图"
       },
-      "zone": "Asia/Almaty",
-      "locale": "zh-CN",
-      "offset": 5
+      "zone": "Asia/Almaty"
     },
     {
       "key": "KHI",
@@ -76,9 +62,7 @@
         "en": "Karachi",
         "zh": "卡拉奇"
       },
-      "zone": "Asia/Karachi",
-      "locale": "ur-PK",
-      "offset": 5
+      "zone": "Asia/Karachi"
     },
     {
       "key": "DAC",
@@ -86,9 +70,7 @@
         "en": "Dhaka",
         "zh": "达卡"
       },
-      "zone": "Asia/Dhaka",
-      "locale": "bn-BD",
-      "offset": 6
+      "zone": "Asia/Dhaka"
     },
     {
       "key": "BKK",
@@ -96,9 +78,7 @@
         "en": "Bangkok",
         "zh": "曼谷"
       },
-      "zone": "Asia/Bangkok",
-      "locale": "th-TH",
-      "offset": 7
+      "zone": "Asia/Bangkok"
     },
     {
       "key": "JKT",
@@ -106,9 +86,7 @@
         "en": "Jakarta",
         "zh": "雅加达"
       },
-      "zone": "Asia/Jakarta",
-      "locale": "id-ID",
-      "offset": 7
+      "zone": "Asia/Jakarta"
     },
     {
       "key": "SH",
@@ -116,9 +94,7 @@
         "en": "Shanghai",
         "zh": "上海"
       },
-      "zone": "Asia/Shanghai",
-      "locale": "zh-CN",
-      "offset": 8
+      "zone": "Asia/Shanghai"
     },
     {
       "key": "SG",
@@ -126,9 +102,7 @@
         "en": "Singapore",
         "zh": "新加坡"
       },
-      "zone": "Asia/Singapore",
-      "locale": "zh-SG",
-      "offset": 8
+      "zone": "Asia/Singapore"
     },
     {
       "key": "TY",
@@ -136,9 +110,7 @@
         "en": "Tokyo",
         "zh": "东京"
       },
-      "zone": "Asia/Tokyo",
-      "locale": "ja-JP",
-      "offset": 9
+      "zone": "Asia/Tokyo"
     },
     {
       "key": "SE",
@@ -146,9 +118,7 @@
         "en": "Seoul",
         "zh": "首尔"
       },
-      "zone": "Asia/Seoul",
-      "locale": "ko-KR",
-      "offset": 9
+      "zone": "Asia/Seoul"
     },
     {
       "key": "SYD",
@@ -156,9 +126,7 @@
         "en": "Sydney",
         "zh": "悉尼"
       },
-      "zone": "Australia/Sydney",
-      "locale": "en-AU",
-      "offset": 10
+      "zone": "Australia/Sydney"
     },
     {
       "key": "NOU",
@@ -166,9 +134,7 @@
         "en": "Noumea",
         "zh": "努美阿"
       },
-      "zone": "Pacific/Noumea",
-      "locale": "fr-NC",
-      "offset": 11
+      "zone": "Pacific/Noumea"
     },
     {
       "key": "AKL",
@@ -176,9 +142,7 @@
         "en": "Auckland",
         "zh": "奥克兰"
       },
-      "zone": "Pacific/Auckland",
-      "locale": "en-NZ",
-      "offset": 12
+      "zone": "Pacific/Auckland"
     },
     {
       "key": "CVT",
@@ -186,9 +150,7 @@
         "en": "Cape Verde",
         "zh": "佛得角"
       },
-      "zone": "Atlantic/Cape_Verde",
-      "locale": "pt-CV",
-      "offset": -1
+      "zone": "Atlantic/Cape_Verde"
     },
     {
       "key": "GST",
@@ -196,9 +158,7 @@
         "en": "Noronha",
         "zh": "诺罗尼亚"
       },
-      "zone": "America/Noronha",
-      "locale": "pt-BR",
-      "offset": -2
+      "zone": "America/Noronha"
     },
     {
       "key": "BRT",
@@ -206,9 +166,7 @@
         "en": "Sao Paulo",
         "zh": "圣保罗"
       },
-      "zone": "America/Sao_Paulo",
-      "locale": "pt-BR",
-      "offset": -3
+      "zone": "America/Sao_Paulo"
     },
     {
       "key": "AST",
@@ -216,9 +174,7 @@
         "en": "Caracas",
         "zh": "加拉加斯"
       },
-      "zone": "America/Caracas",
-      "locale": "es-VE",
-      "offset": -4
+      "zone": "America/Caracas"
     },
     {
       "key": "NY",
@@ -226,9 +182,7 @@
         "en": "New York",
         "zh": "纽约"
       },
-      "zone": "America/New_York",
-      "locale": "en-US",
-      "offset": -5
+      "zone": "America/New_York"
     },
     {
       "key": "CHI",
@@ -236,9 +190,7 @@
         "en": "Chicago",
         "zh": "芝加哥"
       },
-      "zone": "America/Chicago",
-      "locale": "en-US",
-      "offset": -6
+      "zone": "America/Chicago"
     },
     {
       "key": "DEN",
@@ -246,9 +198,7 @@
         "en": "Denver",
         "zh": "丹佛"
       },
-      "zone": "America/Denver",
-      "locale": "en-US",
-      "offset": -7
+      "zone": "America/Denver"
     },
     {
       "key": "LAX",
@@ -256,9 +206,7 @@
         "en": "Los Angeles",
         "zh": "洛杉矶"
       },
-      "zone": "America/Los_Angeles",
-      "locale": "en-US",
-      "offset": -8
+      "zone": "America/Los_Angeles"
     },
     {
       "key": "AKST",
@@ -266,9 +214,7 @@
         "en": "Anchorage",
         "zh": "安克雷奇"
       },
-      "zone": "America/Anchorage",
-      "locale": "en-US",
-      "offset": -9
+      "zone": "America/Anchorage"
     },
     {
       "key": "HNL",
@@ -276,9 +222,7 @@
         "en": "Honolulu",
         "zh": "夏威夷"
       },
-      "zone": "Pacific/Honolulu",
-      "locale": "en-US",
-      "offset": -10
+      "zone": "Pacific/Honolulu"
     },
     {
       "key": "NUT",
@@ -286,9 +230,7 @@
         "en": "Niue",
         "zh": "纽埃"
       },
-      "zone": "Pacific/Niue",
-      "locale": "en-NU",
-      "offset": -11
+      "zone": "Pacific/Niue"
     }
   ]
 }

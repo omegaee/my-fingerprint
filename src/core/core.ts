@@ -26,7 +26,7 @@ type ContextOptions = Pick<FingerprintContext, 'info' | 'conf'> & Partial<Finger
 
 export class FingerprintContext {
   /** 不同上下文有不同的日志 */
-  private logger = logManager.createLogger("FingerprintContext");
+  public logger = logManager.createLogger("FingerprintContext");
   public gthis: Window & WorkerGlobalScope & typeof globalThis
   public win?: Window & typeof globalThis
   public worker?: WorkerGlobalScope & typeof globalThis

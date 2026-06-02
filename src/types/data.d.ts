@@ -4,9 +4,7 @@ type SizeInfo = {
 }
 
 type TimeZoneInfo = {
-  offset: number
   zone: string
-  locale: string
 }
 
 type EquipmentInfo = {

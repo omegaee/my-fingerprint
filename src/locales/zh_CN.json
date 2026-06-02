@@ -59,6 +59,10 @@
       "in": "在黑名单中",
       "not": "不在黑名单",
       "click-in": "点击加入黑名单"
+    },
+    "timezone": {
+      "standard": "标准时",
+      "daylight": "夏令时"
     }
   },
   "type": {
@@ -166,9 +170,8 @@
     },
     "sub": {
       "tz": {
-        "offset": "时间差",
-        "locale": "语言环境",
-        "zone": "时区名称"
+        "zone": "时区",
+        "invalid": "无效时区"
       }
     }
   },
