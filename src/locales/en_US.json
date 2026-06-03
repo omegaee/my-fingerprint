@@ -40,6 +40,9 @@
     "clipboard-export": "Export To Clipboard",
     "clipboard-import": "Import From Clipboard",
     "permission": "Permission",
+    "site-cleanup": "Site Cleanup",
+    "site-cleanup-cache": "Clear Current SW + Site Cache",
+    "site-cleanup-all": "Clear Current Full Site Data",
     "subscribe": "Subscribe",
     "fp-notice": {
       "weak": "Weak",
@@ -175,6 +178,9 @@
   "tip": {
     "label": {
       "not-support-tab": "Not Supported",
+      "site-cleanup-target": "Current target",
+      "site-cleanup-unsupported-target": "Current page is not a clearable http/https page",
+      "site-cleanup-site-data-warning": "Warning: this will sign you out!",
       "no-auth-required": "No Auth Required",
       "json": "Json Format",
       "subscribe-save": "Save and Subscribe",
@@ -187,6 +193,8 @@
     "ok": {
       "config-import": "Import Config Success",
       "config-export": "Export Config Success",
+      "site-cleanup-cache": "Current origin Service Worker and site cache cleared. A manual refresh of the page is recommended.",
+      "site-cleanup-all": "Current origin site data cleared. A manual refresh of the page is recommended.",
       "subscribe-test": "Subscription Test Passed",
       "subscribe": "Subscription Success"
     },
@@ -200,6 +208,11 @@
       "config-export": "Export Config Error",
       "config-unloaded": "Config Unloaded",
       "import-empty": "Import Config is Empty",
+      "site-cleanup": "Site cleanup failed",
+      "site-cleanup-url": "Current page is not a clearable http/https page",
+      "site-cleanup-scope": "Unsupported cleanup scope",
+      "site-cleanup-permission": "The browsingData permission was not granted, so cleanup cannot run",
+      "site-cleanup-unsupported": "This browser does not support this site cleanup feature",
       "subscribe-test": "Subscription Test Failed",
       "subscribe": "Subscription Failed",
       "ns-fast-inject": "Enable failed, please view the \"?\" option description"
@@ -208,6 +221,7 @@
       "remove-parent-domain": "Whether to remove its parent domain",
       "remove-child-domain": "Whether to remove its child domain",
       "remove-permission": "Whether to remove its permissions",
+      "site-cleanup-site-data": "Clear all site data for this current site? Warning: this will sign you out.",
       "config-import": "Whether to overwrite the current config",
       "clean-whitelist": "Whether to clean the current whitelist"
     }
@@ -219,7 +233,8 @@
       "unknown": "Not supported by current browser version"
     },
     "desc": {
-      "userScripts": "Allow the extension to use the **userScripts** permission to make the extension adaptable to more sites"
+      "userScripts": "Allow the extension to use the **userScripts** permission to make the extension adaptable to more sites",
+      "browsingData": "Allow the extension to clear the current page origin's cache, Service Worker, and site data on demand"
     }
   },
   "desc": {
@@ -229,6 +244,13 @@
       "Default - `config.json`",
       "Local - `file:///example/config.json`",
       "Remote - `http://example.com/config.json`"
+    ],
+    "site-cleanup": [
+      "Scope: this current site only. It does not automatically affect other subdomains under the same registrable domain.",
+      "Light cleanup fits: broken page styles, old versions that keep loading, PWA / cache logic issues, odd site behavior when you do not want to sign out.",
+      "Clears: this current site's Service Worker and Cache Storage.",
+      "Full cleanup fits: when you suspect the site has remembered you for too long, local records or state look wrong, or you want a more complete local reset for this site.",
+      "Clears: this current site's cookies, IndexedDB, localStorage, fileSystems, WebSQL, Cache Storage, and Service Worker. **Warning: this will sign you out.**"
     ],
     "record": [
       "**Fingerprint Record**",

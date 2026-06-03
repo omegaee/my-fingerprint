@@ -4,6 +4,7 @@ import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
+import { removeBrowsingData } from "./browsing-data";
 
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
@@ -75,6 +76,16 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
     case 'version.latest': {
       getNewVersion().then((version) => {
         sendResponse<'version.latest'>(version)
+      })
+      return true
+    }
+    case 'site.cleanup': {
+      removeBrowsingData(msg.scope, msg.urls).then(() => {
+        logger.info(`site.cleanup ${msg.scope} successful: ${msg.urls}`)
+        sendResponse<'site.cleanup'>({ ok: true, scope: msg.scope })
+      }).catch((e) => {
+        logger.error('site.cleanup failed: ', e)
+        sendResponse<'site.cleanup'>({ ok: false, scope: msg.scope, message: e?.message })
       })
       return true
     }

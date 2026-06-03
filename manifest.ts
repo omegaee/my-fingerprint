@@ -30,6 +30,9 @@ const VALUES = {
     'clipboardWrite',
     'privacy',
   ] as chrome.runtime.ManifestPermissions[],
+  chrome_only_optional_permissions: [
+    'browsingData',
+  ] as chrome.runtime.ManifestPermissions[],
   optional_permissions: [
     "userScripts",
   ] as chrome.runtime.ManifestPermissions[],
@@ -53,6 +56,7 @@ export const chromeManifest: ManifestV3Export = {
   ],
   optional_permissions: [
     ...VALUES.optional_permissions,
+    ...VALUES.chrome_only_optional_permissions,
   ],
   background: {
     service_worker: VALUES.background,

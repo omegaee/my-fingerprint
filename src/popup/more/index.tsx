@@ -5,6 +5,7 @@ import SubscribeView from "./subscribe";
 import TipIcon from "@/components/data/tip-icon";
 import { Md } from "@/components/data/markdown";
 import PresetPanel from "./preset";
+import SiteCleanupView from "./site-cleanup";
 
 export type MoreViewProps = {
 }
@@ -24,6 +25,7 @@ export const MoreView = ({ }: MoreViewProps) => {
       </div>
       <SubscribeView />
     </div>
+    <SiteCleanupView />
     <div className="p-2 bg-[--ant-color-bg-container] rounded-lg">
       <h3 className="mb-2 text-center text-sm">{t('label.preset-panel')}</h3>
       <Divider className="m-0" />

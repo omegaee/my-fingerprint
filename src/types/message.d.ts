@@ -24,6 +24,16 @@ declare namespace BackgroundMessage {
     type: 'version.latest'
     $?: string
   } | {
+    type: 'site.cleanup'
+    urls: string[]
+    scope: 'cache' | 'all'
+    $: {
+      ok: boolean
+      scope: 'cache' | 'all'
+      messageKey?: string
+      message?: string
+    }
+  } | {
     type: 'api.check'
     api: string
     $: boolean | string
