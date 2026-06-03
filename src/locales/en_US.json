@@ -59,6 +59,10 @@
       "in": "In Blacklist",
       "not": "Not In Blacklist",
       "click-in": "Click To Blacklist"
+    },
+    "timezone": {
+      "standard": "Standard",
+      "daylight": "Daylight"
     }
   },
   "type": {
@@ -166,9 +170,8 @@
     },
     "sub": {
       "tz": {
-        "offset": "Offset",
-        "locale": "Locale",
-        "zone": "Zone"
+        "zone": "TimeZone",
+        "invalid": "Invalid TimeZone"
       }
     }
   },

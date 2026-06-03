@@ -10,6 +10,7 @@ import {
   randomWebglNoise,
   randomScreenSize,
 } from './utils';
+import { longOffsetToMs, createLongOffsetFormatter } from '@/utils/timezone';
 
 export const hookTasks: HookTask[] = [
   /**
@@ -542,13 +543,26 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.timezone.type !== HookType.default,
-    onEnable: ({ gthis, conf, useHookMode, useProxy }) => {
+    onEnable: ({ gthis, conf, logger, useHookMode, useProxy }) => {
       const tzValue = useHookMode(conf.fp.other.timezone).value
       if (!tzValue) return;
 
-      const localOffsetMs = new Date().getTimezoneOffset() * 60000;
-      const utcOffsetMs = tzValue.offset * 60 * 60 * 1000;
-      const diffMs = utcOffsetMs + localOffsetMs;
+      const customFmt = createLongOffsetFormatter(tzValue.zone)
+      const customOffsetStr = customFmt?.()
+
+      if (customFmt == null || customOffsetStr == null) {
+        logger.warn('timezone customOffsetStr is null')
+        return;
+      }
+
+      const localOffsetMs = -(new Date().getTimezoneOffset() * 60000);
+      const customOffsetMs = longOffsetToMs(customOffsetStr);
+
+      const getDiffMs = (date: Date) => {
+        const offsetStr = customFmt(date);
+        const offset = offsetStr ? longOffsetToMs(offsetStr) : customOffsetMs;
+        return offset - localOffsetMs;
+      }
 
       const _Date = gthis.Date;
       const _DateTimeFormat = gthis.Intl.DateTimeFormat;
@@ -595,13 +609,11 @@ export const hookTasks: HookTask[] = [
       useProxy(gthis.Intl, 'DateTimeFormat', {
         construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
           notify('weak.timezone')
-          args[0] = args[0] ?? tzValue.locale
           args[1] = Object.assign({ timeZone: tzValue.zone }, args[1]);
           return new target(...args)
         },
         apply: (target, thisArg: Intl.DateTimeFormat, args: Parameters<typeof Intl.DateTimeFormat>) => {
           notify('weak.timezone')
-          args[0] = args[0] ?? tzValue.locale
           args[1] = Object.assign({ timeZone: tzValue.zone }, args[1]);
           return target.apply(thisArg, args)
         },
@@ -614,10 +626,10 @@ export const hookTasks: HookTask[] = [
           const raw = Reflect.construct(target, args, newTarget);
 
           if (typeof args[0] === 'string' && args[0].includes('/')) {
-            return Reflect.construct(target, [raw.getTime() - diffMs], newTarget);
+            return Reflect.construct(target, [raw.getTime() - getDiffMs(raw)], newTarget);
           }
           if (args[1] != null && isNumeric(args[1])) {
-            return Reflect.construct(target, [raw.getTime() - diffMs], newTarget);
+            return Reflect.construct(target, [raw.getTime() - getDiffMs(raw)], newTarget);
           }
 
           return raw;
@@ -632,7 +644,7 @@ export const hookTasks: HookTask[] = [
         type DateHandler = (parts: TimeParts, date: Date) => any
 
         const tasks: { [key in keyof Date]?: DateHandler } = {
-          'getTimezoneOffset': () => tzValue.offset * -60,
+          'getTimezoneOffset': () => -(customOffsetMs / 60000),
           'toString': (p) => `${p.weekday} ${p.month} ${p.day?.padStart(2, '0')} ${p.year} ${p.hour?.padStart(2, '0')}:${p.minute?.padStart(2, '0')}:${p.second?.padStart(2, '0')} ${p.timeZoneName?.replace(':', '')}`,
           'toDateString': (p) => `${p.weekday} ${p.month} ${p.day?.padStart(2, '0')} ${p.year}`,
           'toTimeString': (p) => `${p.hour?.padStart(2, '0')}:${p.minute?.padStart(2, '0')}:${p.second?.padStart(2, '0')} ${p.timeZoneName?.replace(':', '')}`,
@@ -669,6 +681,7 @@ export const hookTasks: HookTask[] = [
           apply(target: any, thisArg: Date, args: any[]) {
             notify('weak.timezone');
 
+            const diffMs = getDiffMs(thisArg)
             // to system
             const localDate = new _Date(thisArg.getTime() + diffMs);
             // set
@@ -687,7 +700,6 @@ export const hookTasks: HookTask[] = [
       ], {
         apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
           notify('weak.timezone')
-          args[0] = args[0] ?? tzValue.locale
           args[1] = Object.assign({ timeZone: tzValue.zone }, args[1]);
           return target.apply(thisArg, args);
         }
