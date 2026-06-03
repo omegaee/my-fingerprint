@@ -19,23 +19,6 @@ const baseManifest: ManifestV3Export = {
 }
 
 const VALUES = {
-  permissions: [
-    'storage',
-    'tabs',
-    'activeTab',
-    'webNavigation',
-    'scripting',
-    'declarativeNetRequest',
-    'clipboardRead',
-    'clipboardWrite',
-    'privacy',
-  ] as chrome.runtime.ManifestPermissions[],
-  chrome_only_optional_permissions: [
-    'browsingData',
-  ] as chrome.runtime.ManifestPermissions[],
-  optional_permissions: [
-    "userScripts",
-  ] as chrome.runtime.ManifestPermissions[],
   background: "src/background/index.ts",
   content: {
     matches: ["<all_urls>"],
@@ -52,11 +35,19 @@ export const chromeManifest: ManifestV3Export = {
   key: "b21lZ2FlZS9teS1maW5nZXJwcmludAo=",
   update_url: 'https://raw.githubusercontent.com/omegaee/my-fingerprint/refs/heads/main/updates.xml',
   permissions: [
-    ...VALUES.permissions,
+    'storage',
+    'tabs',
+    'activeTab',
+    'webNavigation',
+    'scripting',
+    "userScripts",
+    'declarativeNetRequest',
+    'clipboardRead',
+    'clipboardWrite',
+    'privacy',
   ],
   optional_permissions: [
-    ...VALUES.optional_permissions,
-    ...VALUES.chrome_only_optional_permissions,
+    'browsingData',
   ],
   background: {
     service_worker: VALUES.background,
@@ -70,16 +61,30 @@ export const chromeManifest: ManifestV3Export = {
   ],
 }
 
-export const firefoxManifest: ManifestV3Export & { [key: string]: any } = {
+export const firefoxManifest: ManifestV3Export = {
   ...baseManifest,
   browser_specific_settings: {
+    // @ts-ignore
     gecko: {
       id: "my-fingerprint@omegaee.addons",
-      strict_min_version: "136.0"
+      strict_min_version: "136.0",
     }
   },
-  permissions: VALUES.permissions,
-  optional_permissions: VALUES.optional_permissions,
+  permissions: [
+    'storage',
+    'tabs',
+    'activeTab',
+    'webNavigation',
+    'scripting',
+    'declarativeNetRequest',
+    'clipboardRead',
+    'clipboardWrite',
+    'privacy',
+  ],
+  optional_permissions: [
+    "userScripts",
+    'browsingData',
+  ],
   background: {
     scripts: [VALUES.background],
   },
