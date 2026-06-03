@@ -44,8 +44,8 @@
     "clipboard-import": "从剪贴板导入",
     "permission": "权限",
     "site-cleanup": "站点清理",
-    "site-cleanup-cache-lite": "清理当前页面 SW + 站点缓存",
-    "site-cleanup-site-data": "清理当前页面全部站点数据",
+    "site-cleanup-cache": "清理当前页面 SW + 站点缓存",
+    "site-cleanup-all": "清理当前页面全部站点数据",
     "subscribe": "订阅",
     "fp-notice": {
       "weak": "弱指纹",
@@ -196,10 +196,8 @@
     "ok": {
       "config-import": "配置导入成功",
       "config-export": "配置导出成功",
-      "site-cleanup": {
-        "cache-lite": "已清理当前页面这个站点的 Service Worker 与站点缓存，建议手动刷新当前页面",
-        "site-data": "已清理当前页面这个站点的站点数据，建议手动刷新当前页面"
-      },
+      "site-cleanup-cache": "已清理当前页面这个站点的 Service Worker 与站点缓存，建议手动刷新当前页面",
+      "site-cleanup-all": "已清理当前页面这个站点的站点数据，建议手动刷新当前页面",
       "subscribe-test": "订阅测试通过",
       "subscribe": "订阅成功"
     },

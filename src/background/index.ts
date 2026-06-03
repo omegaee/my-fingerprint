@@ -4,7 +4,7 @@ import { injectScript, reRegisterScript } from './script';
 import { tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
-import { clearSiteData, isSiteCleanupScope } from "./site-cleanup";
+import { removeBrowsingData } from "./browsing-data";
 
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
@@ -80,48 +80,12 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       return true
     }
     case 'site.cleanup': {
-      if (!isSiteCleanupScope(msg.scope)) {
-        sendResponse<'site.cleanup'>({
-          ok: false,
-          messageKey: 'tip.err.site-cleanup-scope',
-        })
-        return false
-      }
-
-      clearSiteData({
-        chromeApi: chrome,
-        url: msg.url,
-        scope: msg.scope,
-      }).then((result) => {
-        logger.info('site.cleanup successful:', {
-          origin: result.origin,
-          scope: result.scope,
-          cleared: result.cleared,
-        })
-        sendResponse<'site.cleanup'>({
-          ok: true,
-          origin: result.origin,
-          scope: result.scope,
-          cleared: result.cleared,
-        })
-      }).catch((error) => {
-        const message = error instanceof Error ? error.message : String(error)
-        logger.error('site.cleanup failed:', message)
-
-        let messageKey = 'tip.err.site-cleanup'
-        if (message === 'site-cleanup-invalid-url' || message === 'site-cleanup-unsupported-url') {
-          messageKey = 'tip.err.site-cleanup-url'
-        } else if (message === 'site-cleanup-unsupported-browser') {
-          messageKey = 'tip.err.site-cleanup-unsupported'
-        } else if (message.includes('browsingData')) {
-          messageKey = 'tip.err.site-cleanup-permission'
-        }
-
-        sendResponse<'site.cleanup'>({
-          ok: false,
-          messageKey,
-          message,
-        })
+      removeBrowsingData(msg.scope, msg.urls).then(() => {
+        logger.info(`site.cleanup ${msg.scope} successful: ${msg.urls}`)
+        sendResponse<'site.cleanup'>({ ok: true, scope: msg.scope })
+      }).catch((e) => {
+        logger.error('site.cleanup failed: ', e)
+        sendResponse<'site.cleanup'>({ ok: false, scope: msg.scope, message: e?.message })
       })
       return true
     }

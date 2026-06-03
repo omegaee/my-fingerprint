@@ -25,13 +25,11 @@ declare namespace BackgroundMessage {
     $?: string
   } | {
     type: 'site.cleanup'
-    url: string
-    scope: 'cache-lite' | 'site-data'
+    urls: string[]
+    scope: 'cache' | 'all'
     $: {
       ok: boolean
-      origin?: string
-      scope?: 'cache-lite' | 'site-data'
-      cleared?: string[]
+      scope: 'cache' | 'all'
       messageKey?: string
       message?: string
     }

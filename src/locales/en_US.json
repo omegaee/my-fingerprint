@@ -41,8 +41,8 @@
     "clipboard-import": "Import From Clipboard",
     "permission": "Permission",
     "site-cleanup": "Site Cleanup",
-    "site-cleanup-cache-lite": "Clear Current SW + Site Cache",
-    "site-cleanup-site-data": "Clear Current Full Site Data",
+    "site-cleanup-cache": "Clear Current SW + Site Cache",
+    "site-cleanup-all": "Clear Current Full Site Data",
     "subscribe": "Subscribe",
     "fp-notice": {
       "weak": "Weak",
@@ -193,10 +193,8 @@
     "ok": {
       "config-import": "Import Config Success",
       "config-export": "Export Config Success",
-      "site-cleanup": {
-        "cache-lite": "Current origin Service Worker and site cache cleared. A manual refresh of the page is recommended.",
-        "site-data": "Current origin site data cleared. A manual refresh of the page is recommended."
-      },
+      "site-cleanup-cache": "Current origin Service Worker and site cache cleared. A manual refresh of the page is recommended.",
+      "site-cleanup-all": "Current origin site data cleared. A manual refresh of the page is recommended.",
       "subscribe-test": "Subscription Test Passed",
       "subscribe": "Subscription Success"
     },
