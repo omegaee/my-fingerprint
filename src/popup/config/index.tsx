@@ -40,7 +40,7 @@ export const FConfig = () => {
     ].map((item, key) => ({
       ...item,
       key,
-      className: 'mb-2 last:mb-0 py-1 !border-0 bg-[--ant-color-bg-container] !rounded-md',
+      className: 'mb-2 last:mb-0 py-1 !border-0 bg-[--ant-color-bg-container] !rounded-lg',
     })) as CollapseProps['items']
   }, [i18n.language, prefs.theme, isShowScriptBadge])
 

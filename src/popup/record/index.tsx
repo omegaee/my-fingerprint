@@ -63,7 +63,10 @@ export const NoticePanel = ({ tab }: NoticePanelProps) => {
           label: `${t('e.iframe-record')} (${getRecordCount(iframeNotice)})`,
           children: <IframeNoticePanel notice={iframeNotice} />,
         }
-      ]}
+      ].map((v) => ({
+        ...v,
+        className: 'overflow-hidden rounded-b-lg bg-[--ant-color-bg-container]'
+      }))}
     />
   </div>
 }

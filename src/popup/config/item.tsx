@@ -11,7 +11,7 @@ type ConfigItemXProps = {
 }
 
 export const ConfigItemX = ({ children, label, startContent, endContent }: ConfigItemXProps) => {
-  return <div className="py-2 px-1 mb-1 last:mb-0 flex gap-2 items-center justify-between rounded duration-200">
+  return <div className="py-2 px-1 mb-1 last:mb-0 flex gap-2 items-center justify-between duration-200">
     <div className="flex items-center gap-3">
       {label}
       {startContent}
@@ -32,7 +32,7 @@ type ConfigItemYProps = {
 }
 
 export const ConfigItemY = ({ children, label, startContent, endContent, className }: ConfigItemYProps) => {
-  return <div className={"mb-1 last:mb-0 flex flex-col gap-2 p-1 rounded duration-200 [&_.ant-form-item]:mb-0 [&_.ant-form-item-label]:p-0 " + (className ?? "")}>
+  return <div className={"mb-1 last:mb-0 flex flex-col gap-2 p-1 duration-200 [&_.ant-form-item]:mb-0 [&_.ant-form-item-label]:p-0 " + (className ?? "")}>
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
         {label}
