@@ -1,4 +1,3 @@
-import { Divider } from "antd"
 import { useTranslation } from "react-i18next";
 import MoreConfigView from "./config";
 import SubscribeView from "./subscribe";
@@ -6,6 +5,7 @@ import TipIcon from "@/components/data/tip-icon";
 import { Md } from "@/components/data/markdown";
 import PresetPanel from "./preset";
 import SiteCleanupView from "./site-cleanup";
+import { cn } from "@/utils/style";
 
 export type MoreViewProps = {
 }
@@ -13,25 +13,45 @@ export type MoreViewProps = {
 export const MoreView = ({ }: MoreViewProps) => {
   const [t] = useTranslation()
 
-  return <div className="h-full overflow-y-auto no-scrollbar flex flex-col gap-2">
-    <div className="p-2 bg-[--ant-color-bg-container] rounded-lg">
-      <h3 className="mb-3 text-center text-sm">{t('label.config-file')}</h3>
+  return <div className="h-full overflow-y-auto no-scrollbar flex flex-col gap-4">
+    <ItemView label={t('label.config-file')}>
       <MoreConfigView className="flex flex-wrap justify-center items-center gap-2" />
-    </div>
-    <div className="p-2 bg-[--ant-color-bg-container] rounded-lg">
-      <div className="mb-3 flex justify-center items-center gap-2">
-        <h3 className="text-sm">{t('label.subscribe')}</h3>
-        <TipIcon.Question content={<Md>{t('desc.subscribe', { joinArrays: '\n\n' })}</Md>} />
-      </div>
+    </ItemView>
+
+    <ItemView label={<>
+      {t('label.subscribe')}
+      <TipIcon.Question content={<Md>{t('desc.subscribe', { joinArrays: '\n\n' })}</Md>} />
+    </>}>
       <SubscribeView />
-    </div>
-    <SiteCleanupView />
-    <div className="p-2 bg-[--ant-color-bg-container] rounded-lg">
-      <h3 className="mb-2 text-center text-sm">{t('label.preset-panel')}</h3>
-      <Divider className="m-0" />
+    </ItemView>
+
+    <ItemView
+      label={<>
+        {t('label.site-cleanup')}
+        <TipIcon.Question content={<Md>{t('desc.site-cleanup', { joinArrays: '\n\n' })}</Md>} />
+      </>}
+      className="p-0"
+    >
+      <SiteCleanupView />
+    </ItemView>
+
+    <ItemView label={t('label.preset-panel')}>
       <PresetPanel />
-    </div>
+    </ItemView>
   </div>
+}
+
+const ItemView = ({ label, className, children }: {
+  label: React.ReactNode
+  className?: string
+  children: React.ReactNode
+}) => {
+  return <section className="flex flex-col justify-center items-center gap-2">
+    <h3 className="text-sm flex items-center justify-center gap-1">{label}</h3>
+    <div className={cn("bg-[--ant-color-bg-container] w-full p-2 rounded-lg overflow-hidden", className)}>
+      {children}
+    </div>
+  </section>
 }
 
 export default MoreView

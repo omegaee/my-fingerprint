@@ -1,3 +1,5 @@
-export function cn(...args: (string | false | null | undefined)[]): string {
-  return args.filter(Boolean).join(' ');
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...args: (string | false | null | undefined)[]) {
+  return twMerge(args.filter(Boolean).join(' '));
 }

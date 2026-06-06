@@ -109,9 +109,11 @@ export const PoliciesView = (props: WhitelistProps) => {
         仅注入网站列表
       </Button>
     </div>
-    <div className="h-full flex flex-col rounded bg-[--ant-color-bg-container]">
+    <div className="h-full flex flex-col rounded-lg bg-[--ant-color-bg-container]">
       <Space.Compact>
-        <Input suffix={<SearchOutlined />}
+        <Input
+          className="rounded-lg"
+          suffix={<SearchOutlined />}
           placeholder="example.com"
           onInput={({ target }: any) => debounceSetFilterValue(target.value)} />
         <Popconfirm title={t('tip.if.clean-whitelist')}
