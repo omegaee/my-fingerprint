@@ -3,16 +3,14 @@ import { debounce, sharedAsync } from "@/utils/timer";
 import { reRequestHeader } from "./request";
 import { HookType } from '@/types/enum'
 import { hasUserScripts, reRegisterScript } from "./script";
-import { SiteListHelper } from "./policies";
 import { logManager } from "@/utils/log";
 import { setWebRTCPolicy } from "./privacy";
+import { domainMergeDedup } from "@/utils/url";
 
 let mContent: LocalStorageContext | undefined
 
 type LocalStorageContext = {
   storage: LocalStorage
-  whitelistHelper: SiteListHelper
-  blacklistHelper: SiteListHelper
   configNonce: number
   policiesNonce: number
 }
@@ -24,8 +22,6 @@ const randNonce = () => Math.floor(Math.random() * 1e9);
  */
 const genStorageContent = (storage: LocalStorage): LocalStorageContext => ({
   storage,
-  whitelistHelper: new SiteListHelper(storage.policies.whitelist),
-  blacklistHelper: new SiteListHelper(storage.policies.blacklist),
   configNonce: randNonce(),
   policiesNonce: randNonce(),
 })
@@ -93,7 +89,7 @@ export const genDefaultLocalStorage = (): LocalStorage => {
 }
 
 /**
- * 合并存储（dst覆盖src，合并到dst）
+ * 合并存储, source 合并到 target
  * 会修改dst
  */
 function deepMerge<T>(target: T, source: DeepPartial<T>): T {
@@ -137,24 +133,28 @@ function deepMerge<T>(target: T, source: DeepPartial<T>): T {
 export const initLocalStorage = sharedAsync(async () => {
   /* init config */
   const _curr = await chrome.storage.local.get() as LocalStorage
-  let _new = genDefaultLocalStorage()
-
-  const _config = deepMerge(_new.config, _curr.config)
+  let _default = genDefaultLocalStorage()
 
   /* clear */
-  const rem = Object.keys(_curr).filter((key) => !(key in _new))
+  const rem = Object.keys(_curr).filter((key) => !(key in _default))
   if (rem.length) {
     chrome.storage.local.remove(rem)
   }
 
   /* set */
   const _storage: LocalStorage = {
-    version: _new.version,
-    config: _config,
+    version: _default.version,
+    config: deepMerge(_default.config, _curr.config),
     policies: {
-      whitelist: _curr.policies?.whitelist ?? _new.policies.whitelist,
-      blacklist: _curr.policies?.blacklist ?? _new.policies.blacklist,
-      isBlacklistMode: _curr.policies?.isBlacklistMode ?? _new.policies.isBlacklistMode,
+      whitelist: domainMergeDedup(
+        _curr.policies?.whitelist,
+        _default.policies.whitelist,
+      ),
+      blacklist: domainMergeDedup(
+        _curr.policies?.blacklist,
+        _default.policies.blacklist,
+      ),
+      isBlacklistMode: _curr.policies?.isBlacklistMode ?? _default.policies.isBlacklistMode,
     },
   }
 
@@ -174,7 +174,7 @@ export const initLocalStorage = sharedAsync(async () => {
 
   onAfterInit(mContent)
 
-  return mContent
+  return mContent;
 })
 
 /**
@@ -237,8 +237,6 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
       ...storage.policies,
       ...v.policies,
     }
-    ctx.whitelistHelper = new SiteListHelper(storage.policies.whitelist)
-    ctx.blacklistHelper = new SiteListHelper(storage.policies.blacklist)
     ctx.policiesNonce = randNonce()
   }
 
@@ -252,7 +250,7 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
  */
 export const importContext = async (data: DeepPartial<LocalStorage>) => {
   const ctx = await getLocalStorage();
-  const { storage, whitelistHelper, blacklistHelper } = ctx;
+  const { storage } = ctx;
 
   let isUpdate = false;
 
@@ -269,23 +267,24 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
 
   const ps = data.policies
 
-  const wlist = [
-    ...(ps?.whitelist ?? []),
-    ...((data as any).whitelist ?? []),
-  ];
-  if (wlist?.length) {
-    whitelistHelper.addList(wlist);
+
+  if (ps?.whitelist?.length !== 0 || (data as any)?.whitelist?.length !== 0) {
+    storage.policies.whitelist = domainMergeDedup(
+      storage.policies.whitelist,
+      ps?.whitelist,
+      (data as any).whitelist,
+    );
 
     ctx.policiesNonce = randNonce()
     isUpdate = true
   }
 
-  const blist = [
-    ...(ps?.blacklist ?? []),
-    ...((data as any).blacklist ?? []),
-  ];
-  if (blist?.length) {
-    blacklistHelper.addList(blist);
+  if (ps?.blacklist?.length !== 0 || (data as any)?.blacklist?.length !== 0) {
+    storage.policies.blacklist = domainMergeDedup(
+      storage.policies.blacklist,
+      ps?.blacklist,
+      (data as any).blacklist,
+    );
 
     ctx.policiesNonce = randNonce()
     isUpdate = true

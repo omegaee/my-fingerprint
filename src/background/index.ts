@@ -1,7 +1,7 @@
 import { getLocalStorage, importContext, initLocalStorage, updateContext } from "./storage";
 import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
 import { injectScript, reRegisterScript } from './script';
-import { tryUrl } from "@/utils/base";
+import { existParentDomain, tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
 import { removeBrowsingData } from "./browsing-data";
@@ -116,7 +116,7 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading') {
-    const { storage, whitelistHelper, blacklistHelper } = await getLocalStorage()
+    const { storage } = await getLocalStorage()
 
     logger.debug('chrome.tabs.onUpdated:', tab.title || tab.url || tab.id);
     logger.debug('injectScript with storage:', storage)
@@ -128,12 +128,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (!_url?.hostname) return;
 
     if (storage.policies.isBlacklistMode) {
-      if (blacklistHelper.match(_url.hostname)) {
+      if (existParentDomain(storage.policies.blacklist, _url.hostname)) {
         logger.debug('in blacklist mode', _url.hostname);
         reRequestHeader(undefined, tabId)
       }
     } else {
-      if (whitelistHelper.match(_url.hostname)) {
+      if (existParentDomain(storage.policies.whitelist, _url.hostname)) {
         logger.debug('in whitelist mode', _url.hostname);
         reRequestHeader(tabId)
         setBadgeWhitelist(tabId)
