@@ -1,8 +1,6 @@
 import { tryUrl } from "@/utils/base"
-import { Md } from "@/components/data/markdown"
-import TipIcon from "@/components/data/tip-icon"
 import { sendToBackground } from "@/utils/message"
-import { Button, Popconfirm, Typography, message } from "antd"
+import { Button, Popconfirm, message } from "antd"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { requestPermission } from "@/utils/browser"
@@ -12,7 +10,7 @@ type SiteCleanupScope = Extract<BackgroundMessage.ParamByType<'site.cleanup'>['s
 
 export const SiteCleanupView = () => {
   const [t] = useTranslation()
-  const [origin, setOrigin] = useState<string>()
+  const [url, setUrl] = useState<URL>()
   const [isPending, setIsPending] = useState(false)
   const [isInvalid, setIsInvalid] = useState(false)
 
@@ -20,7 +18,7 @@ export const SiteCleanupView = () => {
     getCurrentTab().then((tab) => {
       const u = tryUrl(tab?.url as any)
       if (u?.protocol === 'http:' || u?.protocol === 'https:') {
-        setOrigin(u.origin)
+        setUrl(u)
       } else {
         setIsInvalid(true)
       }
@@ -28,7 +26,7 @@ export const SiteCleanupView = () => {
   }, [])
 
   const handleCleanup = async (scope: SiteCleanupScope) => {
-    if (!origin) return;
+    if (!url) return;
 
     await requestPermission('browsingData')
 
@@ -36,7 +34,7 @@ export const SiteCleanupView = () => {
     const result = await sendToBackground({
       type: 'site.cleanup',
       scope,
-      urls: [origin],
+      urls: [url.origin],
     }).finally(() => {
       setIsPending(false)
     })
@@ -52,28 +50,21 @@ export const SiteCleanupView = () => {
     }
   }
 
-  return <div className="p-2 bg-[--ant-color-bg-container] rounded-lg">
-    <div className="mb-3 flex justify-center items-center gap-2">
-      <h3 className="text-sm">{t('label.site-cleanup')}</h3>
-      <TipIcon.Question content={<Md>{t('desc.site-cleanup', { joinArrays: '\n\n' })}</Md>} />
-    </div>
+  return <div className="relative">
+    {isInvalid && <div className="absolute inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-10">
+      <span className="text-gray-800 font-semibold">该站点不可用</span>
+    </div>}
 
-    <div className="my-2">
-      {isInvalid && <Typography.Text className="font-mono text-xs break-all">
-        {t('tip.label.site-cleanup-unsupported-target')}
-      </Typography.Text>}
-    </div>
-
-    <div className="flex flex-col gap-2">
+    <div className="p-3 flex justify-center items-center gap-2 *:grow">
       <Button
         loading={isPending}
         disabled={isInvalid}
         onClick={() => handleCleanup('cache')}>
-        {t('label.site-cleanup.cache')}
+        {'清除缓存'}
       </Button>
 
       <Popconfirm
-        title={t('tip.if.site-cleanup-all')}
+        title={t('tip.label.site-cleanup-site-data-warning')}
         okText={t('g.confirm')}
         cancelText={t('g.cancel')}
         okType='danger'
@@ -82,13 +73,9 @@ export const SiteCleanupView = () => {
           danger
           loading={isPending}
           disabled={isInvalid}>
-          {t('label.site-cleanup-all')}
+          {'站点重置'}
         </Button>
       </Popconfirm>
-
-      <Typography.Text type='danger' className="text-[11px] leading-4 text-right font-medium">
-        {t('tip.label.site-cleanup-site-data-warning')}
-      </Typography.Text>
     </div>
   </div>
 }

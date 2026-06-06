@@ -72,10 +72,10 @@ const PresetPanel = ({ }: {
   }, [selectedKey])
 
   return localPresets == null && onlinePresets == null ?
-    <div className="w-full h-48 flex-center bg-[--ant-color-bg-container] rounded">
+    <div className="w-full h-48 flex-center">
       <Spin indicator={<LoadingOutlined spin />} />
     </div> :
-    <div className="w-full h-48 flex-center bg-[--ant-color-bg-container] rounded">
+    <div className="w-full h-48 flex-center">
       <div className="w-full h-full p-2 flex animate-fadeIn">
         <div className="w-24 shrink-0 flex flex-col overflow-auto no-scrollbar">
           {localPresets && localPresets.length !== 0 && <div className="mb-1 last:mb-0">
