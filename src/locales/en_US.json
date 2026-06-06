@@ -227,17 +227,6 @@
       "scope-cache-fail": "Site cleanup failed"
     }
   },
-  "perm": {
-    "status": {
-      "on": "Granted",
-      "off": "Click to give permission",
-      "unknown": "Not supported by current browser version"
-    },
-    "desc": {
-      "userScripts": "Allow the extension to use the **userScripts** permission to make the extension adaptable to more sites",
-      "browsingData": "Allow the extension to clear the current page origin's cache, Service Worker, and site data on demand"
-    }
-  },
   "desc": {
     "subscribe": [
       "When the extension loads, it will fetch configuration from the subscription target. It will overwrite the original settings and merge the whitelist. The configuration must be in JSON format. Refer to README.md for more details.",

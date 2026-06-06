@@ -230,17 +230,6 @@
       "scope-cache-fail": "站点清理失败"
     }
   },
-  "perm": {
-    "status": {
-      "on": "已授权",
-      "off": "点击授权",
-      "unknown": "当前浏览器版本不支持"
-    },
-    "desc": {
-      "userScripts": "允许该扩展使用**userScripts**权限，使该扩展能适应更多网站",
-      "browsingData": "允许该扩展按需清理当前页面这个站点的缓存、Service Worker 和站点数据"
-    }
-  },
   "desc": {
     "subscribe": [
       "扩展加载时会从订阅目标上拉取配置，会覆盖原配置并合并白名单，配置内容必须是json格式。前往README.md查看更多信息",
