@@ -43,6 +43,9 @@
         },
         "webrtc": {
           "type": 0
+        },
+        "serviceWorker": {
+          "type": 0
         }
       },
       "screen": {
@@ -58,5 +61,9 @@
       "url": "config.json"
     }
   },
-  "whitelist": []
+  "policies": {
+    "whitelist": [],
+    "blacklist": [],
+    "isBlacklistMode": false
+  }
 }
