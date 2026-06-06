@@ -48,10 +48,10 @@ export const PoliciesView = (props: WhitelistProps) => {
       const url = new URL(`http://${addValue}`)
       if (siteList.includes(url.hostname)) {
         /* 域名重复 */
-        props.msgApi?.error(t('tip.err.domain-exist'))
+        props.msgApi?.error(t('tip.domain.exist'))
       } else if (existParentDomain(siteList, url.hostname)) {
         /* 存在父域名 */
-        props.msgApi?.error(t('tip.err.parent-domain-exist'))
+        props.msgApi?.error(t('tip.domain.parent-exist'))
       } else if (existChildDomain(siteList, url.hostname)) {
         /* 子域名存在 */
         setConfirmContent(url.hostname)
@@ -60,7 +60,7 @@ export const PoliciesView = (props: WhitelistProps) => {
         addItem(url.hostname)
       }
     } catch (err) {
-      props.msgApi?.error(t('tip.err.input-hostname'))
+      props.msgApi?.error(t('tip.action.input-hostname'))
     }
   }
 
@@ -116,7 +116,7 @@ export const PoliciesView = (props: WhitelistProps) => {
           suffix={<SearchOutlined />}
           placeholder="example.com"
           onInput={({ target }: any) => debounceSetFilterValue(target.value)} />
-        <Popconfirm title={t('tip.if.clean-whitelist')}
+        <Popconfirm title={t('tip.domain.remove-all')}
           placement='topLeft'
           okText={t('g.confirm')}
           cancelText={t('g.cancel')}
@@ -134,7 +134,7 @@ export const PoliciesView = (props: WhitelistProps) => {
           onKeyDown={({ key }) => key === 'Enter' && addItemHelper()} />
         <Popconfirm
           disabled={!confirmContent}
-          title={t('tip.if.remove-child-domain')}
+          title={t('tip.domain.remove-child')}
           placement='topRight'
           open={!!confirmContent}
           onOpenChange={(open) => !open && setConfirmContent(undefined)}

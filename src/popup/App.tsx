@@ -154,7 +154,7 @@ function Application() {
         <section className="flex-1 min-w-0 flex flex-col items-center gap-1">
           <Popconfirm
             disabled={domainMode !== 'sub'}
-            title={t('tip.if.remove-parent-domain')}
+            title={t('tip.domain.remove-parent')}
             placement='bottom'
             onConfirm={switchSiteList}
             okText={t('g.confirm')}
@@ -164,10 +164,10 @@ function Application() {
               type={domainMode !== 'none' ? 'primary' : 'default'}
               danger={!hostname}
               className="font-mono font-bold truncate w-full"
-              title={hostname ?? t('tip.label.not-support-tab')}
+              title={hostname ?? t('tip.tab.not-support')}
               onClick={domainMode !== 'sub' ? switchSiteList : undefined}>
               <span className="truncate block max-w-full">
-                {hostname ?? t('tip.label.not-support-tab')}
+                {hostname ?? t('tip.tab.not-support')}
               </span>
             </Button>
           </Popconfirm>

@@ -53,8 +53,8 @@ const PresetPanel = ({ }: {
   const onApply = (preset?: DeepPartial<LocalStorage>) => {
     if (!preset) return;
     importStorage(preset)
-      .then(() => message.success(t('tip.ok.config-import')))
-      .catch((err) => message.warning(`${t('tip.err.config-import')}: ${err?.message}`))
+      .then(() => message.success(t('tip.config.import-ok')))
+      .catch((err) => message.warning(`${t('tip.config.import-fail')}: ${err?.message}`))
   }
 
   const infoProps = useMemo(() => {
@@ -100,7 +100,7 @@ const PresetPanel = ({ }: {
         <Divider className="h-full mx-2" type='vertical' />
         <div className="grow rounded">
           {infoProps == null ?
-            <div className="h-full flex-center">{t('tip.label.select-content')}</div> :
+            <div className="h-full flex-center">{t('tip.data.please-select')}</div> :
             <PresetInfoView {...infoProps} onApply={onApply} />}
         </div>
       </div>
@@ -166,18 +166,18 @@ const PresetInfoView = ({ mode, item, onApply }: {
   return isLoading ?
     <div className="h-full flex-center"><Spin indicator={<LoadingOutlined spin />} /></div> :
     preset == null ?
-      <div className="h-full flex-center">{'tip.label.unsupport-content'}</div> :
+      <div className="h-full flex-center">{'tip.data.unsupport'}</div> :
       <div className="h-full flex flex-col gap-2 overflow-y-auto">
         <div>
           <Tag>{t('g.' + mode)}</Tag>
           {preset.version && <Tag>v{preset.version}</Tag>}
-          {preset.version != null && manifest.version !== preset.version && <Tag color='error'>{t('tip.label.version-mismatch')}</Tag>}
+          {preset.version != null && manifest.version !== preset.version && <Tag color='error'>{t('tip.version.mismatch')}</Tag>}
         </div>
         <p className="font-bold">{asLang(item.name) ?? 'null'}</p>
         <p>{asLang(item.description) ?? 'null'}</p>
         <Popconfirm
           title={t('g.apply')}
-          description={t('tip.if.config-import')}
+          description={t('tip.config.override-current')}
           onConfirm={() => onApply?.(preset)}
           okText={t('g.confirm')}
           showCancel={false}

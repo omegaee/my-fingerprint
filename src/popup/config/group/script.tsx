@@ -61,7 +61,7 @@ export const ScriptConfigGroup = memo(() => {
         type: 'api.check',
         api: 'userScripts',
       }) !== true) {
-        message.warning(t('tip.err.ns-fast-inject'))
+        message.warning(t('tip.action.enable-fail'))
         return;
       }
     }

@@ -36,8 +36,8 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
     if (!url.includes("://")) url = chrome.runtime.getURL(url);
     fetch(url)
       .then(v => v.json())
-      .then(() => message.success(t('tip.ok.subscribe-test')))
-      .catch(e => message.error(`${t('tip.err.subscribe-test')}: ${e}`))
+      .then(() => message.success(t('tip.subscribe.test-ok')))
+      .catch(e => message.error(`${t('tip.subscribe.test-fail')}: ${e}`))
   }
 
   /**
@@ -51,9 +51,9 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
       .then(v => v.json())
       .then(async (v) => {
         await importStorage(v)
-        message.success(t('tip.ok.subscribe'))
+        message.success(t('tip.subscribe.save-ok'))
       })
-      .catch(e => message.error(`${t('tip.err.subscribe')}: ${e}`))
+      .catch(e => message.error(`${t('tip.subscribe.save-fail')}: ${e}`))
   }
 
   return <section className={className}>
@@ -64,7 +64,7 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
         onChange={({ target }) => setInput(target.value)}
       />
       <div>
-        <Tooltip title={t('tip.label.subscribe-save')}>
+        <Tooltip title={t('tip.subscribe.save')}>
           <Button icon={<CheckOutlined />} disabled={!saveable} onClick={() => {
             setTimeout(() => setSaveable(true), 1000);
             setSaveable(false);
@@ -73,7 +73,7 @@ export const SubscribeView = ({ className }: SubscribeViewProps) => {
         </Tooltip>
       </div>
       <div>
-        <Tooltip title={t('tip.label.subscribe-test')} >
+        <Tooltip title={t('tip.subscribe.test')} >
           <Button
             icon={<ApiOutlined />}
             disabled={input.trim() === ''}

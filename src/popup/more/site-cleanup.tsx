@@ -40,19 +40,19 @@ export const SiteCleanupView = () => {
     })
 
     if (result.ok) {
-      message.success(t(`tip.ok.site-cleanup.${scope}`))
+      message.success(t(`tip.site-cleanup.scope-${scope}-ok`))
     } else {
       if (result.messageKey) {
-        message.error(t(result.messageKey))
+        message.error(`${t(`tip.site-cleanup.scope-${scope}-fail`)}: ${t(result.messageKey)}`)
       } else {
-        message.error(result.message)
+        message.error(`${t(`tip.site-cleanup.scope-${scope}-fail`)}: ${result.message}`)
       }
     }
   }
 
   return <div className="relative">
     {isInvalid && <div className="absolute inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-10">
-      <span className="text-gray-800 font-semibold">该站点不可用</span>
+      <span className="text-gray-800 font-semibold">{t('tip.site-cleanup.current-unavailable')}</span>
     </div>}
 
     <div className="p-3 flex justify-center items-center gap-2 *:grow">
@@ -60,11 +60,11 @@ export const SiteCleanupView = () => {
         loading={isPending}
         disabled={isInvalid}
         onClick={() => handleCleanup('cache')}>
-        {'清除缓存'}
+        {t('label.site-cleanup-cache')}
       </Button>
 
       <Popconfirm
-        title={t('tip.label.site-cleanup-site-data-warning')}
+        title={t('tip.site-cleanup.scope-all-prompt')}
         okText={t('g.confirm')}
         cancelText={t('g.cancel')}
         okType='danger'
@@ -73,7 +73,7 @@ export const SiteCleanupView = () => {
           danger
           loading={isPending}
           disabled={isInvalid}>
-          {'站点重置'}
+          {t('label.site-cleanup-all')}
         </Button>
       </Popconfirm>
     </div>

@@ -104,7 +104,7 @@ export const FpNoticePanel = function ({ notice }: FpNoticePanelProps) {
 
   return <div className='h-full flex flex-col'>
     {treeData.length === 0 ?
-      <div className='grow flex justify-center items-center'>{t('tip.label.no-fp-notice')}</div> :
+      <div className='grow flex justify-center items-center'>{t('tip.data.empty')}</div> :
       <Tree.DirectoryTree
         className='grow p-1 overflow-auto no-scrollbar [&_.ant-tree-treenode]:before:rounded'
         showIcon={false}

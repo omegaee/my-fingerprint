@@ -11,7 +11,7 @@ export const IframeNoticePanel = ({ notice }: IframeNoticePanelProps) => {
 
   return <div className='p-1 h-full flex flex-col'>
     {keys.length === 0 ?
-      <div className='grow flex justify-center items-center'>{t('tip.label.no-fp-notice')}</div> :
+      <div className='grow flex justify-center items-center'>{t('tip.data.empty')}</div> :
       <div>{keys.map((v) => <IframeNoticeItem key={v} src={v} count={notice?.[v]} />)}</div>}
   </div>
 }

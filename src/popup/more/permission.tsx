@@ -48,7 +48,7 @@ export const PermissionView = ({ className }: {
         status={perms[perm]}
         onChange={() => setVersion(version + 1)}
       />) :
-      <span className="text-[--ant-color-text-tertiary]">{t('tip.label.no-auth-required')}</span>}
+      <span className="text-[--ant-color-text-tertiary]">{t('tip.permission.not-required')}</span>}
   </section>
 }
 
@@ -86,7 +86,7 @@ const PermissionItem = ({
   switch (status) {
     case 'on':
       content = <Popconfirm
-        title={t('tip.if.remove-permission')}
+        title={t('tip.permission.remove')}
         okText={t('g.confirm')}
         cancelText={t('g.cancel')}
         open={clicked}

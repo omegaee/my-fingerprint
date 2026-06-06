@@ -41,8 +41,8 @@
     "clipboard-import": "Import From Clipboard",
     "permission": "Permission",
     "site-cleanup": "Site Cleanup",
-    "site-cleanup-cache": "Clear Current SW + Site Cache",
-    "site-cleanup-all": "Clear Current Full Site Data",
+    "site-cleanup-cache": "Clear Cache",
+    "site-cleanup-all": "Reset Site",
     "subscribe": "Subscribe",
     "fp-notice": {
       "weak": "Weak",
@@ -63,7 +63,8 @@
     "timezone": {
       "standard": "Standard",
       "daylight": "Daylight"
-    }
+    },
+    "json": "Json Format"
   },
   "type": {
     "default": "Default",
@@ -176,54 +177,54 @@
     }
   },
   "tip": {
-    "label": {
-      "not-support-tab": "Not Supported",
-      "site-cleanup-target": "Current target",
-      "site-cleanup-unsupported-target": "Current page is not a clearable http/https page",
-      "site-cleanup-site-data-warning": "Warning: this will sign you out!",
-      "no-auth-required": "No Auth Required",
-      "json": "Json Format",
-      "subscribe-save": "Save and Subscribe",
-      "subscribe-test": "Subscription Target Detection",
-      "no-fp-notice": "No records found",
-      "select-content": "Please select content",
-      "unsupport-content": "Unsupported content",
-      "version-mismatch": "Version Mismatch"
+    "data": {
+      "empty": "No data available",
+      "please-select": "Please select an item",
+      "unsupport": "Content not supported"
     },
-    "ok": {
-      "config-import": "Import Config Success",
-      "config-export": "Export Config Success",
-      "site-cleanup-cache": "Current origin Service Worker and site cache cleared. A manual refresh of the page is recommended.",
-      "site-cleanup-all": "Current origin site data cleared. A manual refresh of the page is recommended.",
-      "subscribe-test": "Subscription Test Passed",
-      "subscribe": "Subscription Success"
+    "action": {
+      "enable-fail": "Failed to enable, check the \"?\" option description",
+      "input-hostname": "Please enter a valid domain name"
     },
-    "err": {
-      "input-hostname": "Please enter the correct domain name",
-      "input-port": "Please enter the correct port number",
-      "domain-exist": "Host already exists",
-      "parent-domain-exist": "Parent domain already exists",
-      "config-parse": "Config Parse Error",
-      "config-import": "Import Config Error",
-      "config-export": "Export Config Error",
-      "config-unloaded": "Config Unloaded",
-      "import-empty": "Import Config is Empty",
-      "site-cleanup": "Site cleanup failed",
-      "site-cleanup-url": "Current page is not a clearable http/https page",
-      "site-cleanup-scope": "Unsupported cleanup scope",
-      "site-cleanup-permission": "The browsingData permission was not granted, so cleanup cannot run",
-      "site-cleanup-unsupported": "This browser does not support this site cleanup feature",
-      "subscribe-test": "Subscription Test Failed",
-      "subscribe": "Subscription Failed",
-      "ns-fast-inject": "Enable failed, please view the \"?\" option description"
+    "version": {
+      "mismatch": "Version mismatch"
     },
-    "if": {
-      "remove-parent-domain": "Whether to remove its parent domain",
-      "remove-child-domain": "Whether to remove its child domain",
-      "remove-permission": "Whether to remove its permissions",
-      "site-cleanup-site-data": "Clear all site data for this current site? Warning: this will sign you out.",
-      "config-import": "Whether to overwrite the current config",
-      "clean-whitelist": "Whether to clean the current whitelist"
+    "tab": {
+      "not-support": "This tab is not supported"
+    },
+    "permission": {
+      "not-required": "No permission required",
+      "remove": "Remove this permission?"
+    },
+    "config": {
+      "import-ok": "Config imported successfully",
+      "export-ok": "Config exported successfully",
+      "import-fail": "Config import failed",
+      "export-fail": "Config export failed",
+      "override-current": "Override current config?"
+    },
+    "subscribe": {
+      "save": "Save and subscribe",
+      "save-ok": "Saved successfully",
+      "save-fail": "Save failed",
+      "test": "Subscription target test",
+      "test-ok": "Subscription test passed",
+      "test-fail": "Subscription test failed"
+    },
+    "domain": {
+      "exist": "Domain already exists",
+      "parent-exist": "Parent domain already exists",
+      "remove-parent": "Remove this parent domain?",
+      "remove-child": "Remove this child domain?",
+      "remove-all": "Clear all domains?"
+    },
+    "site-cleanup": {
+      "current-unavailable": "Current site unavailable",
+      "scope-all-prompt": "Reset this site? Note: resetting will log you out!",
+      "scope-all-ok": "Site reset complete, please refresh the page",
+      "scope-all-fail": "Site reset failed",
+      "scope-cache-ok": "Site cache cleared, please refresh the page",
+      "scope-cache-fail": "Site cleanup failed"
     }
   },
   "perm": {
@@ -246,11 +247,9 @@
       "Remote - `http://example.com/config.json`"
     ],
     "site-cleanup": [
-      "Scope: this current site only. It does not automatically affect other subdomains under the same registrable domain.",
-      "Light cleanup fits: broken page styles, old versions that keep loading, PWA / cache logic issues, odd site behavior when you do not want to sign out.",
-      "Clears: this current site's Service Worker and Cache Storage.",
-      "Full cleanup fits: when you suspect the site has remembered you for too long, local records or state look wrong, or you want a more complete local reset for this site.",
-      "Clears: this current site's cookies, IndexedDB, localStorage, fileSystems, WebSQL, Cache Storage, and Service Worker. **Warning: this will sign you out.**"
+      "Scope: Only affects the site on this page. Other subdomains under the same domain are not affected.",
+      "Clear cache: Use when page styles look broken, the site always loads old versions, cache issues occur, or the site behaves oddly but you don’t want to log out.",
+      "Reset site: Use when the site keeps remembering you, local data looks wrong, or you want to fully reset the site. **Warning: this will log you out!**"
     ],
     "record": [
       "**Fingerprint Record**",
