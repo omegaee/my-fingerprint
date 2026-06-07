@@ -40,7 +40,7 @@
           "type": 2
         },
         "webrtc": {
-          "type": 7
+          "type": 6
         },
         "serviceWorker": {
           "type": 0
