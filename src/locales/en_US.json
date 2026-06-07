@@ -76,7 +76,7 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "webrtc": {
-      "enabled": "Leak Protection (Recommended)"
+      "enabled": "Leak Protection (not affected by allow/block lists)"
     }
   },
   "item": {
@@ -125,9 +125,9 @@
       "audio": "Audio fingerprinting identifies your device through unique patterns in audio signal processing.",
       "webgl": "WebGL fingerprinting captures device characteristics based on variations in 3D rendering behavior.",
       "webrtc": [
-        "System value: Keep the browser’s default WebRTC behavior without changes.",
-        "Leak‑protection: Try to keep WebRTC working while hiding local or real IP addresses. If the browser cannot apply the policy, the extension will automatically switch to full disable.",
-        "Disable: Turn off WebRTC completely, making all related features unavailable."
+        "- System value: Keep the browser’s default WebRTC behavior without changes.",
+        "- Leak‑protection: Try to keep WebRTC working while hiding local or real IP addresses. If the browser cannot apply the policy, the extension will automatically switch to full disable. ***Note: If you choose this option, it will always take effect. Your allow or block list settings will not change it.***",
+        "- Disable: Turn off WebRTC completely, making all related features unavailable."
       ],
       "font": "Font fingerprinting reveals device details by checking which fonts are supported and how they’re rendered.",
       "webgpu": "WebGPU fingerprinting extracts device information by analyzing differences in GPU processing capabilities.",
@@ -229,7 +229,7 @@
   },
   "desc": {
     "subscribe": [
-      "When the extension loads, it will fetch configuration from the subscription target. It will overwrite the original settings and merge the whitelist. The configuration must be in JSON format. Refer to README.md for more details.",
+      "When the extension loads, it will fetch configuration from the subscription target. It will overwrite the original settings and merge the site list. The configuration must be in JSON format. Refer to README.md for more details.",
       "Empty value - ` `",
       "Default - `config.json`",
       "Local - `file:///example/config.json`",
@@ -251,7 +251,6 @@
     "deprecated": "Deprecated",
     "unstable": "Unstable",
     "general": "General",
-    "only-whitelist": "Only Whitelist",
     "unsupport-import": "Unsupport Import"
   }
 }
