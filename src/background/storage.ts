@@ -148,10 +148,12 @@ export const initLocalStorage = sharedAsync(async () => {
     policies: {
       whitelist: domainMergeDedup(
         _curr.policies?.whitelist,
+        (_curr as any).whitelist,
         _default.policies.whitelist,
       ),
       blacklist: domainMergeDedup(
         _curr.policies?.blacklist,
+        (_curr as any).blacklist,
         _default.policies.blacklist,
       ),
       isBlacklistMode: _curr.policies?.isBlacklistMode ?? _default.policies.isBlacklistMode,
@@ -240,7 +242,7 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
     ctx.policiesNonce = randNonce()
   }
 
-  onAfterUpdateContext(ctx)
+  onUpdateContext(ctx)
 
   return storage
 }
@@ -265,13 +267,10 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
     isUpdate = true
   }
 
-  const ps = data.policies
-
-
-  if (ps?.whitelist?.length !== 0 || (data as any)?.whitelist?.length !== 0) {
+  if (data.policies?.whitelist?.length !== 0 || (data as any)?.whitelist?.length !== 0) {
     storage.policies.whitelist = domainMergeDedup(
       storage.policies.whitelist,
-      ps?.whitelist,
+      data.policies?.whitelist,
       (data as any).whitelist,
     );
 
@@ -279,10 +278,10 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
     isUpdate = true
   }
 
-  if (ps?.blacklist?.length !== 0 || (data as any)?.blacklist?.length !== 0) {
+  if (data.policies?.blacklist?.length !== 0 || (data as any)?.blacklist?.length !== 0) {
     storage.policies.blacklist = domainMergeDedup(
       storage.policies.blacklist,
-      ps?.blacklist,
+      data.policies?.blacklist,
       (data as any).blacklist,
     );
 
@@ -290,10 +289,10 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
     isUpdate = true
   }
 
-  if (ps?.isBlacklistMode != null && storage.policies.isBlacklistMode !== ps.isBlacklistMode) {
+  if (data.policies?.isBlacklistMode != null && storage.policies.isBlacklistMode !== data.policies.isBlacklistMode) {
     await updateContext({
       policies: {
-        isBlacklistMode: ps.isBlacklistMode
+        isBlacklistMode: data.policies.isBlacklistMode
       }
     })
 
@@ -302,7 +301,7 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
   }
 
   if (isUpdate) {
-    onAfterUpdateContext(ctx)
+    onUpdateContext(ctx)
   }
 
   return storage;
@@ -345,9 +344,9 @@ const onBeforeUpdateContext = async ({ storage }: LocalStorageContext, obj: Deep
 }
 
 /**
- * 更新配置后执行
+ * 更新配置
  */
-const onAfterUpdateContext = (_: LocalStorageContext) => {
+const onUpdateContext = (_: LocalStorageContext) => {
   saveContextToLocalStorage()
   reRegisterScript()
   reRequestHeader()
