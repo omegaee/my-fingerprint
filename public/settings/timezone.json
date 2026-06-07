@@ -25,6 +25,14 @@
       "zone": "Europe/Berlin"
     },
     {
+      "key": "IST",
+      "title": {
+        "en": "Istanbul",
+        "zh": "伊斯坦布尔"
+      },
+      "zone": "Europe/Istanbul"
+    },
+    {
       "key": "CAI",
       "title": {
         "en": "Cairo",
@@ -49,20 +57,20 @@
       "zone": "Asia/Dubai"
     },
     {
-      "key": "KZ",
+      "key": "DEL",
       "title": {
-        "en": "Almaty",
-        "zh": "阿拉木图"
+        "en": "Delhi",
+        "zh": "德里"
       },
-      "zone": "Asia/Almaty"
+      "zone": "Asia/Kolkata"
     },
     {
-      "key": "KHI",
+      "key": "BOM",
       "title": {
-        "en": "Karachi",
-        "zh": "卡拉奇"
+        "en": "Mumbai",
+        "zh": "孟买"
       },
-      "zone": "Asia/Karachi"
+      "zone": "Asia/Kolkata"
     },
     {
       "key": "DAC",
@@ -89,12 +97,28 @@
       "zone": "Asia/Jakarta"
     },
     {
-      "key": "SH",
+      "key": "BJ",
       "title": {
-        "en": "Shanghai",
-        "zh": "上海"
+        "en": "Beijing",
+        "zh": "北京"
       },
       "zone": "Asia/Shanghai"
+    },
+    {
+      "key": "HK",
+      "title": {
+        "en": "Hong Kong",
+        "zh": "香港"
+      },
+      "zone": "Asia/Hong_Kong"
+    },
+    {
+      "key": "TP",
+      "title": {
+        "en": "Taipei",
+        "zh": "台北"
+      },
+      "zone": "Asia/Taipei"
     },
     {
       "key": "SG",
@@ -129,36 +153,12 @@
       "zone": "Australia/Sydney"
     },
     {
-      "key": "NOU",
-      "title": {
-        "en": "Noumea",
-        "zh": "努美阿"
-      },
-      "zone": "Pacific/Noumea"
-    },
-    {
       "key": "AKL",
       "title": {
         "en": "Auckland",
         "zh": "奥克兰"
       },
       "zone": "Pacific/Auckland"
-    },
-    {
-      "key": "CVT",
-      "title": {
-        "en": "Cape Verde",
-        "zh": "佛得角"
-      },
-      "zone": "Atlantic/Cape_Verde"
-    },
-    {
-      "key": "GST",
-      "title": {
-        "en": "Noronha",
-        "zh": "诺罗尼亚"
-      },
-      "zone": "America/Noronha"
     },
     {
       "key": "BRT",
@@ -169,18 +169,34 @@
       "zone": "America/Sao_Paulo"
     },
     {
-      "key": "AST",
+      "key": "MEX",
       "title": {
-        "en": "Caracas",
-        "zh": "加拉加斯"
+        "en": "Mexico City",
+        "zh": "墨西哥城"
       },
-      "zone": "America/Caracas"
+      "zone": "America/Mexico_City"
+    },
+    {
+      "key": "TOR",
+      "title": {
+        "en": "Toronto",
+        "zh": "多伦多"
+      },
+      "zone": "America/Toronto"
     },
     {
       "key": "NY",
       "title": {
         "en": "New York",
         "zh": "纽约"
+      },
+      "zone": "America/New_York"
+    },
+    {
+      "key": "WSH",
+      "title": {
+        "en": "Washington DC",
+        "zh": "华盛顿"
       },
       "zone": "America/New_York"
     },
@@ -209,6 +225,14 @@
       "zone": "America/Los_Angeles"
     },
     {
+      "key": "SF",
+      "title": {
+        "en": "San Francisco",
+        "zh": "旧金山"
+      },
+      "zone": "America/Los_Angeles"
+    },
+    {
       "key": "AKST",
       "title": {
         "en": "Anchorage",
@@ -223,14 +247,6 @@
         "zh": "夏威夷"
       },
       "zone": "Pacific/Honolulu"
-    },
-    {
-      "key": "NUT",
-      "title": {
-        "en": "Niue",
-        "zh": "纽埃"
-      },
-      "zone": "Pacific/Niue"
     }
   ]
 }

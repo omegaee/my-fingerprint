@@ -59,14 +59,20 @@ const TimeZoneConfigItem = ({ }: {}) => {
       localPreset && {
         label: <span>{t('g.preset')}</span>,
         title: 'preset',
-        options: localPreset.map((tz) => {
-          const offset = timeZoneToLongOffset(tz.zone)
-          const isDST = isCurrentlyDST(tz.zone)
-          return {
-            value: tz.key,
-            label: `${asLang(tz.title)} (${offset ? longOffsetToReadable(offset) : 'N/A'}${isDST ? `, ${t('label.timezone.daylight')}` : ''})`,
-          }
-        }),
+        options: localPreset
+          .map((v) => ({
+            ...v,
+            label: asLang(v.title) ?? '',
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .map((tz) => {
+            const offset = timeZoneToLongOffset(tz.zone)
+            const isDST = isCurrentlyDST(tz.zone)
+            return {
+              value: tz.key,
+              label: `${tz.label} (${offset ? longOffsetToReadable(offset) : 'N/A'}${isDST ? `, ${t('label.timezone.daylight')}` : ''})`,
+            }
+          }),
       },
     ].filter(v => !!v)
   }, [i18n.language, localPreset])
