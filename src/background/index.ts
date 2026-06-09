@@ -1,6 +1,6 @@
 import { getLocalStorage, importContext, initLocalStorage, updateContext } from "./storage";
 import { removeBadge, setBadgeContent, setBadgeWhitelist } from "./badge";
-import { injectScript, reRegisterScript } from './script';
+import { hasUserScripts, injectScript, reRegisterScript } from './script';
 import { existParentDomain, tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
@@ -91,14 +91,11 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
     }
     case 'api.check': {
       if (msg.api === 'userScripts') {
-        try {
-          chrome.userScripts.getScripts()
+        const available = hasUserScripts()
+        if (available) {
           logger.debug('api.check: userScripts API available')
-          sendResponse<'api.check'>(true)
-        } catch (e) {
-          logger.error('api.check: userScripts API check failed:', e)
-          sendResponse<'api.check'>(e as string)
         }
+        sendResponse<'api.check'>(available)
       }
       return false
     }
