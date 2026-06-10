@@ -134,6 +134,7 @@ export const reRequestHeader = async (excludeTabId?: number, includeTabId?: numb
 
   /* 构建 Condition */
   let condition: chrome.declarativeNetRequest.RuleCondition;
+  const resourceTypes = Object.values(chrome.declarativeNetRequest.ResourceType)
   if (storage.policies.isBlacklistMode) {
     /* 黑名单模式 */
     if (!MEMORY.includeTabIds) {
@@ -144,25 +145,32 @@ export const reRequestHeader = async (excludeTabId?: number, includeTabId?: numb
       MEMORY.includeTabIds = [...new Set(MEMORY.includeTabIds)]
     }
 
-    condition = {
-      resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-      initiatorDomains: [...storage.policies.blacklist],
-      tabIds: [...MEMORY.includeTabIds],
+    condition = { resourceTypes }
+    if (storage.policies.blacklist.length > 0) {
+      condition.initiatorDomains = [...storage.policies.blacklist]
+    }
+    if (MEMORY.includeTabIds.length > 0) {
+      condition.tabIds = [...MEMORY.includeTabIds]
+    }
+    if (!condition.initiatorDomains && !condition.tabIds) {
+      return await removeRules()
     }
   } else {
     /* 白名单模式 */
     if (!MEMORY.excludeTabIds) {
-      MEMORY.excludeTabIds = srs[0]?.condition?.tabIds ?? []
+      MEMORY.excludeTabIds = srs[0]?.condition?.excludedTabIds ?? []
     }
     if (excludeTabId != null) {
       MEMORY.excludeTabIds.push(excludeTabId)
       MEMORY.excludeTabIds = [...new Set(MEMORY.excludeTabIds)]
     }
 
-    condition = {
-      resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType),
-      excludedInitiatorDomains: [...storage.policies.whitelist],
-      excludedTabIds: [...MEMORY.excludeTabIds],
+    condition = { resourceTypes }
+    if (storage.policies.whitelist.length > 0) {
+      condition.excludedInitiatorDomains = [...storage.policies.whitelist]
+    }
+    if (MEMORY.excludeTabIds.length > 0) {
+      condition.excludedTabIds = [...MEMORY.excludeTabIds]
     }
   }
 
