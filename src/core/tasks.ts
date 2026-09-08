@@ -819,6 +819,41 @@ export const hookTasks: HookTask[] = [
         },
       })
 
+      function disable_fonts(fonts: string[]) {
+        if (!win?.document) return;
+
+        const content = [];
+        for (const font of fonts) {
+          const c = `@font-face { font-family: "${font}"; src: local("serif"); unicode-range: U+0; }`;
+          content.push(c);
+        }
+        const css_content = content.join("\n");
+
+        const elem = win.document.createElement('style');
+        elem.textContent = css_content;
+        win.document.head.append(elem);
+      }
+
+      // TODO 应该从配置项读取需要禁用的字体？？？
+      const disabled_fonts = ["Segoe UI", "Tahoma", "Arial", "Helvetica", "arial"];
+
+      if (win.document.head) {
+        disable_fonts(disabled_fonts)
+      } else {
+        // 尽可能快地插入 css，所以监听任何网页变动，只要 head 存在，就立即插入
+        const observer = new MutationObserver((mutations) => {
+          for (const record of mutations) {
+            for (const node of record.addedNodes) {
+              if (node.nodeName === 'HEAD') {
+                observer.disconnect();
+                disable_fonts(disabled_fonts);
+                return;
+              }
+            }
+          }
+        });
+        observer.observe(document.documentElement, { childList: true });
+      }
     },
   },
 
