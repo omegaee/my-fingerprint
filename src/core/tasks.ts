@@ -819,26 +819,27 @@ export const hookTasks: HookTask[] = [
         },
       })
 
-      function disable_fonts(fonts: string[]) {
+      function disableFonts(fonts: string[]) {
         if (!win?.document) return;
 
         const content = [];
         for (const font of fonts) {
-          const c = `@font-face { font-family: "${font}"; src: local("serif"); unicode-range: U+0; }`;
+          // 这里的 src 取值必须选择一个当前电脑上存在的字体
+          // 或者插件内部包含一个简单字体，然后通过 `url()` 引用它
+          const c = `@font-face { font-family: "${font}"; src: local("Arial"); unicode-range: U+0; }`;
           content.push(c);
         }
-        const css_content = content.join("\n");
 
         const elem = win.document.createElement('style');
-        elem.textContent = css_content;
+        elem.textContent = content.join("\n");
         win.document.head.append(elem);
       }
 
       // TODO 应该从配置项读取需要禁用的字体？？？
-      const disabled_fonts = ["Segoe UI", "Tahoma", "Arial", "Helvetica", "arial"];
+      const disabledFonts = ["Segoe UI", "Tahoma", "Arial", "Helvetica", "arial"];
 
       if (win.document.head) {
-        disable_fonts(disabled_fonts)
+        disableFonts(disabledFonts)
       } else {
         // 尽可能快地插入 css，所以监听任何网页变动，只要 head 存在，就立即插入
         const observer = new MutationObserver((mutations) => {
@@ -846,13 +847,13 @@ export const hookTasks: HookTask[] = [
             for (const node of record.addedNodes) {
               if (node.nodeName === 'HEAD') {
                 observer.disconnect();
-                disable_fonts(disabled_fonts);
+                disableFonts(disabledFonts);
                 return;
               }
             }
           }
         });
-        observer.observe(document.documentElement, { childList: true });
+        observer.observe(win.document.documentElement, { childList: true });
       }
     },
   },
