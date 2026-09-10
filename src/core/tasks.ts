@@ -791,17 +791,6 @@ export const hookTasks: HookTask[] = [
       const seed = useSeed(conf.fp.other.font)
       if (seed == null) return;
 
-      useGetterProxy(win.HTMLElement.prototype, [
-        'offsetHeight', 'offsetWidth'
-      ], (key, getter) => ({
-        apply(target: () => any, thisArg: HTMLElement, args: any) {
-          notify('strong.fonts')
-          const result = getter.call(thisArg);
-          const mark = (thisArg.style?.fontFamily ?? key) + result;
-          return result + randomFontNoise(seed, mark);
-        }
-      }))
-
       useProxy(win, 'FontFace', {
         construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
           const source = args[1]
@@ -819,35 +808,41 @@ export const hookTasks: HookTask[] = [
         },
       })
 
-      function disableFonts(fonts: string[]) {
+      /** 根据随机种子，随机禁用一些字体 */
+      function disableFonts() {
         if (!win?.document) return;
 
+        /** 常用的字体不能被禁用 */
+        const commonFonts = new Set(["Arial", "Helvetica", "Times New Roman", "monospace", "sans-serif", "serif", "Courier New", "Microsoft YaHei", "Consolas"]);
+
+        const disabledFonts = conf.prefs.systemFonts.filter((font) => {
+          const v = seededRandom(font + seed, 1, 0);
+          return !commonFonts.has(font) && v < 0.5;
+        });
+
         const content = [];
-        for (const font of fonts) {
+        for (const font of disabledFonts) {
           // 这里的 src 取值必须选择一个当前电脑上存在的字体
           // 或者插件内部包含一个简单字体，然后通过 `url()` 引用它
           const c = `@font-face { font-family: "${font}"; src: local("Arial"); unicode-range: U+0; }`;
           content.push(c);
         }
 
-        const elem = win.document.createElement('style');
+        const elem = win.document.createElement("style");
         elem.textContent = content.join("\n");
         win.document.head.append(elem);
       }
 
-      // TODO 应该从配置项读取需要禁用的字体？？？
-      const disabledFonts = ["Segoe UI", "Tahoma", "Arial", "Helvetica", "arial"];
-
       if (win.document.head) {
-        disableFonts(disabledFonts)
+        disableFonts();
       } else {
         // 尽可能快地插入 css，所以监听任何网页变动，只要 head 存在，就立即插入
         const observer = new MutationObserver((mutations) => {
           for (const record of mutations) {
             for (const node of record.addedNodes) {
-              if (node.nodeName === 'HEAD') {
+              if (node.nodeName === "HEAD") {
                 observer.disconnect();
-                disableFonts(disabledFonts);
+                disableFonts();
                 return;
               }
             }

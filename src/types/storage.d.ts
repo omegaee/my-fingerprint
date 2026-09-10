@@ -44,6 +44,7 @@ type LocalStorageConfig = {
   prefs: {
     language: string
     theme: 'system' | 'light' | 'dark',
+    systemFonts: string[],
     logLevel: LogLevelString
   }
 }
