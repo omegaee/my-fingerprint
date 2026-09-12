@@ -32,5 +32,11 @@ export const LocalApi = {
     const url = chrome.runtime.getURL('settings/gpu-info.json')
     return appFetchJson(url)
       .then(v => v.gpuInfo as GpuInfoOption[])
+  },
+
+  fonts: async () => {
+    const url = chrome.runtime.getURL('settings/fonts.json')
+    return appFetchJson(url)
+      .then(v => v.fonts as string[])
   }
 }

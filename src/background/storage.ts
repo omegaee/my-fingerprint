@@ -7,7 +7,6 @@ import { logManager } from "@/utils/log";
 import { setWebRTCPolicy } from "./privacy";
 import { domainMergeDedup } from "@/utils/url";
 import { reIpInfoAlarm } from "./ip-info";
-import { getSystemFonts } from "./system-fonts";
 
 let mContent: LocalStorageContext | undefined
 
@@ -65,6 +64,10 @@ export const genDefaultLocalStorage = (): LocalStorage => {
           enableTimezone: true,
           enableLanguages: true,
         },
+        fonts: {
+          enable: false,
+          allowlist: []
+        }
       },
       input: {
         globalSeed: String(sGlobal),
@@ -76,7 +79,6 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         language: navigator.language,
         theme: 'system',
         logLevel: 'NONE',
-        systemFonts: getSystemFonts(),
       },
     },
     policies: {

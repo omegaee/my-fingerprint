@@ -791,23 +791,16 @@ export const hookTasks: HookTask[] = [
       const seed = useSeed(conf.fp.other.font)
       if (seed == null) return;
 
-      /** 根据随机种子，随机禁用一些字体 */
-      function disableFonts() {
-        /** 常用的字体不能被禁用 */
-        const commonFonts = new Set(["Arial", "Helvetica", "Times New Roman", "monospace", "sans-serif", "serif", "Courier New", "Microsoft YaHei", "Consolas"]);
-
-        conf.prefs.systemFonts.forEach((font) => {
-          const v = seededRandom(font + seed, 1, 0);
-          if (!commonFonts.has(font) && v < 0.5) {
-            const f = new FontFace(font, "local('Arial')", {
-              unicodeRange: "U+0",
-            });
-            document.fonts.add(f);
-          }
-        });
-      }
-
-      disableFonts();
+      useGetterProxy(win.HTMLElement.prototype, [
+        'offsetHeight', 'offsetWidth'
+      ], (key, getter) => ({
+        apply(target: () => any, thisArg: HTMLElement, args: any) {
+          notify('strong.fonts')
+          const result = getter.call(thisArg);
+          const mark = (thisArg.style?.fontFamily ?? key) + result;
+          return result + randomFontNoise(seed, mark);
+        }
+      }))
 
       useProxy(win, 'FontFace', {
         construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
