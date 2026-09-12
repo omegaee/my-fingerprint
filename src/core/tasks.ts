@@ -785,7 +785,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
+    onEnable: ({ win, conf, useSeed, useGetterProxy }) => {
       if (!win) return;
 
       const seed = useSeed(conf.fp.other.font)
@@ -801,6 +801,22 @@ export const hookTasks: HookTask[] = [
           return result + randomFontNoise(seed, mark);
         }
       }))
+    },
+  },
+
+  /**
+   * Font List
+   * 字体策略
+   */
+  {
+    condition: ({ conf }) => conf.action.fonts.enable,
+    onEnable: ({ win, conf, useProxy }) => {
+      if (!win) return;
+
+      const action = conf.action.fonts;
+      if (action.allowlist.length === 0) return;
+
+      const allowlist = new Set(action.allowlist.map(v => v.toLowerCase()))
 
       useProxy(win, 'FontFace', {
         construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
@@ -808,18 +824,14 @@ export const hookTasks: HookTask[] = [
           if (typeof source === 'string' && source.startsWith('local(')) {
             notify('strong.fonts')
             const name = source.substring(source.indexOf('(') + 1, source.indexOf(')'));
-            const rand = seededRandom(name + seed, 1, 0);
-            if (rand < 0.02) {
-              args[1] = `local("${rand}")`
-            } else if (rand < 0.04) {
-              args[1] = 'local("Arial")'
+            if (!allowlist.has(name.toLowerCase())) {
+              args[1] = `local("")`
             }
           }
-          return new target(...args)
+          return Reflect.construct(target, args, newTarget)
         },
       })
-
-    },
+    }
   },
 
   /**
