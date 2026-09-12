@@ -810,13 +810,14 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.action.fonts.enable,
-    onEnable: ({ win, conf, useProxy }) => {
+    onEnable: ({ win, conf, useProxy, useSetterProxy, useGetterProxy }) => {
       if (!win) return;
 
       const action = conf.action.fonts;
       if (action.allowlist.length === 0) return;
 
       const allowlist = new Set(action.allowlist.map(v => v.toLowerCase()))
+      const quotesReg = /^['"]+|['"]+$/g
 
       useProxy(win, 'FontFace', {
         construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
@@ -824,7 +825,7 @@ export const hookTasks: HookTask[] = [
           if (typeof source === 'string' && source.startsWith('local(')) {
             notify('strong.fonts')
             const name = source.substring(source.indexOf('(') + 1, source.indexOf(')'));
-            if (!allowlist.has(name.toLowerCase())) {
+            if (name && !allowlist.has(name.replace(quotesReg, "").toLowerCase())) {
               args[1] = `local("")`
             }
           }
