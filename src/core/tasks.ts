@@ -832,6 +832,43 @@ export const hookTasks: HookTask[] = [
             return Reflect.construct(target, args, newTarget)
           },
         })
+
+        /* SVGRect */
+        const domSet = new WeakMap<Element, CSSStyleDeclaration>()
+
+        function parseFontFamily(font: string) {
+          return font
+            .split(",")
+            .map(f => f.trim().replace(quotesReg, ""));
+        }
+
+        const apply = (target: any, thisArg: HTMLElement, argArray: any[]) => {
+          notify('strong.fonts')
+          let cs = domSet.get(thisArg)
+          if (!cs) {
+            cs = getComputedStyle(thisArg)
+            domSet.set(thisArg, cs)
+          }
+
+          const raw = parseFontFamily(cs.fontFamily)
+          const filtered = raw.filter(f => allowlist.has(f.toLowerCase()));
+
+          if (raw.length !== filtered.length) {
+            if (filtered.length === 0) {
+              filtered.push('sans-serif')
+            }
+            thisArg.style.setProperty('font-family', filtered.map(f => `"${f}"`).join(','));
+          }
+
+          return Reflect.apply(target, thisArg, argArray)
+        }
+
+        useProxy(win.HTMLElement.prototype, [
+          'getClientRects', 'getBoundingClientRect', 'getClientRects', 'getBoundingClientRect',
+        ], { apply })
+        useProxy(win.SVGTextContentElement.prototype, [
+          'getBBox', 'getExtentOfChar', 'getSubStringLength', 'getComputedTextLength',
+        ], { apply })
       }
 
       /* Canvas 2d */
@@ -870,7 +907,7 @@ export const hookTasks: HookTask[] = [
                 if (fs.length === 0) {
                   fs.push('sans-serif')
                 }
-                args[0] = `${prefix} ${fs.join(',')}`;
+                args[0] = `${prefix} ${fs.map(f => `"${f}"`).join(',')}`;
                 (thisArg as any)[fontSymbol] = font;
               }
               return setter.call(thisArg, args[0])
