@@ -24,6 +24,10 @@ type LocalStorageConfig = {
       enableTimezone: boolean
       enableLanguages: boolean
     }
+    fonts: {
+      enable: boolean
+      allowlist: string[]
+    }
   }
   // 输入
   input: {
@@ -40,7 +44,7 @@ type LocalStorageConfig = {
   subscribe: {
     url: string
   }
-  // 其他
+  // 首选项
   prefs: {
     language: string
     theme: 'system' | 'light' | 'dark',

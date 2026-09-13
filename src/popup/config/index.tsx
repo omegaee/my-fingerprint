@@ -8,6 +8,7 @@ import ScriptConfigGroup from "./group/script"
 import { usePrefsStore } from "../stores/prefs"
 import { useShallow } from "zustand/shallow"
 import { useStorageStore } from "../stores/storage"
+import { FontConfigGroup } from "./group/font"
 
 export const FConfig = () => {
   const [t, i18n] = useTranslation()
@@ -36,6 +37,10 @@ export const FConfig = () => {
       {
         label: <Typography.Text className="font-bold">{t('label.config.prefs')}</Typography.Text>,
         children: <PrefsConfigGroup />,
+      },
+      {
+        label: <Typography.Text className="font-bold">{'字体策略'}</Typography.Text>,
+        children: <FontConfigGroup />,
       },
     ].map((item, key) => ({
       ...item,

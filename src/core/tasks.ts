@@ -785,7 +785,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
+    onEnable: ({ win, conf, useSeed, useGetterProxy }) => {
       if (!win) return;
 
       const seed = useSeed(conf.fp.other.font)
@@ -801,25 +801,95 @@ export const hookTasks: HookTask[] = [
           return result + randomFontNoise(seed, mark);
         }
       }))
-
-      useProxy(win, 'FontFace', {
-        construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
-          const source = args[1]
-          if (typeof source === 'string' && source.startsWith('local(')) {
-            notify('strong.fonts')
-            const name = source.substring(source.indexOf('(') + 1, source.indexOf(')'));
-            const rand = seededRandom(name + seed, 1, 0);
-            if (rand < 0.02) {
-              args[1] = `local("${rand}")`
-            } else if (rand < 0.04) {
-              args[1] = 'local("Arial")'
-            }
-          }
-          return new target(...args)
-        },
-      })
-
     },
+  },
+
+  /**
+   * Font List
+   * 字体策略
+   */
+  {
+    condition: ({ conf }) => conf.action.fonts.enable,
+    onEnable: ({ gthis, win, conf, useProxy, useSetterProxy, useGetterProxy }) => {
+      const action = conf.action.fonts;
+      if (action.allowlist.length === 0) return;
+
+      const allowlist = new Set(action.allowlist.map(v => v.toLowerCase()))
+      const quotesReg = /^['"]+|['"]+$/g
+
+      if (win) {
+        /* FontFace */
+        useProxy(win, 'FontFace', {
+          construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
+            const source = args[1]
+            if (typeof source === 'string' && source.startsWith('local(')) {
+              notify('strong.fonts')
+              const name = source.substring(source.indexOf('(') + 1, source.indexOf(')'));
+              if (name && !allowlist.has(name.replace(quotesReg, "").toLowerCase())) {
+                args[1] = `local("")`
+              }
+            }
+            return Reflect.construct(target, args, newTarget)
+          },
+        })
+      }
+
+      /* Canvas 2d */
+      {
+        const fontSymbol = Symbol('font');
+
+        function parseFontString(fontStr: string) {
+          const match = fontStr.match(/^(.*?\d+px(?:\/\d+)?\s+)(.+)$/);
+          if (!match) {
+            return { prefix: "", families: [] };
+          }
+
+          const prefix = match[1].trim();
+          const familyPart = match[2];
+
+          const families = familyPart
+            .split(",")
+            .map(f => f.trim().replace(quotesReg, ""));
+
+          return { prefix, families };
+        }
+
+        [
+          gthis.OffscreenCanvasRenderingContext2D,
+          win?.CanvasRenderingContext2D,
+        ].forEach((intf) => {
+          if (!intf) return;
+
+          useSetterProxy(intf.prototype, 'font', (key, setter) => ({
+            apply(target, thisArg: CanvasRenderingContext2D, args) {
+              notify('strong.fonts')
+              const font = args[0]
+              if (font) {
+                const { prefix, families } = parseFontString(font);
+                const fs = families.filter(f => allowlist.has(f.toLowerCase()));
+                if (fs.length === 0) {
+                  fs.push('sans-serif')
+                }
+                args[0] = `${prefix} ${fs.join(',')}`;
+                (thisArg as any)[fontSymbol] = font;
+              }
+              return setter.call(thisArg, args[0])
+            }
+          }))
+
+          useGetterProxy(intf.prototype, 'font', (key, getter) => ({
+            apply(target, thisArg: CanvasRenderingContext2D, args) {
+              notify('strong.fonts')
+              const font = (thisArg as any)[fontSymbol]
+              if (font) {
+                return font
+              }
+              return getter.call(thisArg)
+            }
+          }))
+        })
+      }
+    }
   },
 
   /**
