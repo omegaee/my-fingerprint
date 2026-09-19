@@ -39,7 +39,7 @@ export const FConfig = () => {
         children: <PrefsConfigGroup />,
       },
       {
-        label: <Typography.Text className="font-bold">{'字体策略'}</Typography.Text>,
+        label: <Typography.Text className="font-bold">{t('label.config.font')}</Typography.Text>,
         children: <FontConfigGroup />,
       },
     ].map((item, key) => ({

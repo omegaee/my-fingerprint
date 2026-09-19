@@ -7,6 +7,7 @@ import {
   SyncOutlined,
 } from '@ant-design/icons';
 import { FontGroupProvider, useFontGroup } from "./context";
+import { useTranslation } from "react-i18next";
 
 export const FontConfigGroup = () => {
   return <FontGroupProvider>
@@ -21,12 +22,13 @@ export const FontConfigGroup = () => {
 }
 
 const FontSwitch = () => {
+  const { t } = useTranslation()
   const { action, changeEnable } = useFontGroup()
 
   return <div className="flex items-center justify-between">
     <div>
-      <span className="font-bold">{'仅允许字体'}</span>
-      <p className="text-default-500">{'开启后，页面仅能检测到以下字体'}</p>
+      <span className="font-bold">{t('label.font.title')}</span>
+      <p className="text-default-500">{t('label.font.desc')}</p>
     </div>
     <Switch
       className="[&_.ant-switch-inner>span]:font-bold"
@@ -37,6 +39,7 @@ const FontSwitch = () => {
 }
 
 const FontInfo = () => {
+  const { t } = useTranslation()
   const { action, supportedFonts, isSupportedFontsPending, syncFonts } = useFontGroup()
 
   const [isSyncFinished, setIsSyncFinished] = useState(false)
@@ -48,27 +51,27 @@ const FontInfo = () => {
   }
 
   return isSupportedFontsPending ? (
-    <div>正在加载...</div>
+    <div>{t('label.font.loading')}</div>
   ) : (
     <div className="flex items-center justify-between gap-2">
       <div>
-        <span>{'支持字体'}</span>
+        <span>{t('label.font.supported')}</span>
         <span><Tag className="mx-0 ml-1">{supportedFonts?.length ?? '--'}</Tag></span>
       </div>
 
       <div>
-        <span>{'允许 / 禁用'}</span>
+        <span>{t('label.font.allow-block')}</span>
         <span><Tag className="mx-0 ml-1">{action?.allowlist.length ?? '--'} / {action?.blocklist.length ?? '--'}</Tag></span>
       </div>
 
       <div>
         {isSyncFinished ? (
           <Tag className="mx-0 cursor-pointer" color='success'>
-            <CheckOutlined /> 已同步
+            <CheckOutlined /> {t('label.font.synced')}
           </Tag>
         ) : (
           <Tag className="mx-0 cursor-pointer" color='orange' onClick={doSyncFonts}>
-            <SyncOutlined /> 同步
+            <SyncOutlined /> {t('label.font.sync')}
           </Tag>
         )}
       </div>
@@ -90,6 +93,7 @@ const FontList = () => {
 }
 
 const FontInput = () => {
+  const { t } = useTranslation()
   const { supportedFonts, allowFont } = useFontGroup()
 
   const [value, setValue] = useState('');
@@ -119,7 +123,7 @@ const FontInput = () => {
   return <div className="w-full">
     <Space.Compact className="w-full">
       <AutoComplete
-        placeholder="Search allow font..."
+        placeholder={t('label.font.search')}
         value={value}
         onChange={(v) => {
           setValue(v)

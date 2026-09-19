@@ -39,7 +39,8 @@
       "strong": "Strong Fingerprint",
       "weak": "Weak Fingerprint",
       "script": "Script Config",
-      "prefs": "Preferences"
+      "prefs": "Preferences",
+      "font": "Font Policy"
     },
     "clipboard-export": "Export To Clipboard",
     "clipboard-import": "Import From Clipboard",
@@ -85,6 +86,16 @@
         "createdAt": "Fetched At"
       },
       "refresh": "Refresh"
+    },
+    "font": {
+      "title": "Allowed Fonts Only",
+      "desc": "When enabled, the page can only detect the fonts listed below",
+      "loading": "Loading...",
+      "supported": "Supported Fonts",
+      "allow-block": "Allowed / Blocked",
+      "synced": "Synced",
+      "sync": "Sync",
+      "search": "Search font..."
     }
   },
   "type": {
