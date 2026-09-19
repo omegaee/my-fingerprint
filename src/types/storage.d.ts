@@ -27,6 +27,7 @@ type LocalStorageConfig = {
     fonts: {
       enable: boolean
       allowlist: string[]
+      blocklist: string[]
     }
   }
   // 输入

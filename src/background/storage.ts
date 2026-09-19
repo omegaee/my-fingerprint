@@ -66,7 +66,8 @@ export const genDefaultLocalStorage = (): LocalStorage => {
         },
         fonts: {
           enable: false,
-          allowlist: []
+          allowlist: [],
+          blocklist: [],
         }
       },
       input: {

@@ -1,4 +1,4 @@
-import { HookType } from '@/types/enum'
+import { HookType } from '@/types/enum';
 import { type HookTask } from "./core";
 import { makeSeededRandom, seededRandom } from '@/utils/base';
 import {
@@ -6,11 +6,10 @@ import {
   drawNoiseTo2d,
   proxyUserAgentData,
   randomCanvasNoise,
-  randomFontNoise,
-  randomWebglNoise,
-  randomScreenSize,
+  randomFontNoise, randomScreenSize
 } from './utils';
 import { longOffsetToMs, createLongOffsetFormatter } from '@/utils/timezone';
+import { base64ToUint8Array } from '@/utils/array';
 
 export const hookTasks: HookTask[] = [
   /**
@@ -810,15 +809,15 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.action.fonts.enable,
-    onEnable: ({ gthis, win, conf, useProxy, useSetterProxy, useGetterProxy }) => {
+    onEnable: ({ win, worker, conf, useProxy, useSetterProxy, useGetterProxy }) => {
       const action = conf.action.fonts;
       if (action.allowlist.length === 0) return;
 
       const allowlist = new Set(action.allowlist.map(v => v.toLowerCase()))
       const quotesReg = /^['"]+|['"]+$/g
 
+      /* FontFace */
       if (win) {
-        /* FontFace */
         useProxy(win, 'FontFace', {
           construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
             const source = args[1]
@@ -832,47 +831,19 @@ export const hookTasks: HookTask[] = [
             return Reflect.construct(target, args, newTarget)
           },
         })
+      }
 
-        /* SVGRect */
-        const domSet = new WeakMap<Element, CSSStyleDeclaration>()
-
-        function parseFontFamily(font: string) {
-          return font
-            .split(",")
-            .map(f => f.trim().replace(quotesReg, ""));
+      /* Block document fonts */
+      if (win) {
+        const emptyWoff2Base64 = "d09GMgABAAAAAAHIAAoAAAAABMgAAAF+AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAgjoKKD4LBAABNgIkAwQEIAWDLQckGyYEyJ4D7uwQQ3N4OR5Z/PGykGuzrywentba+zO7i5hUmqYrAa80ukkJJqFeDogm8lq16e084xHyQPVmeRwWBa6ldRerIkxchEkypz4kSxb69DdfG+djAr3zQFMcCzsPpA0453kCCS2u8+wv/kIfEP/ubBxLY3mlJZaWl5LjdUERJ7hWkl4SXPF6fFmKNpIqYy568aztyYm+dUioGeLH/RGQRxFmARkZkwCWCYFJilEkSVDX/g8IiIq7LUBCQivaAQVIRdFRdhU79Mj2+WZv80ezAALB323v1vhv7SjA6+XL4ZqOYjE10SqB4JBmnChQcwIAANHFgWpIz9/a6VGA0I4ASaVdgGyCCqDQbgFAaVoKoNJukxBFmzBorCDptA+yVW9QGPQBpYafXRmM/ALk+5P/XxmtROUSh17AFQ8jRblUkaY1T5vGCysmHNLi7ORhNtl6COam856OWg2TfoiFPAFWYXN6u92b3dxtnZ3SnBqvtwwvvd0EdYPCizhEBAAA";
+        const emptyWoff2 = base64ToUint8Array(emptyWoff2Base64)
+        for (const v of action.blocklist) {
+          win.document.fonts.add(new FontFace(v, emptyWoff2, { unicodeRange: "U+0" }))
         }
-
-        const apply = (target: any, thisArg: HTMLElement, argArray: any[]) => {
-          notify('strong.fonts')
-          let cs = domSet.get(thisArg)
-          if (!cs) {
-            cs = getComputedStyle(thisArg)
-            domSet.set(thisArg, cs)
-          }
-
-          const raw = parseFontFamily(cs.fontFamily)
-          const filtered = raw.filter(f => allowlist.has(f.toLowerCase()));
-
-          if (raw.length !== filtered.length) {
-            if (filtered.length === 0) {
-              filtered.push('sans-serif')
-            }
-            thisArg.style.setProperty('font-family', filtered.map(f => `"${f}"`).join(','));
-          }
-
-          return Reflect.apply(target, thisArg, argArray)
-        }
-
-        useProxy(win.HTMLElement.prototype, [
-          'getClientRects', 'getBoundingClientRect', 'getClientRects', 'getBoundingClientRect',
-        ], { apply })
-        useProxy(win.SVGTextContentElement.prototype, [
-          'getBBox', 'getExtentOfChar', 'getSubStringLength', 'getComputedTextLength',
-        ], { apply })
       }
 
       /* Canvas 2d */
-      {
+      if (worker) {
         const fontSymbol = Symbol('font');
 
         function parseFontString(fontStr: string) {
@@ -892,8 +863,8 @@ export const hookTasks: HookTask[] = [
         }
 
         [
-          gthis.OffscreenCanvasRenderingContext2D,
-          win?.CanvasRenderingContext2D,
+          worker.OffscreenCanvasRenderingContext2D,
+          // win?.CanvasRenderingContext2D,
         ].forEach((intf) => {
           if (!intf) return;
 

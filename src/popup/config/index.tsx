@@ -8,7 +8,7 @@ import ScriptConfigGroup from "./group/script"
 import { usePrefsStore } from "../stores/prefs"
 import { useShallow } from "zustand/shallow"
 import { useStorageStore } from "../stores/storage"
-import { FontConfigGroup } from "./group/font"
+import { FontConfigGroup } from "./font-group"
 
 export const FConfig = () => {
   const [t, i18n] = useTranslation()

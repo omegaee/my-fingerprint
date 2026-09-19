@@ -37,6 +37,9 @@ export const LocalApi = {
   fonts: async () => {
     const url = chrome.runtime.getURL('settings/fonts.json')
     return appFetchJson(url)
-      .then(v => v.fonts as string[])
+      .then(v => v as {
+        default: string[]
+        all: string[]
+      });
   }
 }
