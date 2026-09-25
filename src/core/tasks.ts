@@ -816,6 +816,44 @@ export const hookTasks: HookTask[] = [
       const allowlist = new Set(action.allowlist.map(v => v.toLowerCase()))
       const quotesReg = /^['"]+|['"]+$/g
 
+      /* FontFaceSet */
+      if (win) {
+        const emptyWoff2Base64 = "d09GMgABAAAAAAHIAAoAAAAABMgAAAF+AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAgjoKKD4LBAABNgIkAwQEIAWDLQckGyYEyJ4D7uwQQ3N4OR5Z/PGykGuzrywentba+zO7i5hUmqYrAa80ukkJJqFeDogm8lq16e084xHyQPVmeRwWBa6ldRerIkxchEkypz4kSxb69DdfG+djAr3zQFMcCzsPpA0453kCCS2u8+wv/kIfEP/ubBxLY3mlJZaWl5LjdUERJ7hWkl4SXPF6fFmKNpIqYy568aztyYm+dUioGeLH/RGQRxFmARkZkwCWCYFJilEkSVDX/g8IiIq7LUBCQivaAQVIRdFRdhU79Mj2+WZv80ezAALB323v1vhv7SjA6+XL4ZqOYjE10SqB4JBmnChQcwIAANHFgWpIz9/a6VGA0I4ASaVdgGyCCqDQbgFAaVoKoNJukxBFmzBorCDptA+yVW9QGPQBpYafXRmM/ALk+5P/XxmtROUSh17AFQ8jRblUkaY1T5vGCysmHNLi7ORhNtl6COam856OWg2TfoiFPAFWYXN6u92b3dxtnZ3SnBqvtwwvvd0EdYPCizhEBAAA";
+        const emptyWoff2 = base64ToUint8Array(emptyWoff2Base64)
+        for (const v of action.blocklist) {
+          win.document.fonts.add(new FontFace(v, emptyWoff2, { unicodeRange: "U+0" }))
+        }
+
+        const ffs = new Set<FontFace>()
+        useProxy(win.FontFaceSet.prototype, 'clear', {
+          apply() {
+            for (const f of ffs.values()) {
+              win.document.fonts.delete(f)
+            }
+            return ffs.clear()
+          }
+        })
+        useProxy(win.FontFaceSet.prototype, [
+          'add', 'delete', 'has',
+        ], (key) => ({
+          apply(target, thisArg, args) {
+            const res = Reflect.apply(target, thisArg, args)
+            Reflect.apply(ffs[key], ffs, args)
+            return res
+          },
+        }))
+        useProxy(win.FontFaceSet.prototype, [
+          'forEach', 'entries', 'keys', 'values',
+        ], (key) => ({
+          apply(target, thisArg, args) {
+            return Reflect.apply(ffs[key], ffs, args)
+          },
+        }))
+        useGetterProxy(win.FontFaceSet.prototype, 'size', (key) => ({
+          apply() { return Reflect.get(ffs, key) }
+        }))
+      }
+
       /* FontFace */
       if (win) {
         useProxy(win, 'FontFace', {
@@ -831,15 +869,6 @@ export const hookTasks: HookTask[] = [
             return Reflect.construct(target, args, newTarget)
           },
         })
-      }
-
-      /* Block document fonts */
-      if (win) {
-        const emptyWoff2Base64 = "d09GMgABAAAAAAHIAAoAAAAABMgAAAF+AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAgjoKKD4LBAABNgIkAwQEIAWDLQckGyYEyJ4D7uwQQ3N4OR5Z/PGykGuzrywentba+zO7i5hUmqYrAa80ukkJJqFeDogm8lq16e084xHyQPVmeRwWBa6ldRerIkxchEkypz4kSxb69DdfG+djAr3zQFMcCzsPpA0453kCCS2u8+wv/kIfEP/ubBxLY3mlJZaWl5LjdUERJ7hWkl4SXPF6fFmKNpIqYy568aztyYm+dUioGeLH/RGQRxFmARkZkwCWCYFJilEkSVDX/g8IiIq7LUBCQivaAQVIRdFRdhU79Mj2+WZv80ezAALB323v1vhv7SjA6+XL4ZqOYjE10SqB4JBmnChQcwIAANHFgWpIz9/a6VGA0I4ASaVdgGyCCqDQbgFAaVoKoNJukxBFmzBorCDptA+yVW9QGPQBpYafXRmM/ALk+5P/XxmtROUSh17AFQ8jRblUkaY1T5vGCysmHNLi7ORhNtl6COam856OWg2TfoiFPAFWYXN6u92b3dxtnZ3SnBqvtwwvvd0EdYPCizhEBAAA";
-        const emptyWoff2 = base64ToUint8Array(emptyWoff2Base64)
-        for (const v of action.blocklist) {
-          win.document.fonts.add(new FontFace(v, emptyWoff2, { unicodeRange: "U+0" }))
-        }
       }
 
       /* Canvas 2d */
