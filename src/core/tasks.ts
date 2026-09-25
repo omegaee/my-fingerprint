@@ -843,7 +843,7 @@ export const hookTasks: HookTask[] = [
           },
         }))
         useProxy(win.FontFaceSet.prototype, [
-          'forEach', 'entries', 'keys', 'values',
+          Symbol.iterator, 'forEach', 'entries', 'keys', 'values',
         ], (key) => ({
           apply(target, thisArg, args) {
             return Reflect.apply(ffs[key], ffs, args)
