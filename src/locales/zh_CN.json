@@ -39,7 +39,8 @@
       "strong": "强指纹",
       "weak": "弱指纹",
       "script": "脚本配置",
-      "prefs": "个性化配置"
+      "prefs": "个性化配置",
+      "font": "字体策略"
     },
     "clipboard-export": "复制到剪贴板",
     "clipboard-import": "从剪贴板导入",
@@ -85,6 +86,16 @@
         "createdAt": "获取时间"
       },
       "refresh": "重新获取"
+    },
+    "font": {
+      "title": "仅允许字体",
+      "desc": "开启后，页面仅能检测到以下字体",
+      "loading": "正在加载...",
+      "supported": "支持字体",
+      "allow-block": "允许 / 禁用",
+      "synced": "已同步",
+      "sync": "同步",
+      "search": "搜索字体"
     }
   },
   "type": {

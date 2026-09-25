@@ -64,6 +64,11 @@ export const genDefaultLocalStorage = (): LocalStorage => {
           enableTimezone: true,
           enableLanguages: true,
         },
+        fonts: {
+          enable: false,
+          allowlist: [],
+          blocklist: [],
+        }
       },
       input: {
         globalSeed: String(sGlobal),

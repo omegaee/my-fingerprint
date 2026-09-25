@@ -1,4 +1,4 @@
-import { HookType } from '@/types/enum'
+import { HookType } from '@/types/enum';
 import { type HookTask } from "./core";
 import { makeSeededRandom, seededRandom } from '@/utils/base';
 import {
@@ -6,11 +6,10 @@ import {
   drawNoiseTo2d,
   proxyUserAgentData,
   randomCanvasNoise,
-  randomFontNoise,
-  randomWebglNoise,
-  randomScreenSize,
+  randomFontNoise, randomScreenSize
 } from './utils';
 import { longOffsetToMs, createLongOffsetFormatter } from '@/utils/timezone';
+import { base64ToUint8Array } from '@/utils/array';
 
 export const hookTasks: HookTask[] = [
   /**
@@ -785,7 +784,7 @@ export const hookTasks: HookTask[] = [
    */
   {
     condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useProxy, useGetterProxy }) => {
+    onEnable: ({ win, conf, useSeed, useGetterProxy }) => {
       if (!win) return;
 
       const seed = useSeed(conf.fp.other.font)
@@ -801,25 +800,133 @@ export const hookTasks: HookTask[] = [
           return result + randomFontNoise(seed, mark);
         }
       }))
-
-      useProxy(win, 'FontFace', {
-        construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
-          const source = args[1]
-          if (typeof source === 'string' && source.startsWith('local(')) {
-            notify('strong.fonts')
-            const name = source.substring(source.indexOf('(') + 1, source.indexOf(')'));
-            const rand = seededRandom(name + seed, 1, 0);
-            if (rand < 0.02) {
-              args[1] = `local("${rand}")`
-            } else if (rand < 0.04) {
-              args[1] = 'local("Arial")'
-            }
-          }
-          return new target(...args)
-        },
-      })
-
     },
+  },
+
+  /**
+   * Font List
+   * 字体策略
+   */
+  {
+    condition: ({ conf }) => conf.action.fonts.enable,
+    onEnable: ({ win, worker, conf, useProxy, useSetterProxy, useGetterProxy }) => {
+      const action = conf.action.fonts;
+      if (action.allowlist.length === 0) return;
+
+      const allowlist = new Set(action.allowlist.map(v => v.toLowerCase()))
+      const quotesReg = /^['"]+|['"]+$/g
+
+      /* FontFaceSet */
+      if (win) {
+        const emptyWoff2Base64 = "d09GMgABAAAAAAHIAAoAAAAABMgAAAF+AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAgjoKKD4LBAABNgIkAwQEIAWDLQckGyYEyJ4D7uwQQ3N4OR5Z/PGykGuzrywentba+zO7i5hUmqYrAa80ukkJJqFeDogm8lq16e084xHyQPVmeRwWBa6ldRerIkxchEkypz4kSxb69DdfG+djAr3zQFMcCzsPpA0453kCCS2u8+wv/kIfEP/ubBxLY3mlJZaWl5LjdUERJ7hWkl4SXPF6fFmKNpIqYy568aztyYm+dUioGeLH/RGQRxFmARkZkwCWCYFJilEkSVDX/g8IiIq7LUBCQivaAQVIRdFRdhU79Mj2+WZv80ezAALB323v1vhv7SjA6+XL4ZqOYjE10SqB4JBmnChQcwIAANHFgWpIz9/a6VGA0I4ASaVdgGyCCqDQbgFAaVoKoNJukxBFmzBorCDptA+yVW9QGPQBpYafXRmM/ALk+5P/XxmtROUSh17AFQ8jRblUkaY1T5vGCysmHNLi7ORhNtl6COam856OWg2TfoiFPAFWYXN6u92b3dxtnZ3SnBqvtwwvvd0EdYPCizhEBAAA";
+        const emptyWoff2 = base64ToUint8Array(emptyWoff2Base64)
+        for (const v of action.blocklist) {
+          win.document.fonts.add(new FontFace(v, emptyWoff2, { unicodeRange: "U+0" }))
+        }
+
+        const ffs = new Set<FontFace>()
+        useProxy(win.FontFaceSet.prototype, 'clear', {
+          apply() {
+            for (const f of ffs.values()) {
+              win.document.fonts.delete(f)
+            }
+            return ffs.clear()
+          }
+        })
+        useProxy(win.FontFaceSet.prototype, [
+          'add', 'delete', 'has',
+        ], (key) => ({
+          apply(target, thisArg, args) {
+            const res = Reflect.apply(target, thisArg, args)
+            Reflect.apply(ffs[key], ffs, args)
+            return res
+          },
+        }))
+        useProxy(win.FontFaceSet.prototype, [
+          'forEach', 'entries', 'keys', 'values',
+        ], (key) => ({
+          apply(target, thisArg, args) {
+            return Reflect.apply(ffs[key], ffs, args)
+          },
+        }))
+        useGetterProxy(win.FontFaceSet.prototype, 'size', (key) => ({
+          apply() { return Reflect.get(ffs, key) }
+        }))
+      }
+
+      /* FontFace */
+      if (win) {
+        useProxy(win, 'FontFace', {
+          construct: (target, args: ConstructorParameters<typeof FontFace>, newTarget) => {
+            const source = args[1]
+            if (typeof source === 'string' && source.startsWith('local(')) {
+              notify('strong.fonts')
+              const name = source.substring(source.indexOf('(') + 1, source.indexOf(')'));
+              if (name && !allowlist.has(name.replace(quotesReg, "").toLowerCase())) {
+                args[1] = `local("")`
+              }
+            }
+            return Reflect.construct(target, args, newTarget)
+          },
+        })
+      }
+
+      /* Canvas 2d */
+      if (worker) {
+        const fontSymbol = Symbol('font');
+
+        function parseFontString(fontStr: string) {
+          const match = fontStr.match(/^(.*?\d+px(?:\/\d+)?\s+)(.+)$/);
+          if (!match) {
+            return { prefix: "", families: [] };
+          }
+
+          const prefix = match[1].trim();
+          const familyPart = match[2];
+
+          const families = familyPart
+            .split(",")
+            .map(f => f.trim().replace(quotesReg, ""));
+
+          return { prefix, families };
+        }
+
+        [
+          worker.OffscreenCanvasRenderingContext2D,
+          // win?.CanvasRenderingContext2D,
+        ].forEach((intf) => {
+          if (!intf) return;
+
+          useSetterProxy(intf.prototype, 'font', (key, setter) => ({
+            apply(target, thisArg: CanvasRenderingContext2D, args) {
+              notify('strong.fonts')
+              const font = args[0]
+              if (font) {
+                const { prefix, families } = parseFontString(font);
+                const fs = families.filter(f => allowlist.has(f.toLowerCase()));
+                if (fs.length === 0) {
+                  fs.push('sans-serif')
+                }
+                args[0] = `${prefix} ${fs.map(f => `"${f}"`).join(',')}`;
+                (thisArg as any)[fontSymbol] = font;
+              }
+              return setter.call(thisArg, args[0])
+            }
+          }))
+
+          useGetterProxy(intf.prototype, 'font', (key, getter) => ({
+            apply(target, thisArg: CanvasRenderingContext2D, args) {
+              notify('strong.fonts')
+              const font = (thisArg as any)[fontSymbol]
+              if (font) {
+                return font
+              }
+              return getter.call(thisArg)
+            }
+          }))
+        })
+      }
+    }
   },
 
   /**
