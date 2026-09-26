@@ -25,9 +25,8 @@ type LocalStorageConfig = {
       enableLanguages: boolean
     }
     fonts: {
-      enable: boolean
+      supported: string[]
       allowlist: string[]
-      blocklist: string[]
     }
   }
   // 输入
@@ -78,7 +77,7 @@ type HookFingerprint = {
     audio: DefaultHookMode | RandomHookMode
     webgl: DefaultHookMode | RandomHookMode
     webrtc: DefaultHookMode | EnableHookMode | DisableHookMode
-    font: DefaultHookMode | RandomHookMode
+    font: DefaultHookMode | RandomHookMode | ValueHookMode<void>
     webgpu: DefaultHookMode | RandomHookMode
     domRect: DefaultHookMode | RandomHookMode
     serviceWorker: DefaultHookMode | DisableHookMode

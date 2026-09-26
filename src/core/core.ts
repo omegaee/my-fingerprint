@@ -289,6 +289,8 @@ export class FingerprintContext {
    */
   public useHookMode = <V>(mode?: HookMode<V>): {
     isDefault?: boolean
+    isValue?: boolean
+    isRandom?: boolean
     seed?: number
     value?: V
   } => {
@@ -296,10 +298,10 @@ export class FingerprintContext {
       case HookType.default:
         return { isDefault: true };
       case HookType.value:
-        return { value: mode.value };
+        return { isValue: true, value: mode.value };
       default:
         const seed = this.useSeed(mode)
-        return seed == null ? {} : { seed };
+        return seed == null ? {} : { isRandom: true, seed };
     }
   }
 

@@ -52,12 +52,6 @@ export const StrongFpConfigGroup = memo(() => {
       </HookModeCard>
     </HookModeProvider>
 
-    <HookModeProvider obj={fp.other} name='font'>
-      <HookModeCard color='success'>
-        <HookModeSelector types={baseTypes} />
-      </HookModeCard>
-    </HookModeProvider>
-
     <HookModeProvider obj={fp.other} name='domRect'>
       <HookModeCard color='success'>
         <HookModeSelector types={baseTypes} />

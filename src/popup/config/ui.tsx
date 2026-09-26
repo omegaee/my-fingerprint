@@ -6,6 +6,7 @@ import { selectStatusDotStyles as dotStyles } from "./styles"
 import { ConfigDesc, ConfigItemX, ConfigItemY } from "./item"
 import TipIcon from "@/components/data/tip-icon"
 import { HookType } from '@/types/enum'
+import { cn } from "@/utils/style"
 
 const useHookTypeOptions = (types: HookType[], name?: string) => {
   const [t, i18n] = useTranslation()
@@ -46,15 +47,16 @@ const useHookTypeOptions = (types: HookType[], name?: string) => {
 /**
  * 选择器
  */
-export const HookModeSelector = ({ types, defaultValue }: {
+export const HookModeSelector = ({ types, defaultValue, className }: {
   types?: HookType[]
   defaultValue?: any
+  className?: string
 }) => {
   const { name, mode, setType, setValue } = useHookMode()
   const options = useHookTypeOptions(types ?? [], name)
 
   return <Select<HookType>
-    className={dotStyles.base}
+    className={cn(dotStyles.base, className)}
     options={options}
     value={mode.type}
     onChange={(t) => {

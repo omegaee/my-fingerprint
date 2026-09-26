@@ -808,19 +808,33 @@ export const hookTasks: HookTask[] = [
    * 字体策略
    */
   {
-    condition: ({ conf }) => conf.action.fonts.enable,
-    onEnable: ({ win, worker, conf, useProxy, useSetterProxy, useGetterProxy }) => {
-      const action = conf.action.fonts;
-      if (action.allowlist.length === 0) return;
+    onEnable: ({ win, worker, conf, useHookMode, useProxy, useSetterProxy, useGetterProxy }) => {
+      const option = useHookMode(conf.fp.other.font)
+      if (option.isDefault) return;
 
-      const allowlist = new Set(action.allowlist.map(v => v.toLowerCase()))
+      const action = conf.action.fonts;
+      if (action.supported.length === 0 || action.allowlist.length === 0) return;
+
       const quotesReg = /^['"]+|['"]+$/g
+      const allowSet = new Set(action.allowlist.map(v => v.toLowerCase()));
+
+      if (option.seed != null) {
+        // random
+        const randGen = makeSeededRandom(option.seed, 1, 0);
+        for (const v of action.supported) {
+          if (randGen() >= 0.1) {
+            allowSet.add(v.toLowerCase());
+          }
+        }
+      }
+
+      const blocklist = action.supported.filter(v => !allowSet.has(v.toLowerCase()));
 
       /* FontFaceSet */
       if (win) {
         const emptyWoff2Base64 = "d09GMgABAAAAAAHIAAoAAAAABMgAAAF+AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAgjoKKD4LBAABNgIkAwQEIAWDLQckGyYEyJ4D7uwQQ3N4OR5Z/PGykGuzrywentba+zO7i5hUmqYrAa80ukkJJqFeDogm8lq16e084xHyQPVmeRwWBa6ldRerIkxchEkypz4kSxb69DdfG+djAr3zQFMcCzsPpA0453kCCS2u8+wv/kIfEP/ubBxLY3mlJZaWl5LjdUERJ7hWkl4SXPF6fFmKNpIqYy568aztyYm+dUioGeLH/RGQRxFmARkZkwCWCYFJilEkSVDX/g8IiIq7LUBCQivaAQVIRdFRdhU79Mj2+WZv80ezAALB323v1vhv7SjA6+XL4ZqOYjE10SqB4JBmnChQcwIAANHFgWpIz9/a6VGA0I4ASaVdgGyCCqDQbgFAaVoKoNJukxBFmzBorCDptA+yVW9QGPQBpYafXRmM/ALk+5P/XxmtROUSh17AFQ8jRblUkaY1T5vGCysmHNLi7ORhNtl6COam856OWg2TfoiFPAFWYXN6u92b3dxtnZ3SnBqvtwwvvd0EdYPCizhEBAAA";
         const emptyWoff2 = base64ToUint8Array(emptyWoff2Base64)
-        for (const v of action.blocklist) {
+        for (const v of blocklist) {
           win.document.fonts.add(new FontFace(v, emptyWoff2, { unicodeRange: "U+0" }))
         }
 
@@ -862,7 +876,7 @@ export const hookTasks: HookTask[] = [
             if (typeof source === 'string' && source.startsWith('local(')) {
               notify('strong.fonts')
               const name = source.substring(source.indexOf('(') + 1, source.indexOf(')'));
-              if (name && !allowlist.has(name.replace(quotesReg, "").toLowerCase())) {
+              if (name && !allowSet.has(name.replace(quotesReg, "").toLowerCase())) {
                 args[1] = `local("")`
               }
             }
@@ -903,7 +917,7 @@ export const hookTasks: HookTask[] = [
               const font = args[0]
               if (font) {
                 const { prefix, families } = parseFontString(font);
-                const fs = families.filter(f => allowlist.has(f.toLowerCase()));
+                const fs = families.filter(f => allowSet.has(f.toLowerCase()));
                 if (fs.length === 0) {
                   fs.push('sans-serif')
                 }

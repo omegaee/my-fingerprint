@@ -1,3 +1,4 @@
+import { HookType } from '@/types/enum';
 import { LocalApi } from "@/api/local";
 import { useStorageStore } from "@/popup/stores/storage";
 import { createHookContext } from "@/utils/context";
@@ -28,6 +29,7 @@ export const {
     saveConfig: s.saveConfig,
   })))
   const action = config?.action.fonts
+  const mode = config?.fp.other.font
 
   const {
     value: fontsSet,
@@ -44,47 +46,43 @@ export const {
     return filterSupportedFonts(fontsSet.all)
   }, [fontsSet])
 
-  const changeEnable = async (checked: boolean) => {
-    if (!action) return;
-    action.enable = checked;
+  useEffect(() => {
+    if (!action || !supportedFonts) return;
+    action.supported = [...supportedFonts]
+    saveConfig()
+  }, [supportedFonts])
+
+  const resetAllowlist = async () => {
+    if (!action || !fontsSet) return;
+    const list = await filterSupportedFonts(fontsSet.default)
+    action.allowlist = list
     saveConfig()
   }
 
+  useEffect(() => {
+    if (!action || !fontsSet) return;
+    if (action.allowlist.length === 0) {
+      resetAllowlist()
+    }
+  }, [action?.allowlist])
+
   const allowFont = (f: string) => {
     if (!action) return;
-    action.blocklist = action.blocklist.filter((v) => v !== f)
-    action.allowlist.push(f)
+    if (!action.allowlist.includes(f)) {
+      action.allowlist.push(f)
+    }
     saveConfig()
   }
 
   const blockFont = (f: string) => {
     if (!action) return;
-    action.allowlist = action.allowlist.filter((v) => v !== f)
-    action.blocklist.push(f)
+    action.allowlist = action.allowlist.filter((font) => font !== f)
     saveConfig()
   }
 
-  const syncFonts = async () => {
-    if (!action || !fontsSet || !supportedFonts) return;
-
-    // Try init allow fonts
-    if (action.allowlist.length === 0) {
-      action.allowlist = await filterSupportedFonts(fontsSet.default)
-    }
-
-    // Sync block fonts
-    const allowset = new Set(action.allowlist)
-    action.blocklist = supportedFonts.filter((f) => !allowset.has(f))
-
-    saveConfig()
-  }
-
-  useEffect(() => {
-    if (!action) return;
-    if (action.allowlist.length === 0) {
-      syncFonts()
-    }
-  }, [action?.allowlist])
+  const isDefault = mode?.type === HookType.default
+  const isCustom = mode?.type === HookType.value
+  const isRandom = !isDefault && !isCustom
 
   return {
     fonts: fontsSet,
@@ -94,9 +92,12 @@ export const {
     config, saveConfig,
     version,
     action,
-    changeEnable,
+    mode,
+    isDefault,
+    isCustom,
+    isRandom,
     allowFont,
     blockFont,
-    syncFonts,
+    resetAllowlist,
   }
 })

@@ -1,17 +1,23 @@
+import { HookType } from '@/types/enum';
 import { debounce } from "@/utils/timer";
-import { AutoComplete, AutoCompleteProps, Button, Divider, Space, Switch, Tag } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { AutoComplete, AutoCompleteProps, Button, Divider, Space, Spin, Tag } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  CheckOutlined,
-  PlusOutlined,
-  SyncOutlined,
+  LoadingOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 import { FontGroupProvider, useFontGroup } from "./context";
 import { useTranslation } from "react-i18next";
+import { HookModeProvider } from "../context";
+import { HookModeSelector } from "../ui";
+import { cn } from '@/utils/style';
+import { selectStatusDotStyles as dotStyles } from "../styles"
+
+const baseTypes = [HookType.default, HookType.page, HookType.browser, HookType.domain, HookType.global, HookType.value]
 
 export const FontConfigGroup = () => {
   return <FontGroupProvider>
-    <div className="flex flex-col gap-4">
+    <div className="py-2 flex flex-col gap-4">
       <FontSwitch />
       <FontInfo />
       <Divider className="my-0" />
@@ -23,32 +29,28 @@ export const FontConfigGroup = () => {
 
 const FontSwitch = () => {
   const { t } = useTranslation()
-  const { action, changeEnable } = useFontGroup()
+  const { config, isDefault, isCustom, isRandom } = useFontGroup()
+  const fp = config?.fp
 
-  return <div className="flex items-center justify-between">
-    <div>
-      <span className="font-bold">{t('label.font.title')}</span>
-      <p className="text-default-500">{t('label.font.desc')}</p>
-    </div>
-    <Switch
-      className="[&_.ant-switch-inner>span]:font-bold"
-      checked={action?.enable}
-      onChange={changeEnable}
-    />
-  </div>
+  return fp ? <div className="w-full flex flex-col justify-between gap-1">
+    <HookModeProvider obj={fp.other} name='font'>
+      <div className={cn('w-full', !isDefault && dotStyles.success)}>
+        <HookModeSelector className='w-full' types={baseTypes} />
+      </div>
+    </HookModeProvider>
+    <p className="text-default-500">
+      {isCustom && '选择该项后，页面仅能检测到以下字体'}
+      {isRandom && '选择该项后，除了以下字体外，随机禁用一些字体'}
+    </p>
+  </div> : <Spin indicator={<LoadingOutlined spin />} />
 }
 
 const FontInfo = () => {
   const { t } = useTranslation()
-  const { action, supportedFonts, isSupportedFontsPending, syncFonts } = useFontGroup()
+  const { action, supportedFonts, isSupportedFontsPending, isCustom } = useFontGroup()
 
-  const [isSyncFinished, setIsSyncFinished] = useState(false)
-
-  const doSyncFonts = async () => {
-    await syncFonts()
-    setIsSyncFinished(true)
-    setTimeout(() => setIsSyncFinished(false), 2000)
-  }
+  const allowSize = action?.allowlist.length ?? 0
+  const blockSize = (supportedFonts?.length ?? 0) - allowSize
 
   return isSupportedFontsPending ? (
     <div>{t('label.font.loading')}</div>
@@ -59,32 +61,20 @@ const FontInfo = () => {
         <span><Tag className="mx-0 ml-1">{supportedFonts?.length ?? '--'}</Tag></span>
       </div>
 
-      <div>
+      {isCustom && <div>
         <span>{t('label.font.allow-block')}</span>
-        <span><Tag className="mx-0 ml-1">{action?.allowlist.length ?? '--'} / {action?.blocklist.length ?? '--'}</Tag></span>
-      </div>
-
-      <div>
-        {isSyncFinished ? (
-          <Tag className="mx-0 cursor-pointer" color='success'>
-            <CheckOutlined /> {t('label.font.synced')}
-          </Tag>
-        ) : (
-          <Tag className="mx-0 cursor-pointer" color='orange' onClick={doSyncFonts}>
-            <SyncOutlined /> {t('label.font.sync')}
-          </Tag>
-        )}
-      </div>
+        <span><Tag className="mx-0 ml-1">{allowSize} / {blockSize}</Tag></span>
+      </div>}
     </div>
   )
 }
 
 const FontList = () => {
-  const { action, blockFont } = useFontGroup()
+  const { action, blockFont, resetAllowlist } = useFontGroup()
 
   return <div className="h-36 overflow-auto">
     <div className="h-full flex flex-wrap gap-1 content-start text-xs">
-      {/* <Tag className="mx-0 px-2 py-0.5 cursor-pointer rounded-xl bg-warning-50 hover:bg-warning-100">恢复默认</Tag> */}
+      <Tag className="mx-0 px-2 py-0.5 cursor-pointer rounded-xl bg-warning-50 hover:bg-warning-100" onClick={resetAllowlist}>重置</Tag>
       {action?.allowlist.map((v) => (
         <Tag key={v} className="mx-0 px-2 py-0.5 rounded-xl" closeIcon onClose={() => blockFont(v)}>{v}</Tag>
       ))}
