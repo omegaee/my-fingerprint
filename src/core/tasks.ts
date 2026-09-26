@@ -779,32 +779,7 @@ export const hookTasks: HookTask[] = [
   },
 
   /**
-   * Font
-   * 字体指纹
-   */
-  {
-    condition: ({ conf }) => conf.fp.other.font.type !== HookType.default,
-    onEnable: ({ win, conf, useSeed, useGetterProxy }) => {
-      if (!win) return;
-
-      const seed = useSeed(conf.fp.other.font)
-      if (seed == null) return;
-
-      useGetterProxy(win.HTMLElement.prototype, [
-        'offsetHeight', 'offsetWidth'
-      ], (key, getter) => ({
-        apply(target: () => any, thisArg: HTMLElement, args: any) {
-          notify('strong.fonts')
-          const result = getter.call(thisArg);
-          const mark = (thisArg.style?.fontFamily ?? key) + result;
-          return result + randomFontNoise(seed, mark);
-        }
-      }))
-    },
-  },
-
-  /**
-   * Font List
+   * Fonts
    * 字体策略
    */
   {
