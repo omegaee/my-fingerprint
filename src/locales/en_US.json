@@ -88,13 +88,11 @@
       "refresh": "Refresh"
     },
     "font": {
-      "title": "Allowed Fonts Only",
-      "desc": "When enabled, the page can only detect the fonts listed below",
+      "custom-tip": "After selecting this option, the page can only detect the fonts listed below",
+      "random-tip": "After selecting this option, some fonts are randomly blocked in addition to the fonts listed below",
       "loading": "Loading...",
       "supported": "Supported Fonts",
       "allow-block": "Allowed / Blocked",
-      "synced": "Synced",
-      "sync": "Sync",
       "search": "Search font..."
     }
   },

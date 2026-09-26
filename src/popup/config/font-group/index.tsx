@@ -39,8 +39,8 @@ const FontSwitch = () => {
       </div>
     </HookModeProvider>
     <p className="text-default-500">
-      {isCustom && '选择该项后，页面仅能检测到以下字体'}
-      {isRandom && '选择该项后，除了以下字体外，随机禁用一些字体'}
+      {isCustom && t('label.font.custom-tip')}
+      {isRandom && t('label.font.random-tip')}
     </p>
   </div> : <Spin indicator={<LoadingOutlined spin />} />
 }
@@ -70,11 +70,12 @@ const FontInfo = () => {
 }
 
 const FontList = () => {
+  const { t } = useTranslation()
   const { action, blockFont, resetAllowlist } = useFontGroup()
 
   return <div className="h-36 overflow-auto">
     <div className="h-full flex flex-wrap gap-1 content-start text-xs">
-      <Tag className="mx-0 px-2 py-0.5 cursor-pointer rounded-xl bg-warning-50 hover:bg-warning-100" onClick={resetAllowlist}>重置</Tag>
+      <Tag className="mx-0 px-2 py-0.5 cursor-pointer rounded-xl bg-warning-50 hover:bg-warning-100" onClick={resetAllowlist}>{t('g.reset')}</Tag>
       {action?.allowlist.map((v) => (
         <Tag key={v} className="mx-0 px-2 py-0.5 rounded-xl" closeIcon onClose={() => blockFont(v)}>{v}</Tag>
       ))}
