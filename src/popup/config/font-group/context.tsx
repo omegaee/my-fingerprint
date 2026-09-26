@@ -64,7 +64,7 @@ export const {
     if (action.allowlist.length === 0) {
       resetAllowlist()
     }
-  }, [action?.allowlist])
+  }, [action, fontsSet])
 
   const allowFont = (f: string) => {
     if (!action) return;
