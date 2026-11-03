@@ -9,11 +9,33 @@ import { useShallow } from "zustand/shallow";
 async function filterSupportedFonts(fonts: string[]): Promise<string[]> {
   const supported: string[] = [];
 
+  const canvas = new OffscreenCanvas(1, 1);
+  const ctx = canvas.getContext("2d");
+  const testText = "mmmmmmmmmmlli中文字体检测";
+  const baseFont = "monospace";
+  let baseline: number | undefined;
+
+  if (ctx) {
+    ctx.font = `16px ${baseFont}`;
+    baseline = ctx.measureText(testText).width;
+  }
+
   for (const f of fonts) {
+    // FontFace 检测
     try {
       await new FontFace("TestFont", `local("${f}")`).load();
       supported.push(f);
+      continue;
     } catch { }
+
+    // Canvas 检测
+    if (ctx && baseline !== undefined) {
+      ctx.font = `16px "${f}", ${baseFont}`;
+      if (Math.abs(ctx.measureText(testText).width - baseline) > 0.1) {
+        supported.push(f);
+        continue;
+      }
+    }
   }
 
   return supported;
