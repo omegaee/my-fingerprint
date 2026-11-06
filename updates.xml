@@ -2,9 +2,9 @@
 <gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
   <app appid="chjdhfajhejkodalghengihmfahilghk">
     <updatecheck
-      codebase="https://github.com/omegaee/my-fingerprint/releases/download/v2.9.3/my-fingerprint-chrome-v2.9.3.zip" 
+      codebase="https://github.com/omegaee/my-fingerprint/releases/download/v2.9.4/my-fingerprint-chrome-v2.9.4.zip" 
       prodversionmin="102.0"
-      version="2.9.3"
+      version="2.9.4"
     />
   </app>
 </gupdate>
