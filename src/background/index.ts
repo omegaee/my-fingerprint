@@ -150,13 +150,17 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (storage.policies.isBlacklistMode) {
       if (existParentDomain(storage.policies.blacklist, _url.hostname)) {
         logger.debug('in blacklist mode', _url.hostname);
-        reRequestHeader(undefined, tabId)
+        reRequestHeader({ include: tabId })
+      } else {
+        reRequestHeader({ remove: tabId })
       }
     } else {
       if (existParentDomain(storage.policies.whitelist, _url.hostname)) {
         logger.debug('in whitelist mode', _url.hostname);
-        reRequestHeader(tabId)
+        reRequestHeader({ exclude: tabId })
         setBadgeWhitelist(tabId)
+      } else {
+        reRequestHeader({ remove: tabId })
       }
     }
   }
@@ -166,7 +170,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
  * 监听tab关闭
  */
 chrome.tabs.onRemoved.addListener((tabId) => {
-  reRequestHeader(undefined, tabId)
+  reRequestHeader({ remove: tabId })
   removeBadge(tabId)
 })
 

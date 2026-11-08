@@ -101,7 +101,15 @@ const removeRules = async () => {
 /**
  * 刷新请求头
  */
-export const reRequestHeader = async (excludeTabId?: number, includeTabId?: number) => {
+export const reRequestHeader = async ({
+  exclude,
+  include,
+  remove,
+}: {
+  exclude?: number
+  include?: number
+  remove?: number
+}) => {
   const { storage } = await getLocalStorage()
 
   if (!storage.config.enable || !isHookNetRequest(storage)) {
@@ -109,14 +117,14 @@ export const reRequestHeader = async (excludeTabId?: number, includeTabId?: numb
   }
 
   /* 构建 Rules */
-  const uaRules = MEMORY.browser.name === 'firefox' ? [] : genUaRules(storage);
-  const langRules = genLanguageRules(storage);
+  const uaRules = MEMORY.browser.name === 'firefox' ? [] : genUaRules(storage)
+  const langRules = genLanguageRules(storage)
   const rules = [
     ...uaRules,
     ...langRules,
   ]
 
-  if (!rules || rules.length === 0) {
+  if (rules.length === 0) {
     return await removeRules()
   }
 
@@ -124,34 +132,52 @@ export const reRequestHeader = async (excludeTabId?: number, includeTabId?: numb
   const prev = srs.find(r => r.id === UA_NET_RULE_ID)
 
   /* 构建 Condition */
-  let condition: chrome.declarativeNetRequest.RuleCondition;
   const resourceTypes = Object.values(chrome.declarativeNetRequest.ResourceType)
+
+  const includeSet = new Set(prev?.condition?.tabIds)
+  const excludeSet = new Set(prev?.condition?.excludedTabIds)
+
+  // 删除 Tab 状态
+  if (remove != null) {
+    includeSet.delete(remove)
+    excludeSet.delete(remove)
+  }
+
+  // 添加 Tab 状态
+  if (include != null) {
+    includeSet.add(include)
+    excludeSet.delete(include)
+  }
+
+  if (exclude != null) {
+    excludeSet.add(exclude)
+    includeSet.delete(exclude)
+  }
+
+  let condition: chrome.declarativeNetRequest.RuleCondition
 
   if (storage.policies.isBlacklistMode) {
     /* 黑名单模式 */
-    const set = new Set(prev?.condition?.tabIds);
-    if (includeTabId != null) {
-      set.add(includeTabId);
-    }
     condition = {
       resourceTypes,
-      initiatorDomains: storage.policies.blacklist.length > 0 ? [...storage.policies.blacklist] : undefined,
-      tabIds: set.size > 0 ? [...set] : undefined,
+      initiatorDomains: storage.policies.blacklist.length > 0
+        ? [...storage.policies.blacklist]
+        : undefined,
+      tabIds: includeSet.size > 0 ? [...includeSet] : undefined,
     }
+
     // 黑名单模式下，如果没有任何条件，则删除规则
     if (!condition.initiatorDomains && !condition.tabIds) {
       return await removeRules()
     }
   } else {
     /* 白名单模式 */
-    const set = new Set(prev?.condition?.excludedTabIds);
-    if (excludeTabId != null) {
-      set.add(excludeTabId);
-    }
     condition = {
       resourceTypes,
-      excludedInitiatorDomains: storage.policies.whitelist.length > 0 ? [...storage.policies.whitelist] : undefined,
-      excludedTabIds: set.size > 0 ? [...set] : undefined,
+      excludedInitiatorDomains: storage.policies.whitelist.length > 0
+        ? [...storage.policies.whitelist]
+        : undefined,
+      excludedTabIds: excludeSet.size > 0 ? [...excludeSet] : undefined,
     }
   }
 
@@ -164,11 +190,11 @@ export const reRequestHeader = async (excludeTabId?: number, includeTabId?: numb
       id: UA_NET_RULE_ID,
       condition,
       action: {
-        type: "modifyHeaders" as any,
+        type: 'modifyHeaders' as any,
         requestHeaders: rules,
       },
-    }]
-  }).catch((e) => {
-    logger.error('reRequestHeader updateSessionRules error:', e);
+    }],
+  }).catch(e => {
+    logger.error('reRequestHeader updateSessionRules error:', e)
   })
 }

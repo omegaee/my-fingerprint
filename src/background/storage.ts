@@ -175,7 +175,7 @@ export const initLocalStorage = sharedAsync(async () => {
 
   chrome.storage.local.set(_storage).then(() => {
     reRegisterScript()
-    reRequestHeader()
+    reRequestHeader({})
     applySubscribeStorage()
   })
 
@@ -357,6 +357,6 @@ const onBeforeUpdateContext = async ({ storage }: LocalStorageContext, obj: Deep
 const onUpdateContext = (_: LocalStorageContext, prev?: DeepPartial<LocalStorage>, next?: DeepPartial<LocalStorage>) => {
   saveContextToLocalStorage()
   reRegisterScript()
-  reRequestHeader()
+  reRequestHeader({})
   reIpInfoAlarm(prev, next)
 }
