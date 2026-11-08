@@ -6,7 +6,7 @@ export type IPData = {
 
 export const IpApi = {
   getIp(): Promise<IPData> {
-    return fetch('http://ip-api.com/json/').then(res => {
+    return fetch('http://ip-api.com/json/', { cache: 'no-store' }).then(res => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     })
